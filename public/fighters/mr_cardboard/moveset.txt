@@ -1,0 +1,15 @@
+[punch]
+name=Cardboard Sword
+description=Six-frame corrugated sword slash with visible startup, active extension, follow-through, and recovery.
+
+[kick]
+name=Flatpack Sweep
+description=Six-frame low cardboard board sweep for testing low block rules.
+
+[special_1]
+name=Giant Mallet
+description=Six-frame oversized cardboard mallet hoist and slam.
+
+[special_2]
+name=Cardbross Cross
+description=Six-frame conjure and release animation for the glowing cardboard cross projectile.

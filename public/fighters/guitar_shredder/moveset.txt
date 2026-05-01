@@ -1,0 +1,15 @@
+[punch]
+name=Encore Jab
+description=Fast straight punch with a sharp forward lean and bright impact spark.
+
+[kick]
+name=Bootleg Sweep
+description=Low sliding kick that threatens stand blockers and keeps the stance readable.
+
+[special_1]
+name=Power Chord
+description=Strums the white guitar to launch a horizontal sound-wave projectile.
+
+[special_2]
+name=Rising Solo
+description=Invincible rising uppercut wrapped in stage lights, launching the opponent upward.

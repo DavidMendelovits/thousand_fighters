@@ -1,0 +1,15 @@
+[punch]
+name=Cue Punch
+description=Quick microphone-hand jab with a bright stage-pop impact.
+
+[kick]
+name=Kilt Sweep
+description=Low sweeping kick with a readable skirt flare and grounded recovery.
+
+[special_1]
+name=Feedback Check
+description=Projects microphone feedback as a mid-height sonic burst.
+
+[special_2]
+name=Spotlight Command
+description=Surges forward under a cone of light and pops the opponent with applause sparks.

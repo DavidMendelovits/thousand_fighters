@@ -1,0 +1,15 @@
+[punch]
+name=Mic Check
+description=Fast microphone jab with a sharp forward lean.
+
+[kick]
+name=Star Boot
+description=Low-to-mid kick using his black stage boots.
+
+[special_1]
+name=Spotlight Lunge
+description=Theatrical mic-stand sweep and rising microphone flourish.
+
+[special_2]
+name=Apple Smash
+description=Throws a red apple upward, bats it with the microphone, and sends exploding apple shards forward.

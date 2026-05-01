@@ -1,0 +1,69 @@
+{
+  "character_description": "A theatrical emcee stage fighter with swept dark hair, black tank top, black plaid kilt with red and white lines, white socks, black-and-white sneakers, and a handheld microphone. The silhouette is compact and expressive: microphone hand leading, plaid skirt motion, cabaret confidence.\nSilhouette: upright performer stance with strong arm lines and kilt flare.\nClothing: black tank, black plaid kilt, white socks, black-and-white sneakers.\nHair: dark, swept and stage-ready.\nAccessories: handheld microphone, wrist jewelry, spotlight effects.\nAttitude: teasing, dramatic, crowd-commanding.\nDistinctive traits: feedback waves, applause sparks, command-stage movement.",
+  "moveset": {
+    "punch": {
+      "name": "Cue Punch",
+      "description": "Quick microphone-hand jab with a bright stage-pop impact."
+    },
+    "kick": {
+      "name": "Kilt Sweep",
+      "description": "Low sweeping kick with a readable skirt flare and grounded recovery."
+    },
+    "special_1": {
+      "name": "Feedback Check",
+      "description": "Projects microphone feedback as a mid-height sonic burst."
+    },
+    "special_2": {
+      "name": "Spotlight Command",
+      "description": "Surges forward under a cone of light and pops the opponent with applause sparks."
+    }
+  },
+  "sheet_paths": {
+    "base": "/fighters/mic_monarch/sheets/base.png",
+    "punch": "/fighters/mic_monarch/sheets/punch.png",
+    "kick": "/fighters/mic_monarch/sheets/kick.png",
+    "special_1": "/fighters/mic_monarch/sheets/special_1.png",
+    "special_2": "/fighters/mic_monarch/sheets/special_2.png"
+  },
+  "sprite_paths": {
+    "base": [
+      "/fighters/mic_monarch/sprites/base/base_001.png",
+      "/fighters/mic_monarch/sprites/base/base_002.png",
+      "/fighters/mic_monarch/sprites/base/base_003.png",
+      "/fighters/mic_monarch/sprites/base/base_004.png",
+      "/fighters/mic_monarch/sprites/base/base_005.png",
+      "/fighters/mic_monarch/sprites/base/base_006.png"
+    ],
+    "punch": [
+      "/fighters/mic_monarch/sprites/punch/punch_001.png",
+      "/fighters/mic_monarch/sprites/punch/punch_002.png",
+      "/fighters/mic_monarch/sprites/punch/punch_003.png",
+      "/fighters/mic_monarch/sprites/punch/punch_004.png"
+    ],
+    "kick": [
+      "/fighters/mic_monarch/sprites/kick/kick_001.png",
+      "/fighters/mic_monarch/sprites/kick/kick_002.png",
+      "/fighters/mic_monarch/sprites/kick/kick_003.png",
+      "/fighters/mic_monarch/sprites/kick/kick_004.png"
+    ],
+    "special_1": [
+      "/fighters/mic_monarch/sprites/special_1/special_1_001.png",
+      "/fighters/mic_monarch/sprites/special_1/special_1_002.png",
+      "/fighters/mic_monarch/sprites/special_1/special_1_003.png",
+      "/fighters/mic_monarch/sprites/special_1/special_1_004.png"
+    ],
+    "special_2": [
+      "/fighters/mic_monarch/sprites/special_2/special_2_001.png",
+      "/fighters/mic_monarch/sprites/special_2/special_2_002.png",
+      "/fighters/mic_monarch/sprites/special_2/special_2_003.png",
+      "/fighters/mic_monarch/sprites/special_2/special_2_004.png"
+    ]
+  },
+  "frame_counts": {
+    "base": 6,
+    "punch": 4,
+    "kick": 4,
+    "special_1": 4,
+    "special_2": 4
+  }
+}

@@ -1,0 +1,15 @@
+[punch]
+name=Queue Check
+description=Fast straight punch from Viggo's jittery guard.
+
+[kick]
+name=Barrier Kick
+description=Long low kick that checks the opponent's feet.
+
+[special_1]
+name=Blackout Flourish
+description=Viggo whips his black overshirt around for a close-range flourish.
+
+[special_2]
+name=Hi Vis Toss
+description=Viggo strips off his yellow reflective vest, throws it forward, flashes the black shirt underneath, then reveals a fresh vest.

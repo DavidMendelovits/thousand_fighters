@@ -1,0 +1,82 @@
+{
+  "character_description": "A flamboyant glam-rock stage fighter with a tall bleached mullet, black strap stagewear, fishnet legs, heavy black boots, face paint, and a white electric guitar used like a showpiece weapon. The silhouette is wide, athletic, and loud: big hair, big guitar, big lunging poses.\nSilhouette: broad rock stance, spiky hair mass, guitar prop.\nClothing: black straps, stage briefs, fishnets, boots.\nHair: bleached blond mullet with high volume.\nAccessories: white electric guitar, wrist cuffs, stage-light energy.\nAttitude: aggressive glam-metal showoff.\nDistinctive traits: sound-wave projectiles and star-lit launch attacks.",
+  "moveset": {
+    "punch": {
+      "name": "Encore Jab",
+      "description": "Fast straight punch with a sharp forward lean and bright impact spark."
+    },
+    "kick": {
+      "name": "Bootleg Sweep",
+      "description": "Low sliding kick that threatens stand blockers and keeps the stance readable."
+    },
+    "special_1": {
+      "name": "Power Chord",
+      "description": "Strums the white guitar to launch a horizontal sound-wave projectile."
+    },
+    "special_2": {
+      "name": "Rising Solo",
+      "description": "Invincible rising uppercut wrapped in stage lights, launching the opponent upward."
+    }
+  },
+  "sheet_paths": {
+    "base": "/fighters/guitar_shredder/sheets/base.png",
+    "punch": "/fighters/guitar_shredder/sheets/punch.png",
+    "kick": "/fighters/guitar_shredder/sheets/kick.png",
+    "special_1": "/fighters/guitar_shredder/sheets/special_1.png",
+    "special_2": "/fighters/guitar_shredder/sheets/special_2.png"
+  },
+  "sprite_paths": {
+    "base": [
+      "/fighters/guitar_shredder/sprites/base/base_001.png",
+      "/fighters/guitar_shredder/sprites/base/base_002.png",
+      "/fighters/guitar_shredder/sprites/base/base_003.png",
+      "/fighters/guitar_shredder/sprites/base/base_004.png",
+      "/fighters/guitar_shredder/sprites/base/base_005.png",
+      "/fighters/guitar_shredder/sprites/base/base_006.png"
+    ],
+    "punch": [
+      "/fighters/guitar_shredder/sprites/punch/punch_001.png",
+      "/fighters/guitar_shredder/sprites/punch/punch_002.png",
+      "/fighters/guitar_shredder/sprites/punch/punch_003.png",
+      "/fighters/guitar_shredder/sprites/punch/punch_004.png",
+      "/fighters/guitar_shredder/sprites/punch/punch_005.png",
+      "/fighters/guitar_shredder/sprites/punch/punch_006.png"
+    ],
+    "kick": [
+      "/fighters/guitar_shredder/sprites/kick/kick_001.png",
+      "/fighters/guitar_shredder/sprites/kick/kick_002.png",
+      "/fighters/guitar_shredder/sprites/kick/kick_003.png",
+      "/fighters/guitar_shredder/sprites/kick/kick_004.png",
+      "/fighters/guitar_shredder/sprites/kick/kick_005.png",
+      "/fighters/guitar_shredder/sprites/kick/kick_006.png"
+    ],
+    "special_1": [
+      "/fighters/guitar_shredder/sprites/special_1/special_1_001.png",
+      "/fighters/guitar_shredder/sprites/special_1/special_1_002.png",
+      "/fighters/guitar_shredder/sprites/special_1/special_1_003.png",
+      "/fighters/guitar_shredder/sprites/special_1/special_1_004.png",
+      "/fighters/guitar_shredder/sprites/special_1/special_1_005.png",
+      "/fighters/guitar_shredder/sprites/special_1/special_1_006.png"
+    ],
+    "special_2": [
+      "/fighters/guitar_shredder/sprites/special_2/special_2_001.png",
+      "/fighters/guitar_shredder/sprites/special_2/special_2_002.png",
+      "/fighters/guitar_shredder/sprites/special_2/special_2_003.png",
+      "/fighters/guitar_shredder/sprites/special_2/special_2_004.png",
+      "/fighters/guitar_shredder/sprites/special_2/special_2_005.png",
+      "/fighters/guitar_shredder/sprites/special_2/special_2_006.png"
+    ]
+  },
+  "frame_counts": {
+    "base": 6,
+    "punch": 6,
+    "kick": 6,
+    "special_1": 6,
+    "special_2": 6
+  },
+  "normalization": {
+    "workflow": "legacy-fixed-frame-rebuild-source-crop-rejects",
+    "frameData": "/fighters/guitar_shredder/frameData.json",
+    "report": "/fighters/guitar_shredder/normalization-report.json"
+  }
+}

@@ -1,0 +1,533 @@
+{
+  "source": "legacy fixed 256x256 sheets in public/fighters/guitar_shredder/source/*_legacy_fixed_256.png",
+  "warnings": [],
+  "frames": {
+    "base": [
+      {
+        "file": "sprites/base/base_001.png",
+        "width": 154,
+        "height": 201,
+        "anchor": {
+          "x": 77,
+          "y": 183
+        },
+        "sourceBbox": [
+          75,
+          81,
+          181,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/base/base_002.png",
+        "width": 159,
+        "height": 194,
+        "anchor": {
+          "x": 80,
+          "y": 176
+        },
+        "sourceBbox": [
+          72,
+          88,
+          183,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/base/base_003.png",
+        "width": 157,
+        "height": 195,
+        "anchor": {
+          "x": 78,
+          "y": 177
+        },
+        "sourceBbox": [
+          74,
+          87,
+          183,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/base/base_004.png",
+        "width": 162,
+        "height": 179,
+        "anchor": {
+          "x": 81,
+          "y": 161
+        },
+        "sourceBbox": [
+          71,
+          103,
+          185,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/base/base_005.png",
+        "width": 162,
+        "height": 150,
+        "anchor": {
+          "x": 81,
+          "y": 132
+        },
+        "sourceBbox": [
+          71,
+          132,
+          185,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/base/base_006.png",
+        "width": 159,
+        "height": 194,
+        "anchor": {
+          "x": 80,
+          "y": 176
+        },
+        "sourceBbox": [
+          72,
+          88,
+          183,
+          238
+        ],
+        "edgeTouch": false
+      }
+    ],
+    "punch": [
+      {
+        "file": "sprites/punch/punch_001.png",
+        "width": 159,
+        "height": 194,
+        "anchor": {
+          "x": 80,
+          "y": 176
+        },
+        "sourceBbox": [
+          72,
+          88,
+          183,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/punch/punch_002.png",
+        "width": 201,
+        "height": 192,
+        "anchor": {
+          "x": 100,
+          "y": 174
+        },
+        "sourceBbox": [
+          52,
+          90,
+          205,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/punch/punch_003.png",
+        "width": 201,
+        "height": 189,
+        "anchor": {
+          "x": 100,
+          "y": 171
+        },
+        "sourceBbox": [
+          52,
+          93,
+          205,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/punch/punch_004.png",
+        "width": 199,
+        "height": 190,
+        "anchor": {
+          "x": 100,
+          "y": 172
+        },
+        "sourceBbox": [
+          52,
+          92,
+          203,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/punch/punch_005.png",
+        "width": 209,
+        "height": 187,
+        "anchor": {
+          "x": 104,
+          "y": 169
+        },
+        "sourceBbox": [
+          48,
+          95,
+          209,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/punch/punch_006.png",
+        "width": 159,
+        "height": 194,
+        "anchor": {
+          "x": 80,
+          "y": 176
+        },
+        "sourceBbox": [
+          72,
+          88,
+          183,
+          238
+        ],
+        "edgeTouch": false
+      }
+    ],
+    "kick": [
+      {
+        "file": "sprites/kick/kick_001.png",
+        "width": 162,
+        "height": 150,
+        "anchor": {
+          "x": 81,
+          "y": 132
+        },
+        "sourceBbox": [
+          71,
+          132,
+          185,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/kick/kick_002.png",
+        "width": 155,
+        "height": 191,
+        "anchor": {
+          "x": 78,
+          "y": 173
+        },
+        "sourceBbox": [
+          74,
+          91,
+          181,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/kick/kick_003.png",
+        "width": 191,
+        "height": 170,
+        "anchor": {
+          "x": 96,
+          "y": 152
+        },
+        "sourceBbox": [
+          56,
+          112,
+          199,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/kick/kick_004.png",
+        "width": 219,
+        "height": 153,
+        "anchor": {
+          "x": 110,
+          "y": 135
+        },
+        "sourceBbox": [
+          42,
+          129,
+          213,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/kick/kick_005.png",
+        "width": 170,
+        "height": 149,
+        "anchor": {
+          "x": 85,
+          "y": 131
+        },
+        "sourceBbox": [
+          67,
+          133,
+          189,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/kick/kick_006.png",
+        "width": 162,
+        "height": 150,
+        "anchor": {
+          "x": 81,
+          "y": 132
+        },
+        "sourceBbox": [
+          71,
+          132,
+          185,
+          238
+        ],
+        "edgeTouch": false
+      }
+    ],
+    "special_1": [
+      {
+        "file": "sprites/special_1/special_1_001.png",
+        "width": 159,
+        "height": 194,
+        "anchor": {
+          "x": 80,
+          "y": 176
+        },
+        "sourceBbox": [
+          72,
+          88,
+          183,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/special_1/special_1_002.png",
+        "width": 181,
+        "height": 169,
+        "anchor": {
+          "x": 90,
+          "y": 151
+        },
+        "sourceBbox": [
+          62,
+          113,
+          195,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/special_1/special_1_003.png",
+        "width": 201,
+        "height": 174,
+        "anchor": {
+          "x": 100,
+          "y": 156
+        },
+        "sourceBbox": [
+          52,
+          108,
+          205,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/special_1/special_1_004.png",
+        "width": 201,
+        "height": 174,
+        "anchor": {
+          "x": 100,
+          "y": 156
+        },
+        "sourceBbox": [
+          52,
+          108,
+          205,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/special_1/special_1_005.png",
+        "width": 181,
+        "height": 169,
+        "anchor": {
+          "x": 90,
+          "y": 151
+        },
+        "sourceBbox": [
+          62,
+          113,
+          195,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/special_1/special_1_006.png",
+        "width": 159,
+        "height": 194,
+        "anchor": {
+          "x": 80,
+          "y": 176
+        },
+        "sourceBbox": [
+          72,
+          88,
+          183,
+          238
+        ],
+        "edgeTouch": false
+      }
+    ],
+    "special_2": [
+      {
+        "file": "sprites/special_2/special_2_001.png",
+        "width": 162,
+        "height": 179,
+        "anchor": {
+          "x": 81,
+          "y": 161
+        },
+        "sourceBbox": [
+          71,
+          103,
+          185,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/special_2/special_2_002.png",
+        "width": 181,
+        "height": 169,
+        "anchor": {
+          "x": 90,
+          "y": 151
+        },
+        "sourceBbox": [
+          62,
+          113,
+          195,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/special_2/special_2_003.png",
+        "width": 162,
+        "height": 179,
+        "anchor": {
+          "x": 81,
+          "y": 161
+        },
+        "sourceBbox": [
+          71,
+          103,
+          185,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/special_2/special_2_004.png",
+        "width": 157,
+        "height": 195,
+        "anchor": {
+          "x": 78,
+          "y": 177
+        },
+        "sourceBbox": [
+          74,
+          87,
+          183,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/special_2/special_2_005.png",
+        "width": 181,
+        "height": 169,
+        "anchor": {
+          "x": 90,
+          "y": 151
+        },
+        "sourceBbox": [
+          62,
+          113,
+          195,
+          238
+        ],
+        "edgeTouch": false
+      },
+      {
+        "file": "sprites/special_2/special_2_006.png",
+        "width": 159,
+        "height": 194,
+        "anchor": {
+          "x": 80,
+          "y": 176
+        },
+        "sourceBbox": [
+          72,
+          88,
+          183,
+          238
+        ],
+        "edgeTouch": false
+      }
+    ]
+  },
+  "rejectedSourceFrames": [
+    {
+      "sheet": "base",
+      "frame": 6,
+      "reason": "extended hand/arm is cropped in source art"
+    },
+    {
+      "sheet": "special_1",
+      "frame": 1,
+      "reason": "head is cropped in source art"
+    },
+    {
+      "sheet": "special_1",
+      "frame": 2,
+      "reason": "head is cropped in source art"
+    },
+    {
+      "sheet": "special_1",
+      "frame": 4,
+      "reason": "projectile-only wave, not caster recovery art"
+    },
+    {
+      "sheet": "special_2",
+      "frame": 2,
+      "reason": "spotlight/effect rectangle is visibly cropped in source art"
+    },
+    {
+      "sheet": "special_2",
+      "frame": 4,
+      "reason": "spotlight/effect rectangle is visibly cropped in source art"
+    }
+  ],
+  "notes": [
+    "Second pass removes source frames that are already cut off, even when alpha edge checks pass.",
+    "Power Chord keeps the intact crouched guitar pose plus intact wave-release frame.",
+    "Rising Solo uses intact body poses only until the move can be regenerated with uncropped spotlight art."
+  ]
+}

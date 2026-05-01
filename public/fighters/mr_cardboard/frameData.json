@@ -1,0 +1,708 @@
+{
+  "anchorConvention": "frame anchor is the fighter pivot/feet, measured in pixels from each PNG top-left",
+  "extraction": "foreground components grouped across each 3x2 source sheet, not fixed cell crops, so oversized art crossing conceptual grid lines is preserved",
+  "frames": {
+    "base": [
+      {
+        "file": "sprites/base/base_001.png",
+        "width": 275,
+        "height": 415,
+        "anchor": {
+          "x": 138,
+          "y": 371
+        },
+        "sourceSheet": "source/base_3x2_imagegen.png",
+        "sourceBounds": [
+          155,
+          87,
+          374,
+          471
+        ],
+        "sourceOuterMargins": [
+          155,
+          87,
+          1162,
+          553
+        ],
+        "componentCount": 1
+      },
+      {
+        "file": "sprites/base/base_002.png",
+        "width": 269,
+        "height": 408,
+        "anchor": {
+          "x": 134,
+          "y": 364
+        },
+        "sourceSheet": "source/base_3x2_imagegen.png",
+        "sourceBounds": [
+          641,
+          96,
+          854,
+          472
+        ],
+        "sourceOuterMargins": [
+          641,
+          96,
+          682,
+          552
+        ],
+        "componentCount": 1
+      },
+      {
+        "file": "sprites/base/base_003.png",
+        "width": 405,
+        "height": 392,
+        "anchor": {
+          "x": 202,
+          "y": 348
+        },
+        "sourceSheet": "source/base_3x2_imagegen.png",
+        "sourceBounds": [
+          1054,
+          111,
+          1427,
+          468
+        ],
+        "sourceOuterMargins": [
+          1054,
+          111,
+          109,
+          556
+        ],
+        "componentCount": 1
+      },
+      {
+        "file": "sprites/base/base_004.png",
+        "width": 289,
+        "height": 366,
+        "anchor": {
+          "x": 144,
+          "y": 321
+        },
+        "sourceSheet": "source/base_3x2_imagegen.png",
+        "sourceBounds": [
+          118,
+          567,
+          354,
+          893
+        ],
+        "sourceOuterMargins": [
+          118,
+          567,
+          1182,
+          131
+        ],
+        "componentCount": 1
+      },
+      {
+        "file": "sprites/base/base_005.png",
+        "width": 322,
+        "height": 295,
+        "anchor": {
+          "x": 162,
+          "y": 251
+        },
+        "sourceSheet": "source/base_3x2_imagegen.png",
+        "sourceBounds": [
+          605,
+          647,
+          880,
+          890
+        ],
+        "sourceOuterMargins": [
+          605,
+          647,
+          656,
+          134
+        ],
+        "componentCount": 1
+      },
+      {
+        "file": "sprites/base/base_006.png",
+        "width": 290,
+        "height": 360,
+        "anchor": {
+          "x": 144,
+          "y": 316
+        },
+        "sourceSheet": "source/base_3x2_imagegen.png",
+        "sourceBounds": [
+          1090,
+          579,
+          1327,
+          899
+        ],
+        "sourceOuterMargins": [
+          1090,
+          579,
+          209,
+          125
+        ],
+        "componentCount": 1
+      }
+    ],
+    "punch": [
+      {
+        "file": "sprites/punch/punch_001.png",
+        "width": 401,
+        "height": 404,
+        "anchor": {
+          "x": 200,
+          "y": 352
+        },
+        "sourceSheet": "source/punch_3x2_imagegen.png",
+        "sourceBounds": [
+          107,
+          121,
+          404,
+          421
+        ],
+        "sourceOuterMargins": [
+          107,
+          121,
+          1132,
+          603
+        ],
+        "componentCount": 1
+      },
+      {
+        "file": "sprites/punch/punch_002.png",
+        "width": 459,
+        "height": 357,
+        "anchor": {
+          "x": 230,
+          "y": 305
+        },
+        "sourceSheet": "source/punch_3x2_imagegen.png",
+        "sourceBounds": [
+          562,
+          167,
+          917,
+          420
+        ],
+        "sourceOuterMargins": [
+          562,
+          167,
+          619,
+          604
+        ],
+        "componentCount": 1
+      },
+      {
+        "file": "sprites/punch/punch_003.png",
+        "width": 497,
+        "height": 352,
+        "anchor": {
+          "x": 248,
+          "y": 300
+        },
+        "sourceSheet": "source/punch_3x2_imagegen.png",
+        "sourceBounds": [
+          1021,
+          172,
+          1414,
+          420
+        ],
+        "sourceOuterMargins": [
+          1021,
+          172,
+          122,
+          604
+        ],
+        "componentCount": 1
+      },
+      {
+        "file": "sprites/punch/punch_004.png",
+        "width": 578,
+        "height": 373,
+        "anchor": {
+          "x": 289,
+          "y": 321
+        },
+        "sourceSheet": "source/punch_3x2_imagegen.png",
+        "sourceBounds": [
+          82,
+          583,
+          556,
+          852
+        ],
+        "sourceOuterMargins": [
+          82,
+          583,
+          980,
+          172
+        ],
+        "componentCount": 1
+      },
+      {
+        "file": "sprites/punch/punch_005.png",
+        "width": 352,
+        "height": 374,
+        "anchor": {
+          "x": 176,
+          "y": 322
+        },
+        "sourceSheet": "source/punch_3x2_imagegen.png",
+        "sourceBounds": [
+          633,
+          585,
+          881,
+          855
+        ],
+        "sourceOuterMargins": [
+          633,
+          585,
+          655,
+          169
+        ],
+        "componentCount": 1
+      },
+      {
+        "file": "sprites/punch/punch_006.png",
+        "width": 388,
+        "height": 380,
+        "anchor": {
+          "x": 194,
+          "y": 328
+        },
+        "sourceSheet": "source/punch_3x2_imagegen.png",
+        "sourceBounds": [
+          1112,
+          581,
+          1396,
+          857
+        ],
+        "sourceOuterMargins": [
+          1112,
+          581,
+          140,
+          167
+        ],
+        "componentCount": 1
+      }
+    ],
+    "kick": [
+      {
+        "file": "sprites/kick/kick_001.png",
+        "width": 357,
+        "height": 348,
+        "anchor": {
+          "x": 178,
+          "y": 296
+        },
+        "sourceSheet": "source/kick_3x2_imagegen.png",
+        "sourceBounds": [
+          73,
+          165,
+          326,
+          409
+        ],
+        "sourceOuterMargins": [
+          73,
+          165,
+          1210,
+          615
+        ],
+        "componentCount": 1
+      },
+      {
+        "file": "sprites/kick/kick_002.png",
+        "width": 485,
+        "height": 341,
+        "anchor": {
+          "x": 242,
+          "y": 289
+        },
+        "sourceSheet": "source/kick_3x2_imagegen.png",
+        "sourceBounds": [
+          543,
+          193,
+          924,
+          430
+        ],
+        "sourceOuterMargins": [
+          543,
+          193,
+          612,
+          594
+        ],
+        "componentCount": 1
+      },
+      {
+        "file": "sprites/kick/kick_003.png",
+        "width": 623,
+        "height": 327,
+        "anchor": {
+          "x": 312,
+          "y": 275
+        },
+        "sourceSheet": "source/kick_3x2_imagegen.png",
+        "sourceBounds": [
+          979,
+          198,
+          1498,
+          421
+        ],
+        "sourceOuterMargins": [
+          979,
+          198,
+          38,
+          603
+        ],
+        "componentCount": 1
+      },
+      {
+        "file": "sprites/kick/kick_004.png",
+        "width": 553,
+        "height": 318,
+        "anchor": {
+          "x": 276,
+          "y": 266
+        },
+        "sourceSheet": "source/kick_3x2_imagegen.png",
+        "sourceBounds": [
+          38,
+          642,
+          487,
+          856
+        ],
+        "sourceOuterMargins": [
+          38,
+          642,
+          1049,
+          168
+        ],
+        "componentCount": 9
+      },
+      {
+        "file": "sprites/kick/kick_005.png",
+        "width": 586,
+        "height": 305,
+        "anchor": {
+          "x": 293,
+          "y": 253
+        },
+        "sourceSheet": "source/kick_3x2_imagegen.png",
+        "sourceBounds": [
+          561,
+          653,
+          1043,
+          854
+        ],
+        "sourceOuterMargins": [
+          561,
+          653,
+          493,
+          170
+        ],
+        "componentCount": 4
+      },
+      {
+        "file": "sprites/kick/kick_006.png",
+        "width": 356,
+        "height": 349,
+        "anchor": {
+          "x": 178,
+          "y": 297
+        },
+        "sourceSheet": "source/kick_3x2_imagegen.png",
+        "sourceBounds": [
+          1168,
+          609,
+          1420,
+          854
+        ],
+        "sourceOuterMargins": [
+          1168,
+          609,
+          116,
+          170
+        ],
+        "componentCount": 1
+      }
+    ],
+    "special_1": [
+      {
+        "file": "sprites/special_1/special_1_001.png",
+        "width": 427,
+        "height": 369,
+        "anchor": {
+          "x": 214,
+          "y": 317
+        },
+        "sourceSheet": "source/special_1_3x2_imagegen.png",
+        "sourceBounds": [
+          59,
+          197,
+          382,
+          462
+        ],
+        "sourceOuterMargins": [
+          59,
+          197,
+          1154,
+          562
+        ],
+        "componentCount": 1
+      },
+      {
+        "file": "sprites/special_1/special_1_002.png",
+        "width": 368,
+        "height": 414,
+        "anchor": {
+          "x": 184,
+          "y": 362
+        },
+        "sourceSheet": "source/special_1_3x2_imagegen.png",
+        "sourceBounds": [
+          591,
+          152,
+          855,
+          462
+        ],
+        "sourceOuterMargins": [
+          591,
+          152,
+          681,
+          562
+        ],
+        "componentCount": 1
+      },
+      {
+        "file": "sprites/special_1/special_1_003.png",
+        "width": 373,
+        "height": 511,
+        "anchor": {
+          "x": 186,
+          "y": 459
+        },
+        "sourceSheet": "source/special_1_3x2_imagegen.png",
+        "sourceBounds": [
+          1079,
+          58,
+          1348,
+          465
+        ],
+        "sourceOuterMargins": [
+          1079,
+          58,
+          188,
+          559
+        ],
+        "componentCount": 1
+      },
+      {
+        "file": "sprites/special_1/special_1_004.png",
+        "width": 476,
+        "height": 422,
+        "anchor": {
+          "x": 238,
+          "y": 370
+        },
+        "sourceSheet": "source/special_1_3x2_imagegen.png",
+        "sourceBounds": [
+          80,
+          592,
+          452,
+          910
+        ],
+        "sourceOuterMargins": [
+          80,
+          592,
+          1084,
+          114
+        ],
+        "componentCount": 2
+      },
+      {
+        "file": "sprites/special_1/special_1_005.png",
+        "width": 490,
+        "height": 365,
+        "anchor": {
+          "x": 245,
+          "y": 313
+        },
+        "sourceSheet": "source/special_1_3x2_imagegen.png",
+        "sourceBounds": [
+          560,
+          654,
+          946,
+          915
+        ],
+        "sourceOuterMargins": [
+          560,
+          654,
+          590,
+          109
+        ],
+        "componentCount": 6
+      },
+      {
+        "file": "sprites/special_1/special_1_006.png",
+        "width": 512,
+        "height": 374,
+        "anchor": {
+          "x": 256,
+          "y": 322
+        },
+        "sourceSheet": "source/special_1_3x2_imagegen.png",
+        "sourceBounds": [
+          1064,
+          629,
+          1472,
+          899
+        ],
+        "sourceOuterMargins": [
+          1064,
+          629,
+          64,
+          125
+        ],
+        "componentCount": 1
+      }
+    ],
+    "special_2": [
+      {
+        "file": "sprites/special_2/special_2_001.png",
+        "width": 401,
+        "height": 393,
+        "anchor": {
+          "x": 200,
+          "y": 341
+        },
+        "sourceSheet": "source/special_2_3x2_imagegen.png",
+        "sourceBounds": [
+          115,
+          150,
+          412,
+          439
+        ],
+        "sourceOuterMargins": [
+          115,
+          150,
+          1124,
+          585
+        ],
+        "componentCount": 1
+      },
+      {
+        "file": "sprites/special_2/special_2_002.png",
+        "width": 397,
+        "height": 393,
+        "anchor": {
+          "x": 198,
+          "y": 341
+        },
+        "sourceSheet": "source/special_2_3x2_imagegen.png",
+        "sourceBounds": [
+          606,
+          150,
+          899,
+          439
+        ],
+        "sourceOuterMargins": [
+          606,
+          150,
+          637,
+          585
+        ],
+        "componentCount": 1
+      },
+      {
+        "file": "sprites/special_2/special_2_003.png",
+        "width": 444,
+        "height": 454,
+        "anchor": {
+          "x": 222,
+          "y": 402
+        },
+        "sourceSheet": "source/special_2_3x2_imagegen.png",
+        "sourceBounds": [
+          1085,
+          89,
+          1425,
+          439
+        ],
+        "sourceOuterMargins": [
+          1085,
+          89,
+          111,
+          585
+        ],
+        "componentCount": 1
+      },
+      {
+        "file": "sprites/special_2/special_2_004.png",
+        "width": 416,
+        "height": 379,
+        "anchor": {
+          "x": 208,
+          "y": 327
+        },
+        "sourceSheet": "source/special_2_3x2_imagegen.png",
+        "sourceBounds": [
+          1096,
+          608,
+          1408,
+          883
+        ],
+        "sourceOuterMargins": [
+          1096,
+          608,
+          128,
+          141
+        ],
+        "componentCount": 1,
+        "derivedFromFrame": 6
+      },
+      {
+        "file": "sprites/special_2/special_2_005.png",
+        "width": 416,
+        "height": 379,
+        "anchor": {
+          "x": 208,
+          "y": 327
+        },
+        "sourceSheet": "source/special_2_3x2_imagegen.png",
+        "sourceBounds": [
+          1096,
+          608,
+          1408,
+          883
+        ],
+        "sourceOuterMargins": [
+          1096,
+          608,
+          128,
+          141
+        ],
+        "componentCount": 1,
+        "derivedFromFrame": 6
+      },
+      {
+        "file": "sprites/special_2/special_2_006.png",
+        "width": 416,
+        "height": 379,
+        "anchor": {
+          "x": 208,
+          "y": 327
+        },
+        "sourceSheet": "source/special_2_3x2_imagegen.png",
+        "sourceBounds": [
+          1096,
+          608,
+          1408,
+          883
+        ],
+        "sourceOuterMargins": [
+          1096,
+          608,
+          128,
+          141
+        ],
+        "componentCount": 1
+      }
+    ]
+  }
+}
