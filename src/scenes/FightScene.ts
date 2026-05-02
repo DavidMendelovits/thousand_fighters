@@ -6,7 +6,10 @@ import { GameLoop } from '../core/GameLoop';
 import { HitboxSystem } from '../core/HitboxSystem';
 import { InputReader } from '../core/InputReader';
 import { ProjectilePool } from '../core/ProjectilePool';
+import { TouchInput } from '../core/TouchInput';
 import type { CharacterConfig, CharacterSpriteConfig, SpriteFrameMeta, SpriteSheetId } from '../schema/types';
+import { LayoutShell } from '../ui/LayoutShell';
+import { prefersTouchControls } from '../util/device';
 import { DebugOverlay } from './DebugOverlay';
 
 const FLOOR_Y = 390;
@@ -77,7 +80,7 @@ export class FightScene extends Phaser.Scene {
     this.hasSceneData = Object.keys(data).length > 0;
     this.selectedP1Id = data.p1Id ?? playableCharacters[0].id;
     this.selectedP2Id = data.p2Id ?? playableCharacters[2].id;
-    this.singlePlayer = data.cpu ?? true;
+    this.singlePlayer = prefersTouchControls() ? true : (data.cpu ?? true);
     this.p1Rounds = data.p1Rounds ?? 0;
     this.p2Rounds = data.p2Rounds ?? 0;
     this.roundNumber = data.roundNumber ?? 1;
@@ -209,6 +212,7 @@ export class FightScene extends Phaser.Scene {
       this.fighters[debugMove.player].debugStartMove(debugMove.moveId);
     });
     this.installDebugHooks();
+    this.installTouchHooks();
 
     const debugMove = params.get('move');
     const debugPlayer = params.get('player') === '2' ? 2 : 1;
@@ -217,6 +221,29 @@ export class FightScene extends Phaser.Scene {
         this.fighters[debugPlayer - 1].debugStartMove(debugMove);
       });
     }
+  }
+
+  private installTouchHooks(): void {
+    const shell = LayoutShell.current();
+    if (!shell) return;
+    shell.controls.setPauseHandler(() => {
+      if (this.roundResolved) return;
+      this.setPaused(!this.isPaused);
+    });
+    const unsubscribe = shell.onChange(({ orientation }) => {
+      TouchInput.clearAll();
+      if (this.roundResolved) return;
+      // Auto-pause on orientation flip so a stuck input doesn't ruin the round.
+      if (orientation === 'portrait' || orientation === 'landscape') {
+        this.setPaused(true);
+      }
+    });
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      unsubscribe();
+      shell.controls.setPauseHandler(() => {});
+      shell.controls.releaseAll();
+      TouchInput.clearAll();
+    });
   }
 
   update(time: number): void {
@@ -308,9 +335,10 @@ export class FightScene extends Phaser.Scene {
               : '';
     const timer = Math.max(0, Math.ceil(this.roundTimer / 60));
     this.hudText.setText(winner ? `${winner}  ${timer}` : `R${this.roundNumber}  ${timer}`);
-    this.cpuToggleText.setText(
-      `${this.singlePlayer ? 'CPU: ON' : 'CPU: OFF'}  click/F2  P/Esc pause  R reset  P1:1-3 P2:7-9`,
-    );
+    const hudHint = prefersTouchControls()
+      ? `${this.singlePlayer ? 'CPU: ON' : 'CPU: OFF'}  tap to toggle`
+      : `${this.singlePlayer ? 'CPU: ON' : 'CPU: OFF'}  click/F2  P/Esc pause  R reset  P1:1-3 P2:7-9`;
+    this.cpuToggleText.setText(hudHint);
     this.cpuToggleText.setColor(this.singlePlayer ? '#ffffff' : '#8de6ff');
     this.updatePauseModalText();
   }
