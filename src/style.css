@@ -1,22 +1,270 @@
 html,
-body,
-#game {
+body {
   width: 100%;
   height: 100%;
   margin: 0;
   background: #0e1117;
   overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  display: grid;
-  place-items: center;
+  display: block;
+  font-family: monospace;
+  color: #dbe7ff;
 }
 
-canvas {
+#game {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+}
+
+#game-canvas-wrap {
+  position: relative;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  background: #0e1117;
+  overflow: hidden;
+}
+
+#game-canvas-wrap canvas {
   display: block;
-  width: min(100vw, calc(100vh * 16 / 9));
-  height: auto;
-  max-height: 100vh;
   image-rendering: pixelated;
+  margin: auto;
+}
+
+#game-controls {
+  display: contents;
+}
+
+/* ==== Touch controls overlay ==== */
+
+.tf-controls {
+  --touch-alpha: 0.6;
+  --touch-alpha-active: 0.95;
+  --punch-color: #df4545;
+  --kick-color: #426edb;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: none;
+}
+
+.tf-controls[data-layout='hidden'] {
+  display: none !important;
+}
+
+.tf-controls .tf-controls-pause,
+.tf-controls .tf-controls-dpad,
+.tf-controls .tf-controls-attacks {
+  pointer-events: none;
+}
+
+.tf-controls button,
+.tf-controls .tf-dpad-ring {
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* --- D-pad (shared) --- */
+
+.tf-dpad-ring {
+  position: relative;
+  width: clamp(120px, 28vmin, 180px);
+  height: clamp(120px, 28vmin, 180px);
+  border-radius: 50%;
+  background: rgba(20, 24, 32, calc(var(--touch-alpha) * 0.85));
+  border: 2px solid rgba(141, 230, 255, calc(var(--touch-alpha) * 0.85));
+  box-shadow: inset 0 0 0 6px rgba(0, 0, 0, calc(var(--touch-alpha) * 0.4));
+}
+
+.tf-dpad-ring.is-pressed {
+  border-color: rgba(141, 230, 255, var(--touch-alpha-active));
+  background: rgba(20, 24, 32, calc(var(--touch-alpha) * 0.95));
+}
+
+.tf-dpad-nub {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 38%;
+  height: 38%;
+  border-radius: 50%;
+  background: rgba(220, 231, 255, calc(var(--touch-alpha) * 1.1));
+  border: 2px solid rgba(255, 255, 255, calc(var(--touch-alpha) * 0.9));
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: background 80ms linear;
+}
+
+.tf-dpad-ring.is-pressed .tf-dpad-nub {
+  background: rgba(255, 255, 255, var(--touch-alpha-active));
+}
+
+/* --- Attack buttons (shared) --- */
+
+.tf-controls-attacks {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  grid-auto-rows: auto;
+  gap: clamp(8px, 1.6vmin, 14px);
+}
+
+.tf-attack-btn {
+  width: clamp(48px, 11vmin, 68px);
+  height: clamp(48px, 11vmin, 68px);
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, calc(var(--touch-alpha) * 0.85));
+  font-family: monospace;
+  font-size: clamp(13px, 2.4vmin, 16px);
+  font-weight: 700;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 0;
+  text-align: center;
+  letter-spacing: 0.5px;
+  background: rgba(20, 24, 32, calc(var(--touch-alpha) * 0.85));
+}
+
+.tf-attack-btn.tf-attack-punch {
+  background: rgba(223, 69, 69, calc(var(--touch-alpha) * 0.85));
+  border-color: rgba(255, 200, 200, calc(var(--touch-alpha) * 0.9));
+}
+
+.tf-attack-btn.tf-attack-kick {
+  background: rgba(66, 110, 219, calc(var(--touch-alpha) * 0.85));
+  border-color: rgba(200, 215, 255, calc(var(--touch-alpha) * 0.9));
+}
+
+.tf-attack-btn.is-pressed {
+  background: rgba(255, 255, 255, var(--touch-alpha-active));
+  color: #0e1117;
+}
+
+/* --- Pause button (shared) --- */
+
+.tf-pause-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, calc(var(--touch-alpha) * 0.7));
+  background: rgba(20, 24, 32, calc(var(--touch-alpha) * 0.7));
+  color: #ffffff;
+  font-family: monospace;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  letter-spacing: 2px;
+}
+
+.tf-pause-btn:active {
+  background: rgba(141, 230, 255, var(--touch-alpha-active));
+  color: #0e1117;
+}
+
+/* --- Landscape: overlay on canvas --- */
+
+.tf-controls[data-layout='landscape'] {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+}
+
+.tf-controls[data-layout='landscape'] .tf-controls-pause {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+}
+
+.tf-controls[data-layout='landscape'] .tf-controls-dpad {
+  position: absolute;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  left: max(20px, env(safe-area-inset-left));
+}
+
+.tf-controls[data-layout='landscape'] .tf-controls-attacks {
+  position: absolute;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  right: max(20px, env(safe-area-inset-right));
+}
+
+/* --- Portrait: stacked panel below canvas --- */
+
+html[data-orientation='portrait'][data-touch='1'] #game {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  align-items: stretch;
+}
+
+html[data-orientation='portrait'][data-touch='1'] #game-canvas-wrap {
+  flex: 0 0 auto;
+  width: 100vw;
+  aspect-ratio: 16 / 9;
+  max-height: 60vh;
+}
+
+html[data-orientation='portrait'][data-touch='1'] #game-controls {
+  display: block;
+}
+
+.tf-controls[data-layout='portrait'] {
+  --touch-alpha: 0.95;
+  --touch-alpha-active: 1;
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr;
+  align-items: end;
+  justify-items: center;
+  width: 100%;
+  height: 100%;
+  padding: max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-right))
+    max(20px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  gap: 12px 16px;
+  background: linear-gradient(#141820, #0e1117);
+  border-top: 1px solid rgba(141, 230, 255, 0.4);
+  box-sizing: border-box;
+}
+
+.tf-controls[data-layout='portrait'] .tf-controls-pause {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  justify-self: end;
+}
+
+.tf-controls[data-layout='portrait'] .tf-controls-dpad {
+  grid-column: 1;
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tf-controls[data-layout='portrait'] .tf-controls-dpad .tf-dpad-ring {
+  width: clamp(140px, 36vmin, 220px);
+  height: clamp(140px, 36vmin, 220px);
+}
+
+.tf-controls[data-layout='portrait'] .tf-controls-attacks {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: center;
+}
+
+.tf-controls[data-layout='portrait'] .tf-attack-btn {
+  width: clamp(56px, 14vmin, 80px);
+  height: clamp(56px, 14vmin, 80px);
 }

@@ -1,4 +1,5 @@
 import type { RawInput } from '../schema/types';
+import { TouchInput } from './TouchInput';
 
 type KeyMap = Record<keyof Omit<RawInput, 'lpPrev' | 'mpPrev' | 'hpPrev' | 'lkPrev' | 'mkPrev' | 'hkPrev'>, string>;
 
@@ -47,6 +48,20 @@ export class InputReader {
       mk: keyboard.addKey(map.mk).isDown,
       hk: keyboard.addKey(map.hk).isDown,
     };
+
+    if (player === 1) {
+      const touch = TouchInput.snapshot();
+      state.left = state.left || touch.left;
+      state.right = state.right || touch.right;
+      state.up = state.up || touch.up;
+      state.down = state.down || touch.down;
+      state.lp = state.lp || touch.lp;
+      state.mp = state.mp || touch.mp;
+      state.hp = state.hp || touch.hp;
+      state.lk = state.lk || touch.lk;
+      state.mk = state.mk || touch.mk;
+      state.hk = state.hk || touch.hk;
+    }
 
     const raw: RawInput = {
       ...state,
