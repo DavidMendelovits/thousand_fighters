@@ -9,7 +9,7 @@ import { ProjectilePool } from '../core/ProjectilePool';
 import { TouchInput } from '../core/TouchInput';
 import type { CharacterConfig, CharacterSpriteConfig, SpriteFrameMeta, SpriteSheetId } from '../schema/types';
 import { LayoutShell } from '../ui/LayoutShell';
-import { prefersTouchControls } from '../util/device';
+import { currentOrientation, prefersTouchControls } from '../util/device';
 import { DebugOverlay } from './DebugOverlay';
 
 const FLOOR_Y = 390;
@@ -669,23 +669,46 @@ export class FightScene extends Phaser.Scene {
       align: 'center',
     };
 
-    this.add.rectangle(400, 225, 800, 450, 0x141820, 1);
-    this.add.rectangle(400, FLOOR_Y + 30, 800, 120, 0x20262f).setOrigin(0.5, 0);
-    this.add.rectangle(400, FLOOR_Y + 1, 800, 2, 0x9aa8bb);
+    const orientation = currentOrientation();
+    const cardsPerRow = orientation === 'portrait' ? 3 : 6;
+    const cardWidth = 112;
+    const cardHeight = 112;
+    const cardPitchX = cardWidth + 12;
+    const cardPitchY = 156;
+    const sectionGap = 28;
+    const headerBottom = 86;
+    const footerTop = 386;
+    const viewportHeight = footerTop - headerBottom;
+    const totalRowWidth = (cardsPerRow - 1) * cardPitchX + cardWidth;
+    const rowStartX = (800 - totalRowWidth) / 2 + cardWidth / 2;
+
+    this.add.rectangle(400, 225, 800, 450, 0x141820, 1).setDepth(0);
+    this.add.rectangle(400, FLOOR_Y + 30, 800, 120, 0x20262f).setOrigin(0.5, 0).setDepth(0);
+    this.add.rectangle(400, FLOOR_Y + 1, 800, 2, 0x9aa8bb).setDepth(0);
     this.add
       .text(400, 28, 'CHARACTER SELECT', {
         color: '#ffffff',
         fontFamily: 'monospace',
         fontSize: '24px',
       })
-      .setOrigin(0.5, 0);
+      .setOrigin(0.5, 0)
+      .setDepth(20);
     const helpText = this.add
-      .text(400, 60, 'Click a card in each row. CPU uses P2 when enabled.', {
+      .text(400, 60, '', {
         color: '#8de6ff',
         fontFamily: 'monospace',
         fontSize: '12px',
+        align: 'center',
+        wordWrap: { width: 760 },
       })
-      .setOrigin(0.5, 0);
+      .setOrigin(0.5, 0)
+      .setDepth(20);
+
+    const scrollContainer = this.add.container(0, headerBottom).setDepth(10);
+    const maskGraphics = this.make.graphics({ x: 0, y: 0 }, false);
+    maskGraphics.fillStyle(0xffffff);
+    maskGraphics.fillRect(0, headerBottom, 800, viewportHeight);
+    scrollContainer.setMask(new Phaser.Display.Masks.GeometryMask(this, maskGraphics));
 
     const updateCards = (): void => {
       for (const card of cardBackgrounds) {
@@ -693,40 +716,123 @@ export class FightScene extends Phaser.Scene {
         card.rect.setStrokeStyle(2, selected ? 0xfff0a3 : 0x485568, selected ? 1 : 0.85);
         card.rect.setFillStyle(selected ? 0x24364b : 0x0b0e13, 1);
       }
-      helpText.setText(`P1: ${this.characterFromParam(p1Id, playableCharacters[0]).displayName}     P2: ${this.characterFromParam(p2Id, playableCharacters[2]).displayName}     CPU: ${this.singlePlayer ? 'ON' : 'OFF'}`);
+      helpText.setText(
+        `P1: ${this.characterFromParam(p1Id, playableCharacters[0]).displayName}     P2: ${this.characterFromParam(p2Id, playableCharacters[2]).displayName}     CPU: ${this.singlePlayer ? 'ON' : 'OFF'}`,
+      );
     };
 
-    const createRow = (player: 1 | 2, y: number): void => {
-      this.add
-        .text(36, y + 44, `P${player}`, {
+    const layoutSection = (player: 1 | 2, contentY: number): number => {
+      const labelText = this.add
+        .text(36, contentY, `P${player}`, {
           color: player === 1 ? '#ff9b8f' : '#8de6ff',
           fontFamily: 'monospace',
           fontSize: '18px',
         })
-        .setOrigin(0, 0.5);
+        .setOrigin(0, 0);
+      scrollContainer.add(labelText);
+
+      const gridTop = contentY + 60;
+      const rowsCount = Math.max(1, Math.ceil(playableCharacters.length / cardsPerRow));
+
       playableCharacters.forEach((character, index) => {
-        const x = 88 + index * 124;
-        const rect = this.add.rectangle(x, y, 112, 112, 0x0b0e13, 1).setInteractive({ useHandCursor: true });
-        rect.on('pointerdown', () => {
+        const col = index % cardsPerRow;
+        const row = Math.floor(index / cardsPerRow);
+        const x = rowStartX + col * cardPitchX;
+        const y = gridTop + row * cardPitchY;
+
+        const rect = this.add
+          .rectangle(x, y, cardWidth, cardHeight, 0x0b0e13, 1)
+          .setInteractive({ useHandCursor: true });
+        rect.on('pointerup', () => {
+          if (didDrag) return;
           if (player === 1) p1Id = character.id;
           else p2Id = character.id;
           updateCards();
         });
         cardBackgrounds.push({ characterId: character.id, player, rect });
-        const baseFrame = character.sprite ? this.debugFrameMeta(character.sprite, 'base', character.sprite.frameCounts.base ?? 1)[0] : null;
+
+        const baseFrame = character.sprite
+          ? this.debugFrameMeta(character.sprite, 'base', character.sprite.frameCounts.base ?? 1)[0]
+          : null;
         const previewScale = baseFrame ? Math.min(0.34, 76 / Math.max(baseFrame.width, baseFrame.height)) : 0.5;
-        this.add
+        const sprite = this.add
           .sprite(x, y + 34, `${character.id}:base:0`)
           .setOrigin(0.5, 1)
           .setScale(previewScale);
-        this.add.text(x, y - 48, character.displayName, { ...labelStyle, fontSize: '10px' }).setOrigin(0.5, 0);
+        const nameText = this.add.text(x, y - 48, character.displayName, { ...labelStyle, fontSize: '10px' }).setOrigin(0.5, 0);
+
+        scrollContainer.add([rect, sprite, nameText]);
       });
+
+      return gridTop + rowsCount * cardPitchY;
     };
 
-    createRow(1, 152);
-    createRow(2, 292);
+    const p2Top = layoutSection(1, 0) + sectionGap;
+    const contentBottom = layoutSection(2, p2Top);
+    const maxScroll = Math.max(0, contentBottom - viewportHeight);
 
-    const startButton = this.createPauseButton(318, 406, 'START', () => {
+    let scrollY = 0;
+    let didDrag = false;
+    let dragStartY = 0;
+    let dragStartScroll = 0;
+    let dragActive = false;
+    const DRAG_THRESHOLD = 8;
+
+    const scrollIndicator = this.add.rectangle(786, headerBottom + 6, 6, 1, 0x8de6ff, 0.55).setOrigin(0.5, 0).setDepth(15);
+
+    const applyScroll = (): void => {
+      scrollContainer.y = headerBottom - scrollY;
+      if (maxScroll <= 0) {
+        scrollIndicator.setVisible(false);
+        return;
+      }
+      const trackTop = headerBottom + 6;
+      const trackHeight = viewportHeight - 12;
+      const thumbHeight = Math.max(28, (viewportHeight / contentBottom) * trackHeight);
+      const thumbY = trackTop + ((trackHeight - thumbHeight) * scrollY) / maxScroll;
+      scrollIndicator.setVisible(true);
+      scrollIndicator.setPosition(786, thumbY);
+      scrollIndicator.displayHeight = thumbHeight;
+    };
+
+    this.input.on('wheel', (pointer: Phaser.Input.Pointer, _objects: unknown[], _dx: number, dy: number) => {
+      if (pointer.y < headerBottom || pointer.y > footerTop) return;
+      scrollY = Phaser.Math.Clamp(scrollY + dy * 0.5, 0, maxScroll);
+      applyScroll();
+    });
+
+    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (pointer.y < headerBottom || pointer.y > footerTop) return;
+      dragStartY = pointer.y;
+      dragStartScroll = scrollY;
+      dragActive = true;
+      didDrag = false;
+    });
+    this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+      if (!dragActive || !pointer.isDown) return;
+      const delta = pointer.y - dragStartY;
+      if (!didDrag && Math.abs(delta) > DRAG_THRESHOLD) didDrag = true;
+      if (didDrag && maxScroll > 0) {
+        scrollY = Phaser.Math.Clamp(dragStartScroll - delta, 0, maxScroll);
+        applyScroll();
+      }
+    });
+    this.input.on('pointerup', () => {
+      dragActive = false;
+      // didDrag stays set briefly so the same pointerup on a card is filtered out.
+      // Reset after the synchronous pointerup chain finishes.
+      this.time.delayedCall(0, () => {
+        didDrag = false;
+      });
+    });
+
+    applyScroll();
+
+    this.add
+      .rectangle(400, 418, 800, 64, 0x0d1118, 0.95)
+      .setOrigin(0.5)
+      .setDepth(18);
+    const startButton = this.createPauseButton(318, 418, 'START', () => {
       this.scene.restart({
         p1Id,
         p2Id,
@@ -736,17 +842,31 @@ export class FightScene extends Phaser.Scene {
         roundNumber: 1,
       } satisfies FightSceneData);
     });
-    const cpuButton = this.createPauseButton(436, 406, 'CPU', () => {
+    const cpuButton = this.createPauseButton(436, 418, 'CPU', () => {
       this.toggleCpu();
       updateCards();
     });
-    const backButton = this.createPauseButton(554, 406, 'DEFAULTS', () => {
+    const backButton = this.createPauseButton(554, 418, 'DEFAULTS', () => {
       p1Id = playableCharacters[0].id;
       p2Id = playableCharacters[2].id;
       updateCards();
     });
-    this.add.container(0, 0, [...startButton, ...cpuButton, ...backButton]).setDepth(10);
+    this.add.container(0, 0, [...startButton, ...cpuButton, ...backButton]).setDepth(20);
     updateCards();
+
+    const shell = LayoutShell.current();
+    if (shell) {
+      const unsubscribe = shell.onChange(({ orientation: nextOrientation }) => {
+        if (nextOrientation === orientation) return;
+        this.scene.restart({
+          p1Id,
+          p2Id,
+          cpu: this.singlePlayer,
+          showCharacterSelect: true,
+        } satisfies FightSceneData);
+      });
+      this.events.once(Phaser.Scenes.Events.SHUTDOWN, unsubscribe);
+    }
   }
 
   private createProjectileTextures(): void {
