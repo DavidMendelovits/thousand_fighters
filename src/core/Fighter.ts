@@ -41,6 +41,7 @@ export class Fighter {
   health: number;
   hitstun = 0;
   blockstun = 0;
+  comboReceived = 0;
 
   invulnerable: { duration: number; against: string[] } | null = null;
   armor: { hits: number; duration: number } | null = null;
@@ -113,6 +114,8 @@ export class Fighter {
       this.hurtboxOverride = null;
       this.hurtboxDisabled = false;
     }
+
+    if (next === 'idle') this.comboReceived = 0;
   }
 
   getHurtboxWorld(): AABB | null {

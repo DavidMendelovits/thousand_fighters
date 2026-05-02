@@ -18,6 +18,10 @@ const STAGE_LEFT = 96;
 const STAGE_RIGHT = 704;
 const MIN_FIGHTER_DISTANCE = 96;
 const SPRITE_ASSET_VERSION = 'animation-timeline-v1';
+const ROUND_INTRO_FRAMES = 120;
+const ROUND_INTRO_FIGHT_FRAME = 60;
+const KO_SLOWMO_FRAMES = 90;
+const KO_SLOWMO_DIVISOR = 3;
 const DEBUG_MOVE_KEYS: Record<string, { player: 0 | 1; moveId: string }> = {
   Digit1: { player: 0, moveId: 'fireball' },
   Digit2: { player: 0, moveId: 'dash_punch' },
@@ -46,6 +50,10 @@ export class FightScene extends Phaser.Scene {
   roundTimer = ROUND_FRAMES;
   debugMode = true;
   frameCounter = 0;
+  introFrames = ROUND_INTRO_FRAMES;
+  koSlowMoFrames = 0;
+  slowMoTickCounter = 0;
+  koSequenceStarted = false;
 
   readonly gameLoop = new GameLoop();
   readonly computerPlayer = new ComputerPlayer();
@@ -71,6 +79,7 @@ export class FightScene extends Phaser.Scene {
   winnerBodyText!: Phaser.GameObjects.Text;
   winnerActionText!: Phaser.GameObjects.Text;
   winnerActionButton!: Phaser.GameObjects.Rectangle;
+  bigBanner!: Phaser.GameObjects.Text;
 
   constructor() {
     super('FightScene');
@@ -92,6 +101,10 @@ export class FightScene extends Phaser.Scene {
     this.roundTimer = ROUND_FRAMES;
     this.hitPauseFrames = 0;
     this.frameCounter = 0;
+    this.introFrames = ROUND_INTRO_FRAMES;
+    this.koSlowMoFrames = 0;
+    this.slowMoTickCounter = 0;
+    this.koSequenceStarted = false;
   }
 
   preload(): void {
@@ -184,6 +197,19 @@ export class FightScene extends Phaser.Scene {
         padding: { x: 6, y: 6 },
       })
       .setDepth(70);
+    this.bigBanner = this.add
+      .text(400, 200, '', {
+        color: '#ffffff',
+        fontFamily: 'monospace',
+        fontSize: '64px',
+        fontStyle: 'bold',
+        stroke: '#000000',
+        strokeThickness: 6,
+        align: 'center',
+      })
+      .setOrigin(0.5)
+      .setDepth(100)
+      .setVisible(false);
     this.createPauseModal();
     this.createWinnerModal();
 
@@ -270,6 +296,28 @@ export class FightScene extends Phaser.Scene {
       return;
     }
 
+    if (this.introFrames > 0) {
+      this.tickRoundIntro();
+      this.introFrames -= 1;
+      this.renderFrame();
+      return;
+    }
+
+    if (this.koSlowMoFrames > 0) {
+      this.koSlowMoFrames -= 1;
+      this.slowMoTickCounter += 1;
+      if (this.koSlowMoFrames === 0) {
+        this.bigBanner.setVisible(false);
+        this.resolveRound();
+        this.renderFrame();
+        return;
+      }
+      if (this.slowMoTickCounter % KO_SLOWMO_DIVISOR !== 0) {
+        this.renderFrame();
+        return;
+      }
+    }
+
     if (this.roundTimer > 0 && !this.isRoundOver()) {
       const keyboard = this.input.keyboard;
       if (!keyboard) return;
@@ -286,10 +334,55 @@ export class FightScene extends Phaser.Scene {
       HitboxSystem.checkAll(this.fighters, this.projectiles);
       this.roundTimer -= 1;
       this.frameCounter += 1;
-      if (this.isRoundOver()) this.resolveRound();
+      if (this.isRoundOver() && !this.koSequenceStarted) this.startKoSequence();
     }
 
     this.renderFrame();
+  }
+
+  private tickRoundIntro(): void {
+    if (this.introFrames === ROUND_INTRO_FRAMES) {
+      this.bigBanner.setText(`ROUND ${this.roundNumber}`).setVisible(true).setAlpha(1).setScale(1);
+      this.tweens.add({
+        targets: this.bigBanner,
+        scaleX: { from: 0.4, to: 1 },
+        scaleY: { from: 0.4, to: 1 },
+        duration: 220,
+        ease: 'Back.Out',
+      });
+    } else if (this.introFrames === ROUND_INTRO_FIGHT_FRAME) {
+      this.bigBanner.setText('FIGHT!').setVisible(true).setAlpha(1).setScale(1).setColor('#ffe066');
+      this.tweens.add({
+        targets: this.bigBanner,
+        scaleX: { from: 1.6, to: 1 },
+        scaleY: { from: 1.6, to: 1 },
+        duration: 200,
+        ease: 'Back.Out',
+      });
+    } else if (this.introFrames === 1) {
+      this.bigBanner.setVisible(false);
+      this.bigBanner.setColor('#ffffff');
+    }
+  }
+
+  private startKoSequence(): void {
+    if (this.koSequenceStarted) return;
+    this.koSequenceStarted = true;
+    this.koSlowMoFrames = KO_SLOWMO_FRAMES;
+    this.slowMoTickCounter = 0;
+    const [p1, p2] = this.fighters;
+    const isTimeOut = p1.health > 0 && p2.health > 0;
+    const isDoubleKo = p1.health <= 0 && p2.health <= 0;
+    const text = isTimeOut ? 'TIME UP' : isDoubleKo ? 'DOUBLE K.O.' : 'K.O.';
+    const color = isTimeOut ? '#dbe7ff' : '#ff6b5f';
+    this.bigBanner.setText(text).setColor(color).setVisible(true).setAlpha(1).setScale(1);
+    this.tweens.add({
+      targets: this.bigBanner,
+      scaleX: { from: 2.2, to: 1 },
+      scaleY: { from: 2.2, to: 1 },
+      duration: 280,
+      ease: 'Back.Out',
+    });
   }
 
   renderFrame(): void {
