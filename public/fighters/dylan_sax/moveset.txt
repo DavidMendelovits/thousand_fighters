@@ -1,0 +1,15 @@
+[punch]
+name=Horn Jab
+description=Fast sax-forward shove and bell jab that checks space at mid height.
+
+[kick]
+name=Stage Kick
+description=Flashy performer kick while keeping the gold sax tucked safe.
+
+[special_1]
+name=Brass Upper
+description=Swings the sax upward with a bright close-range musical burst.
+
+[special_2]
+name=Purple Note Cannon
+description=Plays a sharp sax blast that releases a purple-and-gold sound wave projectile.

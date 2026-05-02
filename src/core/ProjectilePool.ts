@@ -25,12 +25,16 @@ export class ProjectilePool {
   constructor(private readonly scene: Phaser.Scene) {}
 
   spawn(config: ProjectileConfig, owner: Fighter, offsetX: number, offsetY: number): void {
-    if (!this.canSpawn(config, owner)) return;
-
     const x = owner.x + offsetX * owner.facing;
     const y = owner.y + offsetY;
+    this.spawnAt(config, owner, x, y, owner.facing);
+  }
+
+  spawnAt(config: ProjectileConfig, owner: Fighter, x: number, y: number, facing: 1 | -1 = owner.facing): void {
+    if (!this.canSpawn(config, owner)) return;
+
     const body = this.scene.textures.exists(config.animation)
-      ? this.scene.add.image(x, y, config.animation).setOrigin(0.5).setScale(owner.facing, 1)
+      ? this.scene.add.image(x, y, config.animation).setOrigin(0.5).setScale(facing, 1)
       : this.scene.add.rectangle(x, y, config.width, config.height, owner.playerNum === 1 ? 0xff914d : 0x75d5ff).setOrigin(0.5);
     this.active.push({
       uid: this.nextUid,
@@ -38,9 +42,11 @@ export class ProjectilePool {
       config,
       x,
       y,
-      vx: config.speed * owner.facing,
-      vy: 0,
-      facing: owner.facing,
+      vx: config.velocity
+        ? (config.velocity.x ?? 0) * (config.velocity.relativeToFacing === false ? 1 : facing)
+        : config.speed * facing,
+      vy: config.velocity?.y ?? 0,
+      facing,
       lifetime: config.lifetime,
       piercesRemaining: config.pierces ?? 1,
       hasHit: new Set(),

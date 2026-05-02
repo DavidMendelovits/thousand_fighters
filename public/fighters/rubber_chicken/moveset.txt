@@ -1,0 +1,15 @@
+[punch]
+name=Floppy Wing Slap
+description=Fast squeaky slap with a rubber wing.
+
+[kick]
+name=Rubber Foot Sweep
+description=Low stretchy orange-foot sweep that rebounds into a wobble.
+
+[special_1]
+name=Elastic Neck Snap
+description=Stretches the neck forward for a long-range beak strike, then snaps back.
+
+[special_2]
+name=Squeak Storm
+description=Squeezes the rubber body and fires squeak rings, feathers, and an egg-shaped shockwave.

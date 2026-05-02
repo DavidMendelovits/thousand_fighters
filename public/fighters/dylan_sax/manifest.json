@@ -1,0 +1,60 @@
+{
+  "character_description": "Dylan is a flamboyant purple sax fighter: slim, energetic, long curly brown hair under a dark baseball cap, black sunglasses, open purple suit, chunky gold chains, tan/gray sneakers, and a gold saxophone used as both instrument and weapon.\n\nSilhouette: tall slim performer, big curls, cap brim and sunglasses, saxophone always visible.\nClothing: vivid purple blazer and trousers, open chest, gold chains, tan/gray sneakers.\nHair: long curly brown hair flying behind the cap.\nAccessories: gold saxophone, dark cap, black sunglasses, gold chains.\nAttitude: cocky stage strut, explosive jazz-showmanship.\nDistinctive traits: sax horn strikes, gold musical bursts, purple/gold sonic wave projectile.",
+  "moveset": {},
+  "sheet_paths": {
+    "base": "/fighters/dylan_sax/sheets/base.png",
+    "punch": "/fighters/dylan_sax/sheets/punch.png",
+    "kick": "/fighters/dylan_sax/sheets/kick.png",
+    "special_1": "/fighters/dylan_sax/sheets/special_1.png",
+    "special_2": "/fighters/dylan_sax/sheets/special_2.png"
+  },
+  "sprite_paths": {
+    "base": [
+      "/fighters/dylan_sax/sprites/base/base_001.png",
+      "/fighters/dylan_sax/sprites/base/base_002.png",
+      "/fighters/dylan_sax/sprites/base/base_003.png",
+      "/fighters/dylan_sax/sprites/base/base_004.png",
+      "/fighters/dylan_sax/sprites/base/base_005.png",
+      "/fighters/dylan_sax/sprites/base/base_006.png"
+    ],
+    "punch": [
+      "/fighters/dylan_sax/sprites/punch/punch_001.png",
+      "/fighters/dylan_sax/sprites/punch/punch_002.png",
+      "/fighters/dylan_sax/sprites/punch/punch_003.png",
+      "/fighters/dylan_sax/sprites/punch/punch_004.png",
+      "/fighters/dylan_sax/sprites/punch/punch_005.png",
+      "/fighters/dylan_sax/sprites/punch/punch_006.png"
+    ],
+    "kick": [
+      "/fighters/dylan_sax/sprites/kick/kick_001.png",
+      "/fighters/dylan_sax/sprites/kick/kick_002.png",
+      "/fighters/dylan_sax/sprites/kick/kick_003.png",
+      "/fighters/dylan_sax/sprites/kick/kick_004.png",
+      "/fighters/dylan_sax/sprites/kick/kick_005.png",
+      "/fighters/dylan_sax/sprites/kick/kick_006.png"
+    ],
+    "special_1": [
+      "/fighters/dylan_sax/sprites/special_1/special_1_001.png",
+      "/fighters/dylan_sax/sprites/special_1/special_1_002.png",
+      "/fighters/dylan_sax/sprites/special_1/special_1_003.png",
+      "/fighters/dylan_sax/sprites/special_1/special_1_004.png",
+      "/fighters/dylan_sax/sprites/special_1/special_1_005.png",
+      "/fighters/dylan_sax/sprites/special_1/special_1_006.png"
+    ],
+    "special_2": [
+      "/fighters/dylan_sax/sprites/special_2/special_2_001.png",
+      "/fighters/dylan_sax/sprites/special_2/special_2_002.png",
+      "/fighters/dylan_sax/sprites/special_2/special_2_003.png",
+      "/fighters/dylan_sax/sprites/special_2/special_2_004.png",
+      "/fighters/dylan_sax/sprites/special_2/special_2_005.png",
+      "/fighters/dylan_sax/sprites/special_2/special_2_006.png"
+    ]
+  },
+  "frame_counts": {
+    "base": 6,
+    "punch": 6,
+    "kick": 6,
+    "special_1": 6,
+    "special_2": 6
+  }
+}

@@ -1,0 +1,15 @@
+[punch]
+name=Ball-Palmed Jab
+description=Quick tuxedo jab with a white juggling ball tucked into the striking hand.
+
+[kick]
+name=Formal Shoe Sweep
+description=Low polished shoe sweep with strict stage-performer posture.
+
+[special_1]
+name=Juggle Cyclone
+description=Spins under a tight cascade of juggling balls, striking with orbiting momentum.
+
+[special_2]
+name=Juggling Barrage
+description=Tosses a cluster of white juggling balls forward as a rapid projectile flurry.

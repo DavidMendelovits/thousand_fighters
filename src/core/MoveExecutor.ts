@@ -50,6 +50,20 @@ export class MoveExecutor {
       case 'spawn_projectile':
         fighter.scene.projectiles.spawn(event.projectile, fighter, event.offsetX, event.offsetY);
         break;
+      case 'spawn_projectile_at_target': {
+        const target = (fighter.scene as { fighters?: [Fighter, Fighter] }).fighters?.find((candidate) => candidate !== fighter);
+        if (target) {
+          fighter.scene.projectiles.spawnAt(event.projectile, fighter, target.x + event.offsetX, target.y + event.offsetY, fighter.facing);
+        }
+        break;
+      }
+      case 'spawn_projectile_from_sky': {
+        const target = (fighter.scene as { fighters?: [Fighter, Fighter] }).fighters?.find((candidate) => candidate !== fighter);
+        if (target) {
+          fighter.scene.projectiles.spawnAt(event.projectile, fighter, target.x + event.targetOffsetX, target.y + event.spawnOffsetY, fighter.facing);
+        }
+        break;
+      }
       case 'set_velocity':
         if (event.vx !== undefined) fighter.vx = event.relativeToFacing ? event.vx * fighter.facing : event.vx;
         if (event.vy !== undefined) fighter.vy = event.vy;

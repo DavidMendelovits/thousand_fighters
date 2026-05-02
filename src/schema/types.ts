@@ -74,6 +74,8 @@ export type MoveEvent =
   | { type: 'hitbox_active'; hitbox: Hitbox; id?: string }
   | { type: 'hitbox_end'; id?: string }
   | { type: 'spawn_projectile'; projectile: ProjectileConfig; offsetX: number; offsetY: number }
+  | { type: 'spawn_projectile_at_target'; projectile: ProjectileConfig; offsetX: number; offsetY: number }
+  | { type: 'spawn_projectile_from_sky'; projectile: ProjectileConfig; targetOffsetX: number; spawnOffsetY: number }
   | { type: 'set_velocity'; vx?: number; vy?: number; relativeToFacing?: boolean }
   | { type: 'teleport'; offsetX: number; offsetY: number }
   | { type: 'invulnerable'; duration: number; against?: (HitLevel | 'projectile')[] }
@@ -124,6 +126,7 @@ export type ProjectileConfig = {
   width: number;
   height: number;
   speed: number;
+  velocity?: { x?: number; y?: number; relativeToFacing?: boolean };
   gravity?: number;
   lifetime: number;
   hitbox: Hitbox;

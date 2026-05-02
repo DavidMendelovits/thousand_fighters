@@ -116,6 +116,7 @@ python3 scripts/normalize_fighter_sheet_contours.py \
 What the script does:
 
 - Converts fake light checkerboard backgrounds into transparency.
+- Current contour script also treats saturated magenta (`#FF00FF`-style) as chroma-key transparency for generated sheets that follow the `generate2dsprite` prompt rules.
 - Finds connected foreground contours on the whole source sheet.
 - Assigns contours to the intended 6x5 source slots by contour center.
 - For runtime character frames, keeps only the exact pixels of the dominant contour from the assigned slot. Do not mask by bounding rectangle, because a rectangle can still capture unrelated shoes, hands, mop heads, splash scraps, and other bleed inside the crop.
@@ -194,6 +195,8 @@ Examples:
 
 Do not duplicate a spawned projectile in the caster animation after the spawn frame. If the move needs a handoff, end the baked-in special art one frame earlier or replace later frames with recovery/stance frames.
 
+If the projectile contour is connected to the caster hand by spell trails, do not ship the whole contour. Crop or extract the detached VFX region only, then update `normalization-report.json` so the projectile dimensions reflect the handoff asset.
+
 ## Engine Wiring Checklist
 
 After creating assets:
@@ -261,6 +264,20 @@ After creating assets:
 - Latest contour normalization report has no edge-touch warnings.
 - Previous pre-contour output was archived under `public/fighters/_archive/pre_contour_cleanup_20260501_022251/janitor`.
 
+### Martin Urbano
+
+- Visual identity: shoulder-length dark wavy hair, black overshirt over white graphic tee, dark pants, white sneakers.
+- Prop rule: no microphone in-game. He uses only a notepad and pen as spellcasting tools.
+- Signature projectile: `firebolt`, spawned by `Firebolt Draft` on the normal `fireball` move.
+- Second special: `Pen Is Mightier`, a giant glowing pen-blade slash using variable-width `special_2` frames.
+- Sorcerer-only control rule: Martin should not feel like a punch/kick character. The normal engine move ids remain for input compatibility, but his current moves spawn magic: `Ink Spark` on light punch, `Ground Rune` on crouch low kick, `Run-On Spark` on dash punch, `Firebolt Draft` on fireball, and `Lightning from the Sky` on heavy punch.
+- Sky-strike mechanic: the engine now supports `spawn_projectile_from_sky`, which targets the opponent's current x-position but spawns the projectile above them. `ProjectileConfig.velocity` then lets the projectile fall vertically instead of using the default horizontal speed.
+- Targeted projectile rule: use `spawn_projectile_at_target` for instant target-centered effects and `spawn_projectile_from_sky` for objects or spells that visibly descend before striking.
+- Current imported fighter id: `martin_urbano`.
+- Current generated projectile assets: `public/fighters/martin_urbano/projectiles/firebolt.png`, `ink_spark.png`, `ground_rune.png`, `lightning_from_sky.png`.
+- Normalization note: source sheet used solid magenta background and required a manual projectile crop because the first contour export included the caster hand attached to the firebolt trail.
+- Latest contour normalization report has no edge-touch warnings.
+
 ### Jack Tucker
 
 - Visual identity: wiry cabaret comedian in a black suit jacket, open white shirt, loose blue tie, black trousers, and star-accent boots.
@@ -272,6 +289,48 @@ After creating assets:
 - Latest contour normalization report has no edge-touch warnings and no multi-component character frames.
 - For the apple special, caster frames use source indices `24,25,26,29,29,29`; source index `28` is exported as the projectile. This avoids baking the flying apple fragments into Jack's body animation.
 - The apple special needs intentional caster-side prop staging before projectile handoff: frames 1-2 keep the tossed apple near Jack, frame 3 starts the mic swing, frame 4 composites the mic impact/explosion, and the spawned `apple_shards` projectile takes over from that impact beat. Detached props in this move are intentional until the projectile spawn frame; do not strip them as bleed during normalization.
+
+### Dylan
+
+- Visual identity: slim purple-suited sax performer with long curls, dark cap, sunglasses, gold chains, tan/gray sneakers, and a gold saxophone.
+- Weapon: gold saxophone.
+- Signature projectile: `purple_note_wave`, a purple/gold sonic blast from the sax.
+- Current imported fighter id: `dylan_sax`.
+- Current generated projectile asset: `public/fighters/dylan_sax/projectiles/purple_note_wave.png`.
+- Projectile handoff note: source index `27` is exported as the sound-wave projectile, while caster `special_2` uses source indices `24,25,26,28,29,29` to avoid showing the detached wave in the character animation after spawn.
+- Latest contour normalization report has no edge-touch warnings.
+
+### Corey
+
+- Visual identity: stocky red-haired, red-bearded performer in an open pale yellow shirt, bare chest, blue jeans, brown boots, and red-and-white cans.
+- Props: cans and white foam/milk splash effects.
+- Signature projectile: `foam_wave`, a rolling white splash wave with tossed can bits.
+- Current imported fighter id: `corey`.
+- Current generated projectile asset: `public/fighters/corey/projectiles/foam_wave.png`.
+- Projectile handoff note: source index `27` is exported as the foam-wave projectile, while caster `special_2` uses source indices `24,25,26,29,29,29` to keep the projectile out of recovery frames.
+- Latest contour normalization report has no edge-touch warnings.
+
+### Juggling Joe
+
+- Visual identity: blond tuxedo stage juggler with short curls, short beard, black tuxedo, white shirt, black bow tie, and polished black shoes.
+- Prop: white juggling balls.
+- Specials must stay juggling-themed. Current `uppercut` is `Juggle Cyclone`; current `fireball` is `Juggling Barrage`.
+- Signature projectile: `juggling_balls`, a cluster of white balls with blue-white motion trails.
+- Current imported fighter id: `juggling_joe`.
+- Current generated projectile asset: `public/fighters/juggling_joe/projectiles/juggling_balls.png`.
+- Projectile handoff note: source index `27` is exported as the ball-barrage projectile, while caster `special_2` uses source indices `24,25,26,28,29,29` to keep the projectile out of recovery frames.
+- Latest contour normalization report has no edge-touch warnings.
+
+### Rubber Chicken
+
+- Visual identity: classic rubber chicken toy come to life with bumpy yellow body, long neck, red comb/wattle, orange beak/feet, blue eyes, and a green collar.
+- Movement identity: elastic, squeaky, rubbery, and absurd.
+- Signature close special: `Elastic Neck Snap`, a long connected beak strike using wide variable-size frames.
+- Signature projectile: `squeak_storm`, yellow-orange squeak rings, rubber feathers, and an egg-shaped shockwave.
+- Current imported fighter id: `rubber_chicken`.
+- Current generated projectile asset: `public/fighters/rubber_chicken/projectiles/squeak_storm.png`.
+- Projectile handoff note: source index `27` is exported as the squeak-storm projectile, while caster `special_2` uses source indices `24,25,26,28,29,29` to keep the projectile out of recovery frames.
+- Latest contour normalization report has no edge-touch warnings.
 
 ## Feedback Log
 
