@@ -17,7 +17,7 @@ const ROUND_FRAMES = 99 * 60;
 const STAGE_LEFT = 96;
 const STAGE_RIGHT = 704;
 const MIN_FIGHTER_DISTANCE = 96;
-const SPRITE_ASSET_VERSION = 'animation-timeline-v1';
+const SPRITE_ASSET_VERSION = 'hair-hanger-imagegen-v4';
 const DEBUG_MOVE_KEYS: Record<string, { player: 0 | 1; moveId: string }> = {
   Digit1: { player: 0, moveId: 'fireball' },
   Digit2: { player: 0, moveId: 'dash_punch' },
@@ -99,9 +99,13 @@ export class FightScene extends Phaser.Scene {
     this.load.image('hi_vis_vest', this.assetUrl('/fighters/viggo/projectiles/hi_vis_vest.png'));
     this.load.image('bucket_wave', this.assetUrl('/fighters/janitor/projectiles/bucket_wave.png'));
     this.load.image('apple_shards', this.assetUrl('/fighters/jack_tucker/projectiles/apple_shards.png'));
+    this.load.image('hairpin_arc', this.assetUrl('/fighters/hair_hanger/projectiles/hairpin_arc.png'));
 
     for (const character of playableCharacters) {
       if (!character.sprite) continue;
+      if (character.suspension) {
+        this.load.image(`${character.id}:hair_tie`, this.assetUrl(`${character.sprite.basePath}/${character.suspension.hairTieImage}`));
+      }
       for (const [sheet, frameCount] of Object.entries(character.sprite.frameCounts)) {
         if (!frameCount) continue;
         const sheetId = sheet as SpriteSheetId;
@@ -604,6 +608,8 @@ export class FightScene extends Phaser.Scene {
     };
 
     const createRow = (player: 1 | 2, y: number): void => {
+      const cardSpacing = playableCharacters.length > 6 ? 110 : 124;
+      const cardWidth = playableCharacters.length > 6 ? 100 : 112;
       this.add
         .text(36, y + 44, `P${player}`, {
           color: player === 1 ? '#ff9b8f' : '#8de6ff',
@@ -612,8 +618,8 @@ export class FightScene extends Phaser.Scene {
         })
         .setOrigin(0, 0.5);
       playableCharacters.forEach((character, index) => {
-        const x = 88 + index * 124;
-        const rect = this.add.rectangle(x, y, 112, 112, 0x0b0e13, 1).setInteractive({ useHandCursor: true });
+        const x = 82 + index * cardSpacing;
+        const rect = this.add.rectangle(x, y, cardWidth, 112, 0x0b0e13, 1).setInteractive({ useHandCursor: true });
         rect.on('pointerdown', () => {
           if (player === 1) p1Id = character.id;
           else p2Id = character.id;
@@ -775,11 +781,12 @@ export class FightScene extends Phaser.Scene {
     this.add.text(12, y, 'Projectile textures', { ...labelStyle, color: '#8de6ff' }).setOrigin(0, 0);
     [
       { key: 'sound_wave', x: 104 },
-      { key: 'feedback_wave', x: 230 },
-      { key: 'cardbross_cross', x: 356 },
-      { key: 'hi_vis_vest', x: 482 },
-      { key: 'bucket_wave', x: 608 },
-      { key: 'apple_shards', x: 734 },
+      { key: 'feedback_wave', x: 210 },
+      { key: 'cardbross_cross', x: 316 },
+      { key: 'hi_vis_vest', x: 422 },
+      { key: 'bucket_wave', x: 528 },
+      { key: 'apple_shards', x: 634 },
+      { key: 'hairpin_arc', x: 740 },
     ].forEach(({ key, x }) => {
       const texture = this.textures.get(key).getSourceImage() as { width: number; height: number };
       const scale = Math.min(0.75, 86 / Math.max(texture.width, texture.height));

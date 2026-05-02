@@ -58,6 +58,8 @@ export class Fighter {
 
   readonly body: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Sprite;
   readonly label: Phaser.GameObjects.Text;
+  readonly suspensionLine?: Phaser.GameObjects.Graphics;
+  readonly hairTie?: Phaser.GameObjects.Sprite;
 
   constructor(scene: FighterScene, config: CharacterConfig, playerNum: 1 | 2, position: { x: number; y: number }) {
     this.scene = scene;
@@ -65,7 +67,7 @@ export class Fighter {
     this.config = config;
     this.playerNum = playerNum;
     this.x = position.x;
-    this.y = position.y;
+    this.y = config.suspension?.pivotY ?? position.y;
     this.facing = playerNum === 1 ? 1 : -1;
     this.health = config.maxHealth;
 
@@ -73,13 +75,20 @@ export class Fighter {
     this.body = config.sprite
       ? scene.add.sprite(this.x, this.y, this.frameKey('base', 0))
       : scene.add.rectangle(this.x, this.y, FIGHTER_WIDTH, FIGHTER_HEIGHT, fill).setOrigin(0.5, 1);
+    this.body.setDepth(10);
+    if (config.suspension) {
+      this.grounded = true;
+      this.suspensionLine = scene.add.graphics().setDepth(6);
+      this.hairTie = scene.add.sprite(this.x, this.y - config.suspension.tieOffsetY, `${config.id}:hair_tie`).setOrigin(0.5, 1).setDepth(12);
+    }
     this.label = scene.add
       .text(this.x, this.y - FIGHTER_HEIGHT - 24, '', {
         color: '#ffffff',
         fontFamily: 'monospace',
         fontSize: '12px',
       })
-      .setOrigin(0.5, 1);
+      .setOrigin(0.5, 1)
+      .setDepth(20);
   }
 
   update(input: RawInput, opponent: Fighter, projectiles: ProjectilePool): void {
@@ -179,6 +188,11 @@ export class Fighter {
       return;
     }
 
+    if (this.config.suspension) {
+      this.runSuspendedState(input);
+      return;
+    }
+
     if (!this.grounded) {
       this.changeState('airborne');
       this.vx = this.horizontalAirVelocity(input);
@@ -191,7 +205,7 @@ export class Fighter {
       return;
     }
 
-    if (input.up) {
+    if (input.up && !this.config.suspension) {
       this.startJump(input);
       return;
     }
@@ -207,6 +221,31 @@ export class Fighter {
     } else {
       this.vx = 0;
       this.changeState('idle');
+    }
+  }
+
+  private runSuspendedState(input: RawInput): void {
+    const suspension = this.config.suspension;
+    if (!suspension) return;
+
+    if (input.up) {
+      this.vy -= suspension.liftAcceleration ?? 0.72;
+    } else if (input.down) {
+      this.vy += suspension.tuckAcceleration ?? 0.58;
+    }
+
+    const forwardHeld = this.facing === 1 ? input.right : input.left;
+    const backHeld = this.facing === 1 ? input.left : input.right;
+    const tuckMultiplier = input.down ? 0.55 : 1;
+    if (forwardHeld) {
+      this.vx = this.config.walkForwardSpeed * tuckMultiplier * this.facing;
+      this.changeState(input.down ? 'crouch' : input.up ? 'airborne' : 'walk_forward');
+    } else if (backHeld) {
+      this.vx = -this.config.walkBackSpeed * tuckMultiplier * this.facing;
+      this.changeState(input.down ? 'crouch' : input.up ? 'airborne' : 'walk_back');
+    } else {
+      this.vx = 0;
+      this.changeState(input.down ? 'crouch' : input.up ? 'airborne' : 'idle');
     }
   }
 
@@ -245,6 +284,11 @@ export class Fighter {
   }
 
   private applyPhysics(): void {
+    if (this.config.suspension) {
+      this.applySuspensionPhysics();
+      return;
+    }
+
     if (!this.grounded || this.vy < 0) {
       this.vy = Math.min(this.config.maxFallSpeed, this.vy + this.config.gravity);
     }
@@ -264,6 +308,33 @@ export class Fighter {
     }
 
     if (this.grounded && this.state === 'landing' && this.stateFrame > 3) {
+      this.changeState('idle');
+    }
+  }
+
+  private applySuspensionPhysics(): void {
+    const suspension = this.config.suspension;
+    if (!suspension) return;
+
+    const targetY = suspension.pivotY + Math.sin((this.scene.frameCounter + this.playerNum * 17) / 38) * (suspension.swayY ?? 5);
+    const minPivotY = suspension.minPivotY ?? suspension.ceilingY + suspension.tieOffsetY + 42;
+    const maxPivotY = suspension.maxPivotY ?? FLOOR_Y - 52;
+    const returnStrength = suspension.returnStrength ?? 0.035;
+    const damping = suspension.damping ?? 0.9;
+    this.vy = Phaser.Math.Clamp((this.vy + (targetY - this.y) * returnStrength) * damping, -5.2, 5.2);
+    this.x += this.vx;
+    this.y += this.vy;
+
+    if (this.y < minPivotY) {
+      this.y = minPivotY;
+      this.vy = Math.max(0, this.vy);
+    } else if (this.y > maxPivotY) {
+      this.y = maxPivotY;
+      this.vy = Math.min(0, this.vy);
+    }
+
+    this.grounded = true;
+    if (this.state === 'landing') {
       this.changeState('idle');
     }
   }
@@ -314,8 +385,32 @@ export class Fighter {
     if (this.invulnerable) this.body.setAlpha(0.55);
     else this.body.setAlpha(1);
 
+    this.syncSuspensionVisuals();
     this.label.setPosition(this.x, this.y - FIGHTER_HEIGHT - 18);
     this.label.setText(this.currentMove?.id ?? this.state);
+  }
+
+  private syncSuspensionVisuals(): void {
+    const suspension = this.config.suspension;
+    if (!suspension) return;
+
+    const tieX = this.x + (suspension.tieOffsetX ?? 0);
+    const tieY = this.y - suspension.tieOffsetY;
+    const tieScale = suspension.hairTieScale ?? 1;
+    const lineEndX = this.x + (suspension.lineAttachOffsetX ?? suspension.tieOffsetX ?? 0);
+    const lineEndY = this.y + (suspension.lineAttachOffsetY ?? -suspension.tieOffsetY);
+
+    this.suspensionLine?.clear();
+    this.suspensionLine?.lineStyle(3, suspension.lineColor ?? 0x78f0d2, suspension.lineAlpha ?? 0.9);
+    this.suspensionLine?.lineBetween(tieX, suspension.ceilingY, lineEndX, lineEndY);
+    this.suspensionLine?.fillStyle(0x101820, 1);
+    this.suspensionLine?.fillCircle(tieX, suspension.ceilingY, 7);
+    this.suspensionLine?.lineStyle(1, 0xd7fff5, 0.95);
+    this.suspensionLine?.strokeCircle(tieX, suspension.ceilingY, 7);
+
+    this.hairTie?.setPosition(tieX, tieY);
+    this.hairTie?.setScale(tieScale);
+    this.hairTie?.setAlpha(this.body.alpha);
   }
 
   private currentVisualFrame(): { sheet: SpriteSheetId; frame: number } {

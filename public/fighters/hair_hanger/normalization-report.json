@@ -1,0 +1,13 @@
+{
+  "source": "image-generated sheets from supplied reference photo",
+  "rawSheets": {
+    "full": "source/hair_hanger_imagegen_sheet.png",
+    "hairpin": "source/hair_hanger_hairpin_row_imagegen.png",
+    "base": "source/hair_hanger_base_row_imagegen.png",
+    "punch": "source/hair_hanger_punch_row_imagegen.png",
+    "reference": "source/hair_hanger_reference.jpg"
+  },
+  "workflow": "docs/sprite-generation-memory.md frame pack layout, magenta cleanup, fixed runtime anchor",
+  "spinningAnimation": "special_2 row from source sheet row 5",
+  "warnings": []
+}

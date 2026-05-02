@@ -156,6 +156,26 @@ export type CharacterSpriteConfig = {
   frames?: Partial<Record<SpriteSheetId, SpriteFrameMeta[]>>;
 };
 
+export type SuspensionRigConfig = {
+  ceilingY: number;
+  pivotY: number;
+  minPivotY?: number;
+  maxPivotY?: number;
+  tieOffsetX?: number;
+  tieOffsetY: number;
+  lineAttachOffsetX?: number;
+  lineAttachOffsetY?: number;
+  hairTieImage: string;
+  hairTieScale?: number;
+  lineColor?: number;
+  lineAlpha?: number;
+  swayY?: number;
+  liftAcceleration?: number;
+  tuckAcceleration?: number;
+  returnStrength?: number;
+  damping?: number;
+};
+
 export type FighterState =
   | 'idle'
   | 'walk_forward'
@@ -187,6 +207,7 @@ export type CharacterConfig = {
   hurtboxes: Partial<Record<FighterState, Hurtbox>>;
   pivotOffsetY: number;
   sprite?: CharacterSpriteConfig;
+  suspension?: SuspensionRigConfig;
   animations: Partial<Record<FighterState, string>>;
   moves: Move[];
 };
@@ -194,4 +215,5 @@ export type CharacterConfig = {
 export type FighterScene = Phaser.Scene & {
   projectiles: ProjectilePool;
   hitPauseFrames: number;
+  frameCounter: number;
 };

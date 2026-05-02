@@ -298,6 +298,17 @@ const jackTuckerFrames = makeFrameMeta({
   ],
 });
 
+const hairHangerFrames = makeFrameMeta({
+  punch: [
+    [448, 360, 160, 320],
+    [448, 360, 160, 320],
+    [448, 360, 160, 320],
+    [448, 360, 160, 320],
+    [448, 360, 160, 320],
+    [448, 360, 160, 320],
+  ],
+});
+
 const fighterAnimations: CharacterConfig['animations'] = {
   idle: 'idle',
   walk_forward: 'walk_forward',
@@ -601,6 +612,94 @@ function makeMoves(tuning: FighterTuning): Move[] {
       cancelInto: ['light_punch', 'heavy_punch'],
     },
   ];
+}
+
+function makeHairHangerMoves(): Move[] {
+  const tuning: FighterTuning = {
+    id: 'hair_hanger',
+    displayName: 'The Hair Hanger',
+    assetPath: '/fighters/hair_hanger',
+    projectileId: 'hairpin_arc_projectile',
+    projectileAnimation: 'hairpin_arc',
+    moveNames: {
+      light: 'Encore Wave',
+      heavy: 'Pendulum Palm',
+      low: 'Sock Sweep',
+      projectile: 'Hairpin Toss',
+      dash: 'Pendulum Rush',
+      uppercut: 'Crown Lift',
+    },
+  };
+
+  const hangingHitboxes: Partial<Record<string, Partial<Hitbox>>> = {
+    uppercut: { x: 18, y: -150, width: 58, height: 124, damage: 88, knockback: { x: 3, y: -7 } },
+    dash_punch: { x: 32, y: -88, width: 74, height: 80, damage: 70, knockback: { x: 6.4, y: -2 } },
+    crouch_low_kick: { x: 22, y: -60, width: 84, height: 40, damage: 42, knockback: { x: 3.4, y: 0 } },
+    heavy_punch: { x: 24, y: -104, width: 70, height: 92, damage: 82, knockback: { x: 4.6, y: -5 } },
+    light_punch: { x: 28, y: -86, width: 58, height: 58, damage: 42, knockback: { x: 3.5, y: 0 } },
+  };
+
+  return addSixFrameVisualTimelines(
+    makeMoves(tuning).map((move) => ({
+      ...move,
+      endState: move.id === 'uppercut' ? 'idle' : move.endState,
+      phases: move.phases.map((phase) => ({
+        ...phase,
+        events: phase.events.map(({ onFrame, event }) => {
+          if (event.type === 'hitbox_active') {
+            return {
+              onFrame,
+              event: {
+                ...event,
+                hitbox: {
+                  ...event.hitbox,
+                  ...(hangingHitboxes[move.id] ?? {}),
+                },
+              },
+            };
+          }
+
+          if (event.type === 'spawn_projectile') {
+            return {
+              onFrame,
+              event: {
+                ...event,
+                offsetY: -48,
+                projectile: {
+                  ...event.projectile,
+                  width: 56,
+                  height: 28,
+                  speed: 6,
+                  hitbox: {
+                    ...event.projectile.hitbox,
+                    x: -28,
+                    y: -14,
+                    width: 56,
+                    height: 28,
+                    damage: 50,
+                    knockback: { x: 4.8, y: -1 },
+                  },
+                },
+              },
+            };
+          }
+
+          if (event.type === 'set_velocity' && move.id === 'uppercut') {
+            return {
+              onFrame,
+              event: {
+                ...event,
+                vx: 1,
+                vy: -3.2,
+              },
+            };
+          }
+
+          return { onFrame, event };
+        }),
+      })),
+    })),
+  );
 }
 
 function makeMrCardboardMoves(): Move[] {
@@ -1831,4 +1930,72 @@ export const jackTuckerConfig: CharacterConfig = {
   moves: makeJackTuckerMoves(),
 };
 
-export const playableCharacters = [mrCardboardConfig, guitarShredderConfig, micMonarchConfig, viggoConfig, janitorConfig, jackTuckerConfig] as const;
+export const hairHangerConfig: CharacterConfig = {
+  id: 'hair_hanger',
+  displayName: 'The Hair Hanger',
+  walkForwardSpeed: 2.9,
+  walkBackSpeed: 2.2,
+  jumpVelocity: 0,
+  jumpForwardVelocity: 3.7,
+  jumpBackVelocity: 3.1,
+  gravity: 0,
+  maxFallSpeed: 3.2,
+  maxHealth: 960,
+  pivotOffsetY: 0,
+  suspension: {
+    ceilingY: 22,
+    pivotY: 316,
+    minPivotY: 238,
+    maxPivotY: 342,
+    tieOffsetY: 160,
+    lineAttachOffsetY: -160,
+    hairTieImage: 'accessories/hair_tie.png',
+    hairTieScale: 1,
+    lineColor: 0x7eead8,
+    lineAlpha: 0.9,
+    swayY: 5,
+    liftAcceleration: 0.78,
+    tuckAcceleration: 0.68,
+    returnStrength: 0.028,
+    damping: 0.91,
+  },
+  sprite: {
+    basePath: '/fighters/hair_hanger',
+    frameWidth: 320,
+    frameHeight: 360,
+    scale: 0.58,
+    anchorY: 320 / 360,
+    stateFrames: generatedBaseStateFrames,
+    frameCounts: {
+      base: 6,
+      punch: 6,
+      kick: 6,
+      special_1: 6,
+      special_2: 6,
+    },
+    sheets: {
+      base: 'sheets/base.png',
+      punch: 'sheets/punch.png',
+      kick: 'sheets/kick.png',
+      special_1: 'sheets/special_1.png',
+      special_2: 'sheets/special_2.png',
+    },
+    frames: hairHangerFrames,
+  },
+  hurtboxes: {
+    ...baseHurtboxes,
+    idle: { x: -29, y: -174, width: 58, height: 174 },
+    walk_forward: { x: -30, y: -174, width: 60, height: 174 },
+    walk_back: { x: -30, y: -174, width: 60, height: 174 },
+    crouch: { x: -34, y: -132, width: 68, height: 132 },
+    attack: { x: -32, y: -176, width: 64, height: 176 },
+    airborne: { x: -30, y: -172, width: 60, height: 172 },
+    hitstun: { x: -32, y: -176, width: 64, height: 176 },
+    blockstun: { x: -32, y: -176, width: 64, height: 176 },
+    juggle: { x: -30, y: -172, width: 60, height: 172 },
+  },
+  animations: fighterAnimations,
+  moves: makeHairHangerMoves(),
+};
+
+export const playableCharacters = [mrCardboardConfig, guitarShredderConfig, micMonarchConfig, hairHangerConfig, viggoConfig, janitorConfig, jackTuckerConfig] as const;

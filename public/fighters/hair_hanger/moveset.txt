@@ -1,0 +1,15 @@
+[punch]
+name=Encore Wave
+description=Fast open-hand slap while dangling from the hair rig.
+
+[kick]
+name=Sock Sweep
+description=Knee-tuck into a bright-socked side kick from the hanging pivot.
+
+[special_1]
+name=Hairpin Toss
+description=Pulls a hairpin from the wrapped bun and throws it forward as a sparkling projectile.
+
+[special_2]
+name=Crown Spin
+description=Spins around the hair-hanging point with narrow side frames and green stage-light trails.
