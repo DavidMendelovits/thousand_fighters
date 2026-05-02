@@ -38,6 +38,8 @@ def parse_args() -> argparse.Namespace:
 
 def is_background(pixel: tuple[int, int, int, int]) -> bool:
     red, green, blue, _alpha = pixel
+    if red >= 200 and blue >= 180 and green <= 80:
+        return True
     return max(red, green, blue) - min(red, green, blue) <= 16 and (red + green + blue) / 3 >= 212
 
 

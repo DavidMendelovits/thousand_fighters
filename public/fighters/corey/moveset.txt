@@ -1,0 +1,15 @@
+[punch]
+name=Can Opener
+description=Can-hand strike and messy forearm shove with short splash impact.
+
+[kick]
+name=Wet Boot
+description=Sturdy low kick and stomp through foamy puddle spray.
+
+[special_1]
+name=Shake and Spray
+description=Shakes a can and blasts a short-range white splash from both hands.
+
+[special_2]
+name=Foam Wave
+description=Crushes or throws cans to send a rolling foamy splash wave forward.

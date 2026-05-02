@@ -298,6 +298,221 @@ const jackTuckerFrames = makeFrameMeta({
   ],
 });
 
+const martinUrbanoFrames = makeFrameMeta({
+  base: [
+    [249, 317, 124, 279],
+    [229, 306, 114, 268],
+    [256, 299, 128, 261],
+    [277, 286, 138, 248],
+    [268, 286, 134, 248],
+    [242, 332, 121, 294],
+  ],
+  punch: [
+    [273, 286, 136, 248],
+    [265, 286, 132, 248],
+    [284, 286, 142, 248],
+    [364, 286, 182, 248],
+    [301, 286, 150, 248],
+    [237, 286, 118, 248],
+  ],
+  kick: [
+    [236, 286, 118, 248],
+    [237, 286, 118, 248],
+    [298, 286, 149, 248],
+    [335, 286, 167, 248],
+    [245, 286, 122, 248],
+    [229, 286, 114, 248],
+  ],
+  special_1: [
+    [235, 286, 117, 248],
+    [262, 286, 131, 248],
+    [265, 286, 132, 248],
+    [270, 286, 135, 248],
+    [268, 286, 134, 248],
+    [229, 286, 114, 248],
+  ],
+  special_2: [
+    [233, 292, 116, 254],
+    [265, 290, 132, 252],
+    [351, 286, 175, 248],
+    [423, 286, 211, 248],
+    [350, 286, 175, 248],
+    [252, 286, 126, 248],
+  ],
+});
+
+const dylanSaxFrames = makeFrameMeta({
+  base: [
+    [220, 286, 110, 248],
+    [243, 289, 121, 251],
+    [250, 286, 125, 248],
+    [248, 286, 124, 248],
+    [257, 286, 128, 248],
+    [295, 302, 147, 264],
+  ],
+  punch: [
+    [331, 286, 165, 248],
+    [308, 286, 154, 248],
+    [261, 286, 130, 248],
+    [290, 286, 145, 248],
+    [305, 286, 152, 248],
+    [247, 286, 123, 248],
+  ],
+  kick: [
+    [228, 286, 114, 248],
+    [220, 286, 110, 248],
+    [304, 286, 152, 248],
+    [288, 286, 144, 248],
+    [294, 286, 147, 248],
+    [242, 286, 121, 248],
+  ],
+  special_1: [
+    [227, 286, 113, 248],
+    [246, 286, 123, 248],
+    [243, 286, 121, 248],
+    [260, 305, 130, 267],
+    [251, 286, 125, 248],
+    [239, 286, 119, 248],
+  ],
+  special_2: [
+    [233, 286, 116, 248],
+    [245, 286, 122, 248],
+    [242, 286, 121, 248],
+    [246, 286, 123, 248],
+    [223, 286, 111, 248],
+    [223, 286, 111, 248],
+  ],
+});
+
+const coreyFrames = makeFrameMeta({
+  base: [
+    [254, 286, 127, 248],
+    [238, 286, 119, 248],
+    [274, 286, 137, 248],
+    [288, 286, 144, 248],
+    [265, 286, 132, 248],
+    [250, 326, 125, 288],
+  ],
+  punch: [
+    [287, 286, 143, 248],
+    [342, 286, 171, 248],
+    [249, 286, 124, 248],
+    [329, 286, 164, 248],
+    [262, 286, 131, 248],
+    [250, 286, 125, 248],
+  ],
+  kick: [
+    [308, 286, 154, 248],
+    [251, 286, 125, 248],
+    [314, 286, 157, 248],
+    [308, 286, 154, 248],
+    [234, 286, 117, 248],
+    [250, 286, 125, 248],
+  ],
+  special_1: [
+    [241, 286, 120, 248],
+    [241, 286, 120, 248],
+    [316, 286, 158, 248],
+    [294, 286, 147, 248],
+    [253, 286, 126, 248],
+    [236, 286, 118, 248],
+  ],
+  special_2: [
+    [240, 286, 120, 248],
+    [239, 286, 119, 248],
+    [303, 286, 151, 248],
+    [232, 286, 116, 248],
+    [232, 286, 116, 248],
+    [232, 286, 116, 248],
+  ],
+});
+
+const jugglingJoeFrames = makeFrameMeta({
+  base: [
+    [222, 286, 111, 248],
+    [220, 286, 110, 248],
+    [224, 286, 112, 248],
+    [220, 286, 110, 248],
+    [220, 286, 110, 248],
+    [244, 286, 122, 248],
+  ],
+  punch: [
+    [264, 286, 132, 248],
+    [269, 286, 134, 248],
+    [298, 286, 149, 248],
+    [238, 286, 119, 248],
+    [220, 286, 110, 248],
+    [221, 286, 110, 248],
+  ],
+  kick: [
+    [277, 286, 138, 248],
+    [305, 286, 152, 248],
+    [288, 286, 144, 248],
+    [220, 286, 110, 248],
+    [220, 286, 110, 248],
+    [226, 286, 113, 248],
+  ],
+  special_1: [
+    [234, 286, 117, 248],
+    [237, 286, 118, 248],
+    [220, 286, 110, 248],
+    [301, 286, 150, 248],
+    [220, 286, 110, 248],
+    [220, 286, 110, 248],
+  ],
+  special_2: [
+    [228, 286, 114, 248],
+    [232, 286, 116, 248],
+    [245, 286, 122, 248],
+    [230, 286, 115, 248],
+    [228, 286, 114, 248],
+    [228, 286, 114, 248],
+  ],
+});
+
+const rubberChickenFrames = makeFrameMeta({
+  base: [
+    [220, 286, 110, 248],
+    [225, 286, 112, 248],
+    [220, 286, 110, 248],
+    [220, 286, 110, 248],
+    [220, 286, 110, 248],
+    [220, 289, 110, 251],
+  ],
+  punch: [
+    [253, 286, 126, 248],
+    [300, 286, 150, 248],
+    [321, 286, 160, 248],
+    [263, 286, 131, 248],
+    [220, 286, 110, 248],
+    [220, 286, 110, 248],
+  ],
+  kick: [
+    [220, 286, 110, 248],
+    [275, 286, 137, 248],
+    [257, 286, 128, 248],
+    [220, 286, 110, 248],
+    [221, 286, 110, 248],
+    [220, 286, 110, 248],
+  ],
+  special_1: [
+    [220, 286, 110, 248],
+    [328, 286, 164, 248],
+    [363, 286, 181, 248],
+    [247, 286, 123, 248],
+    [220, 286, 110, 248],
+    [220, 286, 110, 248],
+  ],
+  special_2: [
+    [220, 286, 110, 248],
+    [220, 286, 110, 248],
+    [278, 286, 139, 248],
+    [220, 286, 110, 248],
+    [220, 286, 110, 248],
+    [220, 286, 110, 248],
+  ],
+});
+
 const fighterAnimations: CharacterConfig['animations'] = {
   idle: 'idle',
   walk_forward: 'walk_forward',
@@ -1556,6 +1771,1140 @@ function makeJackTuckerMoves(): Move[] {
   ]);
 }
 
+function makeMartinUrbanoMoves(): Move[] {
+  const firebolt: ProjectileConfig = {
+    id: 'martin_firebolt_projectile',
+    animation: 'martin_firebolt',
+    width: 117,
+    height: 80,
+    speed: 5.8,
+    lifetime: 84,
+    pierces: 1,
+    clashesWithProjectiles: true,
+    spawnPolicy: { maxActivePerOwner: 3, ifAlreadyActive: 'block_spawn' },
+    hitbox: {
+      x: -52,
+      y: -32,
+      width: 104,
+      height: 52,
+      damage: 62,
+      hitstun: 23,
+      blockstun: 14,
+      chipDamage: 9,
+      knockback: { x: 5.7, y: -1 },
+      level: 'mid',
+    },
+  };
+  const inkSpark: ProjectileConfig = {
+    id: 'martin_ink_spark_projectile',
+    animation: 'martin_ink_spark',
+    width: 88,
+    height: 42,
+    speed: 6.4,
+    lifetime: 42,
+    pierces: 1,
+    clashesWithProjectiles: true,
+    spawnPolicy: { maxActivePerOwner: 2, ifAlreadyActive: 'replace_oldest' },
+    hitbox: {
+      x: -38,
+      y: -18,
+      width: 76,
+      height: 30,
+      damage: 34,
+      hitstun: 13,
+      blockstun: 8,
+      chipDamage: 4,
+      knockback: { x: 3.4, y: 0 },
+      level: 'mid',
+    },
+  };
+  const groundRune: ProjectileConfig = {
+    id: 'martin_ground_rune_projectile',
+    animation: 'martin_ground_rune',
+    width: 112,
+    height: 48,
+    speed: 4.9,
+    lifetime: 70,
+    pierces: 1,
+    clashesWithProjectiles: false,
+    spawnPolicy: { maxActivePerOwner: 2, ifAlreadyActive: 'replace_oldest' },
+    hitbox: {
+      x: -52,
+      y: -18,
+      width: 104,
+      height: 24,
+      damage: 42,
+      hitstun: 14,
+      blockstun: 10,
+      chipDamage: 5,
+      knockback: { x: 3.6, y: 0 },
+      level: 'low',
+    },
+  };
+  const lightningFromSky: ProjectileConfig = {
+    id: 'martin_lightning_from_sky_projectile',
+    animation: 'martin_lightning_from_sky',
+    width: 96,
+    height: 260,
+    speed: 0,
+    velocity: { y: 18, relativeToFacing: false },
+    lifetime: 24,
+    pierces: 99,
+    clashesWithProjectiles: false,
+    spawnPolicy: { maxActivePerOwner: 1, ifAlreadyActive: 'replace_oldest' },
+    hitbox: {
+      x: -38,
+      y: -126,
+      width: 76,
+      height: 218,
+      damage: 86,
+      hitstun: 30,
+      blockstun: 16,
+      chipDamage: 7,
+      knockback: { x: 2.8, y: -8 },
+      level: 'mid',
+      launches: true,
+    },
+  };
+
+  return addSixFrameVisualTimelines([
+    {
+      id: 'uppercut',
+      displayName: 'Pen Is Mightier',
+      animation: 'special_2',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['forward', 'down', 'down-forward', 'hp'],
+        window: 18,
+      },
+      phases: [
+        {
+          name: 'startup',
+          frames: 7,
+          events: [{ onFrame: 0, event: { type: 'invulnerable', duration: 7, against: ['high', 'mid', 'low', 'projectile'] } }],
+        },
+        {
+          name: 'active',
+          frames: 8,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'pen_blade',
+                hitbox: {
+                  x: 28,
+                  y: -132,
+                  width: 172,
+                  height: 74,
+                  damage: 94,
+                  hitstun: 34,
+                  blockstun: 17,
+                  chipDamage: 7,
+                  knockback: { x: 4.8, y: -6.5 },
+                  level: 'mid',
+                  launches: true,
+                },
+              },
+            },
+            { onFrame: 0, event: { type: 'screen_shake', intensity: 0.003, duration: 4 } },
+          ],
+        },
+        { name: 'recovery', frames: 24, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'pen_blade' } }] },
+      ],
+    },
+    {
+      id: 'fireball',
+      displayName: 'Firebolt Draft',
+      animation: 'special_1',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['down', 'down-forward', 'forward', 'hp'],
+        window: 20,
+      },
+      phases: [
+        { name: 'startup', frames: 16, events: [] },
+        {
+          name: 'release',
+          frames: 4,
+          events: [
+            { onFrame: 0, event: { type: 'spawn_projectile', projectile: firebolt, offsetX: 82, offsetY: -92 } },
+            { onFrame: 0, event: { type: 'screen_shake', intensity: 0.002, duration: 3 } },
+          ],
+        },
+        { name: 'recovery', frames: 17, events: [] },
+      ],
+    },
+    {
+      id: 'dash_punch',
+      displayName: 'Run-On Spark',
+      animation: 'special_1',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'landing'],
+        sequence: ['forward', 'forward', 'lp'],
+        window: 16,
+      },
+      phases: [
+        { name: 'startup', frames: 8, events: [{ onFrame: 0, event: { type: 'set_velocity', vx: 2.2, relativeToFacing: true } }] },
+        {
+          name: 'release',
+          frames: 5,
+          events: [
+            { onFrame: 0, event: { type: 'spawn_projectile', projectile: inkSpark, offsetX: 78, offsetY: -88 } },
+            { onFrame: 2, event: { type: 'spawn_projectile', projectile: firebolt, offsetX: 92, offsetY: -92 } },
+          ],
+        },
+        {
+          name: 'recovery',
+          frames: 16,
+          events: [
+            { onFrame: 0, event: { type: 'set_velocity', vx: 0, relativeToFacing: true } },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'crouch_low_kick',
+      displayName: 'Ground Rune',
+      animation: 'special_1',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['down', 'lk'],
+        window: 8,
+      },
+      phases: [
+        { name: 'startup', frames: 4, events: [{ onFrame: 0, event: { type: 'modify_hurtbox', hurtbox: { x: -27, y: -80, width: 54, height: 80 } } }] },
+        {
+          name: 'release',
+          frames: 4,
+          events: [{ onFrame: 0, event: { type: 'spawn_projectile', projectile: groundRune, offsetX: 64, offsetY: -24 } }],
+        },
+        { name: 'recovery', frames: 10, events: [] },
+      ],
+    },
+    {
+      id: 'heavy_punch',
+      displayName: 'Lightning from the Sky',
+      animation: 'special_1',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['hp'],
+        window: 6,
+      },
+      phases: [
+        { name: 'startup', frames: 12, events: [] },
+        {
+          name: 'strike',
+          frames: 5,
+          events: [
+            { onFrame: 0, event: { type: 'spawn_projectile_from_sky', projectile: lightningFromSky, targetOffsetX: 0, spawnOffsetY: -300 } },
+            { onFrame: 0, event: { type: 'screen_shake', intensity: 0.004, duration: 5 } },
+          ],
+        },
+        { name: 'recovery', frames: 21, events: [] },
+      ],
+    },
+    {
+      id: 'light_punch',
+      displayName: 'Ink Spark',
+      animation: 'special_1',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing', 'attack'],
+        sequence: ['lp'],
+        window: 6,
+        cancelFrom: ['light_punch'],
+      },
+      phases: [
+        { name: 'startup', frames: 5, events: [] },
+        { name: 'release', frames: 3, cancellable: true, events: [{ onFrame: 0, event: { type: 'spawn_projectile', projectile: inkSpark, offsetX: 64, offsetY: -86 } }] },
+        { name: 'recovery', frames: 9, cancellable: true, events: [] },
+      ],
+      cancelInto: ['light_punch', 'heavy_punch'],
+    },
+  ]);
+}
+
+function makeDylanSaxMoves(): Move[] {
+  const purpleNoteWave: ProjectileConfig = {
+    id: 'purple_note_wave_projectile',
+    animation: 'purple_note_wave',
+    width: 244,
+    height: 137,
+    speed: 5.3,
+    lifetime: 88,
+    pierces: 1,
+    clashesWithProjectiles: true,
+    spawnPolicy: { maxActivePerOwner: 3, ifAlreadyActive: 'replace_oldest' },
+    hitbox: {
+      x: -66,
+      y: -40,
+      width: 132,
+      height: 70,
+      damage: 62,
+      hitstun: 23,
+      blockstun: 14,
+      chipDamage: 9,
+      knockback: { x: 5.7, y: -1 },
+      level: 'mid',
+    },
+  };
+
+  return addSixFrameVisualTimelines([
+    {
+      id: 'uppercut',
+      displayName: 'Brass Upper',
+      animation: 'special_1',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['forward', 'down', 'down-forward', 'hp'],
+        window: 18,
+      },
+      phases: [
+        { name: 'startup', frames: 6, events: [{ onFrame: 0, event: { type: 'invulnerable', duration: 5, against: ['high', 'mid', 'low'] } }] },
+        {
+          name: 'active',
+          frames: 8,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'brass_upper',
+                hitbox: {
+                  x: 24,
+                  y: -148,
+                  width: 88,
+                  height: 104,
+                  damage: 90,
+                  hitstun: 33,
+                  blockstun: 16,
+                  chipDamage: 6,
+                  knockback: { x: 3.2, y: -8 },
+                  level: 'mid',
+                  launches: true,
+                },
+              },
+            },
+          ],
+        },
+        { name: 'recovery', frames: 23, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'brass_upper' } }] },
+      ],
+    },
+    {
+      id: 'fireball',
+      displayName: 'Purple Note Cannon',
+      animation: 'special_2',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['down', 'down-forward', 'forward', 'hp'],
+        window: 20,
+      },
+      phases: [
+        { name: 'startup', frames: 15, events: [] },
+        {
+          name: 'release',
+          frames: 5,
+          events: [
+            { onFrame: 0, event: { type: 'spawn_projectile', projectile: purpleNoteWave, offsetX: 92, offsetY: -94 } },
+            { onFrame: 0, event: { type: 'screen_shake', intensity: 0.002, duration: 3 } },
+          ],
+        },
+        { name: 'recovery', frames: 17, events: [] },
+      ],
+    },
+    {
+      id: 'dash_punch',
+      displayName: 'Horn Rush',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'landing'],
+        sequence: ['forward', 'forward', 'lp'],
+        window: 16,
+      },
+      phases: [
+        { name: 'startup', frames: 7, events: [{ onFrame: 0, event: { type: 'set_velocity', vx: 6.9, relativeToFacing: true } }] },
+        {
+          name: 'active',
+          frames: 5,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'horn_rush',
+                hitbox: midPunch({ x: 36, y: -106, width: 116, height: 36, damage: 72, hitstun: 23, blockstun: 13, knockback: { x: 7.2, y: 0 } }),
+              },
+            },
+          ],
+        },
+        {
+          name: 'recovery',
+          frames: 16,
+          events: [
+            { onFrame: 0, event: { type: 'hitbox_end', id: 'horn_rush' } },
+            { onFrame: 0, event: { type: 'set_velocity', vx: 0, relativeToFacing: true } },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'crouch_low_kick',
+      displayName: 'Stage Sweep',
+      animation: 'kick',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['down', 'lk'],
+        window: 8,
+      },
+      phases: [
+        { name: 'startup', frames: 4, events: [{ onFrame: 0, event: { type: 'modify_hurtbox', hurtbox: { x: -28, y: -80, width: 56, height: 80 } } }] },
+        {
+          name: 'active',
+          frames: 4,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'stage_sweep',
+                hitbox: {
+                  x: 20,
+                  y: -40,
+                  width: 112,
+                  height: 24,
+                  damage: 42,
+                  hitstun: 13,
+                  blockstun: 10,
+                  knockback: { x: 3.4, y: 0 },
+                  level: 'low',
+                },
+              },
+            },
+          ],
+        },
+        { name: 'recovery', frames: 10, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'stage_sweep' } }] },
+      ],
+    },
+    {
+      id: 'heavy_punch',
+      displayName: 'Bell Ringer',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['hp'],
+        window: 6,
+      },
+      phases: [
+        { name: 'startup', frames: 8, events: [] },
+        {
+          name: 'active',
+          frames: 4,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'bell_ringer',
+                hitbox: midPunch({
+                  x: 34,
+                  y: -112,
+                  width: 128,
+                  height: 46,
+                  damage: 84,
+                  hitstun: 29,
+                  blockstun: 15,
+                  chipDamage: 5,
+                  knockback: { x: 5.4, y: -5 },
+                  launches: true,
+                }),
+              },
+            },
+          ],
+        },
+        { name: 'recovery', frames: 18, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'bell_ringer' } }] },
+      ],
+    },
+    {
+      id: 'light_punch',
+      displayName: 'Horn Jab',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing', 'attack'],
+        sequence: ['lp'],
+        window: 6,
+        cancelFrom: ['light_punch'],
+      },
+      phases: [
+        { name: 'startup', frames: 3, events: [] },
+        { name: 'active', frames: 3, cancellable: true, events: [{ onFrame: 0, event: { type: 'hitbox_active', id: 'horn_jab', hitbox: midPunch({ x: 30, y: -102, width: 92, height: 30, damage: 45 }) } }] },
+        { name: 'recovery', frames: 8, cancellable: true, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'horn_jab' } }] },
+      ],
+      cancelInto: ['light_punch', 'heavy_punch'],
+    },
+  ]);
+}
+
+function makeCoreyMoves(): Move[] {
+  const foamWave: ProjectileConfig = {
+    id: 'foam_wave_projectile',
+    animation: 'foam_wave',
+    width: 237,
+    height: 79,
+    speed: 4.8,
+    lifetime: 90,
+    pierces: 1,
+    clashesWithProjectiles: true,
+    spawnPolicy: { maxActivePerOwner: 3, ifAlreadyActive: 'replace_oldest' },
+    hitbox: {
+      x: -78,
+      y: -30,
+      width: 156,
+      height: 44,
+      damage: 60,
+      hitstun: 23,
+      blockstun: 15,
+      chipDamage: 10,
+      knockback: { x: 5, y: 0 },
+      level: 'mid',
+    },
+  };
+
+  return addSixFrameVisualTimelines([
+    {
+      id: 'uppercut',
+      displayName: 'Shake and Spray',
+      animation: 'special_1',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['forward', 'down', 'down-forward', 'hp'],
+        window: 18,
+      },
+      phases: [
+        { name: 'startup', frames: 7, events: [{ onFrame: 0, event: { type: 'invulnerable', duration: 5, against: ['high', 'mid', 'low'] } }] },
+        {
+          name: 'active',
+          frames: 8,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'shake_spray',
+                hitbox: {
+                  x: 28,
+                  y: -128,
+                  width: 108,
+                  height: 82,
+                  damage: 88,
+                  hitstun: 33,
+                  blockstun: 16,
+                  chipDamage: 8,
+                  knockback: { x: 3.6, y: -7.5 },
+                  level: 'mid',
+                  launches: true,
+                },
+              },
+            },
+          ],
+        },
+        { name: 'recovery', frames: 24, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'shake_spray' } }] },
+      ],
+    },
+    {
+      id: 'fireball',
+      displayName: 'Foam Wave',
+      animation: 'special_2',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['down', 'down-forward', 'forward', 'hp'],
+        window: 20,
+      },
+      phases: [
+        { name: 'startup', frames: 16, events: [] },
+        {
+          name: 'release',
+          frames: 5,
+          events: [
+            { onFrame: 0, event: { type: 'spawn_projectile', projectile: foamWave, offsetX: 84, offsetY: -72 } },
+            { onFrame: 0, event: { type: 'screen_shake', intensity: 0.002, duration: 4 } },
+          ],
+        },
+        { name: 'recovery', frames: 17, events: [] },
+      ],
+    },
+    {
+      id: 'dash_punch',
+      displayName: 'Can Rush',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'landing'],
+        sequence: ['forward', 'forward', 'lp'],
+        window: 16,
+      },
+      phases: [
+        { name: 'startup', frames: 8, events: [{ onFrame: 0, event: { type: 'set_velocity', vx: 6.2, relativeToFacing: true } }] },
+        {
+          name: 'active',
+          frames: 5,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'can_rush',
+                hitbox: midPunch({ x: 36, y: -104, width: 96, height: 38, damage: 74, hitstun: 24, blockstun: 13, knockback: { x: 7, y: 0 } }),
+              },
+            },
+          ],
+        },
+        {
+          name: 'recovery',
+          frames: 17,
+          events: [
+            { onFrame: 0, event: { type: 'hitbox_end', id: 'can_rush' } },
+            { onFrame: 0, event: { type: 'set_velocity', vx: 0, relativeToFacing: true } },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'crouch_low_kick',
+      displayName: 'Wet Boot',
+      animation: 'kick',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['down', 'lk'],
+        window: 8,
+      },
+      phases: [
+        { name: 'startup', frames: 5, events: [{ onFrame: 0, event: { type: 'modify_hurtbox', hurtbox: { x: -34, y: -82, width: 68, height: 82 } } }] },
+        {
+          name: 'active',
+          frames: 4,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'wet_boot',
+                hitbox: {
+                  x: 22,
+                  y: -40,
+                  width: 116,
+                  height: 26,
+                  damage: 43,
+                  hitstun: 13,
+                  blockstun: 10,
+                  knockback: { x: 3.6, y: 0 },
+                  level: 'low',
+                },
+              },
+            },
+          ],
+        },
+        { name: 'recovery', frames: 11, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'wet_boot' } }] },
+      ],
+    },
+    {
+      id: 'heavy_punch',
+      displayName: 'Can Crush',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['hp'],
+        window: 6,
+      },
+      phases: [
+        { name: 'startup', frames: 9, events: [] },
+        {
+          name: 'active',
+          frames: 4,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'can_crush',
+                hitbox: midPunch({
+                  x: 28,
+                  y: -112,
+                  width: 86,
+                  height: 44,
+                  damage: 86,
+                  hitstun: 30,
+                  blockstun: 15,
+                  chipDamage: 5,
+                  knockback: { x: 5.2, y: -5.5 },
+                  launches: true,
+                }),
+              },
+            },
+          ],
+        },
+        { name: 'recovery', frames: 19, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'can_crush' } }] },
+      ],
+    },
+    {
+      id: 'light_punch',
+      displayName: 'Can Opener',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing', 'attack'],
+        sequence: ['lp'],
+        window: 6,
+        cancelFrom: ['light_punch'],
+      },
+      phases: [
+        { name: 'startup', frames: 4, events: [] },
+        { name: 'active', frames: 3, cancellable: true, events: [{ onFrame: 0, event: { type: 'hitbox_active', id: 'can_opener', hitbox: midPunch({ x: 28, y: -100, width: 76, height: 32, damage: 46 }) } }] },
+        { name: 'recovery', frames: 9, cancellable: true, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'can_opener' } }] },
+      ],
+      cancelInto: ['light_punch', 'heavy_punch'],
+    },
+  ]);
+}
+
+function makeJugglingJoeMoves(): Move[] {
+  const jugglingBalls: ProjectileConfig = {
+    id: 'juggling_balls_projectile',
+    animation: 'juggling_balls',
+    width: 183,
+    height: 131,
+    speed: 5.5,
+    lifetime: 86,
+    pierces: 1,
+    clashesWithProjectiles: true,
+    spawnPolicy: { maxActivePerOwner: 3, ifAlreadyActive: 'replace_oldest' },
+    hitbox: {
+      x: -72,
+      y: -46,
+      width: 144,
+      height: 82,
+      damage: 62,
+      hitstun: 24,
+      blockstun: 15,
+      chipDamage: 9,
+      knockback: { x: 5.6, y: -1 },
+      level: 'mid',
+    },
+  };
+
+  return addSixFrameVisualTimelines([
+    {
+      id: 'uppercut',
+      displayName: 'Juggle Cyclone',
+      animation: 'special_1',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['forward', 'down', 'down-forward', 'hp'],
+        window: 18,
+      },
+      phases: [
+        { name: 'startup', frames: 7, events: [{ onFrame: 0, event: { type: 'invulnerable', duration: 5, against: ['high', 'mid', 'low'] } }] },
+        {
+          name: 'active',
+          frames: 8,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'juggle_cyclone',
+                hitbox: {
+                  x: 18,
+                  y: -136,
+                  width: 128,
+                  height: 104,
+                  damage: 90,
+                  hitstun: 34,
+                  blockstun: 17,
+                  chipDamage: 7,
+                  knockback: { x: 3.6, y: -7.8 },
+                  level: 'mid',
+                  launches: true,
+                },
+              },
+            },
+          ],
+        },
+        { name: 'recovery', frames: 24, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'juggle_cyclone' } }] },
+      ],
+    },
+    {
+      id: 'fireball',
+      displayName: 'Juggling Barrage',
+      animation: 'special_2',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['down', 'down-forward', 'forward', 'hp'],
+        window: 20,
+      },
+      phases: [
+        { name: 'startup', frames: 15, events: [] },
+        {
+          name: 'release',
+          frames: 5,
+          events: [
+            { onFrame: 0, event: { type: 'spawn_projectile', projectile: jugglingBalls, offsetX: 86, offsetY: -92 } },
+            { onFrame: 0, event: { type: 'screen_shake', intensity: 0.002, duration: 3 } },
+          ],
+        },
+        { name: 'recovery', frames: 17, events: [] },
+      ],
+    },
+    {
+      id: 'dash_punch',
+      displayName: 'Cascade Rush',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'landing'],
+        sequence: ['forward', 'forward', 'lp'],
+        window: 16,
+      },
+      phases: [
+        { name: 'startup', frames: 7, events: [{ onFrame: 0, event: { type: 'set_velocity', vx: 6.6, relativeToFacing: true } }] },
+        {
+          name: 'active',
+          frames: 5,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'cascade_rush',
+                hitbox: midPunch({ x: 34, y: -104, width: 92, height: 34, damage: 70, hitstun: 23, blockstun: 13, knockback: { x: 6.8, y: 0 } }),
+              },
+            },
+          ],
+        },
+        {
+          name: 'recovery',
+          frames: 16,
+          events: [
+            { onFrame: 0, event: { type: 'hitbox_end', id: 'cascade_rush' } },
+            { onFrame: 0, event: { type: 'set_velocity', vx: 0, relativeToFacing: true } },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'crouch_low_kick',
+      displayName: 'Formal Shoe Sweep',
+      animation: 'kick',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['down', 'lk'],
+        window: 8,
+      },
+      phases: [
+        { name: 'startup', frames: 4, events: [{ onFrame: 0, event: { type: 'modify_hurtbox', hurtbox: { x: -27, y: -80, width: 54, height: 80 } } }] },
+        {
+          name: 'active',
+          frames: 4,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'formal_sweep',
+                hitbox: {
+                  x: 20,
+                  y: -38,
+                  width: 116,
+                  height: 24,
+                  damage: 42,
+                  hitstun: 13,
+                  blockstun: 10,
+                  knockback: { x: 3.4, y: 0 },
+                  level: 'low',
+                },
+              },
+            },
+          ],
+        },
+        { name: 'recovery', frames: 10, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'formal_sweep' } }] },
+      ],
+    },
+    {
+      id: 'heavy_punch',
+      displayName: 'Ball-Palmed Cross',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['hp'],
+        window: 6,
+      },
+      phases: [
+        { name: 'startup', frames: 8, events: [] },
+        {
+          name: 'active',
+          frames: 4,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'ball_cross',
+                hitbox: midPunch({
+                  x: 30,
+                  y: -104,
+                  width: 94,
+                  height: 42,
+                  damage: 84,
+                  hitstun: 29,
+                  blockstun: 15,
+                  chipDamage: 5,
+                  knockback: { x: 5.4, y: -5.2 },
+                  launches: true,
+                }),
+              },
+            },
+          ],
+        },
+        { name: 'recovery', frames: 18, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'ball_cross' } }] },
+      ],
+    },
+    {
+      id: 'light_punch',
+      displayName: 'Ball-Palmed Jab',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing', 'attack'],
+        sequence: ['lp'],
+        window: 6,
+        cancelFrom: ['light_punch'],
+      },
+      phases: [
+        { name: 'startup', frames: 3, events: [] },
+        { name: 'active', frames: 3, cancellable: true, events: [{ onFrame: 0, event: { type: 'hitbox_active', id: 'ball_jab', hitbox: midPunch({ x: 28, y: -98, width: 74, height: 30, damage: 45 }) } }] },
+        { name: 'recovery', frames: 8, cancellable: true, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'ball_jab' } }] },
+      ],
+      cancelInto: ['light_punch', 'heavy_punch'],
+    },
+  ]);
+}
+
+function makeRubberChickenMoves(): Move[] {
+  const squeakStorm: ProjectileConfig = {
+    id: 'squeak_storm_projectile',
+    animation: 'squeak_storm',
+    width: 239,
+    height: 159,
+    speed: 4.9,
+    lifetime: 88,
+    pierces: 1,
+    clashesWithProjectiles: true,
+    spawnPolicy: { maxActivePerOwner: 3, ifAlreadyActive: 'replace_oldest' },
+    hitbox: {
+      x: -80,
+      y: -44,
+      width: 160,
+      height: 78,
+      damage: 60,
+      hitstun: 24,
+      blockstun: 15,
+      chipDamage: 10,
+      knockback: { x: 5, y: -1 },
+      level: 'mid',
+    },
+  };
+
+  return addSixFrameVisualTimelines([
+    {
+      id: 'uppercut',
+      displayName: 'Elastic Neck Snap',
+      animation: 'special_1',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['forward', 'down', 'down-forward', 'hp'],
+        window: 18,
+      },
+      phases: [
+        { name: 'startup', frames: 6, events: [{ onFrame: 0, event: { type: 'invulnerable', duration: 5, against: ['high', 'mid', 'low'] } }] },
+        {
+          name: 'active',
+          frames: 8,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'elastic_neck',
+                hitbox: {
+                  x: 28,
+                  y: -128,
+                  width: 168,
+                  height: 72,
+                  damage: 88,
+                  hitstun: 33,
+                  blockstun: 17,
+                  chipDamage: 7,
+                  knockback: { x: 4.5, y: -6.5 },
+                  level: 'mid',
+                  launches: true,
+                },
+              },
+            },
+            { onFrame: 0, event: { type: 'screen_shake', intensity: 0.002, duration: 3 } },
+          ],
+        },
+        { name: 'recovery', frames: 24, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'elastic_neck' } }] },
+      ],
+    },
+    {
+      id: 'fireball',
+      displayName: 'Squeak Storm',
+      animation: 'special_2',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['down', 'down-forward', 'forward', 'hp'],
+        window: 20,
+      },
+      phases: [
+        { name: 'startup', frames: 15, events: [] },
+        {
+          name: 'release',
+          frames: 5,
+          events: [
+            { onFrame: 0, event: { type: 'spawn_projectile', projectile: squeakStorm, offsetX: 82, offsetY: -88 } },
+            { onFrame: 0, event: { type: 'screen_shake', intensity: 0.003, duration: 4 } },
+          ],
+        },
+        { name: 'recovery', frames: 18, events: [] },
+      ],
+    },
+    {
+      id: 'dash_punch',
+      displayName: 'Rubber Rebound',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'landing'],
+        sequence: ['forward', 'forward', 'lp'],
+        window: 16,
+      },
+      phases: [
+        { name: 'startup', frames: 7, events: [{ onFrame: 0, event: { type: 'set_velocity', vx: 6.8, relativeToFacing: true } }] },
+        {
+          name: 'active',
+          frames: 5,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'rubber_rebound',
+                hitbox: midPunch({ x: 30, y: -108, width: 118, height: 36, damage: 70, hitstun: 23, blockstun: 13, knockback: { x: 7.2, y: 0 } }),
+              },
+            },
+          ],
+        },
+        {
+          name: 'recovery',
+          frames: 16,
+          events: [
+            { onFrame: 0, event: { type: 'hitbox_end', id: 'rubber_rebound' } },
+            { onFrame: 0, event: { type: 'set_velocity', vx: 0, relativeToFacing: true } },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'crouch_low_kick',
+      displayName: 'Rubber Foot Sweep',
+      animation: 'kick',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['down', 'lk'],
+        window: 8,
+      },
+      phases: [
+        { name: 'startup', frames: 4, events: [{ onFrame: 0, event: { type: 'modify_hurtbox', hurtbox: { x: -26, y: -82, width: 52, height: 82 } } }] },
+        {
+          name: 'active',
+          frames: 4,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'rubber_sweep',
+                hitbox: {
+                  x: 18,
+                  y: -40,
+                  width: 122,
+                  height: 24,
+                  damage: 42,
+                  hitstun: 13,
+                  blockstun: 10,
+                  knockback: { x: 3.5, y: 0 },
+                  level: 'low',
+                },
+              },
+            },
+          ],
+        },
+        { name: 'recovery', frames: 10, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'rubber_sweep' } }] },
+      ],
+    },
+    {
+      id: 'heavy_punch',
+      displayName: 'Peck Hammer',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['hp'],
+        window: 6,
+      },
+      phases: [
+        { name: 'startup', frames: 8, events: [] },
+        {
+          name: 'active',
+          frames: 4,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'peck_hammer',
+                hitbox: midPunch({
+                  x: 28,
+                  y: -116,
+                  width: 108,
+                  height: 44,
+                  damage: 84,
+                  hitstun: 30,
+                  blockstun: 15,
+                  chipDamage: 5,
+                  knockback: { x: 5.5, y: -5.4 },
+                  launches: true,
+                }),
+              },
+            },
+          ],
+        },
+        { name: 'recovery', frames: 18, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'peck_hammer' } }] },
+      ],
+    },
+    {
+      id: 'light_punch',
+      displayName: 'Floppy Wing Slap',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing', 'attack'],
+        sequence: ['lp'],
+        window: 6,
+        cancelFrom: ['light_punch'],
+      },
+      phases: [
+        { name: 'startup', frames: 3, events: [] },
+        { name: 'active', frames: 3, cancellable: true, events: [{ onFrame: 0, event: { type: 'hitbox_active', id: 'wing_slap', hitbox: midPunch({ x: 26, y: -102, width: 86, height: 32, damage: 45 }) } }] },
+        { name: 'recovery', frames: 8, cancellable: true, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'wing_slap' } }] },
+      ],
+      cancelInto: ['light_punch', 'heavy_punch'],
+    },
+  ]);
+}
+
 function makeCharacter(tuning: FighterTuning): CharacterConfig {
   return {
     id: tuning.id,
@@ -1831,4 +3180,251 @@ export const jackTuckerConfig: CharacterConfig = {
   moves: makeJackTuckerMoves(),
 };
 
-export const playableCharacters = [mrCardboardConfig, guitarShredderConfig, micMonarchConfig, viggoConfig, janitorConfig, jackTuckerConfig] as const;
+export const martinUrbanoConfig: CharacterConfig = {
+  id: 'martin_urbano',
+  displayName: 'Martin Urbano',
+  walkForwardSpeed: 2.95,
+  walkBackSpeed: 2.05,
+  jumpVelocity: 10.8,
+  jumpForwardVelocity: 3.9,
+  jumpBackVelocity: 3.1,
+  gravity: 0.55,
+  maxFallSpeed: 12,
+  maxHealth: 990,
+  pivotOffsetY: 0,
+  sprite: {
+    basePath: '/fighters/martin_urbano',
+    frameWidth: 256,
+    frameHeight: 256,
+    scale: 0.55,
+    anchorY: 248 / 286,
+    stateFrames: generatedBaseStateFrames,
+    frameCounts: {
+      base: 6,
+      punch: 6,
+      kick: 6,
+      special_1: 6,
+      special_2: 6,
+    },
+    sheets: {
+      base: 'sheets/base.png',
+      punch: 'sheets/punch.png',
+      kick: 'sheets/kick.png',
+      special_1: 'sheets/special_1.png',
+      special_2: 'sheets/special_2.png',
+    },
+    frames: martinUrbanoFrames,
+  },
+  hurtboxes: {
+    ...baseHurtboxes,
+    idle: { x: -26, y: -123, width: 52, height: 123 },
+    walk_forward: { x: -26, y: -123, width: 52, height: 123 },
+    walk_back: { x: -26, y: -123, width: 52, height: 123 },
+    attack: { x: -28, y: -124, width: 56, height: 124 },
+    crouch: { x: -30, y: -82, width: 60, height: 82 },
+  },
+  animations: fighterAnimations,
+  moves: makeMartinUrbanoMoves(),
+};
+
+export const dylanSaxConfig: CharacterConfig = {
+  id: 'dylan_sax',
+  displayName: 'Dylan',
+  walkForwardSpeed: 3.1,
+  walkBackSpeed: 2.1,
+  jumpVelocity: 11.2,
+  jumpForwardVelocity: 4.2,
+  jumpBackVelocity: 3.3,
+  gravity: 0.55,
+  maxFallSpeed: 12,
+  maxHealth: 980,
+  pivotOffsetY: 0,
+  sprite: {
+    basePath: '/fighters/dylan_sax',
+    frameWidth: 256,
+    frameHeight: 256,
+    scale: 0.55,
+    anchorY: 248 / 286,
+    stateFrames: generatedBaseStateFrames,
+    frameCounts: {
+      base: 6,
+      punch: 6,
+      kick: 6,
+      special_1: 6,
+      special_2: 6,
+    },
+    sheets: {
+      base: 'sheets/base.png',
+      punch: 'sheets/punch.png',
+      kick: 'sheets/kick.png',
+      special_1: 'sheets/special_1.png',
+      special_2: 'sheets/special_2.png',
+    },
+    frames: dylanSaxFrames,
+  },
+  hurtboxes: {
+    ...baseHurtboxes,
+    idle: { x: -26, y: -124, width: 52, height: 124 },
+    walk_forward: { x: -26, y: -124, width: 52, height: 124 },
+    walk_back: { x: -26, y: -124, width: 52, height: 124 },
+    attack: { x: -28, y: -126, width: 56, height: 126 },
+    crouch: { x: -30, y: -82, width: 60, height: 82 },
+  },
+  animations: fighterAnimations,
+  moves: makeDylanSaxMoves(),
+};
+
+export const coreyConfig: CharacterConfig = {
+  id: 'corey',
+  displayName: 'Corey',
+  walkForwardSpeed: 2.6,
+  walkBackSpeed: 1.75,
+  jumpVelocity: 10.2,
+  jumpForwardVelocity: 3.5,
+  jumpBackVelocity: 2.7,
+  gravity: 0.58,
+  maxFallSpeed: 12,
+  maxHealth: 1070,
+  pivotOffsetY: 0,
+  sprite: {
+    basePath: '/fighters/corey',
+    frameWidth: 256,
+    frameHeight: 256,
+    scale: 0.55,
+    anchorY: 248 / 286,
+    stateFrames: generatedBaseStateFrames,
+    frameCounts: {
+      base: 6,
+      punch: 6,
+      kick: 6,
+      special_1: 6,
+      special_2: 6,
+    },
+    sheets: {
+      base: 'sheets/base.png',
+      punch: 'sheets/punch.png',
+      kick: 'sheets/kick.png',
+      special_1: 'sheets/special_1.png',
+      special_2: 'sheets/special_2.png',
+    },
+    frames: coreyFrames,
+  },
+  hurtboxes: {
+    ...baseHurtboxes,
+    idle: { x: -34, y: -124, width: 68, height: 124 },
+    walk_forward: { x: -34, y: -124, width: 68, height: 124 },
+    walk_back: { x: -34, y: -124, width: 68, height: 124 },
+    attack: { x: -36, y: -126, width: 72, height: 126 },
+    crouch: { x: -38, y: -84, width: 76, height: 84 },
+  },
+  animations: fighterAnimations,
+  moves: makeCoreyMoves(),
+};
+
+export const jugglingJoeConfig: CharacterConfig = {
+  id: 'juggling_joe',
+  displayName: 'Juggling Joe Fisher',
+  walkForwardSpeed: 3.05,
+  walkBackSpeed: 2.05,
+  jumpVelocity: 11,
+  jumpForwardVelocity: 4,
+  jumpBackVelocity: 3.2,
+  gravity: 0.55,
+  maxFallSpeed: 12,
+  maxHealth: 990,
+  pivotOffsetY: 0,
+  sprite: {
+    basePath: '/fighters/juggling_joe',
+    frameWidth: 256,
+    frameHeight: 256,
+    scale: 0.55,
+    anchorY: 248 / 286,
+    stateFrames: generatedBaseStateFrames,
+    frameCounts: {
+      base: 6,
+      punch: 6,
+      kick: 6,
+      special_1: 6,
+      special_2: 6,
+    },
+    sheets: {
+      base: 'sheets/base.png',
+      punch: 'sheets/punch.png',
+      kick: 'sheets/kick.png',
+      special_1: 'sheets/special_1.png',
+      special_2: 'sheets/special_2.png',
+    },
+    frames: jugglingJoeFrames,
+  },
+  hurtboxes: {
+    ...baseHurtboxes,
+    idle: { x: -26, y: -123, width: 52, height: 123 },
+    walk_forward: { x: -26, y: -123, width: 52, height: 123 },
+    walk_back: { x: -26, y: -123, width: 52, height: 123 },
+    attack: { x: -28, y: -124, width: 56, height: 124 },
+    crouch: { x: -30, y: -82, width: 60, height: 82 },
+  },
+  animations: fighterAnimations,
+  moves: makeJugglingJoeMoves(),
+};
+
+export const rubberChickenConfig: CharacterConfig = {
+  id: 'rubber_chicken',
+  displayName: 'Rubber Chicken',
+  walkForwardSpeed: 3.2,
+  walkBackSpeed: 2.15,
+  jumpVelocity: 11.4,
+  jumpForwardVelocity: 4.2,
+  jumpBackVelocity: 3.4,
+  gravity: 0.52,
+  maxFallSpeed: 12,
+  maxHealth: 960,
+  pivotOffsetY: 0,
+  sprite: {
+    basePath: '/fighters/rubber_chicken',
+    frameWidth: 256,
+    frameHeight: 256,
+    scale: 0.6,
+    anchorY: 248 / 286,
+    stateFrames: generatedBaseStateFrames,
+    frameCounts: {
+      base: 6,
+      punch: 6,
+      kick: 6,
+      special_1: 6,
+      special_2: 6,
+    },
+    sheets: {
+      base: 'sheets/base.png',
+      punch: 'sheets/punch.png',
+      kick: 'sheets/kick.png',
+      special_1: 'sheets/special_1.png',
+      special_2: 'sheets/special_2.png',
+    },
+    frames: rubberChickenFrames,
+  },
+  hurtboxes: {
+    ...baseHurtboxes,
+    idle: { x: -22, y: -132, width: 44, height: 132 },
+    walk_forward: { x: -22, y: -132, width: 44, height: 132 },
+    walk_back: { x: -22, y: -132, width: 44, height: 132 },
+    attack: { x: -24, y: -134, width: 48, height: 134 },
+    crouch: { x: -28, y: -78, width: 56, height: 78 },
+  },
+  animations: fighterAnimations,
+  moves: makeRubberChickenMoves(),
+};
+
+export const playableCharacters = [
+  mrCardboardConfig,
+  guitarShredderConfig,
+  micMonarchConfig,
+  viggoConfig,
+  janitorConfig,
+  jackTuckerConfig,
+  martinUrbanoConfig,
+  dylanSaxConfig,
+  coreyConfig,
+  jugglingJoeConfig,
+  rubberChickenConfig,
+] as const;

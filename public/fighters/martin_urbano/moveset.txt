@@ -1,0 +1,15 @@
+[punch]
+name=Ink Spark
+description=Quick written sigil that fires a small mid-height ink projectile instead of a physical jab.
+
+[kick]
+name=Ground Rune
+description=Crouched notebook cast that sends a low glowing rune skimming across the floor.
+
+[special_1]
+name=Firebolt Draft
+description=Writes a glowing note, tears the spell forward, and releases a traveling firebolt from the pen hand.
+
+[special_2]
+name=Pen Is Mightier / Lightning from the Sky
+description=Raises the pen into a radiant pen-blade for a wide slash, or writes a sky-call sigil that drops lightning on the opponent.

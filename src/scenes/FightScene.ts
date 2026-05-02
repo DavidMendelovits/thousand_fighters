@@ -17,7 +17,7 @@ const ROUND_FRAMES = 99 * 60;
 const STAGE_LEFT = 96;
 const STAGE_RIGHT = 704;
 const MIN_FIGHTER_DISTANCE = 96;
-const SPRITE_ASSET_VERSION = 'animation-timeline-v1';
+const SPRITE_ASSET_VERSION = 'joe-chicken-v1';
 const DEBUG_MOVE_KEYS: Record<string, { player: 0 | 1; moveId: string }> = {
   Digit1: { player: 0, moveId: 'fireball' },
   Digit2: { player: 0, moveId: 'dash_punch' },
@@ -99,6 +99,14 @@ export class FightScene extends Phaser.Scene {
     this.load.image('hi_vis_vest', this.assetUrl('/fighters/viggo/projectiles/hi_vis_vest.png'));
     this.load.image('bucket_wave', this.assetUrl('/fighters/janitor/projectiles/bucket_wave.png'));
     this.load.image('apple_shards', this.assetUrl('/fighters/jack_tucker/projectiles/apple_shards.png'));
+    this.load.image('martin_firebolt', this.assetUrl('/fighters/martin_urbano/projectiles/firebolt.png'));
+    this.load.image('martin_ink_spark', this.assetUrl('/fighters/martin_urbano/projectiles/ink_spark.png'));
+    this.load.image('martin_ground_rune', this.assetUrl('/fighters/martin_urbano/projectiles/ground_rune.png'));
+    this.load.image('martin_lightning_from_sky', this.assetUrl('/fighters/martin_urbano/projectiles/lightning_from_sky.png'));
+    this.load.image('purple_note_wave', this.assetUrl('/fighters/dylan_sax/projectiles/purple_note_wave.png'));
+    this.load.image('foam_wave', this.assetUrl('/fighters/corey/projectiles/foam_wave.png'));
+    this.load.image('juggling_balls', this.assetUrl('/fighters/juggling_joe/projectiles/juggling_balls.png'));
+    this.load.image('squeak_storm', this.assetUrl('/fighters/rubber_chicken/projectiles/squeak_storm.png'));
 
     for (const character of playableCharacters) {
       if (!character.sprite) continue;
@@ -611,9 +619,13 @@ export class FightScene extends Phaser.Scene {
           fontSize: '18px',
         })
         .setOrigin(0, 0.5);
+      const spacing = playableCharacters.length > 1 ? Math.min(124, 704 / (playableCharacters.length - 1)) : 124;
+      const cardWidth = Math.min(112, Math.max(58, spacing - 8));
+      const cardHeight = 112;
+      const startX = 48;
       playableCharacters.forEach((character, index) => {
-        const x = 88 + index * 124;
-        const rect = this.add.rectangle(x, y, 112, 112, 0x0b0e13, 1).setInteractive({ useHandCursor: true });
+        const x = startX + index * spacing;
+        const rect = this.add.rectangle(x, y, cardWidth, cardHeight, 0x0b0e13, 1).setInteractive({ useHandCursor: true });
         rect.on('pointerdown', () => {
           if (player === 1) p1Id = character.id;
           else p2Id = character.id;
@@ -621,12 +633,12 @@ export class FightScene extends Phaser.Scene {
         });
         cardBackgrounds.push({ characterId: character.id, player, rect });
         const baseFrame = character.sprite ? this.debugFrameMeta(character.sprite, 'base', character.sprite.frameCounts.base ?? 1)[0] : null;
-        const previewScale = baseFrame ? Math.min(0.34, 76 / Math.max(baseFrame.width, baseFrame.height)) : 0.5;
+        const previewScale = baseFrame ? Math.min(0.34, (cardWidth - 18) / Math.max(baseFrame.width, baseFrame.height), 76 / Math.max(baseFrame.width, baseFrame.height)) : 0.5;
         this.add
           .sprite(x, y + 34, `${character.id}:base:0`)
           .setOrigin(0.5, 1)
           .setScale(previewScale);
-        this.add.text(x, y - 48, character.displayName, { ...labelStyle, fontSize: '10px' }).setOrigin(0.5, 0);
+        this.add.text(x, y - 48, character.displayName, { ...labelStyle, fontSize: '9px', wordWrap: { width: cardWidth + 6 } }).setOrigin(0.5, 0);
       });
     };
 
@@ -774,20 +786,29 @@ export class FightScene extends Phaser.Scene {
 
     this.add.text(12, y, 'Projectile textures', { ...labelStyle, color: '#8de6ff' }).setOrigin(0, 0);
     [
-      { key: 'sound_wave', x: 104 },
-      { key: 'feedback_wave', x: 230 },
-      { key: 'cardbross_cross', x: 356 },
-      { key: 'hi_vis_vest', x: 482 },
-      { key: 'bucket_wave', x: 608 },
-      { key: 'apple_shards', x: 734 },
-    ].forEach(({ key, x }) => {
+      { key: 'sound_wave', x: 92, row: 0 },
+      { key: 'feedback_wave', x: 204, row: 0 },
+      { key: 'cardbross_cross', x: 316, row: 0 },
+      { key: 'hi_vis_vest', x: 428, row: 0 },
+      { key: 'bucket_wave', x: 540, row: 0 },
+      { key: 'apple_shards', x: 652, row: 0 },
+      { key: 'martin_firebolt', x: 92, row: 1 },
+      { key: 'martin_ink_spark', x: 250, row: 1 },
+      { key: 'martin_ground_rune', x: 408, row: 1 },
+      { key: 'martin_lightning_from_sky', x: 594, row: 1 },
+      { key: 'purple_note_wave', x: 92, row: 2 },
+      { key: 'foam_wave', x: 286, row: 2 },
+      { key: 'juggling_balls', x: 480, row: 2 },
+      { key: 'squeak_storm', x: 674, row: 2 },
+    ].forEach(({ key, x, row }) => {
       const texture = this.textures.get(key).getSourceImage() as { width: number; height: number };
       const scale = Math.min(0.75, 86 / Math.max(texture.width, texture.height));
-      this.add.image(x, y + 34, key).setOrigin(0.5).setScale(scale);
-      this.add.text(x - 42, y + 62, key, labelStyle).setOrigin(0, 0);
+      const rowY = y + 34 + row * 82;
+      this.add.image(x, rowY, key).setOrigin(0.5).setScale(scale);
+      this.add.text(x - 42, rowY + 28, key, labelStyle).setOrigin(0, 0);
     });
 
-    this.cameras.main.setBounds(0, 0, 800, Math.max(450, y + 110));
+    this.cameras.main.setBounds(0, 0, 800, Math.max(450, y + 270));
     this.input.on('wheel', (_pointer: Phaser.Input.Pointer, _objects: unknown[], _dx: number, dy: number) => {
       this.cameras.main.scrollY = Phaser.Math.Clamp(this.cameras.main.scrollY + dy * 0.7, 0, Math.max(0, y - 340));
     });
