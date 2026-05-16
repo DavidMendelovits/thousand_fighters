@@ -1,0 +1,5 @@
+The Sklar Brothers are a linked two-actor comedy duo fighter: the red plaid lead brother drives the root position while the green plaid echo brother follows a short delayed pose trail, then steps forward for callback punches, sweeps, shoulder-stack launches, and brother-toss specials. Their temporary Sklar Fusion form combines the two into one larger split-plaid fighter.
+Silhouette: two average-height comedian fighters offset in depth, plus one broad fused form.
+Clothing: red-and-blue plaid shirt with tie for lead, green plaid shirt with glasses for echo, split-plaid oversized fusion form.
+Attitude: synchronized deadpan comedy timing, setup-and-punchline attacks.
+Distinctive traits: delayed two-person movement, two hurtboxes, actor-specific hitboxes, brother toss, stacked uppercut, fusion mode.

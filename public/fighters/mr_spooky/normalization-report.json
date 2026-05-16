@@ -1,0 +1,469 @@
+{
+  "source": "/Users/davidmendelovits/.codex/generated_images/019e29f5-9fae-7ad2-ae4f-c05298736324/ig_0a967f97d49337df016a06ac896394819895290a5a686c7556.png",
+  "componentCount": 38,
+  "warnings": [],
+  "frames": {
+    "base": [
+      {
+        "file": "sprites/base/base_001.png",
+        "width": 247,
+        "height": 286,
+        "anchor": {
+          "x": 123,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 0,
+        "sourceComponents": 1,
+        "keptComponentPixels": 18572
+      },
+      {
+        "file": "sprites/base/base_002.png",
+        "width": 237,
+        "height": 286,
+        "anchor": {
+          "x": 118,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 1,
+        "sourceComponents": 1,
+        "keptComponentPixels": 16380
+      },
+      {
+        "file": "sprites/base/base_003.png",
+        "width": 257,
+        "height": 286,
+        "anchor": {
+          "x": 128,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 2,
+        "sourceComponents": 1,
+        "keptComponentPixels": 11397
+      },
+      {
+        "file": "sprites/base/base_004.png",
+        "width": 269,
+        "height": 286,
+        "anchor": {
+          "x": 134,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 3,
+        "sourceComponents": 1,
+        "keptComponentPixels": 16838
+      },
+      {
+        "file": "sprites/base/base_005.png",
+        "width": 220,
+        "height": 286,
+        "anchor": {
+          "x": 110,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 4,
+        "sourceComponents": 1,
+        "keptComponentPixels": 11453
+      },
+      {
+        "file": "sprites/base/base_006.png",
+        "width": 373,
+        "height": 286,
+        "anchor": {
+          "x": 186,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 5,
+        "sourceComponents": 1,
+        "keptComponentPixels": 35716
+      }
+    ],
+    "punch": [
+      {
+        "file": "sprites/punch/punch_001.png",
+        "width": 274,
+        "height": 286,
+        "anchor": {
+          "x": 137,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 6,
+        "sourceComponents": 1,
+        "keptComponentPixels": 14628
+      },
+      {
+        "file": "sprites/punch/punch_002.png",
+        "width": 250,
+        "height": 286,
+        "anchor": {
+          "x": 125,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 7,
+        "sourceComponents": 1,
+        "keptComponentPixels": 15718
+      },
+      {
+        "file": "sprites/punch/punch_003.png",
+        "width": 338,
+        "height": 286,
+        "anchor": {
+          "x": 169,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 8,
+        "sourceComponents": 1,
+        "keptComponentPixels": 14328
+      },
+      {
+        "file": "sprites/punch/punch_004.png",
+        "width": 256,
+        "height": 286,
+        "anchor": {
+          "x": 128,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 9,
+        "sourceComponents": 1,
+        "keptComponentPixels": 12753
+      },
+      {
+        "file": "sprites/punch/punch_005.png",
+        "width": 220,
+        "height": 286,
+        "anchor": {
+          "x": 110,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 10,
+        "sourceComponents": 1,
+        "keptComponentPixels": 11941
+      },
+      {
+        "file": "sprites/punch/punch_006.png",
+        "width": 220,
+        "height": 286,
+        "anchor": {
+          "x": 110,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 11,
+        "sourceComponents": 1,
+        "keptComponentPixels": 13580
+      }
+    ],
+    "kick": [
+      {
+        "file": "sprites/kick/kick_001.png",
+        "width": 228,
+        "height": 286,
+        "anchor": {
+          "x": 114,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 12,
+        "sourceComponents": 1,
+        "keptComponentPixels": 10274
+      },
+      {
+        "file": "sprites/kick/kick_002.png",
+        "width": 248,
+        "height": 286,
+        "anchor": {
+          "x": 124,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 13,
+        "sourceComponents": 1,
+        "keptComponentPixels": 13316
+      },
+      {
+        "file": "sprites/kick/kick_003.png",
+        "width": 313,
+        "height": 286,
+        "anchor": {
+          "x": 156,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 14,
+        "sourceComponents": 1,
+        "keptComponentPixels": 11332
+      },
+      {
+        "file": "sprites/kick/kick_004.png",
+        "width": 361,
+        "height": 286,
+        "anchor": {
+          "x": 180,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 15,
+        "sourceComponents": 1,
+        "keptComponentPixels": 11028
+      },
+      {
+        "file": "sprites/kick/kick_005.png",
+        "width": 246,
+        "height": 286,
+        "anchor": {
+          "x": 123,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 16,
+        "sourceComponents": 4,
+        "keptComponentPixels": 11432
+      },
+      {
+        "file": "sprites/kick/kick_006.png",
+        "width": 220,
+        "height": 286,
+        "anchor": {
+          "x": 110,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 17,
+        "sourceComponents": 1,
+        "keptComponentPixels": 11760
+      }
+    ],
+    "special_1": [
+      {
+        "file": "sprites/special_1/special_1_001.png",
+        "width": 236,
+        "height": 286,
+        "anchor": {
+          "x": 118,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 18,
+        "sourceComponents": 1,
+        "keptComponentPixels": 15929
+      },
+      {
+        "file": "sprites/special_1/special_1_002.png",
+        "width": 277,
+        "height": 286,
+        "anchor": {
+          "x": 138,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 19,
+        "sourceComponents": 2,
+        "keptComponentPixels": 16940
+      },
+      {
+        "file": "sprites/special_1/special_1_003.png",
+        "width": 262,
+        "height": 286,
+        "anchor": {
+          "x": 131,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 20,
+        "sourceComponents": 2,
+        "keptComponentPixels": 16017
+      },
+      {
+        "file": "sprites/special_1/special_1_004.png",
+        "width": 299,
+        "height": 286,
+        "anchor": {
+          "x": 149,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 21,
+        "sourceComponents": 1,
+        "keptComponentPixels": 24055
+      },
+      {
+        "file": "sprites/special_1/special_1_005.png",
+        "width": 255,
+        "height": 286,
+        "anchor": {
+          "x": 127,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 22,
+        "sourceComponents": 1,
+        "keptComponentPixels": 10541
+      },
+      {
+        "file": "sprites/special_1/special_1_006.png",
+        "width": 220,
+        "height": 286,
+        "anchor": {
+          "x": 110,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 23,
+        "sourceComponents": 1,
+        "keptComponentPixels": 13053
+      }
+    ],
+    "special_2": [
+      {
+        "file": "sprites/special_2/special_2_001.png",
+        "width": 235,
+        "height": 286,
+        "anchor": {
+          "x": 117,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 24,
+        "sourceComponents": 1,
+        "keptComponentPixels": 15143
+      },
+      {
+        "file": "sprites/special_2/special_2_002.png",
+        "width": 268,
+        "height": 286,
+        "anchor": {
+          "x": 134,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 25,
+        "sourceComponents": 1,
+        "keptComponentPixels": 16718
+      },
+      {
+        "file": "sprites/special_2/special_2_003.png",
+        "width": 251,
+        "height": 286,
+        "anchor": {
+          "x": 125,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 26,
+        "sourceComponents": 1,
+        "keptComponentPixels": 14069
+      },
+      {
+        "file": "sprites/special_2/special_2_004.png",
+        "width": 224,
+        "height": 286,
+        "anchor": {
+          "x": 112,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 27,
+        "sourceComponents": 4,
+        "keptComponentPixels": 11374
+      },
+      {
+        "file": "sprites/special_2/special_2_005.png",
+        "width": 220,
+        "height": 286,
+        "anchor": {
+          "x": 110,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 29,
+        "sourceComponents": 1,
+        "keptComponentPixels": 12511
+      },
+      {
+        "file": "sprites/special_2/special_2_006.png",
+        "width": 220,
+        "height": 286,
+        "anchor": {
+          "x": 110,
+          "y": 248
+        },
+        "edgeTouch": false,
+        "sourceIndex": 29,
+        "sourceComponents": 1,
+        "keptComponentPixels": 12511
+      }
+    ]
+  },
+  "projectile": {
+    "file": "projectiles/rubber_bat.png",
+    "width": 161,
+    "height": 72,
+    "sourceIndex": 27,
+    "sourceComponents": 4,
+    "manualCrop": true,
+    "selectedComponents": [
+      {
+        "count": 2038,
+        "center": [
+          1009.23,
+          904.06
+        ],
+        "bbox": [
+          965,
+          885,
+          1055,
+          929
+        ]
+      },
+      {
+        "count": 126,
+        "center": [
+          939.44,
+          915.27
+        ],
+        "bbox": [
+          932,
+          908,
+          948,
+          922
+        ]
+      },
+      {
+        "count": 151,
+        "center": [
+          965.02,
+          922.56
+        ],
+        "bbox": [
+          957,
+          915,
+          974,
+          931
+        ]
+      },
+      {
+        "count": 40,
+        "center": [
+          921.35,
+          928.2
+        ],
+        "bbox": [
+          918,
+          925,
+          926,
+          933
+        ]
+      }
+    ]
+  }
+}

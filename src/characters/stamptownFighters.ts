@@ -1,4 +1,4 @@
-import type { CharacterConfig, Hitbox, Move, MoveVisualFrame, ProjectileConfig, SpriteFrameMeta, SpriteSheetId } from '../schema/types';
+import type { CharacterConfig, CharacterSpriteConfig, Hitbox, Move, MoveVisualFrame, ProjectileConfig, SpriteFrameMeta, SpriteSheetId } from '../schema/types';
 
 type FighterTuning = {
   id: string;
@@ -513,6 +513,178 @@ const rubberChickenFrames = makeFrameMeta({
   ],
 });
 
+const mrSpookyFrames = makeFrameMeta({
+  base: [
+    [247, 286, 123, 248],
+    [237, 286, 118, 248],
+    [257, 286, 128, 248],
+    [269, 286, 134, 248],
+    [220, 286, 110, 248],
+    [373, 286, 186, 248],
+  ],
+  punch: [
+    [274, 286, 137, 248],
+    [250, 286, 125, 248],
+    [338, 286, 169, 248],
+    [256, 286, 128, 248],
+    [220, 286, 110, 248],
+    [220, 286, 110, 248],
+  ],
+  kick: [
+    [228, 286, 114, 248],
+    [248, 286, 124, 248],
+    [313, 286, 156, 248],
+    [361, 286, 180, 248],
+    [246, 286, 123, 248],
+    [220, 286, 110, 248],
+  ],
+  special_1: [
+    [236, 286, 118, 248],
+    [277, 286, 138, 248],
+    [262, 286, 131, 248],
+    [299, 286, 149, 248],
+    [255, 286, 127, 248],
+    [220, 286, 110, 248],
+  ],
+  special_2: [
+    [235, 286, 117, 248],
+    [268, 286, 134, 248],
+    [251, 286, 125, 248],
+    [224, 286, 112, 248],
+    [220, 286, 110, 248],
+    [220, 286, 110, 248],
+  ],
+});
+
+const sklarLeadFrames = makeFrameMeta({
+  base: [
+    [220, 301, 110, 263],
+    [235, 286, 117, 248],
+    [243, 286, 121, 248],
+    [220, 286, 110, 248],
+    [250, 286, 125, 248],
+    [220, 301, 110, 263],
+  ],
+  punch: [
+    [266, 286, 133, 248],
+    [289, 286, 144, 248],
+    [326, 286, 163, 248],
+    [315, 286, 157, 248],
+    [230, 286, 115, 248],
+    [230, 286, 115, 248],
+  ],
+  kick: [
+    [230, 286, 115, 248],
+    [269, 286, 134, 248],
+    [315, 286, 157, 248],
+    [328, 286, 164, 248],
+    [253, 286, 126, 248],
+    [220, 286, 110, 248],
+  ],
+  special_1: [
+    [241, 286, 120, 248],
+    [220, 286, 110, 248],
+    [226, 286, 113, 248],
+    [220, 286, 110, 248],
+    [226, 286, 113, 248],
+    [220, 286, 110, 248],
+  ],
+  special_2: [
+    [257, 286, 128, 248],
+    [220, 286, 110, 248],
+    [292, 286, 146, 248],
+    [270, 286, 135, 248],
+    [223, 286, 111, 248],
+    [220, 286, 110, 248],
+  ],
+});
+
+const sklarEchoFrames = makeFrameMeta({
+  base: [
+    [220, 287, 110, 249],
+    [229, 286, 114, 248],
+    [258, 286, 129, 248],
+    [220, 286, 110, 248],
+    [250, 286, 125, 248],
+    [222, 286, 111, 248],
+  ],
+  punch: [
+    [237, 286, 118, 248],
+    [246, 286, 123, 248],
+    [307, 286, 153, 248],
+    [280, 286, 140, 248],
+    [233, 286, 116, 248],
+    [226, 286, 113, 248],
+  ],
+  kick: [
+    [266, 286, 133, 248],
+    [231, 286, 115, 248],
+    [316, 286, 158, 248],
+    [335, 286, 167, 248],
+    [230, 286, 115, 248],
+    [228, 286, 114, 248],
+  ],
+  special_1: [
+    [222, 286, 111, 248],
+    [220, 286, 110, 248],
+    [255, 286, 127, 248],
+    [220, 309, 110, 271],
+    [229, 286, 114, 248],
+    [226, 286, 113, 248],
+  ],
+  special_2: [
+    [226, 286, 113, 248],
+    [286, 286, 143, 248],
+    [267, 286, 133, 248],
+    [237, 286, 118, 248],
+    [237, 286, 118, 248],
+    [227, 286, 113, 248],
+  ],
+});
+
+const sklarFusionFrames = makeFrameMeta({
+  base: [
+    [263, 311, 131, 273],
+    [267, 290, 133, 252],
+    [291, 286, 145, 248],
+    [256, 286, 128, 248],
+    [273, 286, 136, 248],
+    [258, 306, 129, 268],
+  ],
+  punch: [
+    [304, 291, 152, 253],
+    [281, 286, 140, 248],
+    [376, 290, 188, 252],
+    [327, 286, 163, 248],
+    [250, 286, 125, 248],
+    [257, 286, 128, 248],
+  ],
+  kick: [
+    [291, 286, 145, 248],
+    [278, 286, 139, 248],
+    [363, 286, 181, 248],
+    [304, 286, 152, 248],
+    [270, 286, 135, 248],
+    [256, 286, 128, 248],
+  ],
+  special_1: [
+    [263, 286, 131, 248],
+    [255, 286, 127, 248],
+    [274, 296, 137, 258],
+    [289, 287, 144, 249],
+    [275, 286, 137, 248],
+    [249, 286, 124, 248],
+  ],
+  special_2: [
+    [297, 286, 148, 248],
+    [261, 286, 130, 248],
+    [581, 286, 290, 248],
+    [581, 286, 290, 248],
+    [261, 286, 130, 248],
+    [250, 286, 125, 248],
+  ],
+});
+
 const fighterAnimations: CharacterConfig['animations'] = {
   idle: 'idle',
   walk_forward: 'walk_forward',
@@ -542,6 +714,32 @@ const generatedBaseStateFrames: NonNullable<CharacterConfig['sprite']>['stateFra
   getup: 2,
   dead: 4,
 };
+
+function generatedSprite(basePath: string, frames: Partial<Record<SpriteSheetId, SpriteFrameMeta[]>>, scale = 0.55): CharacterSpriteConfig {
+  return {
+    basePath,
+    frameWidth: 256,
+    frameHeight: 256,
+    scale,
+    anchorY: 248 / 286,
+    stateFrames: generatedBaseStateFrames,
+    frameCounts: {
+      base: 6,
+      punch: 6,
+      kick: 6,
+      special_1: 6,
+      special_2: 6,
+    },
+    sheets: {
+      base: 'sheets/base.png',
+      punch: 'sheets/punch.png',
+      kick: 'sheets/kick.png',
+      special_1: 'sheets/special_1.png',
+      special_2: 'sheets/special_2.png',
+    },
+    frames,
+  };
+}
 
 function visualTimeline(frames: number[], durations: number[]): MoveVisualFrame[] {
   return frames.map((frame, index) => ({ frame, duration: durations[index] ?? 1 }));
@@ -632,7 +830,7 @@ function makeMoves(tuning: FighterTuning): Move[] {
           frames: 5,
           events: [
             { onFrame: 0, event: { type: 'invulnerable', duration: 5, against: ['high', 'mid', 'low', 'projectile'] } },
-            { onFrame: 1, event: { type: 'set_velocity', vx: 1.6, vy: -7.6, relativeToFacing: true } },
+            { onFrame: 1, event: { type: 'set_velocity', vx: 2.2, vy: -7.6, relativeToFacing: true } },
           ],
         },
         {
@@ -645,9 +843,9 @@ function makeMoves(tuning: FighterTuning): Move[] {
                 type: 'hitbox_active',
                 id: 'rise',
                 hitbox: midPunch({
-                  x: 18,
+                  x: 12,
                   y: -126,
-                  width: 48,
+                  width: 52,
                   height: 84,
                   damage: 90,
                   hitstun: 34,
@@ -859,7 +1057,7 @@ function makeMrCardboardMoves(): Move[] {
           frames: 6,
           events: [
             { onFrame: 0, event: { type: 'invulnerable', duration: 6, against: ['high', 'mid', 'low', 'projectile'] } },
-            { onFrame: 2, event: { type: 'set_velocity', vx: 1.2, vy: -6.8, relativeToFacing: true } },
+            { onFrame: 2, event: { type: 'set_velocity', vx: 1.7, vy: -6.8, relativeToFacing: true } },
           ],
         },
         {
@@ -872,9 +1070,9 @@ function makeMrCardboardMoves(): Move[] {
                 type: 'hitbox_active',
                 id: 'mallet_rise',
                 hitbox: {
-                  x: 32,
+                  x: 26,
                   y: -164,
-                  width: 104,
+                  width: 92,
                   height: 98,
                   damage: 96,
                   hitstun: 34,
@@ -1122,7 +1320,7 @@ function makeViggoMoves(): Move[] {
           frames: 6,
           events: [
             { onFrame: 0, event: { type: 'invulnerable', duration: 6, against: ['high', 'mid', 'low', 'projectile'] } },
-            { onFrame: 2, event: { type: 'set_velocity', vx: 1.1, vy: -6.9, relativeToFacing: true } },
+            { onFrame: 2, event: { type: 'set_velocity', vx: 1.75, vy: -6.9, relativeToFacing: true } },
           ],
         },
         {
@@ -1135,9 +1333,9 @@ function makeViggoMoves(): Move[] {
                 type: 'hitbox_active',
                 id: 'fresh_reveal',
                 hitbox: {
-                  x: 24,
+                  x: 14,
                   y: -138,
-                  width: 72,
+                  width: 66,
                   height: 92,
                   damage: 88,
                   hitstun: 32,
@@ -1351,7 +1549,7 @@ function makeJanitorMoves(): Move[] {
           frames: 6,
           events: [
             { onFrame: 0, event: { type: 'invulnerable', duration: 6, against: ['high', 'mid', 'low', 'projectile'] } },
-            { onFrame: 2, event: { type: 'set_velocity', vx: 0.9, vy: -6.4, relativeToFacing: true } },
+            { onFrame: 2, event: { type: 'set_velocity', vx: 1.6, vy: -6.4, relativeToFacing: true } },
           ],
         },
         {
@@ -1364,9 +1562,9 @@ function makeJanitorMoves(): Move[] {
                 type: 'hitbox_active',
                 id: 'mop_launch',
                 hitbox: {
-                  x: 26,
+                  x: 16,
                   y: -154,
-                  width: 82,
+                  width: 74,
                   height: 108,
                   damage: 92,
                   hitstun: 34,
@@ -1584,7 +1782,7 @@ function makeJackTuckerMoves(): Move[] {
           frames: 6,
           events: [
             { onFrame: 0, event: { type: 'invulnerable', duration: 6, against: ['high', 'mid', 'low', 'projectile'] } },
-            { onFrame: 2, event: { type: 'set_velocity', vx: 1.2, vy: -7, relativeToFacing: true } },
+            { onFrame: 2, event: { type: 'set_velocity', vx: 1.85, vy: -7, relativeToFacing: true } },
           ],
         },
         {
@@ -1597,9 +1795,9 @@ function makeJackTuckerMoves(): Move[] {
                 type: 'hitbox_active',
                 id: 'rising_punchline',
                 hitbox: {
-                  x: 24,
+                  x: 14,
                   y: -148,
-                  width: 76,
+                  width: 70,
                   height: 96,
                   damage: 91,
                   hitstun: 34,
@@ -1881,7 +2079,10 @@ function makeMartinUrbanoMoves(): Move[] {
         {
           name: 'startup',
           frames: 7,
-          events: [{ onFrame: 0, event: { type: 'invulnerable', duration: 7, against: ['high', 'mid', 'low', 'projectile'] } }],
+          events: [
+            { onFrame: 0, event: { type: 'invulnerable', duration: 7, against: ['high', 'mid', 'low', 'projectile'] } },
+            { onFrame: 2, event: { type: 'set_velocity', vx: 1.55, vy: -6.2, relativeToFacing: true } },
+          ],
         },
         {
           name: 'active',
@@ -1893,9 +2094,9 @@ function makeMartinUrbanoMoves(): Move[] {
                 type: 'hitbox_active',
                 id: 'pen_blade',
                 hitbox: {
-                  x: 28,
+                  x: 24,
                   y: -132,
-                  width: 172,
+                  width: 148,
                   height: 74,
                   damage: 94,
                   hitstun: 34,
@@ -2060,7 +2261,14 @@ function makeDylanSaxMoves(): Move[] {
         window: 18,
       },
       phases: [
-        { name: 'startup', frames: 6, events: [{ onFrame: 0, event: { type: 'invulnerable', duration: 5, against: ['high', 'mid', 'low'] } }] },
+        {
+          name: 'startup',
+          frames: 6,
+          events: [
+            { onFrame: 0, event: { type: 'invulnerable', duration: 5, against: ['high', 'mid', 'low'] } },
+            { onFrame: 2, event: { type: 'set_velocity', vx: 1.75, vy: -6.8, relativeToFacing: true } },
+          ],
+        },
         {
           name: 'active',
           frames: 8,
@@ -2071,9 +2279,9 @@ function makeDylanSaxMoves(): Move[] {
                 type: 'hitbox_active',
                 id: 'brass_upper',
                 hitbox: {
-                  x: 24,
+                  x: 16,
                   y: -148,
-                  width: 88,
+                  width: 78,
                   height: 104,
                   damage: 90,
                   hitstun: 33,
@@ -2280,7 +2488,14 @@ function makeCoreyMoves(): Move[] {
         window: 18,
       },
       phases: [
-        { name: 'startup', frames: 7, events: [{ onFrame: 0, event: { type: 'invulnerable', duration: 5, against: ['high', 'mid', 'low'] } }] },
+        {
+          name: 'startup',
+          frames: 7,
+          events: [
+            { onFrame: 0, event: { type: 'invulnerable', duration: 5, against: ['high', 'mid', 'low'] } },
+            { onFrame: 2, event: { type: 'set_velocity', vx: 1.55, vy: -6.4, relativeToFacing: true } },
+          ],
+        },
         {
           name: 'active',
           frames: 8,
@@ -2291,9 +2506,9 @@ function makeCoreyMoves(): Move[] {
                 type: 'hitbox_active',
                 id: 'shake_spray',
                 hitbox: {
-                  x: 28,
+                  x: 20,
                   y: -128,
-                  width: 108,
+                  width: 92,
                   height: 82,
                   damage: 88,
                   hitstun: 33,
@@ -2500,7 +2715,14 @@ function makeJugglingJoeMoves(): Move[] {
         window: 18,
       },
       phases: [
-        { name: 'startup', frames: 7, events: [{ onFrame: 0, event: { type: 'invulnerable', duration: 5, against: ['high', 'mid', 'low'] } }] },
+        {
+          name: 'startup',
+          frames: 7,
+          events: [
+            { onFrame: 0, event: { type: 'invulnerable', duration: 5, against: ['high', 'mid', 'low'] } },
+            { onFrame: 2, event: { type: 'set_velocity', vx: 1.45, vy: -6.6, relativeToFacing: true } },
+          ],
+        },
         {
           name: 'active',
           frames: 8,
@@ -2511,9 +2733,9 @@ function makeJugglingJoeMoves(): Move[] {
                 type: 'hitbox_active',
                 id: 'juggle_cyclone',
                 hitbox: {
-                  x: 18,
+                  x: 16,
                   y: -136,
-                  width: 128,
+                  width: 110,
                   height: 104,
                   damage: 90,
                   hitstun: 34,
@@ -2720,7 +2942,14 @@ function makeRubberChickenMoves(): Move[] {
         window: 18,
       },
       phases: [
-        { name: 'startup', frames: 6, events: [{ onFrame: 0, event: { type: 'invulnerable', duration: 5, against: ['high', 'mid', 'low'] } }] },
+        {
+          name: 'startup',
+          frames: 6,
+          events: [
+            { onFrame: 0, event: { type: 'invulnerable', duration: 5, against: ['high', 'mid', 'low'] } },
+            { onFrame: 2, event: { type: 'set_velocity', vx: 1.55, vy: -6.2, relativeToFacing: true } },
+          ],
+        },
         {
           name: 'active',
           frames: 8,
@@ -2731,9 +2960,9 @@ function makeRubberChickenMoves(): Move[] {
                 type: 'hitbox_active',
                 id: 'elastic_neck',
                 hitbox: {
-                  x: 28,
+                  x: 26,
                   y: -128,
-                  width: 168,
+                  width: 146,
                   height: 72,
                   damage: 88,
                   hitstun: 33,
@@ -2899,6 +3128,578 @@ function makeRubberChickenMoves(): Move[] {
         { name: 'startup', frames: 3, events: [] },
         { name: 'active', frames: 3, cancellable: true, events: [{ onFrame: 0, event: { type: 'hitbox_active', id: 'wing_slap', hitbox: midPunch({ x: 26, y: -102, width: 86, height: 32, damage: 45 }) } }] },
         { name: 'recovery', frames: 8, cancellable: true, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'wing_slap' } }] },
+      ],
+      cancelInto: ['light_punch', 'heavy_punch'],
+    },
+  ]);
+}
+
+function makeMrSpookyMoves(): Move[] {
+  const rubberBat: ProjectileConfig = {
+    id: 'rubber_bat_projectile',
+    animation: 'rubber_bat',
+    width: 147,
+    height: 70,
+    speed: 5.7,
+    lifetime: 84,
+    pierces: 1,
+    clashesWithProjectiles: true,
+    spawnPolicy: { maxActivePerOwner: 3, ifAlreadyActive: 'replace_oldest' },
+    hitbox: {
+      x: -54,
+      y: -24,
+      width: 108,
+      height: 42,
+      damage: 58,
+      hitstun: 22,
+      blockstun: 14,
+      chipDamage: 8,
+      knockback: { x: 5.6, y: -1 },
+      level: 'mid',
+    },
+  };
+
+  return addSixFrameVisualTimelines([
+    {
+      id: 'uppercut',
+      displayName: 'Cape Slapstick',
+      animation: 'special_1',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['forward', 'down', 'down-forward', 'hp'],
+        window: 18,
+      },
+      phases: [
+        {
+          name: 'startup',
+          frames: 6,
+          events: [
+            { onFrame: 0, event: { type: 'invulnerable', duration: 6, against: ['high', 'mid', 'low', 'projectile'] } },
+            { onFrame: 2, event: { type: 'set_velocity', vx: 1.8, vy: -6.8, relativeToFacing: true } },
+          ],
+        },
+        {
+          name: 'active',
+          frames: 8,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'cape_slapstick',
+                hitbox: {
+                  x: 16,
+                  y: -148,
+                  width: 96,
+                  height: 104,
+                  damage: 92,
+                  hitstun: 34,
+                  blockstun: 17,
+                  chipDamage: 7,
+                  knockback: { x: 3.3, y: -8 },
+                  level: 'mid',
+                  launches: true,
+                },
+              },
+            },
+            { onFrame: 0, event: { type: 'screen_shake', intensity: 0.002, duration: 4 } },
+          ],
+        },
+        { name: 'recovery', frames: 24, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'cape_slapstick' } }] },
+      ],
+      endState: 'airborne',
+    },
+    {
+      id: 'fireball',
+      displayName: 'Rubber Bat Release',
+      animation: 'special_2',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['down', 'down-forward', 'forward', 'hp'],
+        window: 20,
+      },
+      phases: [
+        { name: 'startup', frames: 16, events: [] },
+        {
+          name: 'release',
+          frames: 4,
+          events: [
+            { onFrame: 0, event: { type: 'spawn_projectile', projectile: rubberBat, offsetX: 82, offsetY: -92 } },
+            { onFrame: 0, event: { type: 'screen_shake', intensity: 0.002, duration: 3 } },
+          ],
+        },
+        { name: 'recovery', frames: 17, events: [] },
+      ],
+    },
+    {
+      id: 'dash_punch',
+      displayName: 'Phantom Flap',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'landing'],
+        sequence: ['forward', 'forward', 'lp'],
+        window: 16,
+      },
+      phases: [
+        { name: 'startup', frames: 7, events: [{ onFrame: 0, event: { type: 'set_velocity', vx: 7, relativeToFacing: true } }] },
+        {
+          name: 'active',
+          frames: 5,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'phantom_flap',
+                hitbox: midPunch({ x: 34, y: -104, width: 104, height: 38, damage: 72, hitstun: 23, blockstun: 13, knockback: { x: 7.1, y: 0 } }),
+              },
+            },
+          ],
+        },
+        {
+          name: 'recovery',
+          frames: 16,
+          events: [
+            { onFrame: 0, event: { type: 'hitbox_end', id: 'phantom_flap' } },
+            { onFrame: 0, event: { type: 'set_velocity', vx: 0, relativeToFacing: true } },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'crouch_low_kick',
+      displayName: 'Coffin Shuffle',
+      animation: 'kick',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['down', 'lk'],
+        window: 8,
+      },
+      phases: [
+        { name: 'startup', frames: 4, events: [{ onFrame: 0, event: { type: 'modify_hurtbox', hurtbox: { x: -30, y: -80, width: 60, height: 80 } } }] },
+        {
+          name: 'active',
+          frames: 4,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'coffin_shuffle',
+                hitbox: {
+                  x: 20,
+                  y: -38,
+                  width: 132,
+                  height: 24,
+                  damage: 41,
+                  hitstun: 13,
+                  blockstun: 10,
+                  knockback: { x: 3.4, y: 0 },
+                  level: 'low',
+                },
+              },
+            },
+          ],
+        },
+        { name: 'recovery', frames: 10, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'coffin_shuffle' } }] },
+      ],
+    },
+    {
+      id: 'heavy_punch',
+      displayName: 'Cape Fright',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['hp'],
+        window: 6,
+      },
+      phases: [
+        { name: 'startup', frames: 8, events: [] },
+        {
+          name: 'active',
+          frames: 4,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'cape_fright',
+                hitbox: midPunch({
+                  x: 28,
+                  y: -112,
+                  width: 124,
+                  height: 44,
+                  damage: 84,
+                  hitstun: 29,
+                  blockstun: 15,
+                  chipDamage: 5,
+                  knockback: { x: 5.5, y: -5.5 },
+                  launches: true,
+                }),
+              },
+            },
+          ],
+        },
+        { name: 'recovery', frames: 18, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'cape_fright' } }] },
+      ],
+    },
+    {
+      id: 'light_punch',
+      displayName: 'Boo Tap',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing', 'attack'],
+        sequence: ['lp'],
+        window: 6,
+        cancelFrom: ['light_punch'],
+      },
+      phases: [
+        { name: 'startup', frames: 3, events: [] },
+        { name: 'active', frames: 3, cancellable: true, events: [{ onFrame: 0, event: { type: 'hitbox_active', id: 'boo_tap', hitbox: midPunch({ x: 30, y: -98, width: 78, height: 30, damage: 45 }) } }] },
+        { name: 'recovery', frames: 8, cancellable: true, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'boo_tap' } }] },
+      ],
+      cancelInto: ['light_punch', 'heavy_punch'],
+    },
+  ]);
+}
+
+function makeSklarBrothersMoves(): Move[] {
+  return addSixFrameVisualTimelines([
+    {
+      id: 'fusion',
+      displayName: 'Sklar Fusion',
+      animation: 'base',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['down', 'down-forward', 'forward', 'mp'],
+        window: 20,
+      },
+      phases: [
+        {
+          name: 'approach',
+          frames: 18,
+          events: [
+            { onFrame: 0, event: { type: 'set_follow_delay', actor: 'echo', frames: 0, duration: 26 } },
+            { onFrame: 0, event: { type: 'set_actor_offset', actor: 'lead', offsetX: -6, duration: 26 } },
+            { onFrame: 0, event: { type: 'set_actor_offset', actor: 'echo', offsetX: -48, duration: 26 } },
+            { onFrame: 5, event: { type: 'set_actor_offset', actor: 'lead', offsetX: -12, duration: 21 } },
+            { onFrame: 5, event: { type: 'set_actor_offset', actor: 'echo', offsetX: -38, duration: 21 } },
+            { onFrame: 10, event: { type: 'set_actor_offset', actor: 'lead', offsetX: -18, duration: 16 } },
+            { onFrame: 10, event: { type: 'set_actor_offset', actor: 'echo', offsetX: -24, duration: 16 } },
+          ],
+        },
+        {
+          name: 'poof',
+          frames: 8,
+          events: [
+            { onFrame: 0, event: { type: 'spawn_vfx', name: 'fusion_poof', offsetX: -20, offsetY: -88 } },
+            { onFrame: 2, event: { type: 'enter_fusion', duration: 300 } },
+            { onFrame: 2, event: { type: 'armor', hits: 1, duration: 300 } },
+            { onFrame: 2, event: { type: 'screen_shake', intensity: 0.003, duration: 6 } },
+          ],
+        },
+        { name: 'arrival', frames: 18, events: [] },
+      ],
+    },
+    {
+      id: 'uppercut',
+      displayName: 'Stacked Set-Up',
+      animation: 'special_1',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['forward', 'down', 'down-forward', 'hp'],
+        window: 18,
+      },
+      phases: [
+        {
+          name: 'stack',
+          frames: 7,
+          events: [
+            { onFrame: 0, event: { type: 'invulnerable', duration: 7, against: ['high', 'mid', 'low', 'projectile'] } },
+            { onFrame: 0, event: { type: 'set_actor_offset', actor: 'echo', offsetX: 0, offsetY: -68, duration: 19 } },
+            { onFrame: 3, event: { type: 'set_velocity', vx: 1.8, vy: -6.6, relativeToFacing: true } },
+          ],
+        },
+        {
+          name: 'active',
+          frames: 8,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'stacked_setup',
+                actor: 'lead',
+                hitbox: {
+                  x: 14,
+                  y: -168,
+                  width: 78,
+                  height: 124,
+                  damage: 96,
+                  hitstun: 35,
+                  blockstun: 17,
+                  chipDamage: 7,
+                  knockback: { x: 3.4, y: -8.3 },
+                  level: 'mid',
+                  launches: true,
+                },
+              },
+            },
+            { onFrame: 0, event: { type: 'screen_shake', intensity: 0.003, duration: 4 } },
+          ],
+        },
+        { name: 'recovery', frames: 24, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'stacked_setup' } }] },
+      ],
+      endState: 'airborne',
+    },
+    {
+      id: 'fireball',
+      displayName: 'Brother Toss',
+      animation: 'special_2',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['down', 'down-forward', 'forward', 'hp'],
+        window: 20,
+      },
+      phases: [
+        {
+          name: 'windup',
+          frames: 14,
+          events: [
+            { onFrame: 0, event: { type: 'set_follow_delay', actor: 'echo', frames: 0, duration: 24 } },
+            { onFrame: 4, event: { type: 'set_actor_offset', actor: 'echo', offsetX: 8, offsetY: 0, duration: 20 } },
+          ],
+        },
+        {
+          name: 'throw',
+          frames: 8,
+          events: [
+            { onFrame: 0, event: { type: 'set_actor_offset', actor: 'echo', offsetX: 126, offsetY: -44, duration: 10 } },
+            {
+              onFrame: 1,
+              event: {
+                type: 'hitbox_active',
+                id: 'brother_toss',
+                actor: 'echo',
+                hitbox: {
+                  x: -18,
+                  y: -104,
+                  width: 104,
+                  height: 82,
+                  damage: 76,
+                  hitstun: 27,
+                  blockstun: 15,
+                  chipDamage: 6,
+                  knockback: { x: 6.4, y: -4 },
+                  level: 'mid',
+                  knockdown: true,
+                },
+              },
+            },
+            { onFrame: 1, event: { type: 'screen_shake', intensity: 0.003, duration: 4 } },
+          ],
+        },
+        { name: 'recovery', frames: 18, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'brother_toss' } }] },
+      ],
+    },
+    {
+      id: 'dash_punch',
+      displayName: 'Brother Swap',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'landing'],
+        sequence: ['forward', 'forward', 'lp'],
+        window: 16,
+      },
+      phases: [
+        {
+          name: 'switch',
+          frames: 7,
+          events: [
+            { onFrame: 0, event: { type: 'set_velocity', vx: 6.8, relativeToFacing: true } },
+            { onFrame: 0, event: { type: 'set_follow_delay', actor: 'echo', frames: 0, duration: 18 } },
+            { onFrame: 0, event: { type: 'set_actor_offset', actor: 'lead', offsetX: -34, duration: 16 } },
+            { onFrame: 0, event: { type: 'set_actor_offset', actor: 'echo', offsetX: 42, duration: 16 } },
+          ],
+        },
+        {
+          name: 'active',
+          frames: 5,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'brother_swap',
+                actor: 'echo',
+                hitbox: midPunch({ x: 30, y: -104, width: 92, height: 34, damage: 72, hitstun: 23, blockstun: 13, knockback: { x: 7, y: 0 } }),
+              },
+            },
+          ],
+        },
+        {
+          name: 'recovery',
+          frames: 16,
+          events: [
+            { onFrame: 0, event: { type: 'hitbox_end', id: 'brother_swap' } },
+            { onFrame: 0, event: { type: 'set_velocity', vx: 0, relativeToFacing: true } },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'crouch_low_kick',
+      displayName: 'Twin Sweep',
+      animation: 'kick',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['down', 'lk'],
+        window: 8,
+      },
+      phases: [
+        {
+          name: 'startup',
+          frames: 4,
+          events: [
+            { onFrame: 0, event: { type: 'modify_hurtbox', actor: 'lead', hurtbox: { x: -28, y: -78, width: 56, height: 78 } } },
+            { onFrame: 0, event: { type: 'modify_hurtbox', actor: 'echo', hurtbox: { x: -28, y: -78, width: 56, height: 78 } } },
+          ],
+        },
+        {
+          name: 'lead_sweep',
+          frames: 4,
+          cancellable: true,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'lead_sweep',
+                actor: 'lead',
+                hitbox: {
+                  x: 20,
+                  y: -38,
+                  width: 100,
+                  height: 24,
+                  damage: 34,
+                  hitstun: 12,
+                  blockstun: 9,
+                  knockback: { x: 3, y: 0 },
+                  level: 'low',
+                },
+              },
+            },
+          ],
+        },
+        {
+          name: 'echo_sweep',
+          frames: 5,
+          cancellable: true,
+          events: [
+            { onFrame: 0, event: { type: 'hitbox_end', id: 'lead_sweep' } },
+            { onFrame: 0, event: { type: 'set_actor_offset', actor: 'echo', offsetX: 36, duration: 8 } },
+            {
+              onFrame: 1,
+              event: {
+                type: 'hitbox_active',
+                id: 'echo_sweep',
+                actor: 'echo',
+                hitbox: {
+                  x: 16,
+                  y: -38,
+                  width: 108,
+                  height: 24,
+                  damage: 34,
+                  hitstun: 13,
+                  blockstun: 10,
+                  knockback: { x: 3.4, y: 0 },
+                  level: 'low',
+                },
+              },
+            },
+          ],
+        },
+        { name: 'recovery', frames: 10, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'echo_sweep' } }] },
+      ],
+    },
+    {
+      id: 'heavy_punch',
+      displayName: 'Callback Cross',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['hp'],
+        window: 6,
+      },
+      phases: [
+        {
+          name: 'setup',
+          frames: 8,
+          events: [
+            { onFrame: 0, event: { type: 'set_follow_delay', actor: 'echo', frames: 1, duration: 22 } },
+            { onFrame: 2, event: { type: 'set_actor_offset', actor: 'lead', offsetX: -16, duration: 20 } },
+            { onFrame: 2, event: { type: 'set_actor_offset', actor: 'echo', offsetX: 42, duration: 20 } },
+          ],
+        },
+        {
+          name: 'active',
+          frames: 5,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'callback_cross',
+                actor: 'echo',
+                hitbox: midPunch({
+                  x: 28,
+                  y: -108,
+                  width: 112,
+                  height: 42,
+                  damage: 86,
+                  hitstun: 29,
+                  blockstun: 15,
+                  chipDamage: 5,
+                  knockback: { x: 5.6, y: -5.5 },
+                  launches: true,
+                }),
+              },
+            },
+          ],
+        },
+        { name: 'recovery', frames: 18, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'callback_cross' } }] },
+      ],
+    },
+    {
+      id: 'light_punch',
+      displayName: 'One Punch, Two Punch',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing', 'attack'],
+        sequence: ['lp'],
+        window: 6,
+        cancelFrom: ['light_punch'],
+      },
+      phases: [
+        { name: 'startup', frames: 3, events: [] },
+        {
+          name: 'one',
+          frames: 3,
+          cancellable: true,
+          events: [{ onFrame: 0, event: { type: 'hitbox_active', id: 'one_punch', actor: 'lead', hitbox: midPunch({ x: 28, width: 64, damage: 34, hitstun: 11 }) } }],
+        },
+        {
+          name: 'two',
+          frames: 5,
+          cancellable: true,
+          events: [
+            { onFrame: 0, event: { type: 'hitbox_end', id: 'one_punch' } },
+            { onFrame: 0, event: { type: 'set_follow_delay', actor: 'echo', frames: 0, duration: 8 } },
+            { onFrame: 0, event: { type: 'set_actor_offset', actor: 'echo', offsetX: 34, duration: 8 } },
+            { onFrame: 1, event: { type: 'hitbox_active', id: 'two_punch', actor: 'echo', hitbox: midPunch({ x: 26, width: 64, damage: 36, hitstun: 13 }) } },
+          ],
+        },
+        { name: 'recovery', frames: 8, cancellable: true, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'two_punch' } }] },
       ],
       cancelInto: ['light_punch', 'heavy_punch'],
     },
@@ -3415,6 +4216,138 @@ export const rubberChickenConfig: CharacterConfig = {
   moves: makeRubberChickenMoves(),
 };
 
+export const mrSpookyConfig: CharacterConfig = {
+  id: 'mr_spooky',
+  displayName: 'Mr Spooky',
+  walkForwardSpeed: 3.05,
+  walkBackSpeed: 2.05,
+  jumpVelocity: 11,
+  jumpForwardVelocity: 4,
+  jumpBackVelocity: 3.2,
+  gravity: 0.55,
+  maxFallSpeed: 12,
+  maxHealth: 990,
+  pivotOffsetY: 0,
+  sprite: {
+    basePath: '/fighters/mr_spooky',
+    frameWidth: 256,
+    frameHeight: 256,
+    scale: 0.55,
+    anchorY: 248 / 286,
+    stateFrames: generatedBaseStateFrames,
+    frameCounts: {
+      base: 6,
+      punch: 6,
+      kick: 6,
+      special_1: 6,
+      special_2: 6,
+    },
+    sheets: {
+      base: 'sheets/base.png',
+      punch: 'sheets/punch.png',
+      kick: 'sheets/kick.png',
+      special_1: 'sheets/special_1.png',
+      special_2: 'sheets/special_2.png',
+    },
+    frames: mrSpookyFrames,
+  },
+  hurtboxes: {
+    ...baseHurtboxes,
+    idle: { x: -28, y: -124, width: 56, height: 124 },
+    walk_forward: { x: -28, y: -124, width: 56, height: 124 },
+    walk_back: { x: -28, y: -124, width: 56, height: 124 },
+    attack: { x: -30, y: -126, width: 60, height: 126 },
+    crouch: { x: -32, y: -82, width: 64, height: 82 },
+  },
+  animations: fighterAnimations,
+  moves: makeMrSpookyMoves(),
+};
+
+const sklarLeadSprite = generatedSprite('/fighters/sklar_brothers/lead', sklarLeadFrames, 0.55);
+const sklarEchoSprite = generatedSprite('/fighters/sklar_brothers/echo', sklarEchoFrames, 0.55);
+const sklarFusionSprite = generatedSprite('/fighters/sklar_brothers/fusion', sklarFusionFrames, 0.62);
+
+export const sklarBrothersConfig: CharacterConfig = {
+  id: 'sklar_brothers',
+  displayName: 'Sklar Brothers',
+  walkForwardSpeed: 2.9,
+  walkBackSpeed: 1.95,
+  jumpVelocity: 10.8,
+  jumpForwardVelocity: 3.8,
+  jumpBackVelocity: 3,
+  gravity: 0.56,
+  maxFallSpeed: 12,
+  maxHealth: 1080,
+  pivotOffsetY: 0,
+  sprite: sklarLeadSprite,
+  actors: [
+    {
+      id: 'echo',
+      sprite: sklarEchoSprite,
+      offsetX: -54,
+      followDelay: 8,
+      visualDelay: 4,
+      defaultVisible: true,
+      hurtboxes: {
+        idle: { x: -24, y: -122, width: 48, height: 122 },
+        walk_forward: { x: -24, y: -122, width: 48, height: 122 },
+        walk_back: { x: -24, y: -122, width: 48, height: 122 },
+        attack: { x: -26, y: -124, width: 52, height: 124 },
+        crouch: { x: -28, y: -82, width: 56, height: 82 },
+        hitstun: { x: -27, y: -122, width: 54, height: 122 },
+        blockstun: { x: -27, y: -122, width: 54, height: 122 },
+        juggle: { x: -26, y: -114, width: 52, height: 114 },
+      },
+    },
+    {
+      id: 'lead',
+      sprite: sklarLeadSprite,
+      offsetX: 0,
+      followDelay: 0,
+      defaultVisible: true,
+      hurtboxes: {
+        idle: { x: -25, y: -124, width: 50, height: 124 },
+        walk_forward: { x: -25, y: -124, width: 50, height: 124 },
+        walk_back: { x: -25, y: -124, width: 50, height: 124 },
+        attack: { x: -27, y: -126, width: 54, height: 126 },
+        crouch: { x: -30, y: -82, width: 60, height: 82 },
+        hitstun: { x: -28, y: -124, width: 56, height: 124 },
+        blockstun: { x: -28, y: -124, width: 56, height: 124 },
+        juggle: { x: -27, y: -116, width: 54, height: 116 },
+      },
+    },
+    {
+      id: 'fusion',
+      sprite: sklarFusionSprite,
+      offsetX: 0,
+      followDelay: 0,
+      defaultVisible: false,
+      visibleInFusion: true,
+      hurtboxes: {
+        idle: { x: -38, y: -148, width: 76, height: 148 },
+        walk_forward: { x: -38, y: -148, width: 76, height: 148 },
+        walk_back: { x: -38, y: -148, width: 76, height: 148 },
+        attack: { x: -42, y: -152, width: 84, height: 152 },
+        crouch: { x: -44, y: -94, width: 88, height: 94 },
+        airborne: { x: -40, y: -138, width: 80, height: 138 },
+        hitstun: { x: -42, y: -148, width: 84, height: 148 },
+        blockstun: { x: -42, y: -148, width: 84, height: 148 },
+        juggle: { x: -40, y: -138, width: 80, height: 138 },
+      },
+    },
+  ],
+  hurtboxes: {
+    ...baseHurtboxes,
+    idle: { x: -34, y: -124, width: 68, height: 124 },
+    walk_forward: { x: -34, y: -124, width: 68, height: 124 },
+    walk_back: { x: -34, y: -124, width: 68, height: 124 },
+    attack: { x: -36, y: -126, width: 72, height: 126 },
+    crouch: { x: -38, y: -84, width: 76, height: 84 },
+  },
+  animations: fighterAnimations,
+  moves: makeSklarBrothersMoves(),
+};
+
 export const playableCharacters = [
   mrCardboardConfig,
   guitarShredderConfig,
@@ -3427,4 +4360,6 @@ export const playableCharacters = [
   coreyConfig,
   jugglingJoeConfig,
   rubberChickenConfig,
+  mrSpookyConfig,
+  sklarBrothersConfig,
 ] as const;

@@ -11,12 +11,14 @@ export class HitboxSystem {
   }
 
   private static checkFighterHitboxes(attacker: Fighter, defender: Fighter): void {
-    const hurtbox = defender.getHurtboxWorld();
-    if (!hurtbox) return;
+    const hurtboxes = defender.getHurtboxesWorld();
+    if (hurtboxes.length === 0) return;
 
     for (const active of attacker.getActiveHitboxesWorld()) {
-      if (boxesOverlap(active.world, hurtbox)) {
-        HitResolver.resolve(attacker, defender, active.hitbox, active.id);
+      for (const hurtbox of hurtboxes) {
+        if (boxesOverlap(active.world, hurtbox.world)) {
+          HitResolver.resolve(attacker, defender, active.hitbox, active.id);
+        }
       }
     }
   }
@@ -26,11 +28,11 @@ export class HitboxSystem {
       const defender = fighters.find((fighter) => fighter !== projectile.owner);
       if (!defender) continue;
 
-      const hurtbox = defender.getHurtboxWorld();
-      if (!hurtbox) continue;
+      const hurtboxes = defender.getHurtboxesWorld();
+      if (hurtboxes.length === 0) continue;
 
       const projectileHitbox = projectiles.getHitboxWorld(projectile);
-      if (!boxesOverlap(projectileHitbox, hurtbox)) continue;
+      if (!hurtboxes.some((hurtbox) => boxesOverlap(projectileHitbox, hurtbox.world))) continue;
 
       if (defender.invulnerable?.against.includes('projectile')) continue;
       if (!projectiles.markHit(projectile, defender.id)) continue;

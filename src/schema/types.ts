@@ -70,9 +70,11 @@ export type Hurtbox = {
   height: number;
 };
 
+export type FighterActorId = 'lead' | 'echo' | 'fusion' | (string & {});
+
 export type MoveEvent =
-  | { type: 'hitbox_active'; hitbox: Hitbox; id?: string }
-  | { type: 'hitbox_end'; id?: string }
+  | { type: 'hitbox_active'; hitbox: Hitbox; id?: string; actor?: FighterActorId }
+  | { type: 'hitbox_end'; id?: string; actor?: FighterActorId }
   | { type: 'spawn_projectile'; projectile: ProjectileConfig; offsetX: number; offsetY: number }
   | { type: 'spawn_projectile_at_target'; projectile: ProjectileConfig; offsetX: number; offsetY: number }
   | { type: 'spawn_projectile_from_sky'; projectile: ProjectileConfig; targetOffsetX: number; spawnOffsetY: number }
@@ -83,8 +85,14 @@ export type MoveEvent =
   | { type: 'play_animation'; name: string }
   | { type: 'play_sound'; name: string }
   | { type: 'spawn_vfx'; name: string; offsetX: number; offsetY: number }
-  | { type: 'modify_hurtbox'; hurtbox: Hurtbox | null }
-  | { type: 'screen_shake'; intensity: number; duration: number };
+  | { type: 'modify_hurtbox'; hurtbox: Hurtbox | null; actor?: FighterActorId }
+  | { type: 'screen_shake'; intensity: number; duration: number }
+  | { type: 'set_actor_offset'; actor: FighterActorId; offsetX: number; offsetY?: number; duration?: number }
+  | { type: 'reset_actor_offset'; actor: FighterActorId }
+  | { type: 'set_follow_delay'; actor: FighterActorId; frames: number; duration?: number }
+  | { type: 'swap_lead' }
+  | { type: 'enter_fusion'; duration: number }
+  | { type: 'exit_fusion' };
 
 export type MovePhase = {
   name: string;
@@ -159,6 +167,18 @@ export type CharacterSpriteConfig = {
   frames?: Partial<Record<SpriteSheetId, SpriteFrameMeta[]>>;
 };
 
+export type FighterActorConfig = {
+  id: FighterActorId;
+  sprite?: CharacterSpriteConfig;
+  hurtboxes?: Partial<Record<FighterState, Hurtbox>>;
+  offsetX?: number;
+  offsetY?: number;
+  followDelay?: number;
+  visualDelay?: number;
+  defaultVisible?: boolean;
+  visibleInFusion?: boolean;
+};
+
 export type FighterState =
   | 'idle'
   | 'walk_forward'
@@ -190,6 +210,7 @@ export type CharacterConfig = {
   hurtboxes: Partial<Record<FighterState, Hurtbox>>;
   pivotOffsetY: number;
   sprite?: CharacterSpriteConfig;
+  actors?: FighterActorConfig[];
   animations: Partial<Record<FighterState, string>>;
   moves: Move[];
 };
