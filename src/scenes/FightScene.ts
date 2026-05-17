@@ -17,7 +17,7 @@ const ROUND_FRAMES = 99 * 60;
 const STAGE_LEFT = 96;
 const STAGE_RIGHT = 704;
 const MIN_FIGHTER_DISTANCE = 96;
-const SPRITE_ASSET_VERSION = 'mr-spooky-face-v2';
+const SPRITE_ASSET_VERSION = 'demi-imagegen-v4';
 const DEBUG_MOVE_KEYS: Record<string, { player: 0 | 1; moveId: string }> = {
   Digit1: { player: 0, moveId: 'fireball' },
   Digit2: { player: 0, moveId: 'dash_punch' },
@@ -110,6 +110,9 @@ export class FightScene extends Phaser.Scene {
     this.load.image('juggling_balls', this.assetUrl('/fighters/juggling_joe/projectiles/juggling_balls.png'));
     this.load.image('squeak_storm', this.assetUrl('/fighters/rubber_chicken/projectiles/squeak_storm.png'));
     this.load.image('rubber_bat', this.assetUrl('/fighters/mr_spooky/projectiles/rubber_bat.png'));
+    this.load.image('demi_laser', this.assetUrl('/fighters/demi/projectiles/remote_laser.png'));
+    this.load.image('remote_spark', this.assetUrl('/fighters/demi/projectiles/remote_spark.png'));
+    this.load.image('morph_flash', this.assetUrl('/fighters/demi/projectiles/morph_flash.png'));
 
     const preloadSpriteConfig = (sprite: CharacterSpriteConfig, keyPrefix: string): void => {
       for (const [sheet, frameCount] of Object.entries(sprite.frameCounts)) {
@@ -755,6 +758,53 @@ export class FightScene extends Phaser.Scene {
       poof.generateTexture('fusion_poof', 128, 104);
       poof.destroy();
     }
+
+    if (!this.textures.exists('demi_laser')) {
+      const laser = this.add.graphics();
+      laser.lineStyle(22, 0x3feaff, 0.18);
+      laser.lineBetween(4, 22, 220, 22);
+      laser.lineStyle(12, 0x3feaff, 0.48);
+      laser.lineBetween(8, 22, 216, 22);
+      laser.lineStyle(4, 0xe6ffff, 1);
+      laser.lineBetween(10, 22, 214, 22);
+      laser.lineStyle(2, 0xffffff, 0.8);
+      for (let x = 34; x <= 194; x += 40) {
+        laser.lineBetween(x - 8, 14, x + 8, 30);
+      }
+      laser.generateTexture('demi_laser', 224, 44);
+      laser.destroy();
+    }
+
+    if (!this.textures.exists('remote_spark')) {
+      const spark = this.add.graphics();
+      spark.fillStyle(0xe6ffff, 0.8);
+      spark.fillCircle(32, 32, 8);
+      spark.lineStyle(3, 0x3feaff, 0.9);
+      spark.strokeCircle(32, 32, 15);
+      spark.lineStyle(2, 0xffffff, 0.9);
+      spark.lineBetween(32, 4, 32, 18);
+      spark.lineBetween(32, 46, 32, 60);
+      spark.lineBetween(4, 32, 18, 32);
+      spark.lineBetween(46, 32, 60, 32);
+      spark.lineBetween(12, 12, 22, 22);
+      spark.lineBetween(42, 42, 52, 52);
+      spark.generateTexture('remote_spark', 64, 64);
+      spark.destroy();
+    }
+
+    if (!this.textures.exists('morph_flash')) {
+      const flash = this.add.graphics();
+      flash.lineStyle(5, 0x48f182, 0.68);
+      flash.strokeCircle(46, 46, 32);
+      flash.lineStyle(4, 0x0dc24f, 0.85);
+      flash.beginPath();
+      flash.arc(46, 46, 24, Phaser.Math.DegToRad(205), Phaser.Math.DegToRad(30), false);
+      flash.strokePath();
+      flash.fillStyle(0xe6ffff, 0.55);
+      flash.fillCircle(46, 46, 12);
+      flash.generateTexture('morph_flash', 92, 92);
+      flash.destroy();
+    }
   }
 
   private createSpriteDebugView(params: URLSearchParams): void {
@@ -833,6 +883,9 @@ export class FightScene extends Phaser.Scene {
       { key: 'juggling_balls', x: 480, row: 2 },
       { key: 'squeak_storm', x: 674, row: 2 },
       { key: 'rubber_bat', x: 92, row: 3 },
+      { key: 'demi_laser', x: 286, row: 3 },
+      { key: 'morph_flash', x: 480, row: 3 },
+      { key: 'remote_spark', x: 674, row: 3 },
     ].forEach(({ key, x, row }) => {
       const texture = this.textures.get(key).getSourceImage() as { width: number; height: number };
       const scale = Math.min(0.75, 86 / Math.max(texture.width, texture.height));

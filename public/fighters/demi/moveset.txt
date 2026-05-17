@@ -1,0 +1,15 @@
+[punch]
+name=Remote Click
+description=Quick remote point that snaps a short cyan laser forward.
+
+[kick]
+name=Dance Floor Check
+description=Low dancer kick to keep opponents away.
+
+[special_1]
+name=Channel Changer
+description=Remote fires a long fast laser projectile across the stage.
+
+[special_2]
+name=Morph Toss Backflip
+description=Green morphsuit assistant appears, throws Demi forward, and Demi backflips into the opponent.

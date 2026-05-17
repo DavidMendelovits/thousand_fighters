@@ -741,6 +741,19 @@ function generatedSprite(basePath: string, frames: Partial<Record<SpriteSheetId,
   };
 }
 
+function uniformFrameMeta(frameCount: number, width: number, height: number, anchorX: number, anchorY: number): Partial<Record<SpriteSheetId, SpriteFrameMeta[]>> {
+  const result: Partial<Record<SpriteSheetId, SpriteFrameMeta[]>> = {};
+  for (const sheet of ['base', 'punch', 'kick', 'special_1', 'special_2'] satisfies SpriteSheetId[]) {
+    result[sheet] = Array.from({ length: frameCount }, (_, index) => ({
+      file: `sprites/${sheet}/${sheet}_${String(index + 1).padStart(3, '0')}.png`,
+      width,
+      height,
+      anchor: { x: anchorX, y: anchorY },
+    }));
+  }
+  return result;
+}
+
 function visualTimeline(frames: number[], durations: number[]): MoveVisualFrame[] {
   return frames.map((frame, index) => ({ frame, duration: durations[index] ?? 1 }));
 }
@@ -802,6 +815,8 @@ function sixFrameTimelineFor(move: Move): MoveVisualFrame[] {
       return uppercutTimeline(move);
     case 'fireball':
       return fireballTimeline(move);
+    case 'fusion':
+      return timedFrames(move, [0, 1, 2, 3, 4, 5], [3, 3, 3, 4, 5, 5]);
     default:
       return timedFrames(move, [0, 1, 2, 3, 4, 5], [1, 1, 1, 1, 1, 1]);
   }
@@ -3363,6 +3378,316 @@ function makeMrSpookyMoves(): Move[] {
   ]);
 }
 
+function makeDemiMoves(): Move[] {
+  const remotePing: ProjectileConfig = {
+    id: 'demi_remote_ping',
+    animation: 'demi_laser',
+    width: 126,
+    height: 20,
+    speed: 12.2,
+    lifetime: 28,
+    pierces: 1,
+    clashesWithProjectiles: true,
+    spawnPolicy: { maxActivePerOwner: 3, ifAlreadyActive: 'replace_oldest' },
+    hitbox: {
+      x: -63,
+      y: -10,
+      width: 126,
+      height: 20,
+      damage: 36,
+      hitstun: 13,
+      blockstun: 9,
+      chipDamage: 3,
+      knockback: { x: 3.2, y: 0 },
+      level: 'mid',
+    },
+  };
+
+  const channelLaser: ProjectileConfig = {
+    id: 'demi_channel_laser',
+    animation: 'demi_laser',
+    width: 196,
+    height: 24,
+    speed: 13,
+    lifetime: 34,
+    pierces: 1,
+    clashesWithProjectiles: true,
+    spawnPolicy: { maxActivePerOwner: 2, ifAlreadyActive: 'replace_oldest' },
+    hitbox: {
+      x: -98,
+      y: -12,
+      width: 196,
+      height: 24,
+      damage: 68,
+      hitstun: 25,
+      blockstun: 15,
+      chipDamage: 8,
+      knockback: { x: 5.8, y: -1.4 },
+      level: 'mid',
+    },
+  };
+  const heavyLaser: ProjectileConfig = {
+    ...channelLaser,
+    id: 'demi_heavy_laser',
+    lifetime: 30,
+    hitbox: {
+      ...channelLaser.hitbox,
+      damage: 58,
+      hitstun: 22,
+      blockstun: 14,
+      chipDamage: 6,
+      knockback: { x: 5.2, y: -1 },
+    },
+  };
+
+  return addSixFrameVisualTimelines([
+    {
+      id: 'uppercut',
+      displayName: 'Signal Pop',
+      animation: 'special_1',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['forward', 'down', 'down-forward', 'hp'],
+        window: 18,
+      },
+      phases: [
+        {
+          name: 'startup',
+          frames: 6,
+          events: [
+            { onFrame: 0, event: { type: 'invulnerable', duration: 5, against: ['high', 'mid', 'low', 'projectile'] } },
+            { onFrame: 2, event: { type: 'set_velocity', vx: 1.8, vy: -6.6, relativeToFacing: true } },
+          ],
+        },
+        {
+          name: 'active',
+          frames: 8,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'signal_pop',
+                hitbox: {
+                  x: 16,
+                  y: -144,
+                  width: 76,
+                  height: 102,
+                  damage: 82,
+                  hitstun: 32,
+                  blockstun: 16,
+                  chipDamage: 6,
+                  knockback: { x: 3.2, y: -7.5 },
+                  level: 'mid',
+                  launches: true,
+                },
+              },
+            },
+            { onFrame: 0, event: { type: 'spawn_vfx', name: 'remote_spark', offsetX: 58, offsetY: -132 } },
+          ],
+        },
+        { name: 'recovery', frames: 24, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'signal_pop' } }] },
+      ],
+      endState: 'airborne',
+    },
+    {
+      id: 'fireball',
+      displayName: 'Channel Changer',
+      animation: 'special_1',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['down', 'down-forward', 'forward', 'hp'],
+        window: 20,
+      },
+      phases: [
+        { name: 'startup', frames: 11, events: [{ onFrame: 6, event: { type: 'spawn_vfx', name: 'remote_spark', offsetX: 72, offsetY: -118 } }] },
+        {
+          name: 'release',
+          frames: 4,
+          events: [
+            { onFrame: 0, event: { type: 'spawn_projectile', projectile: channelLaser, offsetX: 118, offsetY: -116 } },
+            { onFrame: 0, event: { type: 'screen_shake', intensity: 0.002, duration: 3 } },
+          ],
+        },
+        { name: 'recovery', frames: 18, events: [] },
+      ],
+    },
+    {
+      id: 'dash_punch',
+      displayName: 'Fast Forward',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'landing'],
+        sequence: ['forward', 'forward', 'lp'],
+        window: 16,
+      },
+      phases: [
+        { name: 'startup', frames: 7, events: [{ onFrame: 0, event: { type: 'set_velocity', vx: 4.2, relativeToFacing: true } }] },
+        {
+          name: 'active',
+          frames: 5,
+          events: [
+            { onFrame: 0, event: { type: 'spawn_projectile', projectile: remotePing, offsetX: 98, offsetY: -104 } },
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'fast_forward',
+                hitbox: midPunch({ x: 24, y: -106, width: 74, height: 34, damage: 58, hitstun: 20, blockstun: 12, knockback: { x: 6.4, y: 0 } }),
+              },
+            },
+          ],
+        },
+        {
+          name: 'recovery',
+          frames: 17,
+          events: [
+            { onFrame: 0, event: { type: 'hitbox_end', id: 'fast_forward' } },
+            { onFrame: 0, event: { type: 'set_velocity', vx: 0, relativeToFacing: true } },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'crouch_low_kick',
+      displayName: 'Dance Floor Check',
+      animation: 'kick',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['down', 'lk'],
+        window: 8,
+      },
+      phases: [
+        { name: 'startup', frames: 4, events: [{ onFrame: 0, event: { type: 'modify_hurtbox', hurtbox: { x: -28, y: -78, width: 56, height: 78 } } }] },
+        {
+          name: 'active',
+          frames: 4,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'dance_floor_check',
+                hitbox: {
+                  x: 22,
+                  y: -42,
+                  width: 112,
+                  height: 26,
+                  damage: 39,
+                  hitstun: 13,
+                  blockstun: 10,
+                  knockback: { x: 3.5, y: 0 },
+                  level: 'low',
+                },
+              },
+            },
+          ],
+        },
+        { name: 'recovery', frames: 11, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'dance_floor_check' } }] },
+      ],
+    },
+    {
+      id: 'heavy_punch',
+      displayName: 'Remote Laser',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['hp'],
+        window: 6,
+      },
+      phases: [
+        { name: 'startup', frames: 9, events: [] },
+        {
+          name: 'active',
+          frames: 4,
+          events: [
+            { onFrame: 0, event: { type: 'spawn_projectile', projectile: heavyLaser, offsetX: 110, offsetY: -110 } },
+          ],
+        },
+        { name: 'recovery', frames: 18, events: [] },
+      ],
+    },
+    {
+      id: 'light_punch',
+      displayName: 'Remote Click',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing', 'attack'],
+        sequence: ['lp'],
+        window: 6,
+        cancelFrom: ['light_punch'],
+      },
+      phases: [
+        { name: 'startup', frames: 4, events: [] },
+        {
+          name: 'active',
+          frames: 3,
+          cancellable: true,
+          events: [{ onFrame: 0, event: { type: 'spawn_projectile', projectile: remotePing, offsetX: 92, offsetY: -104 } }],
+        },
+        { name: 'recovery', frames: 9, cancellable: true, events: [] },
+      ],
+      cancelInto: ['light_punch', 'heavy_punch'],
+    },
+    {
+      id: 'fusion',
+      displayName: 'Morph Toss Backflip',
+      animation: 'special_2',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['down', 'down-forward', 'forward', 'mp'],
+        window: 20,
+      },
+      phases: [
+        {
+          name: 'summon',
+          frames: 12,
+          events: [
+            { onFrame: 0, event: { type: 'armor', hits: 1, duration: 28 } },
+            { onFrame: 1, event: { type: 'spawn_vfx', name: 'morph_flash', offsetX: -28, offsetY: -116 } },
+          ],
+        },
+        {
+          name: 'throw',
+          frames: 12,
+          events: [
+            { onFrame: 0, event: { type: 'set_velocity', vx: 14.5, vy: -4, relativeToFacing: true } },
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'morph_backflip',
+                hitbox: {
+                  x: 34,
+                  y: -148,
+                  width: 190,
+                  height: 118,
+                  damage: 104,
+                  hitstun: 35,
+                  blockstun: 17,
+                  chipDamage: 8,
+                  knockback: { x: 7.2, y: -5.2 },
+                  level: 'mid',
+                  knockdown: true,
+                },
+              },
+            },
+            { onFrame: 0, event: { type: 'screen_shake', intensity: 0.004, duration: 5 } },
+          ],
+        },
+        {
+          name: 'recovery',
+          frames: 24,
+          events: [
+            { onFrame: 0, event: { type: 'hitbox_end', id: 'morph_backflip' } },
+            { onFrame: 5, event: { type: 'set_velocity', vx: 0.6, relativeToFacing: true } },
+          ],
+        },
+      ],
+    },
+  ]);
+}
+
 function makeSklarBrothersMoves(): Move[] {
   return addSixFrameVisualTimelines([
     {
@@ -4263,6 +4588,35 @@ export const mrSpookyConfig: CharacterConfig = {
   moves: makeMrSpookyMoves(),
 };
 
+const demiSprite = generatedSprite('/fighters/demi', uniformFrameMeta(6, 320, 320, 160, 286), 0.56);
+
+export const demiConfig: CharacterConfig = {
+  id: 'demi',
+  displayName: 'Demi',
+  walkForwardSpeed: 2.85,
+  walkBackSpeed: 2.25,
+  jumpVelocity: 10.6,
+  jumpForwardVelocity: 3.7,
+  jumpBackVelocity: 3.4,
+  gravity: 0.55,
+  maxFallSpeed: 12,
+  maxHealth: 950,
+  pivotOffsetY: 0,
+  sprite: demiSprite,
+  hurtboxes: {
+    ...baseHurtboxes,
+    idle: { x: -24, y: -124, width: 48, height: 124 },
+    walk_forward: { x: -24, y: -124, width: 48, height: 124 },
+    walk_back: { x: -24, y: -124, width: 48, height: 124 },
+    attack: { x: -26, y: -124, width: 52, height: 124 },
+    crouch: { x: -30, y: -80, width: 60, height: 80 },
+    airborne: { x: -30, y: -116, width: 60, height: 116 },
+    juggle: { x: -30, y: -116, width: 60, height: 116 },
+  },
+  animations: fighterAnimations,
+  moves: makeDemiMoves(),
+};
+
 const sklarLeadSprite = generatedSprite('/fighters/sklar_brothers/lead', sklarLeadFrames, 0.55);
 const sklarEchoSprite = generatedSprite('/fighters/sklar_brothers/echo', sklarEchoFrames, 0.55);
 const sklarFusionSprite = generatedSprite('/fighters/sklar_brothers/fusion', sklarFusionFrames, 0.62);
@@ -4361,5 +4715,6 @@ export const playableCharacters = [
   jugglingJoeConfig,
   rubberChickenConfig,
   mrSpookyConfig,
+  demiConfig,
   sklarBrothersConfig,
 ] as const;
