@@ -1,0 +1,6 @@
+cms-data
+test-results
+playwright-report
+node_modules
+dist
+.DS_Store
