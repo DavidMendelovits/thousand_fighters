@@ -4,13 +4,33 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "cms:admin": "node scripts/cms_admin_server.mjs",
+    "cms:import-fighters": "node scripts/import_existing_fighters_to_cms.mjs",
+    "cms:smoke": "node scripts/smoke_cms_storage.mjs",
+    "cms:cached:smoke": "node scripts/smoke_cms_cached_storage.mjs",
+    "cms:r2:smoke": "node scripts/smoke_cms_r2_storage.mjs",
+    "cms:r2:migrate": "node scripts/migrate_cms_file_to_r2.mjs",
+    "cms:supabase:smoke": "node scripts/smoke_cms_supabase_storage.mjs",
+    "cms:supabase:migrate": "node scripts/migrate_cms_file_to_supabase.mjs",
+    "cms:pull": "node scripts/pull_cms_cache.mjs",
+    "cms:cache:pull": "node scripts/pull_cms_cache.mjs",
+    "cms:cache:status": "node scripts/status_cms_cache.mjs",
+    "cms:cache:clear": "node scripts/clear_cms_cache.mjs",
+    "cms:pipeline:smoke": "node scripts/smoke_cms_pipeline.mjs",
+    "cms:e2e": "node scripts/smoke_cms_e2e.mjs",
+    "cms:remote:e2e": "node scripts/smoke_cms_http_remote.mjs",
+    "cms:vercel:build": "node scripts/build_cms_admin_static.mjs",
+    "test:admin:playwright": "playwright test tests/admin-cms.spec.js",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1048.0",
+    "@supabase/supabase-js": "^2.105.4",
     "phaser": "^3.90.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "typescript": "^6.0.3",
     "vite": "^8.0.10"
   }
