@@ -1,0 +1,15 @@
+[punch]
+name=Boo Tap
+description=Quick fake-out jab with a vampire flourish and cape follow-through.
+
+[kick]
+name=Coffin Shuffle
+description=Awkward low sweeping kick with comedy-horror footwork.
+
+[special_1]
+name=Cape Slapstick
+description=Dramatic red-cape spin into a rising slapstick cape uppercut.
+
+[special_2]
+name=Rubber Bat Release
+description=Overacted scare pose that releases a small goofy bat projectile from the cape.

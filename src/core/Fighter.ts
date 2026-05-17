@@ -4,6 +4,8 @@ import { MoveExecutor } from './MoveExecutor';
 import type { ProjectilePool } from './ProjectilePool';
 import type {
   CharacterConfig,
+  FighterActorConfig,
+  FighterActorId,
   FighterScene,
   FighterState,
   Hitbox,
@@ -21,6 +23,34 @@ const FLOOR_Y = 390;
 const FIGHTER_WIDTH = 60;
 const FIGHTER_HEIGHT = 120;
 const MOVE_SHEETS = new Set<SpriteSheetId>(['punch', 'kick', 'special_1', 'special_2']);
+
+type ActiveHitbox = {
+  actorId?: FighterActorId;
+  hitbox: Hitbox;
+};
+
+type ActorPose = {
+  x: number;
+  y: number;
+  facing: 1 | -1;
+};
+
+type ActorOverride = {
+  offsetX: number;
+  offsetY: number;
+  duration: number | null;
+};
+
+type FollowDelayOverride = {
+  frames: number;
+  duration: number | null;
+};
+
+type FighterActorRuntime = {
+  id: FighterActorId;
+  config: FighterActorConfig;
+  body: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Sprite;
+};
 
 export class Fighter {
   id: string;
@@ -46,11 +76,12 @@ export class Fighter {
   armor: { hits: number; duration: number } | null = null;
   hurtboxOverride: Hurtbox | null = null;
   hurtboxDisabled = false;
+  actorHurtboxOverrides = new Map<FighterActorId, Hurtbox | null>();
 
   currentMove: Move | null = null;
   movePhaseIndex = 0;
   movePhaseFrame = 0;
-  activeHitboxes = new Map<string, Hitbox>();
+  activeHitboxes = new Map<string, ActiveHitbox>();
   hasHitThisMove = new Set<string>();
 
   inputBuffer = new InputBuffer();
@@ -58,6 +89,15 @@ export class Fighter {
 
   readonly body: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Sprite;
   readonly label: Phaser.GameObjects.Text;
+
+  private readonly actors = new Map<FighterActorId, FighterActorRuntime>();
+  private readonly actorOrder: FighterActorId[] = [];
+  private readonly actorOffsetOverrides = new Map<FighterActorId, ActorOverride>();
+  private readonly followDelayOverrides = new Map<FighterActorId, FollowDelayOverride>();
+  private poseHistory: ActorPose[] = [];
+  private fusionFrames = 0;
+  private leadSwapped = false;
+  private readonly maxPoseHistory = 90;
 
   constructor(scene: FighterScene, config: CharacterConfig, playerNum: 1 | 2, position: { x: number; y: number }) {
     this.scene = scene;
@@ -70,9 +110,8 @@ export class Fighter {
     this.health = config.maxHealth;
 
     const fill = playerNum === 1 ? 0xd44949 : 0x426edb;
-    this.body = config.sprite
-      ? scene.add.sprite(this.x, this.y, this.frameKey('base', 0))
-      : scene.add.rectangle(this.x, this.y, FIGHTER_WIDTH, FIGHTER_HEIGHT, fill).setOrigin(0.5, 1);
+    this.body = this.createActors(fill);
+    this.poseHistory = Array.from({ length: this.maxPoseHistory }, () => ({ x: this.x, y: this.y, facing: this.facing }));
     this.label = scene.add
       .text(this.x, this.y - FIGHTER_HEIGHT - 24, '', {
         color: '#ffffff',
@@ -95,6 +134,7 @@ export class Fighter {
     this.runState(input);
     this.applyPhysics();
     this.keepInStage();
+    this.recordPose();
     this.stateFrame += 1;
     this.syncVisuals();
   }
@@ -112,21 +152,37 @@ export class Fighter {
       this.activeHitboxes.clear();
       this.hurtboxOverride = null;
       this.hurtboxDisabled = false;
+      this.clearActorMoveOverrides();
     }
   }
 
   getHurtboxWorld(): AABB | null {
-    if (this.hurtboxDisabled) return null;
-    const hurtbox = this.hurtboxOverride ?? this.config.hurtboxes[this.state] ?? this.config.hurtboxes.idle;
-    return hurtbox ? boxToWorld(hurtbox, this.x, this.y, this.facing) : null;
+    return this.getHurtboxesWorld()[0]?.world ?? null;
   }
 
-  getActiveHitboxesWorld(): Array<{ id: string; hitbox: Hitbox; world: AABB }> {
-    return [...this.activeHitboxes.entries()].map(([id, hitbox]) => ({
-      id,
-      hitbox,
-      world: boxToWorld(hitbox, this.x, this.y, this.facing),
-    }));
+  getHurtboxesWorld(): Array<{ actorId: FighterActorId; world: AABB }> {
+    if (this.hurtboxDisabled) return [];
+    return this.activeCollisionActors().flatMap((actor) => {
+      const override = this.actorHurtboxOverrides.has(actor.id) ? this.actorHurtboxOverrides.get(actor.id) : undefined;
+      if (override === null) return [];
+      const hurtbox = override ?? actor.config.hurtboxes?.[this.state] ?? actor.config.hurtboxes?.idle ?? this.hurtboxOverride ?? this.config.hurtboxes[this.state] ?? this.config.hurtboxes.idle;
+      if (!hurtbox) return [];
+      const pose = this.actorPose(actor);
+      return [{ actorId: actor.id, world: boxToWorld(hurtbox, pose.x, pose.y, pose.facing) }];
+    });
+  }
+
+  getActiveHitboxesWorld(): Array<{ actorId: FighterActorId; id: string; hitbox: Hitbox; world: AABB }> {
+    return [...this.activeHitboxes.entries()].map(([id, active]) => {
+      const actor = this.actorFor(this.fusionFrames > 0 ? this.primaryActorId() : (active.actorId ?? this.primaryActorId()));
+      const pose = this.actorPose(actor);
+      return {
+        actorId: actor.id,
+        id,
+        hitbox: active.hitbox,
+        world: boxToWorld(active.hitbox, pose.x, pose.y, pose.facing),
+      };
+    });
   }
 
   refreshVisuals(): void {
@@ -278,6 +334,9 @@ export class Fighter {
   }
 
   private tickModifiers(): void {
+    if (this.fusionFrames > 0) {
+      this.fusionFrames -= 1;
+    }
     if (this.invulnerable) {
       this.invulnerable.duration -= 1;
       if (this.invulnerable.duration <= 0) this.invulnerable = null;
@@ -286,60 +345,85 @@ export class Fighter {
       this.armor.duration -= 1;
       if (this.armor.duration <= 0 || this.armor.hits <= 0) this.armor = null;
     }
+    for (const [actorId, override] of this.actorOffsetOverrides.entries()) {
+      if (override.duration === null) continue;
+      override.duration -= 1;
+      if (override.duration <= 0) this.actorOffsetOverrides.delete(actorId);
+    }
+    for (const [actorId, override] of this.followDelayOverrides.entries()) {
+      if (override.duration === null) continue;
+      override.duration -= 1;
+      if (override.duration <= 0) this.followDelayOverrides.delete(actorId);
+    }
   }
 
   private syncVisuals(): void {
-    this.body.setPosition(this.x, this.y);
-
-    if (this.body instanceof Phaser.GameObjects.Sprite && this.config.sprite) {
-      const visual = this.currentVisualFrame();
-      const frameMeta = this.frameMeta(visual.sheet, visual.frame);
-      const originX = frameMeta.anchor.x / frameMeta.width;
-      const originY = frameMeta.anchor.y / frameMeta.height;
-      this.body.setTexture(this.frameKey(visual.sheet, visual.frame));
-      this.body.setOrigin(this.facing === -1 ? 1 - originX : originX, originY);
-      this.body.setFlipX(this.facing === -1);
-      this.body.setScale(this.config.sprite.scale);
-      this.body.clearTint();
-      if (this.state === 'hitstun' || this.state === 'juggle') this.body.setTint(0xffffff);
-      if (this.state === 'blockstun') this.body.setTint(0x9dffbd);
-    } else if (this.body instanceof Phaser.GameObjects.Rectangle) {
-      this.body.setScale(this.facing, this.state === 'crouch' ? 0.58 : 1);
-      this.body.setFillStyle(this.playerNum === 1 ? 0xd44949 : 0x426edb);
-      if (this.state === 'attack') this.body.setFillStyle(0xf2b84b);
-      if (this.state === 'hitstun' || this.state === 'juggle') this.body.setFillStyle(0xffffff);
-      if (this.state === 'blockstun') this.body.setFillStyle(0x62d980);
+    for (const actor of this.actorOrder.map((id) => this.actorFor(id))) {
+      this.syncActorVisual(actor);
     }
 
-    if (this.invulnerable) this.body.setAlpha(0.55);
-    else this.body.setAlpha(1);
-
     this.label.setPosition(this.x, this.y - FIGHTER_HEIGHT - 18);
-    this.label.setText(this.currentMove?.id ?? this.state);
+    this.label.setText(this.fusionFrames > 0 ? `${this.currentMove?.id ?? this.state}:fusion` : (this.currentMove?.id ?? this.state));
   }
 
-  private currentVisualFrame(): { sheet: SpriteSheetId; frame: number } {
+  private syncActorVisual(actor: FighterActorRuntime): void {
+    const visible = this.actorVisible(actor);
+    actor.body.setVisible(visible);
+    if (!visible) return;
+
+    const pose = this.actorPose(actor);
+    actor.body.setPosition(pose.x, pose.y);
+
+    const sprite = this.spriteForActor(actor);
+    if (actor.body instanceof Phaser.GameObjects.Sprite && sprite) {
+      const visual = this.currentVisualFrame(actor);
+      const frameMeta = this.frameMeta(sprite, visual.sheet, visual.frame);
+      const originX = frameMeta.anchor.x / frameMeta.width;
+      const originY = frameMeta.anchor.y / frameMeta.height;
+      actor.body.setTexture(this.frameKey(visual.sheet, visual.frame, actor.id));
+      actor.body.setOrigin(pose.facing === -1 ? 1 - originX : originX, originY);
+      actor.body.setFlipX(pose.facing === -1);
+      actor.body.setScale(sprite.scale);
+      actor.body.clearTint();
+      if (this.state === 'hitstun' || this.state === 'juggle') actor.body.setTint(0xffffff);
+      if (this.state === 'blockstun') actor.body.setTint(0x9dffbd);
+    } else if (actor.body instanceof Phaser.GameObjects.Rectangle) {
+      actor.body.setScale(pose.facing, this.state === 'crouch' ? 0.58 : 1);
+      actor.body.setFillStyle(this.playerNum === 1 ? 0xd44949 : 0x426edb);
+      if (this.state === 'attack') actor.body.setFillStyle(0xf2b84b);
+      if (this.state === 'hitstun' || this.state === 'juggle') actor.body.setFillStyle(0xffffff);
+      if (this.state === 'blockstun') actor.body.setFillStyle(0x62d980);
+    }
+
+    actor.body.setAlpha(this.invulnerable ? 0.55 : 1);
+  }
+
+  private currentVisualFrame(actor?: FighterActorRuntime): { sheet: SpriteSheetId; frame: number } {
+    const visualDelay = this.fusionFrames > 0 ? 0 : (actor?.config.visualDelay ?? 0);
+    const sprite = actor ? this.spriteForActor(actor) : this.config.sprite;
     if (this.currentMove && MOVE_SHEETS.has(this.currentMove.animation as SpriteSheetId)) {
       return {
         sheet: this.currentMove.animation as SpriteSheetId,
-        frame: this.moveVisualFrame(this.currentMove),
+        frame: this.moveVisualFrame(this.currentMove, visualDelay, sprite),
       };
     }
 
-    const configuredFrame = this.config.sprite?.stateFrames?.[this.state];
+    const configuredFrame = sprite?.stateFrames?.[this.state];
     if (configuredFrame !== undefined) {
+      const delayedStateFrame = Math.max(0, this.stateFrame - visualDelay);
       return {
         sheet: 'base',
         frame: Array.isArray(configuredFrame)
-          ? configuredFrame[Math.floor(this.stateFrame / 14) % configuredFrame.length]
+          ? configuredFrame[Math.floor(delayedStateFrame / 14) % configuredFrame.length]
           : configuredFrame,
       };
     }
 
+    const delayedStateFrame = Math.max(0, this.stateFrame - visualDelay);
     const baseFrameByState: Partial<Record<FighterState, number | number[]>> = {
-      idle: Math.floor(this.stateFrame / 14) % 3,
-      walk_forward: 1 + (Math.floor(this.stateFrame / 8) % 2),
-      walk_back: 2 - (Math.floor(this.stateFrame / 8) % 2),
+      idle: Math.floor(delayedStateFrame / 14) % 3,
+      walk_forward: 1 + (Math.floor(delayedStateFrame / 8) % 2),
+      walk_back: 2 - (Math.floor(delayedStateFrame / 8) % 2),
       crouch: 4,
       airborne: 5,
       landing: 4,
@@ -353,19 +437,21 @@ export class Fighter {
 
     return {
       sheet: 'base',
-      frame: this.resolveBaseFrame(baseFrameByState[this.state] ?? 0),
+      frame: this.resolveBaseFrame(baseFrameByState[this.state] ?? 0, delayedStateFrame),
     };
   }
 
-  private resolveBaseFrame(frame: number | number[]): number {
+  private resolveBaseFrame(frame: number | number[], frameCursor = this.stateFrame): number {
     if (!Array.isArray(frame)) return frame;
-    return frame[Math.floor(this.stateFrame / 14) % frame.length] ?? 0;
+    return frame[Math.floor(frameCursor / 14) % frame.length] ?? 0;
   }
 
-  private moveVisualFrame(move: Move): number {
-    const elapsed =
-      move.phases.slice(0, this.movePhaseIndex).reduce((sum, phase) => sum + phase.frames, 0) + this.movePhaseFrame;
-    const frameCount = this.config.sprite?.frameCounts[move.animation as SpriteSheetId] ?? 4;
+  private moveVisualFrame(move: Move, frameDelay = 0, sprite = this.config.sprite): number {
+    const elapsed = Math.max(
+      0,
+      move.phases.slice(0, this.movePhaseIndex).reduce((sum, phase) => sum + phase.frames, 0) + this.movePhaseFrame - frameDelay,
+    );
+    const frameCount = sprite?.frameCounts[move.animation as SpriteSheetId] ?? 4;
     const maxFrame = Math.max(0, frameCount - 1);
 
     if (move.visualTimeline?.length) {
@@ -381,24 +467,159 @@ export class Fighter {
     return Phaser.Math.Clamp(Math.floor((elapsed / Math.max(totalFrames, 1)) * frameCount), 0, maxFrame);
   }
 
-  private frameMeta(sheet: SpriteSheetId, frame: number): SpriteFrameMeta {
-    const configured = this.config.sprite?.frames?.[sheet]?.[frame];
+  setActiveHitbox(id: string, hitbox: Hitbox, actorId?: FighterActorId): void {
+    this.activeHitboxes.set(id, { actorId, hitbox });
+  }
+
+  clearActiveHitbox(id: string): void {
+    this.activeHitboxes.delete(id);
+  }
+
+  setActorOffset(actorId: FighterActorId, offsetX: number, offsetY = 0, duration: number | null = null): void {
+    this.actorOffsetOverrides.set(actorId, { offsetX, offsetY, duration });
+  }
+
+  resetActorOffset(actorId: FighterActorId): void {
+    this.actorOffsetOverrides.delete(actorId);
+  }
+
+  setFollowDelay(actorId: FighterActorId, frames: number, duration: number | null = null): void {
+    this.followDelayOverrides.set(actorId, { frames, duration });
+  }
+
+  swapLead(): void {
+    this.leadSwapped = !this.leadSwapped;
+  }
+
+  enterFusion(duration: number): void {
+    this.fusionFrames = Math.max(this.fusionFrames, duration);
+  }
+
+  exitFusion(): void {
+    this.fusionFrames = 0;
+  }
+
+  setActorHurtbox(actorId: FighterActorId | undefined, hurtbox: Hurtbox | null): void {
+    if (!actorId) {
+      this.hurtboxOverride = hurtbox;
+      this.hurtboxDisabled = hurtbox === null;
+      return;
+    }
+    this.actorHurtboxOverrides.set(actorId, hurtbox);
+  }
+
+  clearActorMoveOverrides(): void {
+    this.actorHurtboxOverrides.clear();
+    this.actorOffsetOverrides.clear();
+    this.followDelayOverrides.clear();
+  }
+
+  private createActors(fill: number): Phaser.GameObjects.Rectangle | Phaser.GameObjects.Sprite {
+    const actorConfigs = this.config.actors?.length
+      ? this.config.actors
+      : [
+          {
+            id: 'lead' as FighterActorId,
+            sprite: this.config.sprite,
+            hurtboxes: this.config.hurtboxes,
+            defaultVisible: true,
+          },
+        ];
+
+    let primaryBody: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Sprite | null = null;
+    actorConfigs.forEach((actorConfig, index) => {
+      const sprite = actorConfig.sprite ?? (this.config.actors?.length ? undefined : this.config.sprite);
+      const body = sprite
+        ? this.scene.add.sprite(this.x, this.y, this.frameKey('base', 0, actorConfig.id))
+        : this.scene.add.rectangle(this.x, this.y, FIGHTER_WIDTH, FIGHTER_HEIGHT, fill).setOrigin(0.5, 1);
+      body.setVisible(actorConfig.defaultVisible ?? actorConfig.id !== 'fusion');
+      body.setDepth(index);
+      this.actors.set(actorConfig.id, { id: actorConfig.id, config: actorConfig, body });
+      this.actorOrder.push(actorConfig.id);
+      primaryBody ??= body;
+    });
+
+    return primaryBody ?? this.scene.add.rectangle(this.x, this.y, FIGHTER_WIDTH, FIGHTER_HEIGHT, fill).setOrigin(0.5, 1);
+  }
+
+  private recordPose(): void {
+    this.poseHistory.unshift({ x: this.x, y: this.y, facing: this.facing });
+    if (this.poseHistory.length > this.maxPoseHistory) this.poseHistory.pop();
+  }
+
+  private activeCollisionActors(): FighterActorRuntime[] {
+    return this.actorOrder.map((id) => this.actorFor(id)).filter((actor) => this.actorVisible(actor));
+  }
+
+  private actorVisible(actor: FighterActorRuntime): boolean {
+    if (this.fusionFrames > 0) return actor.config.visibleInFusion ?? actor.id === 'fusion';
+    return actor.config.defaultVisible ?? actor.id !== 'fusion';
+  }
+
+  private actorFor(actorId: FighterActorId): FighterActorRuntime {
+    const actor = this.actors.get(actorId) ?? this.actors.get('lead') ?? this.actors.values().next().value;
+    if (!actor) throw new Error(`Fighter ${this.id} has no render actors`);
+    return actor;
+  }
+
+  private primaryActorId(): FighterActorId {
+    return this.fusionFrames > 0 && this.actors.has('fusion') ? 'fusion' : 'lead';
+  }
+
+  private actorPose(actor: FighterActorRuntime): ActorPose {
+    const offset = this.actorOffset(actor);
+    const delay = this.actorFollowDelay(actor);
+    const sample = this.poseHistory[Math.min(delay, this.poseHistory.length - 1)] ?? { x: this.x, y: this.y, facing: this.facing };
+    return {
+      x: sample.x + offset.offsetX * sample.facing,
+      y: sample.y + offset.offsetY,
+      facing: sample.facing,
+    };
+  }
+
+  private actorOffset(actor: FighterActorRuntime): { offsetX: number; offsetY: number } {
+    const override = this.actorOffsetOverrides.get(actor.id);
+    if (override) return { offsetX: override.offsetX, offsetY: override.offsetY };
+    const source = this.swappedPairConfig(actor) ?? actor.config;
+    return { offsetX: source.offsetX ?? 0, offsetY: source.offsetY ?? 0 };
+  }
+
+  private actorFollowDelay(actor: FighterActorRuntime): number {
+    const override = this.followDelayOverrides.get(actor.id);
+    if (override) return override.frames;
+    const source = this.swappedPairConfig(actor) ?? actor.config;
+    return source.followDelay ?? 0;
+  }
+
+  private swappedPairConfig(actor: FighterActorRuntime): FighterActorConfig | null {
+    if (!this.leadSwapped) return null;
+    if (actor.id === 'lead') return this.actors.get('echo')?.config ?? null;
+    if (actor.id === 'echo') return this.actors.get('lead')?.config ?? null;
+    return null;
+  }
+
+  private spriteForActor(actor: FighterActorRuntime): NonNullable<CharacterConfig['sprite']> | undefined {
+    return actor.config.sprite ?? (this.config.actors?.length ? undefined : this.config.sprite);
+  }
+
+  private frameMeta(sprite: NonNullable<CharacterConfig['sprite']>, sheet: SpriteSheetId, frame: number): SpriteFrameMeta {
+    const configured = sprite.frames?.[sheet]?.[frame];
     if (configured) return configured;
 
-    const width = this.config.sprite?.frameWidth ?? 256;
-    const height = this.config.sprite?.frameHeight ?? 256;
+    const width = sprite.frameWidth ?? 256;
+    const height = sprite.frameHeight ?? 256;
     return {
       file: `sprites/${sheet}/${sheet}_${String(frame + 1).padStart(3, '0')}.png`,
       width,
       height,
       anchor: {
         x: width / 2,
-        y: (this.config.sprite?.anchorY ?? 1) * height,
+        y: (sprite.anchorY ?? 1) * height,
       },
     };
   }
 
-  private frameKey(sheet: SpriteSheetId, frame: number): string {
-    return `${this.config.id}:${sheet}:${frame}`;
+  private frameKey(sheet: SpriteSheetId, frame: number, actorId: FighterActorId = 'lead'): string {
+    return this.config.actors?.length ? `${this.config.id}:${actorId}:${sheet}:${frame}` : `${this.config.id}:${sheet}:${frame}`;
   }
 }

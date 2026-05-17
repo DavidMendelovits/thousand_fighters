@@ -1,0 +1,19 @@
+[punch]
+name=One Punch, Two Punch
+description=Lead brother jabs first, then the delayed echo brother steps forward with the callback jab.
+
+[kick]
+name=Twin Sweep
+description=Both brothers chain low sweeps from staggered positions.
+
+[special_1]
+name=Stacked Set-Up
+description=The echo brother stacks above the lead for a rising two-man uppercut.
+
+[special_2]
+name=Brother Toss
+description=The lead winds up and throws the echo brother forward as a body-check special.
+
+[fusion]
+name=Sklar Fusion
+description=The two brothers fuse into one larger split-plaid fighter for a temporary power form.

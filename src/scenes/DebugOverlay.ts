@@ -6,12 +6,11 @@ export class DebugOverlay {
     scene.debugReadout.setVisible(true);
 
     for (const fighter of scene.fighters) {
-      const hurtbox = fighter.getHurtboxWorld();
-      if (hurtbox) {
+      for (const hurtbox of fighter.getHurtboxesWorld()) {
         scene.debugGraphics.fillStyle(0x3498ff, 0.22);
-        scene.debugGraphics.fillRect(hurtbox.x, hurtbox.y, hurtbox.width, hurtbox.height);
+        scene.debugGraphics.fillRect(hurtbox.world.x, hurtbox.world.y, hurtbox.world.width, hurtbox.world.height);
         scene.debugGraphics.lineStyle(1, 0x74b9ff, 0.95);
-        scene.debugGraphics.strokeRect(hurtbox.x, hurtbox.y, hurtbox.width, hurtbox.height);
+        scene.debugGraphics.strokeRect(hurtbox.world.x, hurtbox.world.y, hurtbox.world.width, hurtbox.world.height);
       }
 
       for (const active of fighter.getActiveHitboxesWorld()) {

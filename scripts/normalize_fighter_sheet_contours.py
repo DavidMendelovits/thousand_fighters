@@ -36,19 +36,50 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def is_background(pixel: tuple[int, int, int, int]) -> bool:
+def is_magenta_background(pixel: tuple[int, int, int, int]) -> bool:
     red, green, blue, _alpha = pixel
-    if red >= 200 and blue >= 180 and green <= 80:
-        return True
+    return red >= 200 and blue >= 180 and green <= 80
+
+
+def is_light_checker_background(pixel: tuple[int, int, int, int]) -> bool:
+    red, green, blue, _alpha = pixel
     return max(red, green, blue) - min(red, green, blue) <= 16 and (red + green + blue) / 3 >= 212
+
+
+def should_use_magenta_key(image: Image.Image) -> bool:
+    """Prefer magenta-only cleanup when the sheet has a clear chroma backdrop.
+
+    Some characters intentionally have very light pixels, such as face paint,
+    white shirts, teeth, or glasses. If a magenta key is present, also treating
+    light neutral pixels as background punches transparent holes through those
+    details.
+    """
+    sample_points: list[tuple[int, int]] = []
+    step_x = max(1, image.width // 48)
+    step_y = max(1, image.height // 48)
+    for x in range(0, image.width, step_x):
+        sample_points.append((x, 0))
+        sample_points.append((x, image.height - 1))
+    for y in range(0, image.height, step_y):
+        sample_points.append((0, y))
+        sample_points.append((image.width - 1, y))
+
+    if not sample_points:
+        return False
+
+    pixels = image.load()
+    magenta_count = sum(1 for x, y in sample_points if is_magenta_background(pixels[x, y]))
+    return magenta_count / len(sample_points) >= 0.35
 
 
 def remove_light_checker_background(path: Path) -> Image.Image:
     image = Image.open(path).convert("RGBA")
     pixels = image.load()
+    use_magenta_key = should_use_magenta_key(image)
     for y in range(image.height):
         for x in range(image.width):
-            if is_background(pixels[x, y]):
+            is_background = is_magenta_background(pixels[x, y]) if use_magenta_key else is_magenta_background(pixels[x, y]) or is_light_checker_background(pixels[x, y])
+            if is_background:
                 pixels[x, y] = (255, 255, 255, 0)
     return image
 

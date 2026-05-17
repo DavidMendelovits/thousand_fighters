@@ -1,0 +1,15 @@
+[punch]
+name=Setup Jab
+description=Straight comedy setup punch.
+
+[kick]
+name=Twin Sweep
+description=Low synchronized sweep pose.
+
+[special_1]
+name=Stacked Setup
+description=Shoulder-stack wind-up and launch pose.
+
+[special_2]
+name=Brother Toss
+description=Throw or recovery poses for two-person specials.

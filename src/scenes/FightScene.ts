@@ -17,14 +17,16 @@ const ROUND_FRAMES = 99 * 60;
 const STAGE_LEFT = 96;
 const STAGE_RIGHT = 704;
 const MIN_FIGHTER_DISTANCE = 96;
-const SPRITE_ASSET_VERSION = 'joe-chicken-v1';
+const SPRITE_ASSET_VERSION = 'demi-imagegen-v4';
 const DEBUG_MOVE_KEYS: Record<string, { player: 0 | 1; moveId: string }> = {
   Digit1: { player: 0, moveId: 'fireball' },
   Digit2: { player: 0, moveId: 'dash_punch' },
   Digit3: { player: 0, moveId: 'uppercut' },
+  Digit4: { player: 0, moveId: 'fusion' },
   Digit7: { player: 1, moveId: 'fireball' },
   Digit8: { player: 1, moveId: 'dash_punch' },
   Digit9: { player: 1, moveId: 'uppercut' },
+  Digit0: { player: 1, moveId: 'fusion' },
 };
 
 type FightSceneData = {
@@ -107,22 +109,32 @@ export class FightScene extends Phaser.Scene {
     this.load.image('foam_wave', this.assetUrl('/fighters/corey/projectiles/foam_wave.png'));
     this.load.image('juggling_balls', this.assetUrl('/fighters/juggling_joe/projectiles/juggling_balls.png'));
     this.load.image('squeak_storm', this.assetUrl('/fighters/rubber_chicken/projectiles/squeak_storm.png'));
+    this.load.image('rubber_bat', this.assetUrl('/fighters/mr_spooky/projectiles/rubber_bat.png'));
+    this.load.image('demi_laser', this.assetUrl('/fighters/demi/projectiles/remote_laser.png'));
+    this.load.image('remote_spark', this.assetUrl('/fighters/demi/projectiles/remote_spark.png'));
+    this.load.image('morph_flash', this.assetUrl('/fighters/demi/projectiles/morph_flash.png'));
 
-    for (const character of playableCharacters) {
-      if (!character.sprite) continue;
-      for (const [sheet, frameCount] of Object.entries(character.sprite.frameCounts)) {
+    const preloadSpriteConfig = (sprite: CharacterSpriteConfig, keyPrefix: string): void => {
+      for (const [sheet, frameCount] of Object.entries(sprite.frameCounts)) {
         if (!frameCount) continue;
         const sheetId = sheet as SpriteSheetId;
-        const frameMeta = character.sprite.frames?.[sheetId];
+        const frameMeta = sprite.frames?.[sheetId];
         for (let frame = 1; frame <= frameCount; frame += 1) {
           const frameNumber = String(frame).padStart(3, '0');
           this.load.image(
-            `${character.id}:${sheet}:${frame - 1}`,
+            `${keyPrefix}:${sheet}:${frame - 1}`,
             this.assetUrl(frameMeta?.[frame - 1]
-              ? `${character.sprite.basePath}/${frameMeta[frame - 1].file}`
-              : `${character.sprite.basePath}/sprites/${sheet}/${sheet}_${frameNumber}.png`),
+              ? `${sprite.basePath}/${frameMeta[frame - 1].file}`
+              : `${sprite.basePath}/sprites/${sheet}/${sheet}_${frameNumber}.png`),
           );
         }
+      }
+    };
+
+    for (const character of playableCharacters) {
+      if (character.sprite) preloadSpriteConfig(character.sprite, character.id);
+      for (const actor of character.actors ?? []) {
+        if (actor.sprite) preloadSpriteConfig(actor.sprite, `${character.id}:${actor.id}`);
       }
     }
   }
@@ -345,7 +357,7 @@ export class FightScene extends Phaser.Scene {
     this.hudText.setText(winner ? `${winner}  ${timer}` : `R${this.roundNumber}  ${timer}`);
     const hudHint = prefersTouchControls()
       ? `${this.singlePlayer ? 'CPU: ON' : 'CPU: OFF'}  tap to toggle`
-      : `${this.singlePlayer ? 'CPU: ON' : 'CPU: OFF'}  click/F2  P/Esc pause  R reset  P1:1-3 P2:7-9`;
+      : `${this.singlePlayer ? 'CPU: ON' : 'CPU: OFF'}  click/F2  P/Esc pause  R reset  P1:1-4 P2:7-0`;
     this.cpuToggleText.setText(hudHint);
     this.cpuToggleText.setColor(this.singlePlayer ? '#ffffff' : '#8de6ff');
     this.updatePauseModalText();
@@ -394,7 +406,7 @@ export class FightScene extends Phaser.Scene {
           'F, D, DF + H/L Uppercut special',
           'Down + G/K     Low attack',
           '',
-          'Debug moves    P1: 1/2/3   P2: 7/8/9',
+          'Debug moves    P1: 1/2/3/4   P2: 7/8/9/0',
         ].join('\n'),
         {
           color: '#dbe7ff',
@@ -723,6 +735,76 @@ export class FightScene extends Phaser.Scene {
       cross.generateTexture('cardbross_cross', 96, 96);
       cross.destroy();
     }
+
+    if (!this.textures.exists('fusion_poof')) {
+      const poof = this.add.graphics();
+      poof.fillStyle(0xf7f1df, 0.86);
+      poof.fillCircle(34, 48, 20);
+      poof.fillCircle(54, 34, 24);
+      poof.fillCircle(78, 46, 22);
+      poof.fillCircle(62, 62, 26);
+      poof.fillCircle(96, 56, 18);
+      poof.lineStyle(2, 0xffffff, 0.95);
+      poof.strokeCircle(34, 48, 20);
+      poof.strokeCircle(54, 34, 24);
+      poof.strokeCircle(78, 46, 22);
+      poof.strokeCircle(62, 62, 26);
+      poof.strokeCircle(96, 56, 18);
+      poof.lineStyle(2, 0x8de6ff, 0.8);
+      poof.lineBetween(12, 24, 0, 12);
+      poof.lineBetween(108, 26, 122, 12);
+      poof.lineBetween(24, 78, 8, 92);
+      poof.lineBetween(96, 82, 112, 98);
+      poof.generateTexture('fusion_poof', 128, 104);
+      poof.destroy();
+    }
+
+    if (!this.textures.exists('demi_laser')) {
+      const laser = this.add.graphics();
+      laser.lineStyle(22, 0x3feaff, 0.18);
+      laser.lineBetween(4, 22, 220, 22);
+      laser.lineStyle(12, 0x3feaff, 0.48);
+      laser.lineBetween(8, 22, 216, 22);
+      laser.lineStyle(4, 0xe6ffff, 1);
+      laser.lineBetween(10, 22, 214, 22);
+      laser.lineStyle(2, 0xffffff, 0.8);
+      for (let x = 34; x <= 194; x += 40) {
+        laser.lineBetween(x - 8, 14, x + 8, 30);
+      }
+      laser.generateTexture('demi_laser', 224, 44);
+      laser.destroy();
+    }
+
+    if (!this.textures.exists('remote_spark')) {
+      const spark = this.add.graphics();
+      spark.fillStyle(0xe6ffff, 0.8);
+      spark.fillCircle(32, 32, 8);
+      spark.lineStyle(3, 0x3feaff, 0.9);
+      spark.strokeCircle(32, 32, 15);
+      spark.lineStyle(2, 0xffffff, 0.9);
+      spark.lineBetween(32, 4, 32, 18);
+      spark.lineBetween(32, 46, 32, 60);
+      spark.lineBetween(4, 32, 18, 32);
+      spark.lineBetween(46, 32, 60, 32);
+      spark.lineBetween(12, 12, 22, 22);
+      spark.lineBetween(42, 42, 52, 52);
+      spark.generateTexture('remote_spark', 64, 64);
+      spark.destroy();
+    }
+
+    if (!this.textures.exists('morph_flash')) {
+      const flash = this.add.graphics();
+      flash.lineStyle(5, 0x48f182, 0.68);
+      flash.strokeCircle(46, 46, 32);
+      flash.lineStyle(4, 0x0dc24f, 0.85);
+      flash.beginPath();
+      flash.arc(46, 46, 24, Phaser.Math.DegToRad(205), Phaser.Math.DegToRad(30), false);
+      flash.strokePath();
+      flash.fillStyle(0xe6ffff, 0.55);
+      flash.fillCircle(46, 46, 12);
+      flash.generateTexture('morph_flash', 92, 92);
+      flash.destroy();
+    }
   }
 
   private createSpriteDebugView(params: URLSearchParams): void {
@@ -800,6 +882,10 @@ export class FightScene extends Phaser.Scene {
       { key: 'foam_wave', x: 286, row: 2 },
       { key: 'juggling_balls', x: 480, row: 2 },
       { key: 'squeak_storm', x: 674, row: 2 },
+      { key: 'rubber_bat', x: 92, row: 3 },
+      { key: 'demi_laser', x: 286, row: 3 },
+      { key: 'morph_flash', x: 480, row: 3 },
+      { key: 'remote_spark', x: 674, row: 3 },
     ].forEach(({ key, x, row }) => {
       const texture = this.textures.get(key).getSourceImage() as { width: number; height: number };
       const scale = Math.min(0.75, 86 / Math.max(texture.width, texture.height));
@@ -808,9 +894,9 @@ export class FightScene extends Phaser.Scene {
       this.add.text(x - 42, rowY + 28, key, labelStyle).setOrigin(0, 0);
     });
 
-    this.cameras.main.setBounds(0, 0, 800, Math.max(450, y + 270));
+    this.cameras.main.setBounds(0, 0, 800, Math.max(450, y + 350));
     this.input.on('wheel', (_pointer: Phaser.Input.Pointer, _objects: unknown[], _dx: number, dy: number) => {
-      this.cameras.main.scrollY = Phaser.Math.Clamp(this.cameras.main.scrollY + dy * 0.7, 0, Math.max(0, y - 340));
+      this.cameras.main.scrollY = Phaser.Math.Clamp(this.cameras.main.scrollY + dy * 0.7, 0, Math.max(0, y - 100));
     });
   }
 

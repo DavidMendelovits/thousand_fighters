@@ -42,10 +42,10 @@ export class MoveExecutor {
   static handleEvent(fighter: Fighter, event: MoveEvent): void {
     switch (event.type) {
       case 'hitbox_active':
-        fighter.activeHitboxes.set(event.id ?? 'default', event.hitbox);
+        fighter.setActiveHitbox(event.id ?? 'default', event.hitbox, event.actor);
         break;
       case 'hitbox_end':
-        fighter.activeHitboxes.delete(event.id ?? 'default');
+        fighter.clearActiveHitbox(event.id ?? 'default');
         break;
       case 'spawn_projectile':
         fighter.scene.projectiles.spawn(event.projectile, fighter, event.offsetX, event.offsetY);
@@ -82,8 +82,25 @@ export class MoveExecutor {
         fighter.armor = { hits: event.hits, duration: event.duration };
         break;
       case 'modify_hurtbox':
-        fighter.hurtboxOverride = event.hurtbox;
-        fighter.hurtboxDisabled = event.hurtbox === null;
+        fighter.setActorHurtbox(event.actor, event.hurtbox);
+        break;
+      case 'set_actor_offset':
+        fighter.setActorOffset(event.actor, event.offsetX, event.offsetY ?? 0, event.duration ?? null);
+        break;
+      case 'reset_actor_offset':
+        fighter.resetActorOffset(event.actor);
+        break;
+      case 'set_follow_delay':
+        fighter.setFollowDelay(event.actor, event.frames, event.duration ?? null);
+        break;
+      case 'swap_lead':
+        fighter.swapLead();
+        break;
+      case 'enter_fusion':
+        fighter.enterFusion(event.duration);
+        break;
+      case 'exit_fusion':
+        fighter.exitFusion();
         break;
       case 'play_animation':
         fighter.animationKey = event.name;
@@ -91,8 +108,23 @@ export class MoveExecutor {
       case 'screen_shake':
         fighter.scene.cameras.main.shake(event.duration * (1000 / 60), event.intensity);
         break;
+      case 'spawn_vfx': {
+        if (!fighter.scene.textures.exists(event.name)) break;
+        const vfx = fighter.scene.add
+          .image(fighter.x + event.offsetX * fighter.facing, fighter.y + event.offsetY, event.name)
+          .setOrigin(0.5)
+          .setDepth(40)
+          .setAlpha(0.95);
+        fighter.scene.tweens.add({
+          targets: vfx,
+          scale: { from: 0.85, to: 1.55 },
+          alpha: { from: 0.95, to: 0 },
+          duration: 260,
+          onComplete: () => vfx.destroy(),
+        });
+        break;
+      }
       case 'play_sound':
-      case 'spawn_vfx':
         break;
       default: {
         const exhaustive: never = event;
@@ -106,6 +138,7 @@ export class MoveExecutor {
     fighter.currentMove = null;
     fighter.activeHitboxes.clear();
     fighter.hurtboxOverride = null;
+    fighter.clearActorMoveOverrides();
     fighter.changeState(endState ?? (fighter.grounded ? 'idle' : 'airborne'));
   }
 
