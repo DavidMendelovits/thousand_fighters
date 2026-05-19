@@ -8,8 +8,9 @@ import {
   createLocalPlaceholderImageGenerator,
   createLocalPublisher,
   createLocalSpriteNormalizer,
-  createLocalTextModel,
 } from '../pipeline/adapters/localAdapters.js';
+import { createTextModelAdapter } from '../pipeline/adapters/createTextModelAdapter.js';
+import { createCmsChatAgent } from '../agent/createCmsChatAgent.js';
 import { createCmsTools } from '../tools/createCmsTools.js';
 
 export function createLocalCmsRuntime(options = {}) {
@@ -18,7 +19,7 @@ export function createLocalCmsRuntime(options = {}) {
   const registry = new PipelineRegistry({
     [PipelinePort.ASSET_STORAGE]: storage,
     [PipelinePort.CHARACTER_REPOSITORY]: repository,
-    [PipelinePort.TEXT_MODEL]: options.textModel ?? createLocalTextModel(),
+    [PipelinePort.TEXT_MODEL]: options.textModel ?? createTextModelAdapter(options.textModelOptions ?? {}),
     [PipelinePort.IMAGE_GENERATOR]: options.imageGenerator ?? createLocalPlaceholderImageGenerator(),
     [PipelinePort.SPRITE_NORMALIZER]: options.spriteNormalizer ?? createLocalSpriteNormalizer({ storage, repository }),
     [PipelinePort.FIGHTER_QA]: options.fighterQa ?? createLocalFighterQa({ repository }),
@@ -26,6 +27,7 @@ export function createLocalCmsRuntime(options = {}) {
   });
   const pipeline = new CharacterCreationPipeline(registry);
   const tools = createCmsTools({ pipeline, repository, registry });
+  const chatAgent = options.chatAgent ?? createCmsChatAgent({ tools });
 
   return {
     storage,
@@ -33,18 +35,13 @@ export function createLocalCmsRuntime(options = {}) {
     registry,
     pipeline,
     tools,
+    chatAgent,
     gaps: currentArchitectureGaps(),
   };
 }
 
 function currentArchitectureGaps() {
   return [
-    {
-      id: 'openai-responses-adapter',
-      status: 'remaining',
-      title: 'OpenAI Responses text/tool adapter',
-      detail: 'Replace local deterministic text drafts with a real Responses API adapter that implements textModel.completeStructured().',
-    },
     {
       id: 'openai-image-adapter',
       status: 'remaining',

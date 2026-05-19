@@ -56,7 +56,7 @@ requests and stable results.
 |------------------------|----------------------------------------------|------------------------|------------------------------------------|
 | `assetStorage`         | Blob/object storage                          | file, cached, Supabase | R2, S3, GCS                              |
 | `characterRepository`  | Character drafts, versions, assets, QA refs  | local repository       | SQL-backed repository                    |
-| `textModel`            | Structured planning and content edits        | local deterministic    | OpenAI Responses, Anthropic, local LLM   |
+| `textModel`            | Structured planning and content edits        | local or OpenAI        | Anthropic, local LLM                     |
 | `imageGenerator`       | Sprite sheets, frames, projectiles, edits    | local SVG placeholder  | OpenAI image, Runway, Stability, local   |
 | `videoGenerator`       | Motion/video-based frame generation          | none yet               | Runway, Pika, local video model          |
 | `spriteNormalizer`     | Raw sheet to game-ready sprites              | local fixture copier   | local Python script, remote worker       |
@@ -272,6 +272,39 @@ publish_character()
 These tools should call our API. Our API should call pipeline ports. Vendor
 adapters sit behind those ports.
 
+## Conversational Admin Agent
+
+The admin dashboard exposes a chat surface backed by `POST /api/chat`. The chat
+agent is provider-pluggable:
+
+```bash
+CMS_CHAT_PROVIDER=local
+CMS_CHAT_PROVIDER=openai
+OPENAI_API_KEY=...
+OPENAI_RESPONSES_MODEL=gpt-5.5
+```
+
+The local provider is a deterministic smoke-test fallback. It routes obvious
+requests such as draft creation, draft updates, asset listing, and pipeline
+status checks through the same CMS tool registry.
+
+The OpenAI provider uses the Responses API with function tools from
+`createCmsTools()`. The model never edits files or storage directly:
+
+```text
+admin chat
+  -> /api/chat
+  -> chat agent provider
+  -> CMS tool schemas
+  -> tool registry invocation
+  -> pipeline ports
+  -> storage / image generation / normalizer / QA / publisher
+```
+
+This keeps the workflow replaceable. Anthropic, a local model, or a specialized
+workflow engine should only need a new chat-agent adapter as long as it can
+choose from the same tool contracts.
+
 ## Health Status
 
 `GET /api/health`, `GET /api/pipeline`, and the `get_pipeline_status` tool all
@@ -292,6 +325,7 @@ Current smoke tests:
 ```bash
 npm run cms:import-fighters
 npm run cms:smoke
+npm run cms:chat:smoke
 npm run cms:pipeline:smoke
 npm run cms:e2e
 ```
@@ -321,6 +355,8 @@ GET  /api/pipeline
 GET  /api/tools
 GET  /api/tools?format=openai
 POST /api/tools/:toolName
+GET  /api/chat/health
+POST /api/chat
 GET  /api/characters
 GET  /api/characters/:id/draft
 GET  /api/characters/:id/assets
@@ -342,7 +378,6 @@ admin UI -> HTTP API -> tool registry -> pipeline ports -> local adapters -> fil
 
 What is deliberately still placeholder-backed:
 
-- `textModel`: deterministic local draft generator.
 - `imageGenerator`: deterministic SVG sprite-sheet generator.
 - `spriteNormalizer`: placeholder normalized manifest writer.
 - `fighterQa`: placeholder QA report writer.

@@ -17,6 +17,23 @@ export function createCmsTools({ pipeline, repository, registry }) {
       execute: async ({ characterId }) => ({ draft: await repository.getDraft(characterId) }),
     },
     {
+      name: 'get_character_assets',
+      description: 'List a character asset inventory with CMS URLs and metadata.',
+      inputSchema: objectSchema({
+        characterId: stringSchema('Character id.'),
+      }, ['characterId']),
+      execute: async ({ characterId }) => {
+        const keys = await repository.listCharacterAssets(characterId);
+        const assets = await Promise.all(keys.map((key) => assetRecordForKey({
+          repository,
+          storage: repository.storage,
+          characterId,
+          key,
+        })));
+        return { characterId, assets };
+      },
+    },
+    {
       name: 'create_character_draft',
       description: 'Create or replace a character draft from a text brief.',
       inputSchema: objectSchema({
@@ -24,6 +41,28 @@ export function createCmsTools({ pipeline, repository, registry }) {
         brief: stringSchema('Character design and gameplay brief.'),
       }, ['characterId', 'brief']),
       execute: async (input) => ({ draft: await pipeline.createCharacterDraft(input) }),
+    },
+    {
+      name: 'update_character_draft',
+      description: 'Patch a character draft. Use this for targeted edits to displayName, description, stats, gameplay, sprite, animations, or moves.',
+      inputSchema: objectSchema({
+        characterId: stringSchema('Character id.'),
+        patch: {
+          type: 'object',
+          description: 'Partial character draft object to merge into the current draft. Arrays replace existing arrays.',
+          additionalProperties: true,
+        },
+        note: stringSchema('Optional short reason for the edit.'),
+      }, ['characterId', 'patch']),
+      execute: async ({ characterId, patch, note }) => {
+        const current = await repository.getDraft(characterId);
+        const draft = await repository.saveDraft(characterId, deepMerge(current, patch ?? {}), {
+          provider: 'cms-tool',
+          adapterId: 'update-character-draft',
+          note: note ?? null,
+        });
+        return { draft };
+      },
     },
     {
       name: 'generate_sprite_sheet',
@@ -122,6 +161,23 @@ export function createCmsTools({ pipeline, repository, registry }) {
       return tool.execute(input);
     },
   };
+}
+
+function deepMerge(target, patch) {
+  if (!isPlainObject(target) || !isPlainObject(patch)) return patch;
+
+  const next = { ...target };
+  for (const [key, value] of Object.entries(patch)) {
+    if (value === undefined) continue;
+    next[key] = isPlainObject(value) && isPlainObject(next[key])
+      ? deepMerge(next[key], value)
+      : value;
+  }
+  return next;
+}
+
+function isPlainObject(value) {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
 function withAssetApiUrl(result) {

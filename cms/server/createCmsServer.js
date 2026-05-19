@@ -33,15 +33,16 @@ export function createCmsServer(options = {}) {
 async function handleApiRequest({ request, response, url, runtime }) {
   if (request.method === 'GET' && url.pathname === '/api/health') {
     const adapterHealth = await runtime.registry.health();
-    sendJson(response, {
-      ok: true,
-      service: 'thousand-fighters-cms',
-      storage: runtime.storage.constructor.name,
-      adapters: runtime.registry.describe(),
-      adapterHealth,
-    });
-    return;
-  }
+      sendJson(response, {
+        ok: true,
+        service: 'thousand-fighters-cms',
+        storage: runtime.storage.constructor.name,
+        adapters: runtime.registry.describe(),
+        adapterHealth,
+        chatAgent: await chatAgentHealth(runtime),
+      });
+      return;
+    }
 
   if (request.method === 'GET' && url.pathname === '/api/pipeline') {
     sendJson(response, {
@@ -65,6 +66,20 @@ async function handleApiRequest({ request, response, url, runtime }) {
     const input = await readJsonBody(request);
     const result = await runtime.tools.invoke(toolName, input);
     sendJson(response, { ok: true, tool: toolName, result });
+    return;
+  }
+
+  if (request.method === 'GET' && url.pathname === '/api/chat/health') {
+    sendJson(response, {
+      agent: await chatAgentHealth(runtime),
+    });
+    return;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/chat') {
+    const input = await readJsonBody(request);
+    const result = await runtime.chatAgent.chat(input);
+    sendJson(response, { ok: true, result });
     return;
   }
 
@@ -119,6 +134,50 @@ async function handleApiRequest({ request, response, url, runtime }) {
   }
 
   sendJson(response, { error: 'Not found' }, 404);
+}
+
+async function chatAgentHealth(runtime) {
+  const agent = runtime.chatAgent;
+  if (!agent) {
+    return {
+      provider: 'none',
+      id: 'none',
+      status: 'unknown',
+      message: 'No CMS chat agent is configured.',
+      capabilities: [],
+    };
+  }
+
+  if (typeof agent.healthCheck !== 'function') {
+    return {
+      provider: agent.provider ?? 'unknown',
+      id: agent.id ?? 'cms-chat-agent',
+      status: 'unknown',
+      message: 'Chat agent does not expose a health check yet.',
+      capabilities: agent.capabilities ?? [],
+    };
+  }
+
+  try {
+    const health = await agent.healthCheck();
+    return {
+      provider: agent.provider ?? 'unknown',
+      id: agent.id ?? 'cms-chat-agent',
+      capabilities: agent.capabilities ?? [],
+      status: health.status ?? 'unknown',
+      message: health.message ?? '',
+      details: health.details ?? {},
+    };
+  } catch (error) {
+    return {
+      provider: agent.provider ?? 'unknown',
+      id: agent.id ?? 'cms-chat-agent',
+      capabilities: agent.capabilities ?? [],
+      status: 'error',
+      message: error.message ?? 'Chat agent health check failed.',
+      details: {},
+    };
+  }
 }
 
 async function serveAdminAsset({ response, url, adminRoot }) {

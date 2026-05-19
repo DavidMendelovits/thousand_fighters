@@ -122,6 +122,18 @@
             </section>
           </section>
 
+          <section class="panel chat-panel">
+            <div class="panel-heading">
+              <h2>Assistant</h2>
+              <span id="chat-status" class="soft-label">Checking chat</span>
+            </div>
+            <div id="chat-thread" class="chat-thread" aria-live="polite"></div>
+            <form id="chat-form" class="chat-form">
+              <textarea id="chat-message" name="chatMessage" rows="3" placeholder="Change this fighter's health to 1200, list projectiles, or generate a new sprite sheet."></textarea>
+              <button id="send-chat" type="submit">Send</button>
+            </form>
+          </section>
+
           <section class="panel inspector-panel">
             <div class="panel-heading">
               <h2>Pipeline</h2>

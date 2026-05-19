@@ -98,6 +98,46 @@ downloading every sprite.
 Use `--character <id>` to cache one fighter for local inspection. Use `--all`
 only when you intentionally want the whole CMS locally.
 
+## Admin Chat
+
+The admin dashboard includes a chat agent that can invoke CMS tools.
+
+Local deterministic mode is the default when no OpenAI key is set:
+
+```bash
+CMS_CHAT_PROVIDER=local
+npm run cms:admin
+```
+
+OpenAI Responses mode:
+
+```bash
+CMS_CHAT_PROVIDER=openai
+OPENAI_API_KEY=...
+OPENAI_RESPONSES_MODEL=gpt-5.5
+npm run cms:admin
+```
+
+The chat agent uses the same tool registry exposed at `/api/tools`, so it can
+inspect pipeline status, create drafts, patch draft fields, list assets,
+generate source sheets, normalize packs, validate QA reports, and publish when
+explicitly requested.
+
+## Text Model Adapter
+
+Character draft creation can use local deterministic output or OpenAI Responses
+structured output:
+
+```bash
+TEXT_MODEL_PROVIDER=local
+TEXT_MODEL_PROVIDER=openai
+OPENAI_API_KEY=...
+OPENAI_TEXT_MODEL=gpt-5.5
+```
+
+`OPENAI_TEXT_MODEL` is optional. If it is not set, the adapter falls back to
+`OPENAI_RESPONSES_MODEL` and then `gpt-5.5`.
+
 ## Supabase Adapter
 
 The current deployed admin platform uses Supabase Storage:

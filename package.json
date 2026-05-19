@@ -16,6 +16,8 @@
     "cms:cache:pull": "node scripts/pull_cms_cache.mjs",
     "cms:cache:status": "node scripts/status_cms_cache.mjs",
     "cms:cache:clear": "node scripts/clear_cms_cache.mjs",
+    "cms:chat:smoke": "node scripts/smoke_cms_chat.mjs",
+    "cms:openai:text:smoke": "node scripts/smoke_cms_openai_text_model.mjs",
     "cms:pipeline:smoke": "node scripts/smoke_cms_pipeline.mjs",
     "cms:e2e": "node scripts/smoke_cms_e2e.mjs",
     "cms:remote:e2e": "node scripts/smoke_cms_http_remote.mjs",

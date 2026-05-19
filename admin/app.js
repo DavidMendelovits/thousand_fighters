@@ -8,6 +8,7 @@ const state = {
   animationTimers: [],
   previewFrames: new Map(),
   animationStates: new Map(),
+  chatMessages: [],
 };
 
 const elements = {
@@ -37,6 +38,11 @@ const elements = {
   uploadAsset: document.querySelector('#upload-asset'),
   assetLabel: document.querySelector('#asset-label'),
   assetPreview: document.querySelector('#asset-preview'),
+  chatStatus: document.querySelector('#chat-status'),
+  chatThread: document.querySelector('#chat-thread'),
+  chatForm: document.querySelector('#chat-form'),
+  chatMessage: document.querySelector('#chat-message'),
+  sendChat: document.querySelector('#send-chat'),
   refreshRoster: document.querySelector('#refresh-roster'),
   clearLog: document.querySelector('#clear-log'),
   runLog: document.querySelector('#run-log'),
@@ -62,6 +68,7 @@ elements.assetPath.addEventListener('input', () => {
 });
 elements.assetFile.addEventListener('change', syncAssetPath);
 elements.characterWorkbench.addEventListener('click', handleAnimationControl);
+elements.chatForm.addEventListener('submit', sendChatMessage);
 elements.refreshRoster.addEventListener('click', () => loadCharacters({ selectCurrent: true }));
 elements.clearLog.addEventListener('click', () => {
   elements.runLog.textContent = '';
@@ -73,7 +80,8 @@ async function boot() {
   setBusy(true);
   try {
     syncAssetPath();
-    await Promise.all([loadHealth(), loadPipeline()]);
+    renderChatThread();
+    await Promise.all([loadHealth(), loadPipeline(), loadChatHealth()]);
     await loadCharacters();
     log('Admin platform ready.');
   } catch (error) {
@@ -86,6 +94,12 @@ async function boot() {
 async function loadHealth() {
   const health = await getJson('/api/health');
   elements.systemStatus.textContent = `${health.service} using ${health.storage}`;
+  if (health.chatAgent) renderChatStatus(health.chatAgent);
+}
+
+async function loadChatHealth() {
+  const result = await getJson('/api/chat/health');
+  renderChatStatus(result.agent);
 }
 
 async function loadPipeline() {
@@ -253,6 +267,45 @@ async function publishCharacter() {
   await Promise.all([loadCharacters({ selectCurrent: false }), loadPipeline()]);
   await selectCharacter(characterId, { silent: true });
   return result;
+}
+
+async function sendChatMessage(event) {
+  event.preventDefault();
+  const message = elements.chatMessage.value.trim();
+  if (!message) return null;
+
+  appendChatMessage({ role: 'user', text: message });
+  elements.chatMessage.value = '';
+  setBusy(true);
+
+  try {
+    const result = await postJson('/api/chat', {
+      message,
+      characterId: state.currentCharacterId || elements.characterId.value.trim(),
+      sourceAssetKey: state.sourceAssetKey,
+      normalizedKey: state.normalizedKey,
+    });
+    const chat = result.result;
+    appendChatMessage({
+      role: 'assistant',
+      text: chat.message,
+      toolCalls: chat.toolCalls ?? [],
+      provider: chat.provider,
+    });
+
+    for (const toolCall of chat.toolCalls ?? []) {
+      log(`assistant > ${toolCall.name} ${toolCall.status}`, toolCall.status === 'error' ? 'error' : 'pass');
+    }
+
+    await Promise.all([loadHealth(), loadPipeline(), loadCharacters({ selectCurrent: true })]);
+    return chat;
+  } catch (error) {
+    appendChatMessage({ role: 'assistant', text: error.message, isError: true });
+    showError(error);
+    return null;
+  } finally {
+    setBusy(false);
+  }
 }
 
 async function runLocalE2E() {
@@ -563,6 +616,60 @@ function renderGap(gap) {
   row.className = 'gap-row';
   row.innerHTML = `<strong>${escapeHtml(gap.title)}</strong><span>${escapeHtml(gap.detail)}</span>`;
   return row;
+}
+
+function renderChatStatus(agent = {}) {
+  const status = normalizeHealthStatus(agent.status);
+  elements.chatStatus.textContent = `${agent.provider ?? 'chat'} · ${status}`;
+  elements.chatStatus.className = `soft-label chat-health chat-health-${status}`;
+}
+
+function appendChatMessage(message) {
+  state.chatMessages.push(message);
+  if (state.chatMessages.length > 20) state.chatMessages.shift();
+  renderChatThread();
+}
+
+function renderChatThread() {
+  if (state.chatMessages.length === 0) {
+    elements.chatThread.innerHTML = '<div class="chat-empty">No assistant activity yet.</div>';
+    return;
+  }
+
+  elements.chatThread.replaceChildren(...state.chatMessages.map((message) => {
+    const row = document.createElement('article');
+    row.className = `chat-message chat-${message.role}${message.isError ? ' chat-error' : ''}`;
+    const provider = message.provider ? `<span>${escapeHtml(message.provider)}</span>` : '';
+    const toolCalls = renderChatToolCalls(message.toolCalls ?? []);
+    row.innerHTML = `
+      <header><strong>${escapeHtml(message.role === 'user' ? 'You' : 'Assistant')}</strong>${provider}</header>
+      <p>${escapeHtml(message.text)}</p>
+      ${toolCalls}
+    `;
+    return row;
+  }));
+  elements.chatThread.scrollTop = elements.chatThread.scrollHeight;
+}
+
+function renderChatToolCalls(toolCalls) {
+  if (toolCalls.length === 0) return '';
+  return `
+    <div class="chat-tool-list">
+      ${toolCalls.map((toolCall) => `
+        <details>
+          <summary>
+            <span>${escapeHtml(toolCall.name)}</span>
+            <b class="${toolCall.status === 'error' ? 'status-error' : 'status-pass'}">${escapeHtml(toolCall.status)}</b>
+          </summary>
+          <pre>${escapeHtml(JSON.stringify({
+            input: toolCall.input,
+            result: toolCall.result,
+            error: toolCall.error,
+          }, null, 2))}</pre>
+        </details>
+      `).join('')}
+    </div>
+  `;
 }
 
 function buildMoveGroups(draft, assets) {
@@ -1034,6 +1141,7 @@ function setBusy(isBusy) {
     elements.validatePack,
     elements.publishCharacter,
     elements.uploadAsset,
+    elements.sendChat,
     elements.refreshRoster,
   ].forEach((button) => {
     button.disabled = isBusy;
