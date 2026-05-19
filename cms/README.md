@@ -123,6 +123,46 @@ inspect pipeline status, create drafts, patch draft fields, list assets,
 generate source sheets, normalize packs, validate QA reports, and publish when
 explicitly requested.
 
+## Local Codex CMS Module
+
+For local automation outside the Codex app session, use the Codex CMS module.
+It exposes the same CMS function catalog that powers `/api/tools`.
+
+There are two local providers:
+
+- `codex-cli`: uses `codex exec` and the Codex CLI login on this machine. This
+  is the path that can use your ChatGPT/Codex subscription for local planning.
+- `responses`: calls the Responses API directly and requires `OPENAI_API_KEY`.
+
+```bash
+npm run cms:codex:local -- --health
+npm run cms:codex:local -- --list-functions
+npm run cms:codex:local -- "Check pipeline status"
+npm run cms:codex:local -- --character janitor "List this fighter's assets"
+OPENAI_API_KEY=... npm run cms:codex:local -- --provider responses "Check pipeline status"
+```
+
+Useful env vars:
+
+```bash
+CODEX_CMS_PROVIDER=codex-cli
+CODEX_CLI_MODEL=gpt-5.3-codex
+CODEX_CMS_SANDBOX=read-only
+OPENAI_CODEX_MODEL=gpt-5.3-codex
+OPENAI_CODEX_REASONING_EFFORT=medium
+CMS_STORAGE_PROVIDER=file
+CMS_FILE_STORAGE_ROOT=cms-data
+```
+
+The module is intentionally limited to explicit CMS function calls. It does not
+grant shell access or raw filesystem mutation to the model; if we add a local
+shell loop later, it should be a separate sandboxed adapter with approvals.
+
+The Codex CLI provider chooses CMS functions. The functions themselves still use
+their configured adapters. For example, `generate_sprite_sheet` uses the local
+SVG placeholder when `IMAGE_GENERATOR_PROVIDER=local`; it needs
+`OPENAI_API_KEY` only when the image generator adapter is set to `openai`.
+
 ## Text Model Adapter
 
 Character draft creation can use local deterministic output or OpenAI Responses

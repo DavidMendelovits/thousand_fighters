@@ -325,6 +325,36 @@ This keeps the workflow replaceable. Anthropic, a local model, or a specialized
 workflow engine should only need a new chat-agent adapter as long as it can
 choose from the same tool contracts.
 
+## Local Codex Module
+
+`cms/codex/` packages the same runtime and tool registry for local automation
+outside the Codex app. There are two providers:
+
+- `createLocalCodexCliCmsModule()`: uses `codex exec`, which can use the local
+  Codex CLI ChatGPT login/subscription, to plan CMS function calls.
+- `createLocalCodexCmsModule()`: uses the Responses API directly and requires
+  `OPENAI_API_KEY`.
+
+```text
+local script
+  -> createLocalCodexCliCmsModule()
+  -> codex exec
+  -> Codex model via local CLI login
+  -> CMS function call
+  -> tool registry invocation
+  -> pipeline ports
+```
+
+The Codex CLI module deliberately exposes only explicit CMS tools. It runs Codex
+in `read-only` sandbox mode for planning, then this Node process invokes the CMS
+function calls. It is not a raw shell agent. If local shell support becomes
+necessary, keep it as a separate, sandboxed port with approvals and audit logs.
+
+Provider boundaries still apply. Codex CLI can select `generate_sprite_sheet`,
+but image bytes come from the configured `imageGenerator` adapter. Local SVG
+generation needs no API key; OpenAI image generation still needs
+`OPENAI_API_KEY` in the CMS process.
+
 ## Health Status
 
 `GET /api/health`, `GET /api/pipeline`, and the `get_pipeline_status` tool all

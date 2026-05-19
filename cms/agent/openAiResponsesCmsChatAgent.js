@@ -8,12 +8,13 @@ export class OpenAiResponsesCmsChatAgent {
     this.tools = options.tools;
     this.apiKey = options.apiKey ?? process.env.OPENAI_API_KEY ?? '';
     this.model = options.model ?? process.env.OPENAI_RESPONSES_MODEL ?? DEFAULT_MODEL;
+    this.reasoningEffort = options.reasoningEffort ?? process.env.CMS_CHAT_REASONING_EFFORT ?? '';
     this.baseUrl = options.baseUrl ?? process.env.OPENAI_BASE_URL ?? DEFAULT_BASE_URL;
     this.fetch = options.fetch ?? globalThis.fetch;
     this.maxToolRounds = options.maxToolRounds ?? Number(process.env.CMS_CHAT_MAX_TOOL_ROUNDS ?? DEFAULT_MAX_TOOL_ROUNDS);
-    this.id = 'openai-responses-cms-chat-agent';
-    this.provider = 'openai';
-    this.capabilities = ['responses-api', 'function-calling', 'cms-tool-routing'];
+    this.id = options.id ?? 'openai-responses-cms-chat-agent';
+    this.provider = options.provider ?? 'openai';
+    this.capabilities = options.capabilities ?? ['responses-api', 'function-calling', 'cms-tool-routing'];
   }
 
   async healthCheck() {
@@ -21,9 +22,10 @@ export class OpenAiResponsesCmsChatAgent {
       status: this.apiKey ? 'ok' : 'error',
       message: this.apiKey
         ? `OpenAI Responses chat adapter is configured with ${this.model}.`
-        : 'OPENAI_API_KEY is required for CMS_CHAT_PROVIDER=openai.',
+        : apiKeyRequiredMessage(this.provider),
       details: {
         model: this.model,
+        reasoningEffort: this.reasoningEffort || null,
         baseUrl: this.baseUrl,
       },
     };
@@ -120,6 +122,9 @@ export class OpenAiResponsesCmsChatAgent {
       parallel_tool_calls: false,
       store: true,
     };
+    if (this.reasoningEffort) {
+      body.reasoning = { effort: this.reasoningEffort };
+    }
     if (previousResponseId) body.previous_response_id = previousResponseId;
 
     const response = await this.fetch(`${this.baseUrl.replace(/\/$/, '')}/responses`, {
@@ -141,6 +146,13 @@ export class OpenAiResponsesCmsChatAgent {
     }
     return value;
   }
+}
+
+function apiKeyRequiredMessage(provider) {
+  if (provider === 'openai-codex') {
+    return 'OPENAI_API_KEY is required for the local Codex CMS module.';
+  }
+  return 'OPENAI_API_KEY is required for CMS_CHAT_PROVIDER=openai.';
 }
 
 function buildInitialInput(request) {
