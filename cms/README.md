@@ -138,6 +138,28 @@ OPENAI_TEXT_MODEL=gpt-5.5
 `OPENAI_TEXT_MODEL` is optional. If it is not set, the adapter falls back to
 `OPENAI_RESPONSES_MODEL` and then `gpt-5.5`.
 
+## Image Generator Adapter
+
+Source sprite-sheet generation can use the local deterministic SVG fallback or
+OpenAI Responses image generation:
+
+```bash
+IMAGE_GENERATOR_PROVIDER=local
+IMAGE_GENERATOR_PROVIDER=openai
+OPENAI_API_KEY=...
+OPENAI_IMAGE_RESPONSES_MODEL=gpt-5.5
+OPENAI_IMAGE_MODEL=gpt-image-2
+OPENAI_IMAGE_SIZE=1024x1024
+OPENAI_IMAGE_QUALITY=auto
+OPENAI_IMAGE_BACKGROUND=auto
+OPENAI_IMAGE_OUTPUT_FORMAT=png
+```
+
+The local provider is useful for no-network smoke tests. The OpenAI provider
+calls `/v1/responses` with the hosted `image_generation` tool, forces image
+generation, and stores the returned image bytes through the same CMS asset
+repository path.
+
 ## Supabase Adapter
 
 The current deployed admin platform uses Supabase Storage:

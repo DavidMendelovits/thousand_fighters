@@ -5,11 +5,11 @@ import { PipelineRegistry } from '../pipeline/PipelineRegistry.js';
 import { PipelinePort } from '../pipeline/ports.js';
 import {
   createLocalFighterQa,
-  createLocalPlaceholderImageGenerator,
   createLocalPublisher,
   createLocalSpriteNormalizer,
 } from '../pipeline/adapters/localAdapters.js';
 import { createTextModelAdapter } from '../pipeline/adapters/createTextModelAdapter.js';
+import { createImageGeneratorAdapter } from '../pipeline/adapters/createImageGeneratorAdapter.js';
 import { createCmsChatAgent } from '../agent/createCmsChatAgent.js';
 import { createCmsTools } from '../tools/createCmsTools.js';
 
@@ -20,7 +20,7 @@ export function createLocalCmsRuntime(options = {}) {
     [PipelinePort.ASSET_STORAGE]: storage,
     [PipelinePort.CHARACTER_REPOSITORY]: repository,
     [PipelinePort.TEXT_MODEL]: options.textModel ?? createTextModelAdapter(options.textModelOptions ?? {}),
-    [PipelinePort.IMAGE_GENERATOR]: options.imageGenerator ?? createLocalPlaceholderImageGenerator(),
+    [PipelinePort.IMAGE_GENERATOR]: options.imageGenerator ?? createImageGeneratorAdapter(options.imageGeneratorOptions ?? {}),
     [PipelinePort.SPRITE_NORMALIZER]: options.spriteNormalizer ?? createLocalSpriteNormalizer({ storage, repository }),
     [PipelinePort.FIGHTER_QA]: options.fighterQa ?? createLocalFighterQa({ repository }),
     [PipelinePort.PUBLISHER]: options.publisher ?? createLocalPublisher({ storage, repository }),
@@ -42,12 +42,6 @@ export function createLocalCmsRuntime(options = {}) {
 
 function currentArchitectureGaps() {
   return [
-    {
-      id: 'openai-image-adapter',
-      status: 'remaining',
-      title: 'OpenAI image generation adapter',
-      detail: 'Replace placeholder SVG sprite sheets with gpt-image-2 generation and edit support behind imageGenerator.generateImage().',
-    },
     {
       id: 'contour-normalizer-adapter',
       status: 'remaining',

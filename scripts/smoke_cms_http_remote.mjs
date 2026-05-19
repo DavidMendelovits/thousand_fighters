@@ -29,11 +29,17 @@ const sheet = await postTool('generate_sprite_sheet', {
   prompt: '5x6 fighting-game sprite sheet with magenta background, full-body frames, and clean gutters.',
 });
 const sourceAssetKey = sheet.result.asset.key;
-assert.match(sourceAssetKey, /source\/.+_imagegen_sheet\.svg$/);
+assert.match(sourceAssetKey, /source\/.+_imagegen_sheet\.(svg|png|webp|jpg)$/);
 
 const sourceResponse = await fetch(assetUrl(sourceAssetKey));
 assert.equal(sourceResponse.status, 200);
-assert.match(await sourceResponse.text(), /<svg/);
+const sourceContentType = sourceResponse.headers.get('content-type') ?? '';
+const sourceBytes = Buffer.from(await sourceResponse.arrayBuffer());
+if (sourceContentType.includes('image/svg+xml') || sourceAssetKey.endsWith('.svg')) {
+  assert.match(sourceBytes.toString('utf8'), /<svg/);
+} else {
+  assert.ok(sourceBytes.length > 0);
+}
 
 const normalized = await postTool('normalize_sprite_pack', {
   characterId,

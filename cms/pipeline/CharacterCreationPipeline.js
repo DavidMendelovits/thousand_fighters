@@ -52,9 +52,10 @@ export class CharacterCreationPipeline {
       context,
     });
 
-    const key = targetPath ?? `source/${characterId}_imagegen_sheet.png`;
+    const contentType = result.contentType ?? 'image/png';
+    const key = targetPath ?? `source/${characterId}_imagegen_sheet${extensionForContentType(contentType)}`;
     const asset = await repository.writeAsset(characterId, key, bytesFromImageResult(result), {
-      contentType: result.contentType ?? 'image/png',
+      contentType,
       provider: result.provider ?? imageGenerator.provider ?? 'unknown',
       adapterId: imageGenerator.id ?? 'imageGenerator',
       model: result.model ?? null,
@@ -103,4 +104,11 @@ function bytesFromImageResult(result) {
     if (base64) return Buffer.from(base64, 'base64');
   }
   throw new Error('Image generator result must include bytes, base64, or dataUrl.');
+}
+
+function extensionForContentType(contentType) {
+  if (contentType === 'image/svg+xml') return '.svg';
+  if (contentType === 'image/webp') return '.webp';
+  if (contentType === 'image/jpeg') return '.jpg';
+  return '.png';
 }

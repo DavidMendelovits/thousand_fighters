@@ -75,7 +75,6 @@ export function createCmsTools({ pipeline, repository, registry }) {
         const result = await pipeline.generateSpriteSheet({
           characterId,
           prompt,
-          targetPath: `source/${characterId}_imagegen_sheet.svg`,
         });
         return withAssetApiUrl(result);
       },

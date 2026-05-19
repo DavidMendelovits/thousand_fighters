@@ -34,9 +34,11 @@ try {
   });
   const sourceAssetKey = sheet.result.asset.key;
   assert.equal(sourceAssetKey, 'characters/e2e_fighter/assets/source/e2e_fighter_imagegen_sheet.svg');
+  assert.equal((await runtime.storage.getMetadata(sourceAssetKey)).contentType, 'image/svg+xml');
 
   const assetResponse = await fetch(`${baseUrl}/api/assets/${encodeURIComponent(sourceAssetKey)}`);
   assert.equal(assetResponse.status, 200);
+  assert.equal(assetResponse.headers.get('content-type'), 'image/svg+xml');
   assert.match(await assetResponse.text(), /<svg/);
 
   const normalized = await postTool(baseUrl, 'normalize_sprite_pack', {

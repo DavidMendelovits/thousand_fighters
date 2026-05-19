@@ -23,6 +23,8 @@ cms/
     adapters/
       mockAdapters.js
       localAdapters.js
+      createImageGeneratorAdapter.js
+      openAiResponsesImageGeneratorAdapter.js
   runtime/
     createLocalCmsRuntime.js
   server/
@@ -57,7 +59,7 @@ requests and stable results.
 | `assetStorage`         | Blob/object storage                          | file, cached, Supabase | R2, S3, GCS                              |
 | `characterRepository`  | Character drafts, versions, assets, QA refs  | local repository       | SQL-backed repository                    |
 | `textModel`            | Structured planning and content edits        | local or OpenAI        | Anthropic, local LLM                     |
-| `imageGenerator`       | Sprite sheets, frames, projectiles, edits    | local SVG placeholder  | OpenAI image, Runway, Stability, local   |
+| `imageGenerator`       | Sprite sheets, frames, projectiles, edits    | local or OpenAI        | Runway, Stability, local models          |
 | `videoGenerator`       | Motion/video-based frame generation          | none yet               | Runway, Pika, local video model          |
 | `spriteNormalizer`     | Raw sheet to game-ready sprites              | local fixture copier   | local Python script, remote worker       |
 | `fighterQa`            | Validation and visual QA                     | local placeholder      | local validator, remote QA worker        |
@@ -139,23 +141,41 @@ Contract:
 
 ```js
 {
-  id: 'openai-image-generator',
+  id: 'openai-responses-image-generator',
   provider: 'openai',
-  capabilities: ['fighter-5x6-sheet', 'frame-edit', 'projectile'],
+  capabilities: ['responses-api', 'image-generation', 'fighter-5x6-sheet'],
   async generateImage(request) {
     return {
       provider: 'openai',
       model: 'gpt-image-2',
       contentType: 'image/png',
-      bytes: Uint8Array,
+      base64: '...',
       promptRef: '...'
     };
   }
 }
 ```
 
-Runway or another image provider should return the same `bytes` and metadata.
-The downstream repository should not know who generated the PNG.
+Runway or another image provider should return the same image-result shape:
+`bytes`, `base64`, or `dataUrl`, plus metadata. The downstream repository
+should not know who generated the PNG.
+
+The active provider is selected through the adapter factory:
+
+```bash
+IMAGE_GENERATOR_PROVIDER=local
+IMAGE_GENERATOR_PROVIDER=openai
+OPENAI_API_KEY=...
+OPENAI_IMAGE_RESPONSES_MODEL=gpt-5.5
+OPENAI_IMAGE_MODEL=gpt-image-2
+OPENAI_IMAGE_SIZE=1024x1024
+OPENAI_IMAGE_OUTPUT_FORMAT=png
+```
+
+The local provider still emits deterministic SVG source sheets for no-network
+pipeline checks. The OpenAI provider uses the Responses API hosted
+`image_generation` tool and returns PNG bytes through the same
+`imageGenerator.generateImage()` port.
 
 ### Sprite Normalizer Adapter
 
@@ -378,7 +398,8 @@ admin UI -> HTTP API -> tool registry -> pipeline ports -> local adapters -> fil
 
 What is deliberately still placeholder-backed:
 
-- `imageGenerator`: deterministic SVG sprite-sheet generator.
+- `imageGenerator`: local provider is deterministic SVG; `openai` provider is
+  available behind `IMAGE_GENERATOR_PROVIDER=openai`.
 - `spriteNormalizer`: placeholder normalized manifest writer.
 - `fighterQa`: placeholder QA report writer.
 - `publisher`: local release JSON writer without hard publish gates.
