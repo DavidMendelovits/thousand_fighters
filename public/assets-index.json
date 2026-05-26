@@ -1,0 +1,5264 @@
+{
+  "generatedAt": "2026-05-26T05:54:20.305Z",
+  "fighterCount": 15,
+  "arenaCount": 0,
+  "fighters": {
+    "corey": {
+      "displayName": "corey",
+      "basePath": "/fighters/corey",
+      "artSource": null,
+      "sheets": {},
+      "frameCounts": {
+        "base": 6,
+        "punch": 6,
+        "kick": 6,
+        "special_1": 6,
+        "special_2": 6
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/base/base_001.png",
+            "width": 254,
+            "height": 286,
+            "anchor": {
+              "x": 127,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_002.png",
+            "width": 238,
+            "height": 286,
+            "anchor": {
+              "x": 119,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_003.png",
+            "width": 274,
+            "height": 286,
+            "anchor": {
+              "x": 137,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_004.png",
+            "width": 288,
+            "height": 286,
+            "anchor": {
+              "x": 144,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_005.png",
+            "width": 265,
+            "height": 286,
+            "anchor": {
+              "x": 132,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_006.png",
+            "width": 250,
+            "height": 326,
+            "anchor": {
+              "x": 125,
+              "y": 288
+            }
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/punch/punch_001.png",
+            "width": 287,
+            "height": 286,
+            "anchor": {
+              "x": 143,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_002.png",
+            "width": 342,
+            "height": 286,
+            "anchor": {
+              "x": 171,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_003.png",
+            "width": 249,
+            "height": 286,
+            "anchor": {
+              "x": 124,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_004.png",
+            "width": 329,
+            "height": 286,
+            "anchor": {
+              "x": 164,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_005.png",
+            "width": 262,
+            "height": 286,
+            "anchor": {
+              "x": 131,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_006.png",
+            "width": 250,
+            "height": 286,
+            "anchor": {
+              "x": 125,
+              "y": 248
+            }
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/kick/kick_001.png",
+            "width": 308,
+            "height": 286,
+            "anchor": {
+              "x": 154,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_002.png",
+            "width": 251,
+            "height": 286,
+            "anchor": {
+              "x": 125,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_003.png",
+            "width": 314,
+            "height": 286,
+            "anchor": {
+              "x": 157,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_004.png",
+            "width": 308,
+            "height": 286,
+            "anchor": {
+              "x": 154,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_005.png",
+            "width": 234,
+            "height": 286,
+            "anchor": {
+              "x": 117,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_006.png",
+            "width": 250,
+            "height": 286,
+            "anchor": {
+              "x": 125,
+              "y": 248
+            }
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/special_1/special_1_001.png",
+            "width": 241,
+            "height": 286,
+            "anchor": {
+              "x": 120,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_002.png",
+            "width": 241,
+            "height": 286,
+            "anchor": {
+              "x": 120,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_003.png",
+            "width": 316,
+            "height": 286,
+            "anchor": {
+              "x": 158,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_004.png",
+            "width": 294,
+            "height": 286,
+            "anchor": {
+              "x": 147,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_005.png",
+            "width": 253,
+            "height": 286,
+            "anchor": {
+              "x": 126,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_006.png",
+            "width": 236,
+            "height": 286,
+            "anchor": {
+              "x": 118,
+              "y": 248
+            }
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/special_2/special_2_001.png",
+            "width": 240,
+            "height": 286,
+            "anchor": {
+              "x": 120,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_002.png",
+            "width": 239,
+            "height": 286,
+            "anchor": {
+              "x": 119,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_003.png",
+            "width": 303,
+            "height": 286,
+            "anchor": {
+              "x": 151,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_004.png",
+            "width": 232,
+            "height": 286,
+            "anchor": {
+              "x": 116,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_005.png",
+            "width": 232,
+            "height": 286,
+            "anchor": {
+              "x": 116,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_006.png",
+            "width": 232,
+            "height": 286,
+            "anchor": {
+              "x": 116,
+              "y": 248
+            }
+          }
+        ]
+      },
+      "sprites": {},
+      "projectiles": {},
+      "sounds": {}
+    },
+    "demi": {
+      "displayName": "demi",
+      "basePath": "/fighters/demi",
+      "artSource": "image-gen",
+      "sheets": {
+        "base": "sheets/base.png",
+        "punch": "sheets/punch.png",
+        "kick": "sheets/kick.png",
+        "special_1": "sheets/special_1.png",
+        "special_2": "sheets/special_2.png"
+      },
+      "frameCounts": {
+        "base": 6,
+        "punch": 6,
+        "kick": 6,
+        "special_1": 6,
+        "special_2": 6
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/base/base_001.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/base/base_002.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/base/base_003.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/base/base_004.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/base/base_005.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/base/base_006.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/punch/punch_001.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/punch/punch_002.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/punch/punch_003.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/punch/punch_004.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/punch/punch_005.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/punch/punch_006.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/kick/kick_001.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/kick/kick_002.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/kick/kick_003.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/kick/kick_004.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/kick/kick_005.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/kick/kick_006.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/special_1/special_1_001.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_002.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_003.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_004.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_005.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_006.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/special_2/special_2_001.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_002.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_003.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_004.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_005.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_006.png",
+            "width": 320,
+            "height": 320,
+            "anchor": {
+              "x": 160,
+              "y": 286
+            }
+          }
+        ]
+      },
+      "sprites": {
+        "base": [
+          "sprites/base/base_001.png",
+          "sprites/base/base_002.png",
+          "sprites/base/base_003.png",
+          "sprites/base/base_004.png",
+          "sprites/base/base_005.png",
+          "sprites/base/base_006.png"
+        ],
+        "punch": [
+          "sprites/punch/punch_001.png",
+          "sprites/punch/punch_002.png",
+          "sprites/punch/punch_003.png",
+          "sprites/punch/punch_004.png",
+          "sprites/punch/punch_005.png",
+          "sprites/punch/punch_006.png"
+        ],
+        "kick": [
+          "sprites/kick/kick_001.png",
+          "sprites/kick/kick_002.png",
+          "sprites/kick/kick_003.png",
+          "sprites/kick/kick_004.png",
+          "sprites/kick/kick_005.png",
+          "sprites/kick/kick_006.png"
+        ],
+        "special_1": [
+          "sprites/special_1/special_1_001.png",
+          "sprites/special_1/special_1_002.png",
+          "sprites/special_1/special_1_003.png",
+          "sprites/special_1/special_1_004.png",
+          "sprites/special_1/special_1_005.png",
+          "sprites/special_1/special_1_006.png"
+        ],
+        "special_2": [
+          "sprites/special_2/special_2_001.png",
+          "sprites/special_2/special_2_002.png",
+          "sprites/special_2/special_2_003.png",
+          "sprites/special_2/special_2_004.png",
+          "sprites/special_2/special_2_005.png",
+          "sprites/special_2/special_2_006.png"
+        ]
+      },
+      "projectiles": {
+        "remote_laser": "projectiles/remote_laser.png",
+        "remote_spark": "projectiles/remote_spark.png",
+        "morph_flash": "projectiles/morph_flash.png"
+      },
+      "sounds": {}
+    },
+    "dylan_sax": {
+      "displayName": "dylan_sax",
+      "basePath": "/fighters/dylan_sax",
+      "artSource": null,
+      "sheets": {},
+      "frameCounts": {
+        "base": 6,
+        "punch": 6,
+        "kick": 6,
+        "special_1": 6,
+        "special_2": 6
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/base/base_001.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_002.png",
+            "width": 243,
+            "height": 289,
+            "anchor": {
+              "x": 121,
+              "y": 251
+            }
+          },
+          {
+            "file": "sprites/base/base_003.png",
+            "width": 250,
+            "height": 286,
+            "anchor": {
+              "x": 125,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_004.png",
+            "width": 248,
+            "height": 286,
+            "anchor": {
+              "x": 124,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_005.png",
+            "width": 257,
+            "height": 286,
+            "anchor": {
+              "x": 128,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_006.png",
+            "width": 295,
+            "height": 302,
+            "anchor": {
+              "x": 147,
+              "y": 264
+            }
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/punch/punch_001.png",
+            "width": 331,
+            "height": 286,
+            "anchor": {
+              "x": 165,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_002.png",
+            "width": 308,
+            "height": 286,
+            "anchor": {
+              "x": 154,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_003.png",
+            "width": 261,
+            "height": 286,
+            "anchor": {
+              "x": 130,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_004.png",
+            "width": 290,
+            "height": 286,
+            "anchor": {
+              "x": 145,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_005.png",
+            "width": 305,
+            "height": 286,
+            "anchor": {
+              "x": 152,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_006.png",
+            "width": 247,
+            "height": 286,
+            "anchor": {
+              "x": 123,
+              "y": 248
+            }
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/kick/kick_001.png",
+            "width": 228,
+            "height": 286,
+            "anchor": {
+              "x": 114,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_002.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_003.png",
+            "width": 304,
+            "height": 286,
+            "anchor": {
+              "x": 152,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_004.png",
+            "width": 288,
+            "height": 286,
+            "anchor": {
+              "x": 144,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_005.png",
+            "width": 294,
+            "height": 286,
+            "anchor": {
+              "x": 147,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_006.png",
+            "width": 242,
+            "height": 286,
+            "anchor": {
+              "x": 121,
+              "y": 248
+            }
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/special_1/special_1_001.png",
+            "width": 227,
+            "height": 286,
+            "anchor": {
+              "x": 113,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_002.png",
+            "width": 246,
+            "height": 286,
+            "anchor": {
+              "x": 123,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_003.png",
+            "width": 243,
+            "height": 286,
+            "anchor": {
+              "x": 121,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_004.png",
+            "width": 260,
+            "height": 305,
+            "anchor": {
+              "x": 130,
+              "y": 267
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_005.png",
+            "width": 251,
+            "height": 286,
+            "anchor": {
+              "x": 125,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_006.png",
+            "width": 239,
+            "height": 286,
+            "anchor": {
+              "x": 119,
+              "y": 248
+            }
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/special_2/special_2_001.png",
+            "width": 233,
+            "height": 286,
+            "anchor": {
+              "x": 116,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_002.png",
+            "width": 245,
+            "height": 286,
+            "anchor": {
+              "x": 122,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_003.png",
+            "width": 242,
+            "height": 286,
+            "anchor": {
+              "x": 121,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_004.png",
+            "width": 246,
+            "height": 286,
+            "anchor": {
+              "x": 123,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_005.png",
+            "width": 223,
+            "height": 286,
+            "anchor": {
+              "x": 111,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_006.png",
+            "width": 223,
+            "height": 286,
+            "anchor": {
+              "x": 111,
+              "y": 248
+            }
+          }
+        ]
+      },
+      "sprites": {},
+      "projectiles": {},
+      "sounds": {}
+    },
+    "guitar_shredder": {
+      "displayName": "guitar_shredder",
+      "basePath": "/fighters/guitar_shredder",
+      "artSource": null,
+      "sheets": {},
+      "frameCounts": {
+        "base": 6,
+        "punch": 6,
+        "kick": 6,
+        "special_1": 6,
+        "special_2": 6
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/base/base_001.png",
+            "width": 154,
+            "height": 201,
+            "anchor": {
+              "x": 77,
+              "y": 183
+            }
+          },
+          {
+            "file": "sprites/base/base_002.png",
+            "width": 159,
+            "height": 194,
+            "anchor": {
+              "x": 80,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/base/base_003.png",
+            "width": 157,
+            "height": 195,
+            "anchor": {
+              "x": 78,
+              "y": 177
+            }
+          },
+          {
+            "file": "sprites/base/base_004.png",
+            "width": 162,
+            "height": 179,
+            "anchor": {
+              "x": 81,
+              "y": 161
+            }
+          },
+          {
+            "file": "sprites/base/base_005.png",
+            "width": 162,
+            "height": 150,
+            "anchor": {
+              "x": 81,
+              "y": 132
+            }
+          },
+          {
+            "file": "sprites/base/base_006.png",
+            "width": 159,
+            "height": 194,
+            "anchor": {
+              "x": 80,
+              "y": 176
+            }
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/punch/punch_001.png",
+            "width": 159,
+            "height": 194,
+            "anchor": {
+              "x": 80,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/punch/punch_002.png",
+            "width": 201,
+            "height": 192,
+            "anchor": {
+              "x": 100,
+              "y": 174
+            }
+          },
+          {
+            "file": "sprites/punch/punch_003.png",
+            "width": 201,
+            "height": 189,
+            "anchor": {
+              "x": 100,
+              "y": 171
+            }
+          },
+          {
+            "file": "sprites/punch/punch_004.png",
+            "width": 199,
+            "height": 190,
+            "anchor": {
+              "x": 100,
+              "y": 172
+            }
+          },
+          {
+            "file": "sprites/punch/punch_005.png",
+            "width": 209,
+            "height": 187,
+            "anchor": {
+              "x": 104,
+              "y": 169
+            }
+          },
+          {
+            "file": "sprites/punch/punch_006.png",
+            "width": 159,
+            "height": 194,
+            "anchor": {
+              "x": 80,
+              "y": 176
+            }
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/kick/kick_001.png",
+            "width": 162,
+            "height": 150,
+            "anchor": {
+              "x": 81,
+              "y": 132
+            }
+          },
+          {
+            "file": "sprites/kick/kick_002.png",
+            "width": 155,
+            "height": 191,
+            "anchor": {
+              "x": 78,
+              "y": 173
+            }
+          },
+          {
+            "file": "sprites/kick/kick_003.png",
+            "width": 191,
+            "height": 170,
+            "anchor": {
+              "x": 96,
+              "y": 152
+            }
+          },
+          {
+            "file": "sprites/kick/kick_004.png",
+            "width": 219,
+            "height": 153,
+            "anchor": {
+              "x": 110,
+              "y": 135
+            }
+          },
+          {
+            "file": "sprites/kick/kick_005.png",
+            "width": 170,
+            "height": 149,
+            "anchor": {
+              "x": 85,
+              "y": 131
+            }
+          },
+          {
+            "file": "sprites/kick/kick_006.png",
+            "width": 162,
+            "height": 150,
+            "anchor": {
+              "x": 81,
+              "y": 132
+            }
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/special_1/special_1_001.png",
+            "width": 159,
+            "height": 194,
+            "anchor": {
+              "x": 80,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_002.png",
+            "width": 181,
+            "height": 169,
+            "anchor": {
+              "x": 90,
+              "y": 151
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_003.png",
+            "width": 201,
+            "height": 174,
+            "anchor": {
+              "x": 100,
+              "y": 156
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_004.png",
+            "width": 201,
+            "height": 174,
+            "anchor": {
+              "x": 100,
+              "y": 156
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_005.png",
+            "width": 181,
+            "height": 169,
+            "anchor": {
+              "x": 90,
+              "y": 151
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_006.png",
+            "width": 159,
+            "height": 194,
+            "anchor": {
+              "x": 80,
+              "y": 176
+            }
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/special_2/special_2_001.png",
+            "width": 162,
+            "height": 179,
+            "anchor": {
+              "x": 81,
+              "y": 161
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_002.png",
+            "width": 181,
+            "height": 169,
+            "anchor": {
+              "x": 90,
+              "y": 151
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_003.png",
+            "width": 162,
+            "height": 179,
+            "anchor": {
+              "x": 81,
+              "y": 161
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_004.png",
+            "width": 157,
+            "height": 195,
+            "anchor": {
+              "x": 78,
+              "y": 177
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_005.png",
+            "width": 181,
+            "height": 169,
+            "anchor": {
+              "x": 90,
+              "y": 151
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_006.png",
+            "width": 159,
+            "height": 194,
+            "anchor": {
+              "x": 80,
+              "y": 176
+            }
+          }
+        ]
+      },
+      "sprites": {},
+      "projectiles": {},
+      "sounds": {}
+    },
+    "jack_tucker": {
+      "displayName": "jack_tucker",
+      "basePath": "/fighters/jack_tucker",
+      "artSource": null,
+      "sheets": {},
+      "frameCounts": {
+        "base": 6,
+        "punch": 6,
+        "kick": 6,
+        "special_1": 6,
+        "special_2": 6
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/base/base_001.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_002.png",
+            "width": 236,
+            "height": 286,
+            "anchor": {
+              "x": 118,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_003.png",
+            "width": 231,
+            "height": 286,
+            "anchor": {
+              "x": 115,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_004.png",
+            "width": 237,
+            "height": 286,
+            "anchor": {
+              "x": 118,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_005.png",
+            "width": 261,
+            "height": 286,
+            "anchor": {
+              "x": 130,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_006.png",
+            "width": 275,
+            "height": 286,
+            "anchor": {
+              "x": 137,
+              "y": 248
+            }
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/punch/punch_001.png",
+            "width": 264,
+            "height": 286,
+            "anchor": {
+              "x": 132,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_002.png",
+            "width": 326,
+            "height": 286,
+            "anchor": {
+              "x": 163,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_003.png",
+            "width": 371,
+            "height": 286,
+            "anchor": {
+              "x": 185,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_004.png",
+            "width": 249,
+            "height": 286,
+            "anchor": {
+              "x": 124,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_005.png",
+            "width": 236,
+            "height": 286,
+            "anchor": {
+              "x": 118,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_006.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/kick/kick_001.png",
+            "width": 234,
+            "height": 286,
+            "anchor": {
+              "x": 117,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_002.png",
+            "width": 269,
+            "height": 286,
+            "anchor": {
+              "x": 134,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_003.png",
+            "width": 233,
+            "height": 286,
+            "anchor": {
+              "x": 116,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_004.png",
+            "width": 236,
+            "height": 286,
+            "anchor": {
+              "x": 118,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_005.png",
+            "width": 285,
+            "height": 286,
+            "anchor": {
+              "x": 142,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_006.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/special_1/special_1_001.png",
+            "width": 313,
+            "height": 286,
+            "anchor": {
+              "x": 156,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_002.png",
+            "width": 335,
+            "height": 286,
+            "anchor": {
+              "x": 167,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_003.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_004.png",
+            "width": 334,
+            "height": 286,
+            "anchor": {
+              "x": 167,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_005.png",
+            "width": 245,
+            "height": 286,
+            "anchor": {
+              "x": 122,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_006.png",
+            "width": 288,
+            "height": 286,
+            "anchor": {
+              "x": 144,
+              "y": 248
+            }
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/special_2/special_2_001.png",
+            "width": 268,
+            "height": 286,
+            "anchor": {
+              "x": 134,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_002.png",
+            "width": 230,
+            "height": 286,
+            "anchor": {
+              "x": 115,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_003.png",
+            "width": 221,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_004.png",
+            "width": 360,
+            "height": 286,
+            "anchor": {
+              "x": 150,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_005.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_006.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          }
+        ]
+      },
+      "sprites": {},
+      "projectiles": {},
+      "sounds": {}
+    },
+    "janitor": {
+      "displayName": "janitor",
+      "basePath": "/fighters/janitor",
+      "artSource": null,
+      "sheets": {},
+      "frameCounts": {
+        "base": 6,
+        "punch": 6,
+        "kick": 6,
+        "special_1": 6,
+        "special_2": 6
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/base/base_001.png",
+            "width": 226,
+            "height": 295,
+            "anchor": {
+              "x": 113,
+              "y": 257
+            }
+          },
+          {
+            "file": "sprites/base/base_002.png",
+            "width": 266,
+            "height": 286,
+            "anchor": {
+              "x": 133,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_003.png",
+            "width": 329,
+            "height": 286,
+            "anchor": {
+              "x": 164,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_004.png",
+            "width": 274,
+            "height": 291,
+            "anchor": {
+              "x": 137,
+              "y": 253
+            }
+          },
+          {
+            "file": "sprites/base/base_005.png",
+            "width": 308,
+            "height": 286,
+            "anchor": {
+              "x": 154,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_006.png",
+            "width": 278,
+            "height": 286,
+            "anchor": {
+              "x": 139,
+              "y": 248
+            }
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/punch/punch_001.png",
+            "width": 267,
+            "height": 286,
+            "anchor": {
+              "x": 133,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_002.png",
+            "width": 316,
+            "height": 286,
+            "anchor": {
+              "x": 158,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_003.png",
+            "width": 350,
+            "height": 286,
+            "anchor": {
+              "x": 175,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_004.png",
+            "width": 273,
+            "height": 286,
+            "anchor": {
+              "x": 136,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_005.png",
+            "width": 244,
+            "height": 286,
+            "anchor": {
+              "x": 122,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_006.png",
+            "width": 224,
+            "height": 286,
+            "anchor": {
+              "x": 112,
+              "y": 248
+            }
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/kick/kick_001.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_002.png",
+            "width": 301,
+            "height": 286,
+            "anchor": {
+              "x": 150,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_003.png",
+            "width": 325,
+            "height": 286,
+            "anchor": {
+              "x": 162,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_004.png",
+            "width": 274,
+            "height": 286,
+            "anchor": {
+              "x": 137,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_005.png",
+            "width": 278,
+            "height": 286,
+            "anchor": {
+              "x": 139,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_006.png",
+            "width": 231,
+            "height": 286,
+            "anchor": {
+              "x": 115,
+              "y": 248
+            }
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/special_1/special_1_001.png",
+            "width": 286,
+            "height": 286,
+            "anchor": {
+              "x": 143,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_002.png",
+            "width": 313,
+            "height": 286,
+            "anchor": {
+              "x": 156,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_003.png",
+            "width": 311,
+            "height": 287,
+            "anchor": {
+              "x": 155,
+              "y": 249
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_004.png",
+            "width": 381,
+            "height": 286,
+            "anchor": {
+              "x": 190,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_005.png",
+            "width": 263,
+            "height": 286,
+            "anchor": {
+              "x": 131,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_006.png",
+            "width": 344,
+            "height": 286,
+            "anchor": {
+              "x": 172,
+              "y": 248
+            }
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/special_2/special_2_001.png",
+            "width": 233,
+            "height": 286,
+            "anchor": {
+              "x": 116,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_002.png",
+            "width": 346,
+            "height": 286,
+            "anchor": {
+              "x": 173,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_003.png",
+            "width": 240,
+            "height": 286,
+            "anchor": {
+              "x": 120,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_004.png",
+            "width": 252,
+            "height": 286,
+            "anchor": {
+              "x": 126,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_005.png",
+            "width": 252,
+            "height": 286,
+            "anchor": {
+              "x": 126,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_006.png",
+            "width": 252,
+            "height": 286,
+            "anchor": {
+              "x": 126,
+              "y": 248
+            }
+          }
+        ]
+      },
+      "sprites": {},
+      "projectiles": {},
+      "sounds": {}
+    },
+    "juggling_joe": {
+      "displayName": "juggling_joe",
+      "basePath": "/fighters/juggling_joe",
+      "artSource": null,
+      "sheets": {},
+      "frameCounts": {
+        "base": 6,
+        "punch": 6,
+        "kick": 6,
+        "special_1": 6,
+        "special_2": 6
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/base/base_001.png",
+            "width": 222,
+            "height": 286,
+            "anchor": {
+              "x": 111,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_002.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_003.png",
+            "width": 224,
+            "height": 286,
+            "anchor": {
+              "x": 112,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_004.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_005.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_006.png",
+            "width": 244,
+            "height": 286,
+            "anchor": {
+              "x": 122,
+              "y": 248
+            }
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/punch/punch_001.png",
+            "width": 264,
+            "height": 286,
+            "anchor": {
+              "x": 132,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_002.png",
+            "width": 269,
+            "height": 286,
+            "anchor": {
+              "x": 134,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_003.png",
+            "width": 298,
+            "height": 286,
+            "anchor": {
+              "x": 149,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_004.png",
+            "width": 238,
+            "height": 286,
+            "anchor": {
+              "x": 119,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_005.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_006.png",
+            "width": 221,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/kick/kick_001.png",
+            "width": 277,
+            "height": 286,
+            "anchor": {
+              "x": 138,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_002.png",
+            "width": 305,
+            "height": 286,
+            "anchor": {
+              "x": 152,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_003.png",
+            "width": 288,
+            "height": 286,
+            "anchor": {
+              "x": 144,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_004.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_005.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_006.png",
+            "width": 226,
+            "height": 286,
+            "anchor": {
+              "x": 113,
+              "y": 248
+            }
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/special_1/special_1_001.png",
+            "width": 234,
+            "height": 286,
+            "anchor": {
+              "x": 117,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_002.png",
+            "width": 237,
+            "height": 286,
+            "anchor": {
+              "x": 118,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_003.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_004.png",
+            "width": 301,
+            "height": 286,
+            "anchor": {
+              "x": 150,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_005.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_006.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/special_2/special_2_001.png",
+            "width": 228,
+            "height": 286,
+            "anchor": {
+              "x": 114,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_002.png",
+            "width": 232,
+            "height": 286,
+            "anchor": {
+              "x": 116,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_003.png",
+            "width": 245,
+            "height": 286,
+            "anchor": {
+              "x": 122,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_004.png",
+            "width": 230,
+            "height": 286,
+            "anchor": {
+              "x": 115,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_005.png",
+            "width": 228,
+            "height": 286,
+            "anchor": {
+              "x": 114,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_006.png",
+            "width": 228,
+            "height": 286,
+            "anchor": {
+              "x": 114,
+              "y": 248
+            }
+          }
+        ]
+      },
+      "sprites": {},
+      "projectiles": {},
+      "sounds": {}
+    },
+    "martin_urbano": {
+      "displayName": "martin_urbano",
+      "basePath": "/fighters/martin_urbano",
+      "artSource": null,
+      "sheets": {},
+      "frameCounts": {
+        "base": 6,
+        "punch": 6,
+        "kick": 6,
+        "special_1": 6,
+        "special_2": 6
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/base/base_001.png",
+            "width": 249,
+            "height": 317,
+            "anchor": {
+              "x": 124,
+              "y": 279
+            }
+          },
+          {
+            "file": "sprites/base/base_002.png",
+            "width": 229,
+            "height": 306,
+            "anchor": {
+              "x": 114,
+              "y": 268
+            }
+          },
+          {
+            "file": "sprites/base/base_003.png",
+            "width": 256,
+            "height": 299,
+            "anchor": {
+              "x": 128,
+              "y": 261
+            }
+          },
+          {
+            "file": "sprites/base/base_004.png",
+            "width": 277,
+            "height": 286,
+            "anchor": {
+              "x": 138,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_005.png",
+            "width": 268,
+            "height": 286,
+            "anchor": {
+              "x": 134,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_006.png",
+            "width": 242,
+            "height": 332,
+            "anchor": {
+              "x": 121,
+              "y": 294
+            }
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/punch/punch_001.png",
+            "width": 273,
+            "height": 286,
+            "anchor": {
+              "x": 136,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_002.png",
+            "width": 265,
+            "height": 286,
+            "anchor": {
+              "x": 132,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_003.png",
+            "width": 284,
+            "height": 286,
+            "anchor": {
+              "x": 142,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_004.png",
+            "width": 364,
+            "height": 286,
+            "anchor": {
+              "x": 182,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_005.png",
+            "width": 301,
+            "height": 286,
+            "anchor": {
+              "x": 150,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_006.png",
+            "width": 237,
+            "height": 286,
+            "anchor": {
+              "x": 118,
+              "y": 248
+            }
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/kick/kick_001.png",
+            "width": 236,
+            "height": 286,
+            "anchor": {
+              "x": 118,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_002.png",
+            "width": 237,
+            "height": 286,
+            "anchor": {
+              "x": 118,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_003.png",
+            "width": 298,
+            "height": 286,
+            "anchor": {
+              "x": 149,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_004.png",
+            "width": 335,
+            "height": 286,
+            "anchor": {
+              "x": 167,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_005.png",
+            "width": 245,
+            "height": 286,
+            "anchor": {
+              "x": 122,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_006.png",
+            "width": 229,
+            "height": 286,
+            "anchor": {
+              "x": 114,
+              "y": 248
+            }
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/special_1/special_1_001.png",
+            "width": 235,
+            "height": 286,
+            "anchor": {
+              "x": 117,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_002.png",
+            "width": 262,
+            "height": 286,
+            "anchor": {
+              "x": 131,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_003.png",
+            "width": 265,
+            "height": 286,
+            "anchor": {
+              "x": 132,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_004.png",
+            "width": 270,
+            "height": 286,
+            "anchor": {
+              "x": 135,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_005.png",
+            "width": 268,
+            "height": 286,
+            "anchor": {
+              "x": 134,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_006.png",
+            "width": 229,
+            "height": 286,
+            "anchor": {
+              "x": 114,
+              "y": 248
+            }
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/special_2/special_2_001.png",
+            "width": 233,
+            "height": 292,
+            "anchor": {
+              "x": 116,
+              "y": 254
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_002.png",
+            "width": 265,
+            "height": 290,
+            "anchor": {
+              "x": 132,
+              "y": 252
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_003.png",
+            "width": 351,
+            "height": 286,
+            "anchor": {
+              "x": 175,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_004.png",
+            "width": 423,
+            "height": 286,
+            "anchor": {
+              "x": 211,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_005.png",
+            "width": 350,
+            "height": 286,
+            "anchor": {
+              "x": 175,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_006.png",
+            "width": 252,
+            "height": 286,
+            "anchor": {
+              "x": 126,
+              "y": 248
+            }
+          }
+        ]
+      },
+      "sprites": {},
+      "projectiles": {},
+      "sounds": {}
+    },
+    "mic_monarch": {
+      "displayName": "mic_monarch",
+      "basePath": "/fighters/mic_monarch",
+      "artSource": null,
+      "sheets": {},
+      "frameCounts": {},
+      "frameData": null,
+      "sprites": {},
+      "projectiles": {},
+      "sounds": {}
+    },
+    "mr_cardboard": {
+      "displayName": "mr_cardboard",
+      "basePath": "/fighters/mr_cardboard",
+      "artSource": null,
+      "sheets": {},
+      "frameCounts": {
+        "base": 6,
+        "punch": 6,
+        "kick": 6,
+        "special_1": 6,
+        "special_2": 6
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/base/base_001.png",
+            "width": 275,
+            "height": 415,
+            "anchor": {
+              "x": 138,
+              "y": 371
+            },
+            "sourceSheet": "source/base_3x2_imagegen.png",
+            "sourceBounds": [
+              155,
+              87,
+              374,
+              471
+            ],
+            "sourceOuterMargins": [
+              155,
+              87,
+              1162,
+              553
+            ],
+            "componentCount": 1
+          },
+          {
+            "file": "sprites/base/base_002.png",
+            "width": 269,
+            "height": 408,
+            "anchor": {
+              "x": 134,
+              "y": 364
+            },
+            "sourceSheet": "source/base_3x2_imagegen.png",
+            "sourceBounds": [
+              641,
+              96,
+              854,
+              472
+            ],
+            "sourceOuterMargins": [
+              641,
+              96,
+              682,
+              552
+            ],
+            "componentCount": 1
+          },
+          {
+            "file": "sprites/base/base_003.png",
+            "width": 405,
+            "height": 392,
+            "anchor": {
+              "x": 202,
+              "y": 348
+            },
+            "sourceSheet": "source/base_3x2_imagegen.png",
+            "sourceBounds": [
+              1054,
+              111,
+              1427,
+              468
+            ],
+            "sourceOuterMargins": [
+              1054,
+              111,
+              109,
+              556
+            ],
+            "componentCount": 1
+          },
+          {
+            "file": "sprites/base/base_004.png",
+            "width": 289,
+            "height": 366,
+            "anchor": {
+              "x": 144,
+              "y": 321
+            },
+            "sourceSheet": "source/base_3x2_imagegen.png",
+            "sourceBounds": [
+              118,
+              567,
+              354,
+              893
+            ],
+            "sourceOuterMargins": [
+              118,
+              567,
+              1182,
+              131
+            ],
+            "componentCount": 1
+          },
+          {
+            "file": "sprites/base/base_005.png",
+            "width": 322,
+            "height": 295,
+            "anchor": {
+              "x": 162,
+              "y": 251
+            },
+            "sourceSheet": "source/base_3x2_imagegen.png",
+            "sourceBounds": [
+              605,
+              647,
+              880,
+              890
+            ],
+            "sourceOuterMargins": [
+              605,
+              647,
+              656,
+              134
+            ],
+            "componentCount": 1
+          },
+          {
+            "file": "sprites/base/base_006.png",
+            "width": 290,
+            "height": 360,
+            "anchor": {
+              "x": 144,
+              "y": 316
+            },
+            "sourceSheet": "source/base_3x2_imagegen.png",
+            "sourceBounds": [
+              1090,
+              579,
+              1327,
+              899
+            ],
+            "sourceOuterMargins": [
+              1090,
+              579,
+              209,
+              125
+            ],
+            "componentCount": 1
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/punch/punch_001.png",
+            "width": 401,
+            "height": 404,
+            "anchor": {
+              "x": 200,
+              "y": 352
+            },
+            "sourceSheet": "source/punch_3x2_imagegen.png",
+            "sourceBounds": [
+              107,
+              121,
+              404,
+              421
+            ],
+            "sourceOuterMargins": [
+              107,
+              121,
+              1132,
+              603
+            ],
+            "componentCount": 1
+          },
+          {
+            "file": "sprites/punch/punch_002.png",
+            "width": 459,
+            "height": 357,
+            "anchor": {
+              "x": 230,
+              "y": 305
+            },
+            "sourceSheet": "source/punch_3x2_imagegen.png",
+            "sourceBounds": [
+              562,
+              167,
+              917,
+              420
+            ],
+            "sourceOuterMargins": [
+              562,
+              167,
+              619,
+              604
+            ],
+            "componentCount": 1
+          },
+          {
+            "file": "sprites/punch/punch_003.png",
+            "width": 497,
+            "height": 352,
+            "anchor": {
+              "x": 248,
+              "y": 300
+            },
+            "sourceSheet": "source/punch_3x2_imagegen.png",
+            "sourceBounds": [
+              1021,
+              172,
+              1414,
+              420
+            ],
+            "sourceOuterMargins": [
+              1021,
+              172,
+              122,
+              604
+            ],
+            "componentCount": 1
+          },
+          {
+            "file": "sprites/punch/punch_004.png",
+            "width": 578,
+            "height": 373,
+            "anchor": {
+              "x": 289,
+              "y": 321
+            },
+            "sourceSheet": "source/punch_3x2_imagegen.png",
+            "sourceBounds": [
+              82,
+              583,
+              556,
+              852
+            ],
+            "sourceOuterMargins": [
+              82,
+              583,
+              980,
+              172
+            ],
+            "componentCount": 1
+          },
+          {
+            "file": "sprites/punch/punch_005.png",
+            "width": 352,
+            "height": 374,
+            "anchor": {
+              "x": 176,
+              "y": 322
+            },
+            "sourceSheet": "source/punch_3x2_imagegen.png",
+            "sourceBounds": [
+              633,
+              585,
+              881,
+              855
+            ],
+            "sourceOuterMargins": [
+              633,
+              585,
+              655,
+              169
+            ],
+            "componentCount": 1
+          },
+          {
+            "file": "sprites/punch/punch_006.png",
+            "width": 388,
+            "height": 380,
+            "anchor": {
+              "x": 194,
+              "y": 328
+            },
+            "sourceSheet": "source/punch_3x2_imagegen.png",
+            "sourceBounds": [
+              1112,
+              581,
+              1396,
+              857
+            ],
+            "sourceOuterMargins": [
+              1112,
+              581,
+              140,
+              167
+            ],
+            "componentCount": 1
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/kick/kick_001.png",
+            "width": 357,
+            "height": 348,
+            "anchor": {
+              "x": 178,
+              "y": 296
+            },
+            "sourceSheet": "source/kick_3x2_imagegen.png",
+            "sourceBounds": [
+              73,
+              165,
+              326,
+              409
+            ],
+            "sourceOuterMargins": [
+              73,
+              165,
+              1210,
+              615
+            ],
+            "componentCount": 1
+          },
+          {
+            "file": "sprites/kick/kick_002.png",
+            "width": 485,
+            "height": 341,
+            "anchor": {
+              "x": 242,
+              "y": 289
+            },
+            "sourceSheet": "source/kick_3x2_imagegen.png",
+            "sourceBounds": [
+              543,
+              193,
+              924,
+              430
+            ],
+            "sourceOuterMargins": [
+              543,
+              193,
+              612,
+              594
+            ],
+            "componentCount": 1
+          },
+          {
+            "file": "sprites/kick/kick_003.png",
+            "width": 623,
+            "height": 327,
+            "anchor": {
+              "x": 312,
+              "y": 275
+            },
+            "sourceSheet": "source/kick_3x2_imagegen.png",
+            "sourceBounds": [
+              979,
+              198,
+              1498,
+              421
+            ],
+            "sourceOuterMargins": [
+              979,
+              198,
+              38,
+              603
+            ],
+            "componentCount": 1
+          },
+          {
+            "file": "sprites/kick/kick_004.png",
+            "width": 553,
+            "height": 318,
+            "anchor": {
+              "x": 276,
+              "y": 266
+            },
+            "sourceSheet": "source/kick_3x2_imagegen.png",
+            "sourceBounds": [
+              38,
+              642,
+              487,
+              856
+            ],
+            "sourceOuterMargins": [
+              38,
+              642,
+              1049,
+              168
+            ],
+            "componentCount": 9
+          },
+          {
+            "file": "sprites/kick/kick_005.png",
+            "width": 586,
+            "height": 305,
+            "anchor": {
+              "x": 293,
+              "y": 253
+            },
+            "sourceSheet": "source/kick_3x2_imagegen.png",
+            "sourceBounds": [
+              561,
+              653,
+              1043,
+              854
+            ],
+            "sourceOuterMargins": [
+              561,
+              653,
+              493,
+              170
+            ],
+            "componentCount": 4
+          },
+          {
+            "file": "sprites/kick/kick_006.png",
+            "width": 356,
+            "height": 349,
+            "anchor": {
+              "x": 178,
+              "y": 297
+            },
+            "sourceSheet": "source/kick_3x2_imagegen.png",
+            "sourceBounds": [
+              1168,
+              609,
+              1420,
+              854
+            ],
+            "sourceOuterMargins": [
+              1168,
+              609,
+              116,
+              170
+            ],
+            "componentCount": 1
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/special_1/special_1_001.png",
+            "width": 427,
+            "height": 369,
+            "anchor": {
+              "x": 214,
+              "y": 317
+            },
+            "sourceSheet": "source/special_1_3x2_imagegen.png",
+            "sourceBounds": [
+              59,
+              197,
+              382,
+              462
+            ],
+            "sourceOuterMargins": [
+              59,
+              197,
+              1154,
+              562
+            ],
+            "componentCount": 1
+          },
+          {
+            "file": "sprites/special_1/special_1_002.png",
+            "width": 368,
+            "height": 414,
+            "anchor": {
+              "x": 184,
+              "y": 362
+            },
+            "sourceSheet": "source/special_1_3x2_imagegen.png",
+            "sourceBounds": [
+              591,
+              152,
+              855,
+              462
+            ],
+            "sourceOuterMargins": [
+              591,
+              152,
+              681,
+              562
+            ],
+            "componentCount": 1
+          },
+          {
+            "file": "sprites/special_1/special_1_003.png",
+            "width": 373,
+            "height": 511,
+            "anchor": {
+              "x": 186,
+              "y": 459
+            },
+            "sourceSheet": "source/special_1_3x2_imagegen.png",
+            "sourceBounds": [
+              1079,
+              58,
+              1348,
+              465
+            ],
+            "sourceOuterMargins": [
+              1079,
+              58,
+              188,
+              559
+            ],
+            "componentCount": 1
+          },
+          {
+            "file": "sprites/special_1/special_1_004.png",
+            "width": 476,
+            "height": 422,
+            "anchor": {
+              "x": 238,
+              "y": 370
+            },
+            "sourceSheet": "source/special_1_3x2_imagegen.png",
+            "sourceBounds": [
+              80,
+              592,
+              452,
+              910
+            ],
+            "sourceOuterMargins": [
+              80,
+              592,
+              1084,
+              114
+            ],
+            "componentCount": 2
+          },
+          {
+            "file": "sprites/special_1/special_1_005.png",
+            "width": 490,
+            "height": 365,
+            "anchor": {
+              "x": 245,
+              "y": 313
+            },
+            "sourceSheet": "source/special_1_3x2_imagegen.png",
+            "sourceBounds": [
+              560,
+              654,
+              946,
+              915
+            ],
+            "sourceOuterMargins": [
+              560,
+              654,
+              590,
+              109
+            ],
+            "componentCount": 6
+          },
+          {
+            "file": "sprites/special_1/special_1_006.png",
+            "width": 512,
+            "height": 374,
+            "anchor": {
+              "x": 256,
+              "y": 322
+            },
+            "sourceSheet": "source/special_1_3x2_imagegen.png",
+            "sourceBounds": [
+              1064,
+              629,
+              1472,
+              899
+            ],
+            "sourceOuterMargins": [
+              1064,
+              629,
+              64,
+              125
+            ],
+            "componentCount": 1
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/special_2/special_2_001.png",
+            "width": 401,
+            "height": 393,
+            "anchor": {
+              "x": 200,
+              "y": 341
+            },
+            "sourceSheet": "source/special_2_3x2_imagegen.png",
+            "sourceBounds": [
+              115,
+              150,
+              412,
+              439
+            ],
+            "sourceOuterMargins": [
+              115,
+              150,
+              1124,
+              585
+            ],
+            "componentCount": 1
+          },
+          {
+            "file": "sprites/special_2/special_2_002.png",
+            "width": 397,
+            "height": 393,
+            "anchor": {
+              "x": 198,
+              "y": 341
+            },
+            "sourceSheet": "source/special_2_3x2_imagegen.png",
+            "sourceBounds": [
+              606,
+              150,
+              899,
+              439
+            ],
+            "sourceOuterMargins": [
+              606,
+              150,
+              637,
+              585
+            ],
+            "componentCount": 1
+          },
+          {
+            "file": "sprites/special_2/special_2_003.png",
+            "width": 444,
+            "height": 454,
+            "anchor": {
+              "x": 222,
+              "y": 402
+            },
+            "sourceSheet": "source/special_2_3x2_imagegen.png",
+            "sourceBounds": [
+              1085,
+              89,
+              1425,
+              439
+            ],
+            "sourceOuterMargins": [
+              1085,
+              89,
+              111,
+              585
+            ],
+            "componentCount": 1
+          },
+          {
+            "file": "sprites/special_2/special_2_004.png",
+            "width": 416,
+            "height": 379,
+            "anchor": {
+              "x": 208,
+              "y": 327
+            },
+            "sourceSheet": "source/special_2_3x2_imagegen.png",
+            "sourceBounds": [
+              1096,
+              608,
+              1408,
+              883
+            ],
+            "sourceOuterMargins": [
+              1096,
+              608,
+              128,
+              141
+            ],
+            "componentCount": 1,
+            "derivedFromFrame": 6
+          },
+          {
+            "file": "sprites/special_2/special_2_005.png",
+            "width": 416,
+            "height": 379,
+            "anchor": {
+              "x": 208,
+              "y": 327
+            },
+            "sourceSheet": "source/special_2_3x2_imagegen.png",
+            "sourceBounds": [
+              1096,
+              608,
+              1408,
+              883
+            ],
+            "sourceOuterMargins": [
+              1096,
+              608,
+              128,
+              141
+            ],
+            "componentCount": 1,
+            "derivedFromFrame": 6
+          },
+          {
+            "file": "sprites/special_2/special_2_006.png",
+            "width": 416,
+            "height": 379,
+            "anchor": {
+              "x": 208,
+              "y": 327
+            },
+            "sourceSheet": "source/special_2_3x2_imagegen.png",
+            "sourceBounds": [
+              1096,
+              608,
+              1408,
+              883
+            ],
+            "sourceOuterMargins": [
+              1096,
+              608,
+              128,
+              141
+            ],
+            "componentCount": 1
+          }
+        ]
+      },
+      "sprites": {},
+      "projectiles": {},
+      "sounds": {}
+    },
+    "mr_spooky": {
+      "displayName": "mr_spooky",
+      "basePath": "/fighters/mr_spooky",
+      "artSource": null,
+      "sheets": {},
+      "frameCounts": {
+        "base": 6,
+        "punch": 6,
+        "kick": 6,
+        "special_1": 6,
+        "special_2": 6
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/base/base_001.png",
+            "width": 247,
+            "height": 286,
+            "anchor": {
+              "x": 123,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_002.png",
+            "width": 237,
+            "height": 286,
+            "anchor": {
+              "x": 118,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_003.png",
+            "width": 257,
+            "height": 286,
+            "anchor": {
+              "x": 128,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_004.png",
+            "width": 269,
+            "height": 286,
+            "anchor": {
+              "x": 134,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_005.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_006.png",
+            "width": 373,
+            "height": 286,
+            "anchor": {
+              "x": 186,
+              "y": 248
+            }
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/punch/punch_001.png",
+            "width": 274,
+            "height": 286,
+            "anchor": {
+              "x": 137,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_002.png",
+            "width": 250,
+            "height": 286,
+            "anchor": {
+              "x": 125,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_003.png",
+            "width": 338,
+            "height": 286,
+            "anchor": {
+              "x": 169,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_004.png",
+            "width": 256,
+            "height": 286,
+            "anchor": {
+              "x": 128,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_005.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_006.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/kick/kick_001.png",
+            "width": 228,
+            "height": 286,
+            "anchor": {
+              "x": 114,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_002.png",
+            "width": 248,
+            "height": 286,
+            "anchor": {
+              "x": 124,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_003.png",
+            "width": 313,
+            "height": 286,
+            "anchor": {
+              "x": 156,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_004.png",
+            "width": 361,
+            "height": 286,
+            "anchor": {
+              "x": 180,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_005.png",
+            "width": 246,
+            "height": 286,
+            "anchor": {
+              "x": 123,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_006.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/special_1/special_1_001.png",
+            "width": 236,
+            "height": 286,
+            "anchor": {
+              "x": 118,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_002.png",
+            "width": 277,
+            "height": 286,
+            "anchor": {
+              "x": 138,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_003.png",
+            "width": 262,
+            "height": 286,
+            "anchor": {
+              "x": 131,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_004.png",
+            "width": 299,
+            "height": 286,
+            "anchor": {
+              "x": 149,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_005.png",
+            "width": 255,
+            "height": 286,
+            "anchor": {
+              "x": 127,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_006.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/special_2/special_2_001.png",
+            "width": 235,
+            "height": 286,
+            "anchor": {
+              "x": 117,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_002.png",
+            "width": 268,
+            "height": 286,
+            "anchor": {
+              "x": 134,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_003.png",
+            "width": 251,
+            "height": 286,
+            "anchor": {
+              "x": 125,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_004.png",
+            "width": 224,
+            "height": 286,
+            "anchor": {
+              "x": 112,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_005.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_006.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          }
+        ]
+      },
+      "sprites": {},
+      "projectiles": {},
+      "sounds": {}
+    },
+    "red_mic": {
+      "displayName": "red_mic",
+      "basePath": "/fighters/red_mic",
+      "artSource": null,
+      "sheets": {},
+      "frameCounts": {
+        "base": 6,
+        "punch": 6,
+        "kick": 6,
+        "special_1": 6,
+        "special_2": 6
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/base/base_001.png",
+            "width": 222,
+            "height": 286,
+            "anchor": {
+              "x": 111,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_002.png",
+            "width": 246,
+            "height": 286,
+            "anchor": {
+              "x": 123,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_003.png",
+            "width": 263,
+            "height": 286,
+            "anchor": {
+              "x": 131,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_004.png",
+            "width": 270,
+            "height": 286,
+            "anchor": {
+              "x": 135,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_005.png",
+            "width": 325,
+            "height": 286,
+            "anchor": {
+              "x": 162,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_006.png",
+            "width": 235,
+            "height": 286,
+            "anchor": {
+              "x": 117,
+              "y": 248
+            }
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/punch/punch_001.png",
+            "width": 244,
+            "height": 286,
+            "anchor": {
+              "x": 122,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_002.png",
+            "width": 258,
+            "height": 286,
+            "anchor": {
+              "x": 129,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_003.png",
+            "width": 412,
+            "height": 286,
+            "anchor": {
+              "x": 206,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_004.png",
+            "width": 340,
+            "height": 286,
+            "anchor": {
+              "x": 170,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_005.png",
+            "width": 300,
+            "height": 286,
+            "anchor": {
+              "x": 150,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_006.png",
+            "width": 232,
+            "height": 286,
+            "anchor": {
+              "x": 116,
+              "y": 248
+            }
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/kick/kick_001.png",
+            "width": 240,
+            "height": 286,
+            "anchor": {
+              "x": 120,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_002.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_003.png",
+            "width": 357,
+            "height": 286,
+            "anchor": {
+              "x": 178,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_004.png",
+            "width": 305,
+            "height": 286,
+            "anchor": {
+              "x": 152,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_005.png",
+            "width": 290,
+            "height": 286,
+            "anchor": {
+              "x": 145,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_006.png",
+            "width": 241,
+            "height": 286,
+            "anchor": {
+              "x": 120,
+              "y": 248
+            }
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/special_1/special_1_001.png",
+            "width": 234,
+            "height": 286,
+            "anchor": {
+              "x": 117,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_002.png",
+            "width": 253,
+            "height": 286,
+            "anchor": {
+              "x": 126,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_003.png",
+            "width": 391,
+            "height": 286,
+            "anchor": {
+              "x": 195,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_004.png",
+            "width": 288,
+            "height": 286,
+            "anchor": {
+              "x": 144,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_005.png",
+            "width": 267,
+            "height": 286,
+            "anchor": {
+              "x": 133,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_006.png",
+            "width": 236,
+            "height": 286,
+            "anchor": {
+              "x": 118,
+              "y": 248
+            }
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/special_2/special_2_001.png",
+            "width": 230,
+            "height": 286,
+            "anchor": {
+              "x": 115,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_002.png",
+            "width": 263,
+            "height": 286,
+            "anchor": {
+              "x": 131,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_003.png",
+            "width": 328,
+            "height": 286,
+            "anchor": {
+              "x": 164,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_004.png",
+            "width": 334,
+            "height": 286,
+            "anchor": {
+              "x": 167,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_005.png",
+            "width": 263,
+            "height": 286,
+            "anchor": {
+              "x": 131,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_006.png",
+            "width": 241,
+            "height": 286,
+            "anchor": {
+              "x": 120,
+              "y": 248
+            }
+          }
+        ]
+      },
+      "sprites": {},
+      "projectiles": {
+        "red_note_wave": "/fighters/red_mic/projectiles/red_note_wave.png"
+      },
+      "sounds": {}
+    },
+    "rubber_chicken": {
+      "displayName": "rubber_chicken",
+      "basePath": "/fighters/rubber_chicken",
+      "artSource": null,
+      "sheets": {},
+      "frameCounts": {
+        "base": 6,
+        "punch": 6,
+        "kick": 6,
+        "special_1": 6,
+        "special_2": 6
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/base/base_001.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_002.png",
+            "width": 225,
+            "height": 286,
+            "anchor": {
+              "x": 112,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_003.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_004.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_005.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_006.png",
+            "width": 220,
+            "height": 289,
+            "anchor": {
+              "x": 110,
+              "y": 251
+            }
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/punch/punch_001.png",
+            "width": 253,
+            "height": 286,
+            "anchor": {
+              "x": 126,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_002.png",
+            "width": 300,
+            "height": 286,
+            "anchor": {
+              "x": 150,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_003.png",
+            "width": 321,
+            "height": 286,
+            "anchor": {
+              "x": 160,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_004.png",
+            "width": 263,
+            "height": 286,
+            "anchor": {
+              "x": 131,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_005.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_006.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/kick/kick_001.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_002.png",
+            "width": 275,
+            "height": 286,
+            "anchor": {
+              "x": 137,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_003.png",
+            "width": 257,
+            "height": 286,
+            "anchor": {
+              "x": 128,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_004.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_005.png",
+            "width": 221,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_006.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/special_1/special_1_001.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_002.png",
+            "width": 328,
+            "height": 286,
+            "anchor": {
+              "x": 164,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_003.png",
+            "width": 363,
+            "height": 286,
+            "anchor": {
+              "x": 181,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_004.png",
+            "width": 247,
+            "height": 286,
+            "anchor": {
+              "x": 123,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_005.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_006.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/special_2/special_2_001.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_002.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_003.png",
+            "width": 278,
+            "height": 286,
+            "anchor": {
+              "x": 139,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_004.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_005.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_006.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          }
+        ]
+      },
+      "sprites": {},
+      "projectiles": {},
+      "sounds": {}
+    },
+    "sklar_brothers": {
+      "displayName": "The Sklar Brothers are a linked two-actor comedy duo fighter: the red plaid lead brother drives the root position while the green plaid echo brother follows a short delayed pose trail, then steps forward for callback punches, sweeps, shoulder-stack launches, and brother-toss specials. Their temporary Sklar Fusion form combines the two into one larger split-plaid fighter.",
+      "basePath": "/fighters/sklar_brothers",
+      "artSource": null,
+      "multiActor": true,
+      "actors": {
+        "echo": {
+          "sheets": {},
+          "frameCounts": {
+            "base": 6,
+            "punch": 6,
+            "kick": 6,
+            "special_1": 6,
+            "special_2": 6
+          },
+          "frameData": {
+            "base": [
+              {
+                "file": "sprites/base/base_001.png",
+                "width": 220,
+                "height": 287,
+                "anchor": {
+                  "x": 110,
+                  "y": 249
+                }
+              },
+              {
+                "file": "sprites/base/base_002.png",
+                "width": 229,
+                "height": 286,
+                "anchor": {
+                  "x": 114,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/base/base_003.png",
+                "width": 258,
+                "height": 286,
+                "anchor": {
+                  "x": 129,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/base/base_004.png",
+                "width": 220,
+                "height": 286,
+                "anchor": {
+                  "x": 110,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/base/base_005.png",
+                "width": 250,
+                "height": 286,
+                "anchor": {
+                  "x": 125,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/base/base_006.png",
+                "width": 222,
+                "height": 286,
+                "anchor": {
+                  "x": 111,
+                  "y": 248
+                }
+              }
+            ],
+            "punch": [
+              {
+                "file": "sprites/punch/punch_001.png",
+                "width": 237,
+                "height": 286,
+                "anchor": {
+                  "x": 118,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/punch/punch_002.png",
+                "width": 246,
+                "height": 286,
+                "anchor": {
+                  "x": 123,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/punch/punch_003.png",
+                "width": 307,
+                "height": 286,
+                "anchor": {
+                  "x": 153,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/punch/punch_004.png",
+                "width": 280,
+                "height": 286,
+                "anchor": {
+                  "x": 140,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/punch/punch_005.png",
+                "width": 233,
+                "height": 286,
+                "anchor": {
+                  "x": 116,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/punch/punch_006.png",
+                "width": 226,
+                "height": 286,
+                "anchor": {
+                  "x": 113,
+                  "y": 248
+                }
+              }
+            ],
+            "kick": [
+              {
+                "file": "sprites/kick/kick_001.png",
+                "width": 266,
+                "height": 286,
+                "anchor": {
+                  "x": 133,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/kick/kick_002.png",
+                "width": 231,
+                "height": 286,
+                "anchor": {
+                  "x": 115,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/kick/kick_003.png",
+                "width": 316,
+                "height": 286,
+                "anchor": {
+                  "x": 158,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/kick/kick_004.png",
+                "width": 335,
+                "height": 286,
+                "anchor": {
+                  "x": 167,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/kick/kick_005.png",
+                "width": 230,
+                "height": 286,
+                "anchor": {
+                  "x": 115,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/kick/kick_006.png",
+                "width": 228,
+                "height": 286,
+                "anchor": {
+                  "x": 114,
+                  "y": 248
+                }
+              }
+            ],
+            "special_1": [
+              {
+                "file": "sprites/special_1/special_1_001.png",
+                "width": 222,
+                "height": 286,
+                "anchor": {
+                  "x": 111,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_1/special_1_002.png",
+                "width": 220,
+                "height": 286,
+                "anchor": {
+                  "x": 110,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_1/special_1_003.png",
+                "width": 255,
+                "height": 286,
+                "anchor": {
+                  "x": 127,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_1/special_1_004.png",
+                "width": 220,
+                "height": 309,
+                "anchor": {
+                  "x": 110,
+                  "y": 271
+                }
+              },
+              {
+                "file": "sprites/special_1/special_1_005.png",
+                "width": 229,
+                "height": 286,
+                "anchor": {
+                  "x": 114,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_1/special_1_006.png",
+                "width": 226,
+                "height": 286,
+                "anchor": {
+                  "x": 113,
+                  "y": 248
+                }
+              }
+            ],
+            "special_2": [
+              {
+                "file": "sprites/special_2/special_2_001.png",
+                "width": 226,
+                "height": 286,
+                "anchor": {
+                  "x": 113,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_2/special_2_002.png",
+                "width": 286,
+                "height": 286,
+                "anchor": {
+                  "x": 143,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_2/special_2_003.png",
+                "width": 267,
+                "height": 286,
+                "anchor": {
+                  "x": 133,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_2/special_2_004.png",
+                "width": 237,
+                "height": 286,
+                "anchor": {
+                  "x": 118,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_2/special_2_005.png",
+                "width": 237,
+                "height": 286,
+                "anchor": {
+                  "x": 118,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_2/special_2_006.png",
+                "width": 227,
+                "height": 286,
+                "anchor": {
+                  "x": 113,
+                  "y": 248
+                }
+              }
+            ]
+          },
+          "sprites": {},
+          "projectiles": {}
+        },
+        "fusion": {
+          "sheets": {},
+          "frameCounts": {
+            "base": 6,
+            "punch": 6,
+            "kick": 6,
+            "special_1": 6,
+            "special_2": 6
+          },
+          "frameData": {
+            "base": [
+              {
+                "file": "sprites/base/base_001.png",
+                "width": 263,
+                "height": 311,
+                "anchor": {
+                  "x": 131,
+                  "y": 273
+                }
+              },
+              {
+                "file": "sprites/base/base_002.png",
+                "width": 267,
+                "height": 290,
+                "anchor": {
+                  "x": 133,
+                  "y": 252
+                }
+              },
+              {
+                "file": "sprites/base/base_003.png",
+                "width": 291,
+                "height": 286,
+                "anchor": {
+                  "x": 145,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/base/base_004.png",
+                "width": 256,
+                "height": 286,
+                "anchor": {
+                  "x": 128,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/base/base_005.png",
+                "width": 273,
+                "height": 286,
+                "anchor": {
+                  "x": 136,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/base/base_006.png",
+                "width": 258,
+                "height": 306,
+                "anchor": {
+                  "x": 129,
+                  "y": 268
+                }
+              }
+            ],
+            "punch": [
+              {
+                "file": "sprites/punch/punch_001.png",
+                "width": 304,
+                "height": 291,
+                "anchor": {
+                  "x": 152,
+                  "y": 253
+                }
+              },
+              {
+                "file": "sprites/punch/punch_002.png",
+                "width": 281,
+                "height": 286,
+                "anchor": {
+                  "x": 140,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/punch/punch_003.png",
+                "width": 376,
+                "height": 290,
+                "anchor": {
+                  "x": 188,
+                  "y": 252
+                }
+              },
+              {
+                "file": "sprites/punch/punch_004.png",
+                "width": 327,
+                "height": 286,
+                "anchor": {
+                  "x": 163,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/punch/punch_005.png",
+                "width": 250,
+                "height": 286,
+                "anchor": {
+                  "x": 125,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/punch/punch_006.png",
+                "width": 257,
+                "height": 286,
+                "anchor": {
+                  "x": 128,
+                  "y": 248
+                }
+              }
+            ],
+            "kick": [
+              {
+                "file": "sprites/kick/kick_001.png",
+                "width": 291,
+                "height": 286,
+                "anchor": {
+                  "x": 145,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/kick/kick_002.png",
+                "width": 278,
+                "height": 286,
+                "anchor": {
+                  "x": 139,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/kick/kick_003.png",
+                "width": 363,
+                "height": 286,
+                "anchor": {
+                  "x": 181,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/kick/kick_004.png",
+                "width": 304,
+                "height": 286,
+                "anchor": {
+                  "x": 152,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/kick/kick_005.png",
+                "width": 270,
+                "height": 286,
+                "anchor": {
+                  "x": 135,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/kick/kick_006.png",
+                "width": 256,
+                "height": 286,
+                "anchor": {
+                  "x": 128,
+                  "y": 248
+                }
+              }
+            ],
+            "special_1": [
+              {
+                "file": "sprites/special_1/special_1_001.png",
+                "width": 263,
+                "height": 286,
+                "anchor": {
+                  "x": 131,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_1/special_1_002.png",
+                "width": 255,
+                "height": 286,
+                "anchor": {
+                  "x": 127,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_1/special_1_003.png",
+                "width": 274,
+                "height": 296,
+                "anchor": {
+                  "x": 137,
+                  "y": 258
+                }
+              },
+              {
+                "file": "sprites/special_1/special_1_004.png",
+                "width": 289,
+                "height": 287,
+                "anchor": {
+                  "x": 144,
+                  "y": 249
+                }
+              },
+              {
+                "file": "sprites/special_1/special_1_005.png",
+                "width": 275,
+                "height": 286,
+                "anchor": {
+                  "x": 137,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_1/special_1_006.png",
+                "width": 249,
+                "height": 286,
+                "anchor": {
+                  "x": 124,
+                  "y": 248
+                }
+              }
+            ],
+            "special_2": [
+              {
+                "file": "sprites/special_2/special_2_001.png",
+                "width": 297,
+                "height": 286,
+                "anchor": {
+                  "x": 148,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_2/special_2_002.png",
+                "width": 261,
+                "height": 286,
+                "anchor": {
+                  "x": 130,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_2/special_2_003.png",
+                "width": 581,
+                "height": 286,
+                "anchor": {
+                  "x": 290,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_2/special_2_004.png",
+                "width": 581,
+                "height": 286,
+                "anchor": {
+                  "x": 290,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_2/special_2_005.png",
+                "width": 261,
+                "height": 286,
+                "anchor": {
+                  "x": 130,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_2/special_2_006.png",
+                "width": 250,
+                "height": 286,
+                "anchor": {
+                  "x": 125,
+                  "y": 248
+                }
+              }
+            ]
+          },
+          "sprites": {},
+          "projectiles": {}
+        },
+        "lead": {
+          "sheets": {},
+          "frameCounts": {
+            "base": 6,
+            "punch": 6,
+            "kick": 6,
+            "special_1": 6,
+            "special_2": 6
+          },
+          "frameData": {
+            "base": [
+              {
+                "file": "sprites/base/base_001.png",
+                "width": 220,
+                "height": 301,
+                "anchor": {
+                  "x": 110,
+                  "y": 263
+                }
+              },
+              {
+                "file": "sprites/base/base_002.png",
+                "width": 235,
+                "height": 286,
+                "anchor": {
+                  "x": 117,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/base/base_003.png",
+                "width": 243,
+                "height": 286,
+                "anchor": {
+                  "x": 121,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/base/base_004.png",
+                "width": 220,
+                "height": 286,
+                "anchor": {
+                  "x": 110,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/base/base_005.png",
+                "width": 250,
+                "height": 286,
+                "anchor": {
+                  "x": 125,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/base/base_006.png",
+                "width": 220,
+                "height": 301,
+                "anchor": {
+                  "x": 110,
+                  "y": 263
+                }
+              }
+            ],
+            "punch": [
+              {
+                "file": "sprites/punch/punch_001.png",
+                "width": 266,
+                "height": 286,
+                "anchor": {
+                  "x": 133,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/punch/punch_002.png",
+                "width": 289,
+                "height": 286,
+                "anchor": {
+                  "x": 144,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/punch/punch_003.png",
+                "width": 326,
+                "height": 286,
+                "anchor": {
+                  "x": 163,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/punch/punch_004.png",
+                "width": 315,
+                "height": 286,
+                "anchor": {
+                  "x": 157,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/punch/punch_005.png",
+                "width": 230,
+                "height": 286,
+                "anchor": {
+                  "x": 115,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/punch/punch_006.png",
+                "width": 230,
+                "height": 286,
+                "anchor": {
+                  "x": 115,
+                  "y": 248
+                }
+              }
+            ],
+            "kick": [
+              {
+                "file": "sprites/kick/kick_001.png",
+                "width": 230,
+                "height": 286,
+                "anchor": {
+                  "x": 115,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/kick/kick_002.png",
+                "width": 269,
+                "height": 286,
+                "anchor": {
+                  "x": 134,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/kick/kick_003.png",
+                "width": 315,
+                "height": 286,
+                "anchor": {
+                  "x": 157,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/kick/kick_004.png",
+                "width": 328,
+                "height": 286,
+                "anchor": {
+                  "x": 164,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/kick/kick_005.png",
+                "width": 253,
+                "height": 286,
+                "anchor": {
+                  "x": 126,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/kick/kick_006.png",
+                "width": 220,
+                "height": 286,
+                "anchor": {
+                  "x": 110,
+                  "y": 248
+                }
+              }
+            ],
+            "special_1": [
+              {
+                "file": "sprites/special_1/special_1_001.png",
+                "width": 241,
+                "height": 286,
+                "anchor": {
+                  "x": 120,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_1/special_1_002.png",
+                "width": 220,
+                "height": 286,
+                "anchor": {
+                  "x": 110,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_1/special_1_003.png",
+                "width": 226,
+                "height": 286,
+                "anchor": {
+                  "x": 113,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_1/special_1_004.png",
+                "width": 220,
+                "height": 286,
+                "anchor": {
+                  "x": 110,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_1/special_1_005.png",
+                "width": 226,
+                "height": 286,
+                "anchor": {
+                  "x": 113,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_1/special_1_006.png",
+                "width": 220,
+                "height": 286,
+                "anchor": {
+                  "x": 110,
+                  "y": 248
+                }
+              }
+            ],
+            "special_2": [
+              {
+                "file": "sprites/special_2/special_2_001.png",
+                "width": 257,
+                "height": 286,
+                "anchor": {
+                  "x": 128,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_2/special_2_002.png",
+                "width": 220,
+                "height": 286,
+                "anchor": {
+                  "x": 110,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_2/special_2_003.png",
+                "width": 292,
+                "height": 286,
+                "anchor": {
+                  "x": 146,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_2/special_2_004.png",
+                "width": 270,
+                "height": 286,
+                "anchor": {
+                  "x": 135,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_2/special_2_005.png",
+                "width": 223,
+                "height": 286,
+                "anchor": {
+                  "x": 111,
+                  "y": 248
+                }
+              },
+              {
+                "file": "sprites/special_2/special_2_006.png",
+                "width": 220,
+                "height": 286,
+                "anchor": {
+                  "x": 110,
+                  "y": 248
+                }
+              }
+            ]
+          },
+          "sprites": {},
+          "projectiles": {}
+        }
+      },
+      "sounds": {}
+    },
+    "viggo": {
+      "displayName": "viggo",
+      "basePath": "/fighters/viggo",
+      "artSource": null,
+      "sheets": {},
+      "frameCounts": {
+        "base": 6,
+        "punch": 6,
+        "kick": 6,
+        "special_1": 6,
+        "special_2": 6
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/base/base_001.png",
+            "width": 220,
+            "height": 298,
+            "anchor": {
+              "x": 110,
+              "y": 260
+            }
+          },
+          {
+            "file": "sprites/base/base_002.png",
+            "width": 246,
+            "height": 286,
+            "anchor": {
+              "x": 123,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_003.png",
+            "width": 249,
+            "height": 286,
+            "anchor": {
+              "x": 124,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_004.png",
+            "width": 251,
+            "height": 286,
+            "anchor": {
+              "x": 125,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_005.png",
+            "width": 261,
+            "height": 286,
+            "anchor": {
+              "x": 130,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/base/base_006.png",
+            "width": 259,
+            "height": 286,
+            "anchor": {
+              "x": 129,
+              "y": 248
+            }
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/punch/punch_001.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_002.png",
+            "width": 272,
+            "height": 286,
+            "anchor": {
+              "x": 136,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_003.png",
+            "width": 330,
+            "height": 286,
+            "anchor": {
+              "x": 165,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_004.png",
+            "width": 253,
+            "height": 286,
+            "anchor": {
+              "x": 126,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_005.png",
+            "width": 255,
+            "height": 286,
+            "anchor": {
+              "x": 127,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/punch/punch_006.png",
+            "width": 225,
+            "height": 286,
+            "anchor": {
+              "x": 112,
+              "y": 248
+            }
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/kick/kick_001.png",
+            "width": 221,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_002.png",
+            "width": 235,
+            "height": 286,
+            "anchor": {
+              "x": 117,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_003.png",
+            "width": 312,
+            "height": 286,
+            "anchor": {
+              "x": 156,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_004.png",
+            "width": 252,
+            "height": 286,
+            "anchor": {
+              "x": 126,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_005.png",
+            "width": 228,
+            "height": 286,
+            "anchor": {
+              "x": 114,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/kick/kick_006.png",
+            "width": 228,
+            "height": 286,
+            "anchor": {
+              "x": 114,
+              "y": 248
+            }
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/special_1/special_1_001.png",
+            "width": 230,
+            "height": 286,
+            "anchor": {
+              "x": 115,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_002.png",
+            "width": 294,
+            "height": 286,
+            "anchor": {
+              "x": 147,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_003.png",
+            "width": 222,
+            "height": 286,
+            "anchor": {
+              "x": 111,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_004.png",
+            "width": 226,
+            "height": 286,
+            "anchor": {
+              "x": 113,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_005.png",
+            "width": 282,
+            "height": 286,
+            "anchor": {
+              "x": 141,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_006.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/special_2/special_2_001.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_002.png",
+            "width": 233,
+            "height": 286,
+            "anchor": {
+              "x": 116,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_003.png",
+            "width": 288,
+            "height": 286,
+            "anchor": {
+              "x": 144,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_004.png",
+            "width": 285,
+            "height": 286,
+            "anchor": {
+              "x": 142,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_005.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_006.png",
+            "width": 220,
+            "height": 286,
+            "anchor": {
+              "x": 110,
+              "y": 248
+            }
+          }
+        ]
+      },
+      "sprites": {},
+      "projectiles": {},
+      "sounds": {}
+    }
+  },
+  "arenas": {},
+  "sounds": {
+    "sfx": {},
+    "bgm": {}
+  },
+  "ui": {}
+}

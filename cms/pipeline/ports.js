@@ -8,6 +8,7 @@ export const PipelinePort = Object.freeze({
   FIGHTER_QA: 'fighterQa',
   PUBLISHER: 'publisher',
   JOB_QUEUE: 'jobQueue',
+  SOUND_GENERATOR: 'soundGenerator',
 });
 
 export const PortMethods = Object.freeze({
@@ -20,6 +21,7 @@ export const PortMethods = Object.freeze({
   [PipelinePort.FIGHTER_QA]: ['validateFighterPack'],
   [PipelinePort.PUBLISHER]: ['publishCharacter'],
   [PipelinePort.JOB_QUEUE]: ['enqueue', 'getJob'],
+  [PipelinePort.SOUND_GENERATOR]: ['generateAudio'],
 });
 
 export function assertPortAdapter(port, adapter) {

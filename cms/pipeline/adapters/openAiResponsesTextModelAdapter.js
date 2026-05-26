@@ -9,7 +9,7 @@ export class OpenAiResponsesTextModelAdapter {
     this.fetch = options.fetch ?? globalThis.fetch;
     this.id = options.id ?? 'openai-responses-character-drafter';
     this.provider = 'openai';
-    this.capabilities = ['structured-output', 'responses-api', 'json-schema', 'character-drafting'];
+    this.capabilities = ['structured-output', 'responses-api', 'json-schema', 'character-drafting', 'vision-describe'];
   }
 
   async healthCheck() {
@@ -22,6 +22,61 @@ export class OpenAiResponsesTextModelAdapter {
         model: this.model,
         baseUrl: this.baseUrl,
       },
+    };
+  }
+
+  async describeImage({ imageBase64, contentType = 'image/png', prompt, context = {} } = {}) {
+    if (!this.apiKey) {
+      const error = new Error('OPENAI_API_KEY is required for OpenAI vision requests.');
+      error.statusCode = 503;
+      throw error;
+    }
+
+    const mediaType = contentType === 'image/webp' ? 'image/webp'
+      : contentType === 'image/jpeg' ? 'image/jpeg'
+      : 'image/png';
+    const dataUrl = `data:${mediaType};base64,${imageBase64}`;
+
+    const body = {
+      model: this.model,
+      input: [
+        {
+          role: 'user',
+          content: [
+            { type: 'input_image', image_url: dataUrl },
+            { type: 'input_text', text: prompt ?? 'Describe this character in detail for a fighting game. Include their appearance, clothing, weapon/props, build, and any distinctive features. Output a concise but complete description suitable for generating sprite sheets.' },
+          ],
+        },
+      ],
+      store: true,
+    };
+
+    const response = await this.fetch(`${this.baseUrl.replace(/\/$/, '')}/responses`, {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${this.apiKey}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    const text = await response.text();
+    const value = text ? JSON.parse(text) : {};
+    if (!response.ok) {
+      const error = new Error(value.error?.message ?? `Vision request failed with ${response.status}`);
+      error.statusCode = response.status;
+      error.details = value;
+      throw error;
+    }
+
+    const outputText = (value.output ?? []).find((item) => item.type === 'message')?.content
+      ?.find((c) => c.type === 'output_text')?.text ?? '';
+
+    return {
+      provider: this.provider,
+      model: this.model,
+      description: outputText,
+      promptRef: value.id ?? null,
     };
   }
 

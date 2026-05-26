@@ -1,5 +1,38 @@
 const MOVE_ORDER = ['base', 'punch', 'kick', 'special_1', 'special_2', 'projectiles'];
 
+// ---------------------------------------------------------------------------
+// Client-side router
+// ---------------------------------------------------------------------------
+
+function getCurrentRoute() {
+  const pathname = location.pathname;
+  if (pathname === '/pipeline') return { page: 'pipeline' };
+  if (pathname === '/roster') return { page: 'roster' };
+  const rosterMatch = pathname.match(/^\/roster\/([a-z][a-z0-9_]{2,})$/);
+  if (rosterMatch) return { page: 'roster', characterId: rosterMatch[1] };
+  return { page: 'roster' };
+}
+
+function navigateTo(path) {
+  history.pushState(null, '', path);
+  handleRouteChange();
+}
+
+function handleRouteChange() {
+  const route = getCurrentRoute();
+  if (route.page === 'pipeline') {
+    renderPipelineView();
+  } else if (route.characterId) {
+    selectCharacter(route.characterId, { pushState: false });
+  } else {
+    renderEmptyWorkbench('Select a fighter to inspect moves, frames, animation, stats, and assets.');
+  }
+}
+
+window.addEventListener('popstate', () => {
+  handleRouteChange();
+});
+
 const state = {
   currentCharacterId: '',
   characters: [],
@@ -69,7 +102,10 @@ elements.assetPath.addEventListener('input', () => {
 elements.assetFile.addEventListener('change', syncAssetPath);
 elements.characterWorkbench.addEventListener('click', handleAnimationControl);
 elements.chatForm.addEventListener('submit', sendChatMessage);
-elements.refreshRoster.addEventListener('click', () => loadCharacters({ selectCurrent: true }));
+elements.refreshRoster.addEventListener('click', async () => {
+  await loadCharacters();
+  handleRouteChange();
+});
 elements.clearLog.addEventListener('click', () => {
   elements.runLog.textContent = '';
 });
@@ -83,6 +119,7 @@ async function boot() {
     renderChatThread();
     await Promise.all([loadHealth(), loadPipeline(), loadChatHealth()]);
     await loadCharacters();
+    handleRouteChange();
     log('Admin platform ready.');
   } catch (error) {
     showError(error);
@@ -110,7 +147,7 @@ async function loadPipeline() {
   elements.gapList.replaceChildren(...pipeline.gaps.map(renderGap));
 }
 
-async function loadCharacters(options = {}) {
+async function loadCharacters() {
   const result = await getJson('/api/characters');
   state.characters = result.characters;
 
@@ -124,17 +161,19 @@ async function loadCharacters(options = {}) {
   }
 
   elements.characterList.replaceChildren(...result.characters.map(renderCharacter));
-
-  const selected = result.characters.find((character) => character.id === state.currentCharacterId)
-    ?? result.characters[0];
-  if (options.selectCurrent !== false && selected) {
-    await selectCharacter(selected.id, { silent: true });
-  }
 }
 
 async function selectCharacter(characterId, options = {}) {
   state.currentCharacterId = characterId;
   setActiveCharacterRow(characterId);
+
+  // Push URL unless caller opted out (e.g. popstate handler, initial load)
+  if (options.pushState !== false) {
+    const targetPath = `/roster/${characterId}`;
+    if (location.pathname !== targetPath) {
+      history.pushState(null, '', targetPath);
+    }
+  }
 
   const [draftResult, assetResult] = await Promise.all([
     getJson(`/api/characters/${encodeURIComponent(characterId)}/draft`),
@@ -166,7 +205,7 @@ async function createDraft() {
   state.currentCharacterId = result.draft.id;
   state.sourceAssetKey = '';
   state.normalizedKey = '';
-  await Promise.all([loadCharacters({ selectCurrent: false }), loadPipeline()]);
+  await Promise.all([loadCharacters(), loadPipeline()]);
   await selectCharacter(result.draft.id, { silent: true });
   return result.draft;
 }
@@ -264,7 +303,7 @@ async function publishCharacter() {
     characterId,
     releaseId: `local-${Date.now()}`,
   });
-  await Promise.all([loadCharacters({ selectCurrent: false }), loadPipeline()]);
+  await Promise.all([loadCharacters(), loadPipeline()]);
   await selectCharacter(characterId, { silent: true });
   return result;
 }
@@ -297,7 +336,8 @@ async function sendChatMessage(event) {
       log(`assistant > ${toolCall.name} ${toolCall.status}`, toolCall.status === 'error' ? 'error' : 'pass');
     }
 
-    await Promise.all([loadHealth(), loadPipeline(), loadCharacters({ selectCurrent: true })]);
+    await Promise.all([loadHealth(), loadPipeline(), loadCharacters()]);
+    if (state.currentCharacterId) await selectCharacter(state.currentCharacterId, { silent: true, pushState: false });
     return chat;
   } catch (error) {
     appendChatMessage({ role: 'assistant', text: error.message, isError: true });
@@ -350,6 +390,76 @@ function renderCharacter(character) {
   return button;
 }
 
+function detectCharacterStage(draft, assets) {
+  const lifecycle = draft.lifecycle ?? 'draft';
+  if (lifecycle === 'version') return 'published';
+
+  const hasSource = assets.some((asset) => /^source\/.+\.(svg|png)$/i.test(asset.relativePath));
+  const hasNormalized = assets.some((asset) =>
+    /(?:^|\/)(fighter-pack|normalized)\/manifest\.json$/i.test(asset.relativePath)
+  );
+  const hasFrames = assets.some((asset) => parseSpriteAsset(asset) !== null);
+
+  if (!hasSource) return 'no-source';
+  if (!hasNormalized && !hasFrames) return 'no-frames';
+  return 'ready-to-publish';
+}
+
+function renderNextStepBanner(stage) {
+  if (stage === 'published') {
+    return `
+      <div class="next-step-banner banner-done" role="status">
+        <div>
+          <div class="next-step-label">Status</div>
+          <p class="next-step-title"><span class="published-badge">Published</span></p>
+          <p class="next-step-detail">This fighter has been published to the runtime roster.</p>
+        </div>
+      </div>
+    `;
+  }
+
+  if (stage === 'no-source') {
+    return `
+      <div class="next-step-banner">
+        <div>
+          <div class="next-step-label">Next Step</div>
+          <p class="next-step-title">Generate Sprite Sheet</p>
+          <p class="next-step-detail">No source art yet. Generate a 5x6 sprite sheet to start building this fighter.</p>
+        </div>
+        <button id="cta-generate-sheet" class="next-step-action" type="button">Generate Sheet</button>
+      </div>
+    `;
+  }
+
+  if (stage === 'no-frames') {
+    return `
+      <div class="next-step-banner banner-warn">
+        <div>
+          <div class="next-step-label">Next Step</div>
+          <p class="next-step-title">Normalize &amp; Extract Frames</p>
+          <p class="next-step-detail">Source art found. Normalize it to extract individual frames from the sprite sheet.</p>
+        </div>
+        <button id="cta-normalize-pack" class="next-step-action" type="button">Normalize Frames</button>
+      </div>
+    `;
+  }
+
+  // ready-to-publish
+  return `
+    <div class="next-step-banner banner-warn">
+      <div>
+        <div class="next-step-label">Next Step</div>
+        <p class="next-step-title">Publish Fighter</p>
+        <p class="next-step-detail">Frames are ready. Validate and publish this fighter to the runtime roster.</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-direction:column;align-items:stretch">
+        <button id="cta-validate-pack" class="next-step-action" type="button" style="font-size:12px;padding:7px 14px;background:#26303c;border-color:var(--accent-2);color:var(--accent-2)">Run QA</button>
+        <button id="cta-publish-character" class="next-step-action" type="button">Publish</button>
+      </div>
+    </div>
+  `;
+}
+
 function renderCharacterWorkbench(draft, assets) {
   clearAnimationTimers();
   const moveGroups = buildMoveGroups(draft, assets);
@@ -362,8 +472,12 @@ function renderCharacterWorkbench(draft, assets) {
     `${assetCounts.projectiles} projectiles`,
   ];
 
+  const stage = detectCharacterStage(draft, assets);
+  const bannerHtml = renderNextStepBanner(stage);
+
   elements.characterWorkbench.className = 'character-workbench';
   elements.characterWorkbench.innerHTML = `
+    ${bannerHtml}
     <section class="character-summary">
       <div>
         <span class="eyebrow">${escapeHtml(draft.id)}</span>
@@ -381,6 +495,24 @@ function renderCharacterWorkbench(draft, assets) {
     </section>
   `;
 
+  // Wire up CTA buttons (they are re-created with each render)
+  const ctaGenerateSheet = elements.characterWorkbench.querySelector('#cta-generate-sheet');
+  if (ctaGenerateSheet) {
+    ctaGenerateSheet.addEventListener('click', generateSheet);
+  }
+  const ctaNormalize = elements.characterWorkbench.querySelector('#cta-normalize-pack');
+  if (ctaNormalize) {
+    ctaNormalize.addEventListener('click', normalizePack);
+  }
+  const ctaValidate = elements.characterWorkbench.querySelector('#cta-validate-pack');
+  if (ctaValidate) {
+    ctaValidate.addEventListener('click', validatePack);
+  }
+  const ctaPublish = elements.characterWorkbench.querySelector('#cta-publish-character');
+  if (ctaPublish) {
+    ctaPublish.addEventListener('click', publishCharacter);
+  }
+
   startAnimationPreviews();
 }
 
@@ -389,6 +521,53 @@ function renderEmptyWorkbench(message) {
   elements.characterWorkbench.className = 'character-workbench empty-state';
   elements.characterWorkbench.textContent = message;
   elements.selectedCharacter.textContent = 'No draft loaded';
+}
+
+async function renderPipelineView() {
+  clearAnimationTimers();
+  elements.characterWorkbench.className = 'character-workbench';
+  elements.selectedCharacter.textContent = 'Pipeline Inspector';
+  elements.characterWorkbench.innerHTML = '<p class="soft-label" style="padding:16px">Loading pipeline…</p>';
+
+  try {
+    const pipeline = await getJson('/api/pipeline');
+    const healthByPort = new Map((pipeline.adapterHealth ?? []).map((health) => [health.port, health]));
+    const adapterNodes = pipeline.adapters.map((adapter) => renderAdapter(adapter, healthByPort.get(adapter.port)));
+    const gapNodes = pipeline.gaps.map(renderGap);
+
+    elements.characterWorkbench.innerHTML = '';
+    const section = document.createElement('section');
+    section.className = 'character-summary';
+    section.innerHTML = `
+      <div>
+        <span class="eyebrow">pipeline</span>
+        <h2>Pipeline Inspector</h2>
+        <p>${pipeline.adapters.length} registered adapters</p>
+      </div>
+    `;
+    elements.characterWorkbench.appendChild(section);
+
+    const adaptersSection = document.createElement('section');
+    adaptersSection.className = 'move-board';
+    const adaptersHeading = document.createElement('h3');
+    adaptersHeading.style.cssText = 'margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.08em;opacity:.6';
+    adaptersHeading.textContent = 'Adapters';
+    adaptersSection.appendChild(adaptersHeading);
+    for (const node of adapterNodes) adaptersSection.appendChild(node);
+
+    if (gapNodes.length > 0) {
+      const gapsHeading = document.createElement('h3');
+      gapsHeading.style.cssText = 'margin:16px 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.08em;opacity:.6';
+      gapsHeading.textContent = 'Remaining Work';
+      adaptersSection.appendChild(gapsHeading);
+      for (const node of gapNodes) adaptersSection.appendChild(node);
+    }
+
+    elements.characterWorkbench.appendChild(adaptersSection);
+  } catch (error) {
+    showError(error);
+    elements.characterWorkbench.innerHTML = `<p class="soft-label" style="padding:16px;color:var(--error)">Failed to load pipeline data.</p>`;
+  }
 }
 
 function renderStatGrid(stats) {
@@ -1133,7 +1312,7 @@ async function parseJsonResponse(response) {
 }
 
 function setBusy(isBusy) {
-  [
+  const staticButtons = [
     elements.createDraft,
     elements.runChain,
     elements.generateSheet,
@@ -1143,9 +1322,19 @@ function setBusy(isBusy) {
     elements.uploadAsset,
     elements.sendChat,
     elements.refreshRoster,
-  ].forEach((button) => {
-    button.disabled = isBusy;
-  });
+  ];
+
+  // CTA banner buttons are re-rendered on every workbench update — query them live
+  const ctaButtons = [
+    elements.characterWorkbench.querySelector('#cta-generate-sheet'),
+    elements.characterWorkbench.querySelector('#cta-normalize-pack'),
+    elements.characterWorkbench.querySelector('#cta-validate-pack'),
+    elements.characterWorkbench.querySelector('#cta-publish-character'),
+  ];
+
+  for (const button of [...staticButtons, ...ctaButtons]) {
+    if (button) button.disabled = isBusy;
+  }
 }
 
 function log(message, level = '') {

@@ -92,6 +92,72 @@ export function createMockQa(overrides = {}) {
   };
 }
 
+export function createMockSoundGenerator(overrides = {}) {
+  const calls = [];
+  return {
+    id: overrides.id ?? 'mock-sound-generator',
+    provider: overrides.provider ?? 'mock',
+    capabilities: ['audio-generation', 'sfx', 'bgm'],
+    calls,
+    async healthCheck() {
+      return { status: 'ok', message: 'Mock sound generator is available.' };
+    },
+    async generateAudio(request) {
+      calls.push({ ...request });
+      return {
+        provider: 'mock',
+        model: 'mock-sound-model',
+        contentType: 'audio/wav',
+        base64: Buffer.from(`mock audio for ${request.prompt ?? ''}`).toString('base64'),
+        promptRef: `mock://${request.task ?? 'audio'}`,
+      };
+    },
+  };
+}
+
+export function createMockJobQueue(overrides = {}) {
+  const jobs = new Map();
+  return {
+    id: overrides.id ?? 'mock-job-queue',
+    provider: overrides.provider ?? 'mock',
+    capabilities: ['job-queue', 'in-memory'],
+    jobs,
+    async healthCheck() {
+      return { status: 'ok', message: 'Mock job queue is available.' };
+    },
+    async enqueue(job) {
+      const jobId = `mock-job-${jobs.size + 1}`;
+      const record = {
+        id: jobId,
+        status: 'pending',
+        type: job.type ?? 'unknown',
+        input: job.input ?? {},
+        result: null,
+        error: null,
+        createdAt: new Date().toISOString(),
+        completedAt: null,
+      };
+      jobs.set(jobId, record);
+      const promise = Promise.resolve().then(async () => {
+        record.status = 'running';
+        try {
+          record.result = await job.execute(job.input);
+          record.status = 'completed';
+        } catch (err) {
+          record.error = err.message ?? String(err);
+          record.status = 'failed';
+        }
+        record.completedAt = new Date().toISOString();
+        return record;
+      });
+      return { jobId, status: 'pending', promise };
+    },
+    async getJob(jobId) {
+      return jobs.get(jobId) ?? null;
+    },
+  };
+}
+
 export function createMockPublisher(overrides = {}) {
   return {
     id: overrides.id ?? 'mock-publisher',

@@ -1,5 +1,5 @@
 import type { Fighter } from './Fighter';
-import type { Hitbox } from '../schema/types';
+import type { FighterScene, Hitbox } from '../schema/types';
 import { HitPause } from '../util/hitpause';
 
 export class HitResolver {
@@ -46,6 +46,16 @@ export class HitResolver {
     }
 
     if (defender.health <= 0) defender.changeState('dead');
+
+    if (hitbox.hitSound) {
+      const scene = attacker.scene as FighterScene;
+      if (!scene._soundsPlayedThisFrame) scene._soundsPlayedThisFrame = new Set();
+      if (!scene._soundsPlayedThisFrame.has(hitbox.hitSound) && scene.cache.audio.has(hitbox.hitSound)) {
+        scene.sound.play(hitbox.hitSound, { volume: 0.5 });
+        scene._soundsPlayedThisFrame.add(hitbox.hitSound);
+      }
+    }
+
     return true;
   }
 

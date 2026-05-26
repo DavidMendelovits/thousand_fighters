@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "cms:admin": "node scripts/cms_admin_server.mjs",
+    "cms:admin": "doppler run -- node scripts/cms_admin_server.mjs",
     "cms:import-fighters": "node scripts/import_existing_fighters_to_cms.mjs",
     "cms:smoke": "node scripts/smoke_cms_storage.mjs",
     "cms:cached:smoke": "node scripts/smoke_cms_cached_storage.mjs",
@@ -23,11 +23,18 @@
     "cms:openai:text:smoke": "node scripts/smoke_cms_openai_text_model.mjs",
     "cms:openai:image:smoke": "node scripts/smoke_cms_openai_image_generator.mjs",
     "cms:pipeline:smoke": "node scripts/smoke_cms_pipeline.mjs",
+    "cms:sound:smoke": "node scripts/smoke_cms_sound_generator.mjs",
+    "cms:normalizer:smoke": "node scripts/smoke_cms_contour_normalizer.mjs",
+    "cms:qa:smoke": "node scripts/smoke_cms_fighter_qa.mjs",
+    "cms:arena:smoke": "node scripts/smoke_cms_arena_generator.mjs",
+    "cms:export": "node scripts/export_cms_character.mjs",
+    "cms:export:smoke": "node scripts/smoke_cms_export.mjs",
     "cms:e2e": "node scripts/smoke_cms_e2e.mjs",
     "cms:remote:e2e": "node scripts/smoke_cms_http_remote.mjs",
     "cms:vercel:build": "node scripts/build_cms_admin_static.mjs",
     "test:admin:playwright": "playwright test tests/admin-cms.spec.js",
-    "build": "tsc && vite build",
+    "assets:index": "node scripts/build_assets_index.mjs",
+    "build": "node scripts/build_assets_index.mjs && tsc && vite build",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -4,14 +4,16 @@ import { CharacterCreationPipeline } from '../pipeline/CharacterCreationPipeline
 import { PipelineRegistry } from '../pipeline/PipelineRegistry.js';
 import { PipelinePort } from '../pipeline/ports.js';
 import {
-  createLocalFighterQa,
   createLocalPublisher,
-  createLocalSpriteNormalizer,
 } from '../pipeline/adapters/localAdapters.js';
+import { createFighterQaAdapter } from '../pipeline/adapters/createFighterQaAdapter.js';
 import { createTextModelAdapter } from '../pipeline/adapters/createTextModelAdapter.js';
 import { createImageGeneratorAdapter } from '../pipeline/adapters/createImageGeneratorAdapter.js';
+import { createSoundGeneratorAdapter } from '../pipeline/adapters/createSoundGeneratorAdapter.js';
+import { createSpriteNormalizerAdapter } from '../pipeline/adapters/createSpriteNormalizerAdapter.js';
 import { createCmsChatAgent } from '../agent/createCmsChatAgent.js';
 import { createCmsTools } from '../tools/createCmsTools.js';
+import { createJobQueueAdapter } from '../pipeline/adapters/createJobQueueAdapter.js';
 
 export function createLocalCmsRuntime(options = {}) {
   const storage = options.storage ?? createCmsStorage(options.storageOptions ?? {});
@@ -21,9 +23,11 @@ export function createLocalCmsRuntime(options = {}) {
     [PipelinePort.CHARACTER_REPOSITORY]: repository,
     [PipelinePort.TEXT_MODEL]: options.textModel ?? createTextModelAdapter(options.textModelOptions ?? {}),
     [PipelinePort.IMAGE_GENERATOR]: options.imageGenerator ?? createImageGeneratorAdapter(options.imageGeneratorOptions ?? {}),
-    [PipelinePort.SPRITE_NORMALIZER]: options.spriteNormalizer ?? createLocalSpriteNormalizer({ storage, repository }),
-    [PipelinePort.FIGHTER_QA]: options.fighterQa ?? createLocalFighterQa({ repository }),
+    [PipelinePort.SPRITE_NORMALIZER]: options.spriteNormalizer ?? createSpriteNormalizerAdapter({ storage, repository, ...options.spriteNormalizerOptions }),
+    [PipelinePort.FIGHTER_QA]: options.fighterQa ?? createFighterQaAdapter({ storage, repository, ...options.fighterQaOptions }),
     [PipelinePort.PUBLISHER]: options.publisher ?? createLocalPublisher({ storage, repository }),
+    [PipelinePort.SOUND_GENERATOR]: options.soundGenerator ?? createSoundGeneratorAdapter(options.soundGeneratorOptions ?? {}),
+    [PipelinePort.JOB_QUEUE]: options.jobQueue ?? createJobQueueAdapter(options.jobQueueOptions ?? {}),
   });
   const pipeline = new CharacterCreationPipeline(registry);
   const tools = createCmsTools({ pipeline, repository, registry });
@@ -44,15 +48,15 @@ function currentArchitectureGaps() {
   return [
     {
       id: 'contour-normalizer-adapter',
-      status: 'remaining',
+      status: 'implemented',
       title: 'Real sprite normalizer adapter',
-      detail: 'Wrap scripts/normalize_fighter_sheet_contours.py as spriteNormalizer.normalizeFighterPack().',
+      detail: 'ContourSpriteNormalizerAdapter wraps scripts/normalize_fighter_sheet_contours.py. Select with SPRITE_NORMALIZER_PROVIDER=contour.',
     },
     {
       id: 'fighter-qa-adapter',
-      status: 'remaining',
+      status: 'implemented',
       title: 'Real fighter QA adapter',
-      detail: 'Implement docs/FIGHTER_PACK_QA_PLAN.md checks and make publish require a passing report.',
+      detail: 'FighterPackQaAdapter validates manifest, frameData, sprite files, frame counts, anchor stability, and normalization reports. Select with FIGHTER_QA_PROVIDER=real (default) or local.',
     },
     {
       id: 'roster-import-export',

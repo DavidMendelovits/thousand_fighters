@@ -9,49 +9,22 @@ export function createLocalTextModel(overrides = {}) {
   return {
     id: overrides.id ?? 'local-character-drafter',
     provider: overrides.provider ?? 'local',
-    capabilities: ['structured-output', 'deterministic-drafts'],
+    capabilities: ['structured-output', 'vision-describe'],
     async healthCheck() {
       return {
-        status: 'ok',
-        message: 'Local deterministic character drafter is available.',
+        status: 'error',
+        message: 'No text model configured. Set TEXT_MODEL_PROVIDER=openai and provide OPENAI_API_KEY.',
       };
     },
-    async completeStructured(request) {
-      const characterId = request.input?.characterId ?? 'new_fighter';
-      const displayName = titleize(characterId);
-      const brief = request.input?.brief ?? '';
-
-      return {
-        provider: 'local',
-        model: 'deterministic-template',
-        promptRef: `local://${request.task}/${characterId}`,
-        value: {
-          displayName,
-          description: brief || `${displayName} is a draft fighter created in the local CMS pipeline.`,
-          stats: {
-            walkForwardSpeed: 3,
-            walkBackSpeed: 2,
-            jumpVelocity: 11,
-            jumpForwardVelocity: 4,
-            jumpBackVelocity: 3.2,
-            gravity: 0.55,
-            maxFallSpeed: 12,
-            maxHealth: 1000,
-          },
-          sprite: {
-            basePath: `/fighters/${characterId}`,
-            scale: 0.55,
-            frameCounts: {
-              base: 6,
-              punch: 6,
-              kick: 6,
-              special_1: 6,
-              special_2: 6,
-            },
-          },
-          moves: defaultMoves(),
-        },
-      };
+    async describeImage() {
+      throw new Error(
+        'No text model configured. Set TEXT_MODEL_PROVIDER=openai and provide OPENAI_API_KEY.',
+      );
+    },
+    async completeStructured() {
+      throw new Error(
+        'No text model configured. Set TEXT_MODEL_PROVIDER=openai and provide OPENAI_API_KEY.',
+      );
     },
   };
 }
@@ -60,22 +33,36 @@ export function createLocalPlaceholderImageGenerator(overrides = {}) {
   return {
     id: overrides.id ?? 'local-placeholder-image-generator',
     provider: overrides.provider ?? 'local',
-    capabilities: ['fighter-5x6-sheet', 'placeholder-assets'],
+    capabilities: ['fighter-5x6-sheet', 'arena-background', 'character-concept'],
     async healthCheck() {
       return {
-        status: 'warning',
-        message: 'Using local SVG image generator. This verifies the pipeline but is not production image generation.',
+        status: 'error',
+        message: 'No image generator configured. Set IMAGE_GENERATOR_PROVIDER=codex or IMAGE_GENERATOR_PROVIDER=openai.',
       };
     },
-    async generateImage(request) {
-      const svg = createSpriteSheetSvg(request.prompt);
+    async generateImage() {
+      throw new Error(
+        'No image generator configured. Set IMAGE_GENERATOR_PROVIDER=codex or IMAGE_GENERATOR_PROVIDER=openai.',
+      );
+    },
+  };
+}
+
+export function createLocalPlaceholderSoundGenerator(overrides = {}) {
+  return {
+    id: overrides.id ?? 'local-placeholder-sound-generator',
+    provider: overrides.provider ?? 'local',
+    capabilities: ['audio-generation', 'sfx', 'bgm'],
+    async healthCheck() {
       return {
-        provider: 'local',
-        model: 'deterministic-svg-sheet',
-        promptRef: `local://${request.task}`,
-        contentType: 'image/svg+xml',
-        bytes: Buffer.from(svg, 'utf8'),
+        status: 'error',
+        message: 'No sound generator configured. Set SOUND_GENERATOR_PROVIDER=openai or SOUND_GENERATOR_PROVIDER=elevenlabs.',
       };
+    },
+    async generateAudio() {
+      throw new Error(
+        'No sound generator configured. Set SOUND_GENERATOR_PROVIDER=openai or SOUND_GENERATOR_PROVIDER=elevenlabs.',
+      );
     },
   };
 }
@@ -255,77 +242,6 @@ export function createLocalPublisher({ repository, storage } = {}) {
       };
     },
   };
-}
-
-function defaultMoves() {
-  return [
-    { id: 'light_punch', displayName: 'Light Punch', animation: 'punch', phases: defaultStrikePhases(3, 3, 8) },
-    { id: 'heavy_punch', displayName: 'Heavy Punch', animation: 'punch', phases: defaultStrikePhases(8, 4, 18) },
-    { id: 'crouch_low_kick', displayName: 'Low Kick', animation: 'kick', phases: defaultStrikePhases(4, 4, 10) },
-    { id: 'dash_punch', displayName: 'Dash Strike', animation: 'punch', phases: defaultStrikePhases(7, 5, 16) },
-    { id: 'uppercut', displayName: 'Uppercut', animation: 'special_2', phases: defaultStrikePhases(5, 8, 24) },
-    { id: 'fireball', displayName: 'Projectile Special', animation: 'special_1', phases: defaultStrikePhases(12, 4, 22) },
-  ];
-}
-
-function defaultStrikePhases(startup, active, recovery) {
-  return [
-    { name: 'startup', frames: startup, events: [] },
-    { name: 'active', frames: active, events: [] },
-    { name: 'recovery', frames: recovery, events: [] },
-  ];
-}
-
-function titleize(value) {
-  return String(value)
-    .split(/[_-]+/)
-    .filter(Boolean)
-    .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
-    .join(' ');
-}
-
-function createSpriteSheetSvg(prompt) {
-  const cols = 6;
-  const rows = 5;
-  const cellWidth = 150;
-  const cellHeight = 150;
-  const labels = ['base', 'punch', 'kick', 'special 1', 'special 2'];
-  const safePrompt = escapeXml(prompt ?? 'Draft fighter sheet');
-  const cells = [];
-
-  for (let row = 0; row < rows; row += 1) {
-    for (let col = 0; col < cols; col += 1) {
-      const x = col * cellWidth;
-      const y = row * cellHeight;
-      const hue = (row * 70 + col * 18) % 360;
-      cells.push(`
-        <rect x="${x + 8}" y="${y + 8}" width="${cellWidth - 16}" height="${cellHeight - 16}" rx="6" fill="hsl(${hue} 55% 24%)" stroke="hsl(${hue} 75% 62%)" stroke-width="2"/>
-        <ellipse cx="${x + 75}" cy="${y + 98}" rx="${26 + col * 2}" ry="10" fill="rgba(0,0,0,0.35)"/>
-        <path d="M${x + 74} ${y + 36} C${x + 45} ${y + 44}, ${x + 46 + col * 4} ${y + 104}, ${x + 76} ${y + 112} C${x + 106} ${y + 102}, ${x + 104 - row * 3} ${y + 44}, ${x + 74} ${y + 36} Z" fill="hsl(${(hue + 38) % 360} 70% 64%)"/>
-        <circle cx="${x + 75}" cy="${y + 30}" r="18" fill="hsl(${(hue + 92) % 360} 62% 72%)"/>
-        <path d="M${x + 76} ${y + 62} L${x + 42 + col * 4} ${y + 84}" stroke="#f7efe2" stroke-width="8" stroke-linecap="round"/>
-        <path d="M${x + 78} ${y + 64} L${x + 111 - row * 3} ${y + 82}" stroke="#f7efe2" stroke-width="8" stroke-linecap="round"/>
-        <text x="${x + 14}" y="${y + 132}" fill="#f4f7ff" font-family="monospace" font-size="12">${labels[row]} ${col + 1}</text>
-      `);
-    }
-  }
-
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="${cols * cellWidth}" height="${rows * cellHeight}" viewBox="0 0 ${cols * cellWidth} ${rows * cellHeight}">
-  <rect width="100%" height="100%" fill="#ff00ff"/>
-  <rect x="0" y="0" width="100%" height="34" fill="#111827" opacity="0.9"/>
-  <text x="16" y="23" fill="#f4f7ff" font-family="monospace" font-size="14">${safePrompt}</text>
-  ${cells.join('\n')}
-</svg>`;
-}
-
-function escapeXml(value) {
-  return String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&apos;');
 }
 
 function required(value, name) {

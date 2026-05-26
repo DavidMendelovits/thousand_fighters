@@ -61,6 +61,44 @@ async function handleApiRequest({ request, response, url, runtime }) {
     return;
   }
 
+  // SSE streaming tool invocation — must come BEFORE the non-streaming handler
+  if (request.method === 'POST' && url.pathname.startsWith('/api/tools/') && url.searchParams.has('stream')) {
+    const toolName = decodeURIComponent(url.pathname.slice('/api/tools/'.length));
+    const input = await readJsonBody(request);
+
+    response.writeHead(200, {
+      'content-type': 'text/event-stream',
+      'cache-control': 'no-cache',
+      'connection': 'keep-alive',
+    });
+
+    let ended = false;
+    request.on('close', () => { ended = true; });
+
+    const sendEvent = (eventType, data) => {
+      if (ended || response.writableEnded) return;
+      try {
+        response.write(`event: ${eventType}\ndata: ${JSON.stringify(data)}\n\n`);
+      } catch {}
+    };
+
+    // Inject onProgress into context — this is the server-side callback, not serialised over the wire
+    input.context = input.context ?? {};
+    input.context.onProgress = (event) => {
+      sendEvent('progress', event);
+    };
+
+    try {
+      const result = await runtime.tools.invoke(toolName, input);
+      sendEvent('result', { ok: true, tool: toolName, result });
+    } catch (err) {
+      sendEvent('error', { error: err.message });
+    }
+
+    if (!response.writableEnded) response.end();
+    return;
+  }
+
   if (request.method === 'POST' && url.pathname.startsWith('/api/tools/')) {
     const toolName = decodeURIComponent(url.pathname.slice('/api/tools/'.length));
     const input = await readJsonBody(request);
@@ -181,7 +219,37 @@ async function chatAgentHealth(runtime) {
 }
 
 async function serveAdminAsset({ response, url, adminRoot }) {
-  const pathname = url.pathname === '/' || url.pathname === '/admin' ? '/index.html' : url.pathname.replace(/^\/admin/, '');
+  const pathname = url.pathname.replace(/^\/admin/, '') || '/';
+
+  // 1. Hard redirects
+  if (pathname === '/') {
+    response.writeHead(302, { Location: '/roster' });
+    response.end();
+    return;
+  }
+  if (pathname === '/create') {
+    response.writeHead(302, { Location: '/roster/new' });
+    response.end();
+    return;
+  }
+
+  // 2. Creation wizard: /roster/new → serve create.html
+  if (pathname === '/roster/new') {
+    const absolutePath = path.resolve(adminRoot, 'create.html');
+    response.writeHead(200, { 'content-type': contentTypeFor(absolutePath), 'cache-control': 'no-store' });
+    createReadStream(absolutePath).pipe(response);
+    return;
+  }
+
+  // 3. SPA fallback: /roster, /roster/:id, /pipeline → serve index.html
+  if (pathname === '/roster' || pathname.startsWith('/roster/') || pathname === '/pipeline') {
+    const absolutePath = path.resolve(adminRoot, 'index.html');
+    response.writeHead(200, { 'content-type': contentTypeFor(absolutePath), 'cache-control': 'no-store' });
+    createReadStream(absolutePath).pipe(response);
+    return;
+  }
+
+  // 4. Static files (css, js, images, etc.)
   const relativePath = pathname.replace(/^\/+/, '');
   const absolutePath = path.resolve(adminRoot, relativePath);
 

@@ -24,6 +24,8 @@ export class OpenAiResponsesImageGeneratorAdapter {
       'image-generation',
       'fighter-5x6-sheet',
       'sprite-source-sheet',
+      'arena-background',
+      'character-concept',
     ];
   }
 
@@ -112,6 +114,50 @@ export class OpenAiResponsesImageGeneratorAdapter {
 
 function imagePromptFor(request) {
   const task = request.task ?? 'image-generation';
+  if (task === 'character-concept') {
+    return [
+      'Create a character turnaround sheet for a 2D fighting game character.',
+      '',
+      'Layout — STRICT 1x3 GRID of three equal square panels side by side:',
+      '- Left panel: FRONT view (facing the viewer)',
+      '- Center panel: 3/4 PROFILE view (turned slightly to the right)',
+      '- Right panel: BACK view (facing away from the viewer)',
+      '',
+      'Each panel must be exactly one-third of the total image width and the full image height — three perfect squares in a row.',
+      '',
+      'Requirements:',
+      '- Full body visible in each panel, head to feet, vertically centered.',
+      '- Clean solid-color background (#f0f0f0 light gray) in all three panels.',
+      '- Consistent proportions, costume, colors, and details across all three views.',
+      '- The character should look like a fighting game character — dynamic pose, distinctive silhouette, readable at small sizes.',
+      '- Include their weapon/prop if described, visible in all three views.',
+      '- No text, no labels, no panel borders, no annotations.',
+      '- Thin vertical gaps between panels are acceptable but not required.',
+      '',
+      'Character description:',
+      request.prompt ?? '',
+      '',
+      request.context ? `Additional context:\n${JSON.stringify(request.context, null, 2)}` : '',
+    ].filter(Boolean).join('\n');
+  }
+  if (task === 'arena-background') {
+    return [
+      'Draw a production-ready 2D fighting game arena background.',
+      '',
+      'Arena format:',
+      '- Wide horizontal composition (16:9 aspect ratio).',
+      '- A flat ground plane or surface where two fighters will stand.',
+      '- Atmospheric depth with foreground elements and background layers.',
+      '- Dramatic, moody lighting with high contrast so fighter silhouettes stay readable.',
+      '- No characters, no UI elements, no text, no health bars.',
+      '- Style: detailed pixel art or digital painting, dark tones, vibrant accent colors.',
+      '',
+      'Arena concept:',
+      request.prompt ?? '',
+      '',
+      request.context ? `Context:\n${JSON.stringify(request.context, null, 2)}` : '',
+    ].filter(Boolean).join('\n');
+  }
   if (task === 'fighter-5x6-sheet') {
     return [
       'Draw a production-ready 2D fighting-game sprite source sheet for Thousand Fighters.',

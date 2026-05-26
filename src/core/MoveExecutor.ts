@@ -124,8 +124,14 @@ export class MoveExecutor {
         });
         break;
       }
-      case 'play_sound':
+      case 'play_sound': {
+        const key = `${fighter.config.id}:${event.name}`;
+        const resolvedKey = fighter.scene.cache.audio.has(key) ? key : event.name;
+        if (fighter.scene.cache.audio.has(resolvedKey)) {
+          fighter.scene.sound.play(resolvedKey, { volume: 0.6 });
+        }
         break;
+      }
       default: {
         const exhaustive: never = event;
         return exhaustive;

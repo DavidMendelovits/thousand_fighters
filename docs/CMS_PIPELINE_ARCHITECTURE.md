@@ -94,6 +94,9 @@ npm run cms:pull -- --all
 
 ## Character Creation Flow
 
+For the explicit image/brief-to-playable-fighter checklist, see
+`docs/CHARACTER_CREATION_WORKFLOW.md`.
+
 ```text
 Admin Dashboard
   -> Game Content API
@@ -430,8 +433,11 @@ What is deliberately still placeholder-backed:
 
 - `imageGenerator`: local provider is deterministic SVG; `openai` provider is
   available behind `IMAGE_GENERATOR_PROVIDER=openai`.
-- `spriteNormalizer`: placeholder normalized manifest writer.
-- `fighterQa`: placeholder QA report writer.
+- `spriteNormalizer`: local fixture provider is still available, while the
+  contour provider wraps `scripts/normalize_fighter_sheet_contours.py` behind
+  `SPRITE_NORMALIZER_PROVIDER=contour`.
+- `fighterQa`: real metadata/asset QA is available by default; the local
+  placeholder remains available for deterministic smoke tests.
 - `publisher`: local release JSON writer without hard publish gates.
 
 These placeholders are not throwaway architecture. They are adapters. Replace

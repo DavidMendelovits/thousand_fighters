@@ -218,4 +218,5 @@ export type CharacterConfig = {
 export type FighterScene = Phaser.Scene & {
   projectiles: ProjectilePool;
   hitPauseFrames: number;
+  _soundsPlayedThisFrame?: Set<string>;
 };

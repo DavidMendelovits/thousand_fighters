@@ -15,6 +15,7 @@ export class OpenAiResponsesCmsChatAgent {
     this.id = options.id ?? 'openai-responses-cms-chat-agent';
     this.provider = options.provider ?? 'openai';
     this.capabilities = options.capabilities ?? ['responses-api', 'function-calling', 'cms-tool-routing'];
+    this.parallelToolCalls = options.parallelToolCalls ?? (process.env.CMS_PARALLEL_TOOL_CALLS !== 'false');
   }
 
   async healthCheck() {
@@ -27,6 +28,7 @@ export class OpenAiResponsesCmsChatAgent {
         model: this.model,
         reasoningEffort: this.reasoningEffort || null,
         baseUrl: this.baseUrl,
+        parallelToolCalls: this.parallelToolCalls,
       },
     };
   }
@@ -64,19 +66,30 @@ export class OpenAiResponsesCmsChatAgent {
         };
       }
 
-      const outputs = [];
-      for (const functionCall of functionCalls) {
-        const toolCall = await this.invokeFunctionCall(functionCall);
-        toolCalls.push(toolCall);
-        outputs.push({
+      const settled = await Promise.allSettled(
+        functionCalls.map(async (functionCall) => {
+          const toolCall = await this.invokeFunctionCall(functionCall);
+          toolCalls.push(toolCall);
+          return {
+            type: 'function_call_output',
+            call_id: functionCall.call_id,
+            output: JSON.stringify(toolOutputForModel(toolCall)),
+          };
+        })
+      );
+
+      // Map settled results — rejected promises become error outputs
+      const input = settled.map((result, i) => {
+        if (result.status === 'fulfilled') return result.value;
+        return {
           type: 'function_call_output',
-          call_id: functionCall.call_id,
-          output: JSON.stringify(toolOutputForModel(toolCall)),
-        });
-      }
+          call_id: functionCalls[i].call_id,
+          output: JSON.stringify({ error: result.reason?.message ?? 'Tool execution failed' }),
+        };
+      });
 
       response = await this.createResponse({
-        input: outputs,
+        input,
         previousResponseId: response.id,
       });
     }
@@ -119,7 +132,7 @@ export class OpenAiResponsesCmsChatAgent {
       input,
       tools: this.tools.openAiTools(),
       tool_choice: 'auto',
-      parallel_tool_calls: false,
+      parallel_tool_calls: this.parallelToolCalls,
       store: true,
     };
     if (this.reasoningEffort) {
