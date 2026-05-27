@@ -12,7 +12,7 @@ const ROW_LABELS = { base: 'Base / Idle', punch: 'Punch', kick: 'Kick', special_
 const ROW_CHROMA = { base: '#ff00ff', punch: '#00ff00', kick: '#0000ff', special_1: '#00ffff', special_2: '#ffff00' };
 
 const ctx = {
-  currentStep: 0,
+  highestUnlockedStep: 0,
   characterId: '',
   draft: null,
   conceptAssetUrl: '',
@@ -31,7 +31,7 @@ const $log = document.getElementById('create-log');
 const $stepNav = document.getElementById('step-nav');
 
 renderStepNav();
-goToStep(0);
+syncStepVisibility();
 
 // --- Event listeners ---
 
@@ -46,7 +46,7 @@ document.getElementById('btn-normalize').addEventListener('click', onNormalize);
 document.getElementById('custom-sheet').addEventListener('change', onUploadCustomSheet);
 document.getElementById('btn-validate').addEventListener('click', onValidate);
 document.getElementById('btn-publish').addEventListener('click', onPublish);
-document.getElementById('btn-back-to-frames').addEventListener('click', () => goToStep(3));
+document.getElementById('btn-back-to-frames').addEventListener('click', () => scrollToStep(3));
 document.getElementById('btn-create-another').addEventListener('click', onCreateAnother);
 
 // Auto-populate generation prompt when brief or art style changes
@@ -65,18 +65,43 @@ document.getElementById('ref-image').addEventListener('change', onRefImageUpload
 
 function renderStepNav() {
   $stepNav.innerHTML = STEPS.map((step, i) =>
-    `<li data-num="${i + 1}" data-step="${step.id}">${esc(step.label)}</li>`
+    `<li data-num="${i + 1}" data-step="${step.id}" data-index="${i}">${esc(step.label)}</li>`
   ).join('');
+
+  $stepNav.addEventListener('click', (e) => {
+    const li = e.target.closest('li[data-index]');
+    if (!li) return;
+    const i = parseInt(li.dataset.index, 10);
+    if (i <= ctx.highestUnlockedStep) scrollToStep(i);
+  });
 }
 
-function goToStep(index) {
-  ctx.currentStep = index;
-  document.querySelectorAll('.step-pane').forEach((el) => el.classList.remove('active'));
-  const pane = document.getElementById(`step-${STEPS[index].id}`);
-  if (pane) pane.classList.add('active');
-  $stepNav.querySelectorAll('li').forEach((li, i) => {
-    li.className = i < index ? 'completed' : i === index ? 'active' : '';
+function unlockUpTo(index) {
+  if (index > ctx.highestUnlockedStep) ctx.highestUnlockedStep = index;
+  syncStepVisibility();
+  scrollToStep(index);
+}
+
+function syncStepVisibility() {
+  document.querySelectorAll('.step-pane').forEach((el) => {
+    const stepId = el.dataset.step;
+    const stepIndex = STEPS.findIndex((s) => s.id === stepId);
+    if (stepIndex <= ctx.highestUnlockedStep) {
+      el.classList.add('unlocked');
+    } else {
+      el.classList.remove('unlocked');
+    }
   });
+
+  $stepNav.querySelectorAll('li').forEach((li, i) => {
+    const unlocked = i <= ctx.highestUnlockedStep;
+    li.className = unlocked ? 'completed clickable' : '';
+  });
+}
+
+function scrollToStep(index) {
+  const pane = document.getElementById(`step-${STEPS[index].id}`);
+  if (pane) pane.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // --- Step 0: Concept ---
@@ -217,7 +242,7 @@ async function onApproveConcept() {
     ctx.draft = result.draft;
     log(`Draft created: ${ctx.draft.displayName ?? characterId}`);
     renderDraftPreview(ctx.draft);
-    goToStep(1);
+    unlockUpTo(1);
   } catch (err) {
     log(`Error: ${err.message}`, 'error');
   } finally {
@@ -248,7 +273,7 @@ async function onRegenDraft() {
 // --- Step 2: Draft → Sprites ---
 
 async function onAcceptDraft() {
-  goToStep(2);
+  unlockUpTo(2);
   resetRowApprovals();
   renderSpriteRows();
   await generateSpriteSheet();
@@ -352,7 +377,7 @@ async function onNormalize() {
   setBusy(true);
   log('Normalizing sprite pack (extracting frames)...');
   document.getElementById('frames-preview').innerHTML = '<div class="spinner-text">Extracting frames&hellip;</div>';
-  goToStep(3);
+  unlockUpTo(3);
 
   try {
     const result = await invokeToolStreaming('normalize_sprite_pack', {
@@ -377,7 +402,7 @@ async function onValidate() {
 
   setBusy(true);
   log('Running QA validation...');
-  goToStep(4);
+  unlockUpTo(4);
 
   try {
     const result = await invokeToolStreaming('validate_fighter_pack', {
@@ -407,7 +432,7 @@ async function onPublish() {
     const result = await invokeToolStreaming('publish_character', { characterId: ctx.characterId, releaseId });
     log(`Published: ${result.published.bundleKey}`);
     renderDonePreview(result.published);
-    goToStep(5);
+    unlockUpTo(5);
   } catch (err) {
     log(`Error: ${err.message}`, 'error');
   } finally {
@@ -424,6 +449,7 @@ function onCreateAnother() {
   ctx.sourceAssetUrl = '';
   ctx.normalizedKey = '';
   ctx.qaReport = null;
+  ctx.highestUnlockedStep = 0;
   promptManuallyEdited = false;
   resetRowApprovals();
   document.getElementById('concept-form').reset();
@@ -437,7 +463,8 @@ function onCreateAnother() {
   document.getElementById('done-preview').innerHTML = '';
   clearProcessOutput();
   $processOutput.style.display = 'none';
-  goToStep(0);
+  syncStepVisibility();
+  scrollToStep(0);
 }
 
 // --- Sprite row rendering ---
