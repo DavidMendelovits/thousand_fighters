@@ -1,10 +1,12 @@
 import { TouchInput, type TouchAttackButton } from '../core/TouchInput';
 
 export type TouchLayout = 'landscape' | 'portrait' | 'hidden';
+export type TouchSpecial = 'fireball' | 'uppercut';
 
 type ButtonBinding = { kind: 'button'; name: TouchAttackButton; element: HTMLElement };
 type DpadBinding = { kind: 'dpad'; element: HTMLElement };
-type Binding = ButtonBinding | DpadBinding;
+type SpecialBinding = { kind: 'special'; element: HTMLElement };
+type Binding = ButtonBinding | DpadBinding | SpecialBinding;
 
 const ATTACK_BUTTONS: ReadonlyArray<{ name: TouchAttackButton; label: string; kind: 'punch' | 'kick' }> = [
   { name: 'lp', label: 'LP', kind: 'punch' },
@@ -15,6 +17,11 @@ const ATTACK_BUTTONS: ReadonlyArray<{ name: TouchAttackButton; label: string; ki
   { name: 'hk', label: 'HK', kind: 'kick' },
 ];
 
+const SPECIAL_BUTTONS: ReadonlyArray<{ name: TouchSpecial; label: string; sub: string }> = [
+  { name: 'fireball', label: 'SHOT', sub: 'projectile' },
+  { name: 'uppercut', label: 'UPPER', sub: 'anti-air' },
+];
+
 const DPAD_NUB_TRAVEL = 0.7;
 const DPAD_DEADZONE_FRACTION = 0.18;
 
@@ -23,9 +30,11 @@ export class TouchControls {
   private dpadRing!: HTMLElement;
   private dpadNub!: HTMLElement;
   private attacksRoot!: HTMLElement;
+  private specialsRoot!: HTMLElement;
   private pauseButton!: HTMLButtonElement;
   private bindings = new Map<number, Binding>();
   private onPause: () => void = () => {};
+  private onSpecial: (kind: TouchSpecial) => void = () => {};
 
   constructor(host: HTMLElement) {
     this.root = host;
@@ -37,6 +46,10 @@ export class TouchControls {
 
   setPauseHandler(handler: () => void): void {
     this.onPause = handler;
+  }
+
+  setSpecialHandler(handler: (kind: TouchSpecial) => void): void {
+    this.onSpecial = handler;
   }
 
   setLayout(layout: TouchLayout): void {
@@ -94,7 +107,26 @@ export class TouchControls {
       attacksWrap.appendChild(btn);
     }
 
-    this.root.replaceChildren(pauseWrap, dpadWrap, attacksWrap);
+    const specialsWrap = document.createElement('div');
+    specialsWrap.className = 'tf-controls-specials';
+    this.specialsRoot = specialsWrap;
+    for (const def of SPECIAL_BUTTONS) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `tf-special-btn tf-special-${def.name}`;
+      btn.dataset.special = def.name;
+      btn.setAttribute('aria-label', `${def.label} (${def.sub})`);
+      const label = document.createElement('span');
+      label.className = 'tf-special-label';
+      label.textContent = def.label;
+      const sub = document.createElement('span');
+      sub.className = 'tf-special-sub';
+      sub.textContent = def.sub;
+      btn.append(label, sub);
+      specialsWrap.appendChild(btn);
+    }
+
+    this.root.replaceChildren(pauseWrap, dpadWrap, specialsWrap, attacksWrap);
   }
 
   private attachListeners(): void {
@@ -109,6 +141,14 @@ export class TouchControls {
       btn.addEventListener('pointerup', (event) => this.onPointerEnd(event, btn));
       btn.addEventListener('pointercancel', (event) => this.onPointerEnd(event, btn));
       btn.addEventListener('lostpointercapture', (event) => this.onPointerEnd(event, btn));
+    }
+
+    for (const btn of Array.from(this.specialsRoot.querySelectorAll<HTMLElement>('button[data-special]'))) {
+      const name = btn.dataset.special as TouchSpecial;
+      btn.addEventListener('pointerdown', (event) => this.onSpecialDown(event, btn, name));
+      btn.addEventListener('pointerup', (event) => this.onSpecialEnd(event, btn));
+      btn.addEventListener('pointercancel', (event) => this.onSpecialEnd(event, btn));
+      btn.addEventListener('lostpointercapture', (event) => this.onSpecialEnd(event, btn));
     }
 
     this.dpadRing.addEventListener('pointerdown', (event) => this.onDpadDown(event));
@@ -138,6 +178,32 @@ export class TouchControls {
     this.bindings.delete(event.pointerId);
     element.classList.remove('is-pressed');
     TouchInput.setButton(binding.name, false);
+    try {
+      element.releasePointerCapture(event.pointerId);
+    } catch {
+      // ignore
+    }
+  }
+
+  private onSpecialDown(event: PointerEvent, element: HTMLElement, name: TouchSpecial): void {
+    event.preventDefault();
+    if (this.bindings.has(event.pointerId)) return;
+    try {
+      element.setPointerCapture(event.pointerId);
+    } catch {
+      // ignore
+    }
+    this.bindings.set(event.pointerId, { kind: 'special', element });
+    element.classList.add('is-pressed');
+    this.onSpecial(name);
+  }
+
+  private onSpecialEnd(event: PointerEvent, element: HTMLElement): void {
+    const binding = this.bindings.get(event.pointerId);
+    if (!binding) return;
+    if (binding.kind !== 'special' || binding.element !== element) return;
+    this.bindings.delete(event.pointerId);
+    element.classList.remove('is-pressed');
     try {
       element.releasePointerCapture(event.pointerId);
     } catch {

@@ -18,18 +18,19 @@ const DEG = Math.PI / 180;
 
 type Sector = { center: number; halfWidth: number; flags: DirectionFlags };
 
-// 8-zone radial mapping. Cardinal sectors are wider (~60°) than diagonals (~30°)
-// so 'down' and 'forward' are forgiving while QCF rolls (S → SE → E) still register.
+// 8-zone radial mapping with equal 45° sectors. Diagonals get the same width
+// as cardinals so QCF/DP rolls (S → SE → E) reliably register a diagonal
+// frame mid-drag — the previous 30° diagonals were easy to skip past on touch.
 // Angles use atan2 convention: 0 = east, +PI/2 = south (DOM y grows downward).
 const SECTORS: Sector[] = [
-  { center: 0,        halfWidth: 30 * DEG, flags: { left: false, right: true,  up: false, down: false } }, // E
-  { center: 45 * DEG, halfWidth: 15 * DEG, flags: { left: false, right: true,  up: false, down: true  } }, // SE
-  { center: 90 * DEG, halfWidth: 30 * DEG, flags: { left: false, right: false, up: false, down: true  } }, // S
-  { center: 135 * DEG,halfWidth: 15 * DEG, flags: { left: true,  right: false, up: false, down: true  } }, // SW
-  { center: 180 * DEG,halfWidth: 30 * DEG, flags: { left: true,  right: false, up: false, down: false } }, // W
-  { center: -135 * DEG, halfWidth: 15 * DEG, flags: { left: true,  right: false, up: true,  down: false } }, // NW
-  { center: -90 * DEG,  halfWidth: 30 * DEG, flags: { left: false, right: false, up: true,  down: false } }, // N
-  { center: -45 * DEG,  halfWidth: 15 * DEG, flags: { left: false, right: true,  up: true,  down: false } }, // NE
+  { center: 0,        halfWidth: 22.5 * DEG, flags: { left: false, right: true,  up: false, down: false } }, // E
+  { center: 45 * DEG, halfWidth: 22.5 * DEG, flags: { left: false, right: true,  up: false, down: true  } }, // SE
+  { center: 90 * DEG, halfWidth: 22.5 * DEG, flags: { left: false, right: false, up: false, down: true  } }, // S
+  { center: 135 * DEG,halfWidth: 22.5 * DEG, flags: { left: true,  right: false, up: false, down: true  } }, // SW
+  { center: 180 * DEG,halfWidth: 22.5 * DEG, flags: { left: true,  right: false, up: false, down: false } }, // W
+  { center: -135 * DEG, halfWidth: 22.5 * DEG, flags: { left: true,  right: false, up: true,  down: false } }, // NW
+  { center: -90 * DEG,  halfWidth: 22.5 * DEG, flags: { left: false, right: false, up: true,  down: false } }, // N
+  { center: -45 * DEG,  halfWidth: 22.5 * DEG, flags: { left: false, right: true,  up: true,  down: false } }, // NE
 ];
 
 function angleDistance(a: number, b: number): number {

@@ -250,6 +250,10 @@ export class FightScene extends Phaser.Scene {
       if (this.roundResolved) return;
       this.setPaused(!this.isPaused);
     });
+    shell.controls.setSpecialHandler((kind) => {
+      if (this.roundResolved || this.isPaused) return;
+      this.fighters?.[0]?.triggerSpecial(kind);
+    });
     const unsubscribe = shell.onChange(({ orientation }) => {
       TouchInput.clearAll();
       if (this.roundResolved) return;
@@ -261,6 +265,7 @@ export class FightScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       unsubscribe();
       shell.controls.setPauseHandler(() => {});
+      shell.controls.setSpecialHandler(() => {});
       shell.controls.releaseAll();
       TouchInput.clearAll();
     });

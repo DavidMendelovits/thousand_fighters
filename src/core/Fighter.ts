@@ -198,6 +198,17 @@ export class Fighter {
     return true;
   }
 
+  // Mobile touch shortcut: inject a move's required motion sequence so the
+  // normal trigger pipeline (allowedStates, cancels, windows) fires it on the
+  // next update. Returns false if the character has no such move.
+  triggerSpecial(moveId: string): boolean {
+    if (this.state === 'dead') return false;
+    const move = this.config.moves.find((candidate) => candidate.id === moveId);
+    if (!move) return false;
+    this.inputBuffer.injectSequence(move.trigger.sequence);
+    return true;
+  }
+
   private runState(input: RawInput): void {
     if (this.state === 'attack') {
       const cancel = this.findTriggeredMove(true);
