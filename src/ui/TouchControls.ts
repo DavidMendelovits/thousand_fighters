@@ -1,7 +1,7 @@
 import { TouchInput, type TouchAttackButton } from '../core/TouchInput';
 
 export type TouchLayout = 'landscape' | 'portrait' | 'hidden';
-export type TouchSpecial = 'fireball' | 'uppercut';
+export type TouchSpecial = 'fireball' | 'uppercut' | 'dash_punch' | 'fusion';
 
 type ButtonBinding = { kind: 'button'; name: TouchAttackButton; element: HTMLElement };
 type DpadBinding = { kind: 'dpad'; element: HTMLElement };
@@ -19,7 +19,9 @@ const ATTACK_BUTTONS: ReadonlyArray<{ name: TouchAttackButton; label: string; ki
 
 const SPECIAL_BUTTONS: ReadonlyArray<{ name: TouchSpecial; label: string; sub: string }> = [
   { name: 'fireball', label: 'SHOT', sub: 'projectile' },
+  { name: 'dash_punch', label: 'DASH', sub: 'rush in' },
   { name: 'uppercut', label: 'UPPER', sub: 'anti-air' },
+  { name: 'fusion', label: 'FUSION', sub: 'sklar team-up' },
 ];
 
 const DPAD_NUB_TRAVEL = 0.7;
