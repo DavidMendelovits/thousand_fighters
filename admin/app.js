@@ -79,6 +79,7 @@ const elements = {
   refreshRoster: document.querySelector('#refresh-roster'),
   clearLog: document.querySelector('#clear-log'),
   runLog: document.querySelector('#run-log'),
+  errorModal: document.querySelector('#error-modal'),
 };
 
 elements.draftForm.addEventListener('submit', async (event) => {
@@ -108,6 +109,22 @@ elements.refreshRoster.addEventListener('click', async () => {
 });
 elements.clearLog.addEventListener('click', () => {
   elements.runLog.textContent = '';
+});
+
+// Delegated click on chat thread: open error modal when an error tool call summary is clicked
+elements.chatThread.addEventListener('click', (event) => {
+  const details = event.target.closest('details[data-error-message-index]');
+  if (!details) return;
+
+  const messageIndex = Number(details.dataset.errorMessageIndex);
+  const toolIndex = Number(details.dataset.errorToolIndex);
+  const message = state.chatMessages[messageIndex];
+  const toolCall = message?.toolCalls?.[toolIndex];
+  if (!toolCall) return;
+
+  // Prevent the details toggle when clicking for the modal
+  event.preventDefault();
+  openErrorModal(toolCall);
 });
 
 boot();
@@ -815,11 +832,11 @@ function renderChatThread() {
     return;
   }
 
-  elements.chatThread.replaceChildren(...state.chatMessages.map((message) => {
+  elements.chatThread.replaceChildren(...state.chatMessages.map((message, messageIndex) => {
     const row = document.createElement('article');
     row.className = `chat-message chat-${message.role}${message.isError ? ' chat-error' : ''}`;
     const provider = message.provider ? `<span>${escapeHtml(message.provider)}</span>` : '';
-    const toolCalls = renderChatToolCalls(message.toolCalls ?? []);
+    const toolCalls = renderChatToolCalls(message.toolCalls ?? [], messageIndex);
     row.innerHTML = `
       <header><strong>${escapeHtml(message.role === 'user' ? 'You' : 'Assistant')}</strong>${provider}</header>
       <p>${escapeHtml(message.text)}</p>
@@ -830,23 +847,29 @@ function renderChatThread() {
   elements.chatThread.scrollTop = elements.chatThread.scrollHeight;
 }
 
-function renderChatToolCalls(toolCalls) {
+function renderChatToolCalls(toolCalls, messageIndex) {
   if (toolCalls.length === 0) return '';
   return `
     <div class="chat-tool-list">
-      ${toolCalls.map((toolCall) => `
-        <details>
-          <summary>
-            <span>${escapeHtml(toolCall.name)}</span>
-            <b class="${toolCall.status === 'error' ? 'status-error' : 'status-pass'}">${escapeHtml(toolCall.status)}</b>
-          </summary>
-          <pre>${escapeHtml(JSON.stringify({
-            input: toolCall.input,
-            result: toolCall.result,
-            error: toolCall.error,
-          }, null, 2))}</pre>
-        </details>
-      `).join('')}
+      ${toolCalls.map((toolCall, toolCallIndex) => {
+        const isError = toolCall.status === 'error';
+        const errorAttr = isError
+          ? `data-error-message-index="${messageIndex}" data-error-tool-index="${toolCallIndex}" title="Click to view error details"`
+          : '';
+        return `
+          <details ${errorAttr}>
+            <summary>
+              <span>${escapeHtml(toolCall.name)}</span>
+              <b class="${isError ? 'status-error' : 'status-pass'}">${escapeHtml(toolCall.status)}</b>
+            </summary>
+            <pre>${escapeHtml(JSON.stringify({
+              input: toolCall.input,
+              result: toolCall.result,
+              error: toolCall.error,
+            }, null, 2))}</pre>
+          </details>
+        `;
+      }).join('')}
     </div>
   `;
 }
@@ -1339,9 +1362,119 @@ function setBusy(isBusy) {
 
 function log(message, level = '') {
   const prefix = level === 'error' ? '[error] ' : level === 'pass' ? '[ok] ' : '';
-  elements.runLog.textContent = `${elements.runLog.textContent}${prefix}${message}\n`;
+  const line = `${prefix}${message}\n`;
+
+  if (level === 'error') {
+    // Append as a clickable span so the user can open the error detail modal
+    const span = document.createElement('span');
+    span.className = 'status-error run-log-error-line';
+    span.textContent = line;
+    span.dataset.errorMessage = message;
+    span.addEventListener('click', () => {
+      openErrorModal({ name: 'run-log', status: 'error', input: null, result: null, error: message });
+    });
+    elements.runLog.append(span);
+  } else {
+    elements.runLog.append(line);
+  }
+
   elements.runLog.scrollTop = elements.runLog.scrollHeight;
 }
+
+// ---------------------------------------------------------------------------
+// Error detail modal
+// ---------------------------------------------------------------------------
+
+function openErrorModal(toolCall) {
+  const { name, status, input, result, error } = toolCall;
+
+  const statusClass = status === 'error' ? 'error-modal-status-error' : 'error-modal-status-ok';
+  const errorBlock = (error != null)
+    ? `<section class="error-modal-section">
+        <div class="error-modal-section-label">Error</div>
+        <pre class="error-modal-pre error-modal-pre-error">${escapeHtml(typeof error === 'string' ? error : JSON.stringify(error, null, 2))}</pre>
+       </section>`
+    : '';
+  const resultBlock = (result != null)
+    ? `<section class="error-modal-section">
+        <div class="error-modal-section-label">Result</div>
+        <pre class="error-modal-pre">${escapeHtml(JSON.stringify(result, null, 2))}</pre>
+       </section>`
+    : '';
+  const inputBlock = (input != null)
+    ? `<section class="error-modal-section">
+        <div class="error-modal-section-label">Input</div>
+        <pre class="error-modal-pre">${escapeHtml(JSON.stringify(input, null, 2))}</pre>
+       </section>`
+    : '';
+
+  elements.errorModal.innerHTML = `
+    <div class="error-modal-box" role="document">
+      <div class="error-modal-header">
+        <h2 id="error-modal-title" class="error-modal-title">${escapeHtml(name)}</h2>
+        <span class="error-modal-status ${escapeHtml(statusClass)}">${escapeHtml(status)}</span>
+        <button type="button" class="error-modal-close" aria-label="Close error details">&times;</button>
+      </div>
+      <div class="error-modal-body">
+        ${errorBlock}
+        ${inputBlock}
+        ${resultBlock}
+      </div>
+      <div class="error-modal-footer">
+        <!-- Slot reserved for future "Send to Claude" button -->
+        <button type="button" class="error-modal-diagnose">Diagnose with Codex</button>
+      </div>
+    </div>
+  `;
+
+  // Store context on the modal element for the diagnose handler
+  elements.errorModal._toolCallContext = toolCall;
+
+  const closeButton = elements.errorModal.querySelector('.error-modal-close');
+  closeButton.addEventListener('click', closeErrorModal);
+
+  const diagnoseButton = elements.errorModal.querySelector('.error-modal-diagnose');
+  diagnoseButton.addEventListener('click', diagnoseWithCodex);
+
+  elements.errorModal.addEventListener('click', handleModalBackdropClick);
+
+  elements.errorModal.hidden = false;
+  closeButton.focus();
+}
+
+function closeErrorModal() {
+  elements.errorModal.hidden = true;
+  elements.errorModal.innerHTML = '';
+  elements.errorModal.removeEventListener('click', handleModalBackdropClick);
+  elements.errorModal._toolCallContext = null;
+}
+
+function handleModalBackdropClick(event) {
+  if (event.target === elements.errorModal) {
+    closeErrorModal();
+  }
+}
+
+function diagnoseWithCodex() {
+  const toolCall = elements.errorModal._toolCallContext;
+  if (!toolCall) return;
+
+  const { name, error, input } = toolCall;
+  const errorMessage = typeof error === 'string' ? error : JSON.stringify(error);
+  const diagMessage = `Diagnose this error: tool "${name}" failed with: ${errorMessage}. Input was: ${JSON.stringify(input)}`;
+
+  closeErrorModal();
+
+  elements.chatMessage.value = diagMessage;
+  elements.chatForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+}
+
+// Close modal on Escape key
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && !elements.errorModal.hidden) {
+    closeErrorModal();
+  }
+});
 
 function showError(error) {
   log(error.message ?? String(error), 'error');
