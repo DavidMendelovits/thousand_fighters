@@ -21,7 +21,7 @@ export function createCmsChatAgent(options = {}) {
     // → createLocalCmsRuntime → createCmsChatAgent), pass the already-built tools
     // object wrapped in a minimal runtime shim. LocalCodexCliCmsModule only calls
     // runtime.tools.list(), runtime.tools.openAiTools(), and runtime.tools.invoke().
-    const runtimeShim = options.tools ? { tools: options.tools } : undefined;
+    const runtimeShim = options.tools ? { tools: options.tools, registry: options.registry, gaps: options.gaps } : undefined;
     const module = createLocalCodexCliCmsModule(
       runtimeShim ? { runtime: runtimeShim } : {}
     );
@@ -40,7 +40,12 @@ class CodexChatAgentAdapter {
   }
 
   async healthCheck() {
-    return this.module.healthCheck();
+    const result = await this.module.healthCheck();
+    return {
+      status: result.codex?.status ?? 'unknown',
+      message: result.codex?.message ?? '',
+      details: result,
+    };
   }
 
   async chat(request = {}) {

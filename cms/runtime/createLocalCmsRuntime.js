@@ -31,7 +31,8 @@ export function createLocalCmsRuntime(options = {}) {
   });
   const pipeline = new CharacterCreationPipeline(registry);
   const tools = createCmsTools({ pipeline, repository, registry });
-  const chatAgent = options.chatAgent ?? createCmsChatAgent({ tools });
+  const gaps = currentArchitectureGaps();
+  const chatAgent = options.chatAgent ?? createCmsChatAgent({ tools, registry, gaps });
 
   return {
     storage,
@@ -40,7 +41,7 @@ export function createLocalCmsRuntime(options = {}) {
     pipeline,
     tools,
     chatAgent,
-    gaps: currentArchitectureGaps(),
+    gaps,
   };
 }
 
