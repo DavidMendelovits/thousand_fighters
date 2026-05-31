@@ -69,15 +69,17 @@ export function createCmsTools({ pipeline, repository, registry }) {
     },
     {
       name: 'generate_sprite_sheet',
-      description: 'Generate a draft 5x6 fighter sprite sheet asset.',
+      description: 'Generate a draft fighter sprite sheet asset. Without moveId, generates a 5x6 sheet with all moves. With moveId, generates a single 1x6 row sheet for that move.',
       inputSchema: objectSchema({
         characterId: stringSchema('Character id.'),
         prompt: stringSchema('Sprite generation prompt.'),
+        moveId: stringSchema('Optional move id (base, punch, kick, special_1, special_2). When set, generates a single 1x6 row sheet for that move.'),
       }, ['characterId', 'prompt']),
-      execute: async ({ characterId, prompt, context }) => {
+      execute: async ({ characterId, prompt, moveId, context }) => {
         const result = await pipeline.generateSpriteSheet({
           characterId,
           prompt,
+          moveId: moveId || undefined,
           context: context ?? {},
         });
         return withAssetApiUrl(result);

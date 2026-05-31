@@ -23,6 +23,7 @@ export class OpenAiResponsesImageGeneratorAdapter {
       'responses-api',
       'image-generation',
       'fighter-5x6-sheet',
+      'fighter-1x6-row',
       'sprite-source-sheet',
       'arena-background',
       'character-concept',
@@ -177,6 +178,39 @@ function imagePromptFor(request) {
       request.prompt ?? '',
       '',
       'Reference asset storage keys available to the pipeline:',
+      JSON.stringify(request.referenceAssetKeys ?? []),
+      '',
+      'Additional CMS context:',
+      JSON.stringify(request.context ?? {}, null, 2),
+    ].join('\n');
+  }
+  if (task === 'fighter-1x6-row') {
+    const moveDescriptions = {
+      base: 'base idle stance — subtle breathing/sway animation loop, facing right, neutral pose',
+      punch: 'punch attack — wind-up, extension, contact, follow-through, recovery frames',
+      kick: 'kick attack — chamber, extension, contact, follow-through, recovery frames',
+      special_1: 'special move 1 — dramatic startup, active frames with effect/projectile, recovery',
+      special_2: 'special move 2 — dramatic startup, active frames with effect/projectile, recovery',
+    };
+    const moveId = request.moveId ?? 'base';
+    const moveDesc = moveDescriptions[moveId] ?? moveId;
+    return [
+      'Draw a production-ready 2D fighting-game sprite row for Thousand Fighters.',
+      '',
+      'Sheet format:',
+      '- Exactly 1 row and 6 columns (6 frames in a horizontal strip).',
+      `- Animation: ${moveDesc}.`,
+      '- Each cell contains one full-body character frame, centered on a stable floor anchor.',
+      '- Use generous empty gutters between cells so no limb, weapon, projectile, hair, or effect touches a cell edge.',
+      '- Keep the entire character visible in every frame. Do not crop feet, head, hands, weapons, capes, or effects.',
+      '- Keep the camera, character scale, silhouette size, and facing direction consistent across all 6 frames.',
+      '- Show clear animation progression from frame 1 to frame 6 — this must read as a playable move, not random poses.',
+      '- Use a solid chroma-magenta background (#ff00ff), not transparency, scenery, gradients, shadows, labels, or text.',
+      '',
+      'Character prompt:',
+      request.prompt ?? '',
+      '',
+      'Reference asset storage keys:',
       JSON.stringify(request.referenceAssetKeys ?? []),
       '',
       'Additional CMS context:',

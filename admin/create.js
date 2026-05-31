@@ -19,6 +19,7 @@ const ctx = {
   conceptPrompt: '',
   sourceAssetKey: '',
   sourceAssetUrl: '',
+  rowAssets: { base: null, punch: null, kick: null, special_1: null, special_2: null },
   normalizedKey: '',
   qaReport: null,
   rowApprovals: { base: false, punch: false, kick: false, special_1: false, special_2: false },
@@ -53,6 +54,7 @@ function saveWizardState() {
       conceptPrompt: ctx.conceptPrompt,
       sourceAssetKey: ctx.sourceAssetKey,
       sourceAssetUrl: ctx.sourceAssetUrl,
+      rowAssets: { ...ctx.rowAssets },
       normalizedKey: ctx.normalizedKey,
       qaReport: ctx.qaReport,
       rowApprovals: { ...ctx.rowApprovals },
@@ -129,6 +131,10 @@ function restoreWizardState() {
 
   // Restore ctx
   Object.assign(ctx, saved.ctx);
+  // Migrate old saved states that don't have rowAssets
+  if (!ctx.rowAssets) {
+    ctx.rowAssets = { base: null, punch: null, kick: null, special_1: null, special_2: null };
+  }
   currentStorageKey = bestKey;
 
   // Re-render unlocked steps
@@ -143,7 +149,7 @@ function restoreWizardState() {
     renderDraftPreview(ctx.draft);
   }
 
-  if (ctx.sourceAssetUrl) {
+  if (ctx.sourceAssetUrl || ROW_IDS.some((id) => ctx.rowAssets[id])) {
     renderSpriteRows();
   }
 
@@ -467,62 +473,55 @@ async function onRegenDraft() {
 
 async function onAcceptDraft() {
   unlockUpTo(2);
-  resetRowApprovals();
   renderSpriteRows();
-  await generateSpriteSheet();
+  await onGenerateAll();
 }
 
-async function generateSpriteSheet() {
+async function generateRowSheet(rowId) {
   setBusy(true);
-  log('Generating sprite sheet...');
-  setAllRowStatus('generating');
+  setRowStatus(rowId, 'generating');
+  log(`Generating ${rowId} sprite row...`);
 
   try {
     const prompt = buildSpritePrompt();
-    const result = await invokeToolStreaming('generate_sprite_sheet', { characterId: ctx.characterId, prompt });
-    ctx.sourceAssetKey = result.asset.key;
-    ctx.sourceAssetUrl = result.asset.apiUrl ?? result.asset.url;
-    log(`Sprite sheet generated: ${result.asset.key}`);
-    resetRowApprovals();
+    const result = await invokeToolStreaming('generate_sprite_sheet', {
+      characterId: ctx.characterId,
+      prompt,
+      moveId: rowId,
+    });
+    ctx.rowAssets[rowId] = {
+      key: result.asset.key,
+      url: result.asset.apiUrl ?? result.asset.url,
+    };
+    ctx.rowApprovals[rowId] = false;
+    log(`${rowId} row generated: ${result.asset.key}`);
     renderSpriteRows();
     saveWizardState();
   } catch (err) {
-    log(`Error: ${err.message}`, 'error');
-    setAllRowStatus('pending');
+    log(`Error generating ${rowId}: ${err.message}`, 'error');
+    setRowStatus(rowId, 'pending');
   } finally {
     setBusy(false);
   }
 }
 
 async function onGenerateAll() {
-  resetRowApprovals();
+  for (const rowId of ROW_IDS) {
+    ctx.rowApprovals[rowId] = false;
+    ctx.rowAssets[rowId] = null;
+  }
   renderSpriteRows();
-  await generateSpriteSheet();
+
+  for (const rowId of ROW_IDS) {
+    await generateRowSheet(rowId);
+  }
 }
 
 async function onRegenRow(rowId) {
   ctx.rowApprovals[rowId] = false;
+  ctx.rowAssets[rowId] = null;
   renderSpriteRows();
-  setBusy(true);
-  log(`Regenerating sheet (improving ${rowId})...`);
-  setAllRowStatus('generating');
-
-  try {
-    const approvedRows = ROW_IDS.filter((id) => ctx.rowApprovals[id]);
-    const prompt = buildSpritePrompt() + (approvedRows.length
-      ? ` Keep the ${approvedRows.join(', ')} rows as-is. Improve the ${rowId} row.`
-      : '');
-    const result = await invokeToolStreaming('generate_sprite_sheet', { characterId: ctx.characterId, prompt });
-    ctx.sourceAssetKey = result.asset.key;
-    ctx.sourceAssetUrl = result.asset.apiUrl ?? result.asset.url;
-    log(`Sheet regenerated for ${rowId}.`);
-    renderSpriteRows();
-    saveWizardState();
-  } catch (err) {
-    log(`Error: ${err.message}`, 'error');
-  } finally {
-    setBusy(false);
-  }
+  await generateRowSheet(rowId);
 }
 
 function onApproveRow(rowId) {
@@ -570,7 +569,9 @@ async function onUploadCustomSheet(event) {
 // --- Step 3: Normalize ---
 
 async function onNormalize() {
-  if (!ctx.sourceAssetKey || !ctx.characterId) return;
+  const firstRowAsset = ROW_IDS.map((id) => ctx.rowAssets[id]).find((a) => a);
+  const sourceKey = firstRowAsset ? firstRowAsset.key : ctx.sourceAssetKey;
+  if (!sourceKey || !ctx.characterId) return;
 
   setBusy(true);
   log('Normalizing sprite pack (extracting frames)...');
@@ -580,7 +581,7 @@ async function onNormalize() {
   try {
     const result = await invokeToolStreaming('normalize_sprite_pack', {
       characterId: ctx.characterId,
-      sourceAssetKey: ctx.sourceAssetKey,
+      sourceAssetKey: sourceKey,
     });
     ctx.normalizedKey = result.normalized.outputKey;
     log(`Normalized: ${result.normalized.copiedFileCount} files, ${result.normalized.warnings?.length ?? 0} warnings`);
@@ -651,6 +652,7 @@ function onCreateAnother() {
   ctx.conceptPrompt = '';
   ctx.sourceAssetKey = '';
   ctx.sourceAssetUrl = '';
+  ctx.rowAssets = { base: null, punch: null, kick: null, special_1: null, special_2: null };
   ctx.normalizedKey = '';
   ctx.qaReport = null;
   ctx.highestUnlockedStep = 0;
@@ -690,20 +692,33 @@ function setAllRowStatus(status) {
   });
 }
 
+function setRowStatus(rowId, status) {
+  const el = document.querySelector(`.sprite-row[data-row="${rowId}"] .row-status`);
+  if (el) {
+    el.className = `row-status ${status}`;
+    el.textContent = status;
+  }
+}
+
 function syncNormalizeButton() {
   const allApproved = ROW_IDS.every((id) => ctx.rowApprovals[id]);
+  const allGenerated = ROW_IDS.every((id) => ctx.rowAssets[id]);
   const btn = document.getElementById('btn-normalize');
-  if (btn) btn.disabled = !allApproved;
+  if (btn) btn.disabled = !(allApproved && allGenerated);
 }
 
 function renderSpriteRows() {
   const $el = document.getElementById('sprite-rows');
-  const hasSheet = !!ctx.sourceAssetUrl;
   const brief = document.getElementById('fighter-brief')?.value?.trim() ?? '';
   const promptSnippet = brief.length > 120 ? brief.slice(0, 120) + '...' : brief;
 
   $el.innerHTML = ROW_IDS.map((rowId, rowIndex) => {
     const approved = ctx.rowApprovals[rowId];
+    const rowAsset = ctx.rowAssets[rowId];
+    // Legacy fallback: if no per-row asset but a legacy single-sheet exists, treat as having a sheet
+    const hasRowSheet = !!rowAsset;
+    const hasLegacySheet = !hasRowSheet && !!ctx.sourceAssetUrl;
+    const hasSheet = hasRowSheet || hasLegacySheet;
     const status = approved ? 'approved' : hasSheet ? 'pending' : 'waiting';
     const chroma = ROW_CHROMA[rowId];
     const label = ROW_LABELS[rowId];
@@ -726,7 +741,7 @@ function renderSpriteRows() {
         </div>
         ${hasSheet && promptSnippet ? `<div class="sprite-row-prompt">row: ${esc(rowId)} | ${esc(promptSnippet)}</div>` : ''}
         ${hasSheet
-          ? `<div class="sprite-row-frames">${renderRowFrames(rowIndex)}</div>`
+          ? `<div class="sprite-row-frames">${hasRowSheet ? renderRowFrames(rowId) : renderRowFramesLegacy(rowIndex)}</div>`
           : `<div class="sprite-row-empty">Generate a sheet to preview this row.</div>`
         }
       </div>
@@ -734,7 +749,7 @@ function renderSpriteRows() {
   }).join('');
 
   $el.querySelectorAll('[data-action="gen-row"]').forEach((btn) => {
-    btn.addEventListener('click', () => generateSpriteSheet());
+    btn.addEventListener('click', () => generateRowSheet(btn.dataset.row));
   });
   $el.querySelectorAll('[data-action="approve"]').forEach((btn) => {
     btn.addEventListener('click', () => onApproveRow(btn.dataset.row));
@@ -746,7 +761,18 @@ function renderSpriteRows() {
   syncNormalizeButton();
 }
 
-function renderRowFrames(rowIndex) {
+function renderRowFrames(rowId) {
+  const rowAsset = ctx.rowAssets[rowId];
+  if (!rowAsset) return '';
+  const frames = [];
+  for (let col = 0; col < 6; col++) {
+    const xPercent = (col / 5) * 100; // 0%, 20%, 40%, 60%, 80%, 100%
+    frames.push(`<div style="width:150px;height:150px;flex-shrink:0;overflow:hidden;background:url('${esc(rowAsset.url)}') ${xPercent}% 0 / 600% auto no-repeat;image-rendering:pixelated;border-right:1px solid rgba(255,255,255,0.06);" title="frame ${col + 1}"></div>`);
+  }
+  return frames.join('');
+}
+
+function renderRowFramesLegacy(rowIndex) {
   if (!ctx.sourceAssetUrl) return '';
   const cw = 150;
   const ch = 150;
