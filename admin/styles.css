@@ -413,6 +413,27 @@ button:disabled {
   text-transform: none;
 }
 
+.move-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.move-gen-btn {
+  min-height: 28px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #26303c;
+  border-color: var(--line);
+}
+
+.move-gen-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .frame-count {
   flex: 0 0 auto;
   color: var(--muted);

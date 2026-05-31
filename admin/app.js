@@ -227,7 +227,9 @@ async function createDraft() {
   return result.draft;
 }
 
-async function generateSheet() {
+const MOVE_IDS = ['base', 'punch', 'kick', 'special_1', 'special_2'];
+
+async function generateMoveRow(moveId) {
   const characterId = currentCharacterId();
   if (!characterId) return null;
 
@@ -235,11 +237,33 @@ async function generateSheet() {
     elements.characterBrief.value.trim(),
     'Side-view fighting game sprite row. Magenta background, full body visible, generous gutters, no cropping.',
   ].filter(Boolean).join(' ');
-  const result = await invokeTool('generate_sprite_sheet', { characterId, prompt, moveId: 'base' });
+  const result = await invokeTool('generate_sprite_sheet', { characterId, prompt, moveId });
   state.sourceAssetKey = result.asset.key;
   showLatestAsset(result.asset);
-  await selectCharacter(characterId, { silent: true });
+  await selectCharacter(characterId, { silent: true, pushState: false });
   return result;
+}
+
+async function generateAllRows() {
+  const characterId = currentCharacterId();
+  if (!characterId) return;
+
+  setBusy(true);
+  try {
+    for (const moveId of MOVE_IDS) {
+      log(`Generating ${moveId} row...`);
+      await generateMoveRow(moveId);
+    }
+    log('All sprite rows generated.', 'pass');
+  } catch (error) {
+    showError(error);
+  } finally {
+    setBusy(false);
+  }
+}
+
+async function generateSheet() {
+  await generateAllRows();
 }
 
 async function uploadSpriteAsset(event) {
@@ -529,6 +553,10 @@ function renderCharacterWorkbench(draft, assets) {
     ctaPublish.addEventListener('click', publishCharacter);
   }
 
+  for (const btn of elements.characterWorkbench.querySelectorAll('[data-gen-move]')) {
+    btn.addEventListener('click', () => generateMoveRow(btn.dataset.genMove));
+  }
+
   startAnimationPreviews();
 }
 
@@ -637,6 +665,12 @@ function renderMoveGroup(group) {
     state.previewFrames.set(animationId, previewFrames.map((asset) => asset.apiUrl));
   }
 
+  const canGenerate = MOVE_IDS.includes(group.id);
+  const hasFrames = groupAssetCount(group) > 0;
+  const generateButton = canGenerate
+    ? `<button type="button" class="move-gen-btn" data-gen-move="${escapeHtml(group.id)}">${hasFrames ? 'Regen' : 'Generate'}</button>`
+    : '';
+
   return `
     <article class="move-card">
       <header class="move-card-header">
@@ -644,7 +678,10 @@ function renderMoveGroup(group) {
           <span class="eyebrow">${escapeHtml(group.id)}</span>
           <h3>${escapeHtml(moveGroupTitle(group))}</h3>
         </div>
-        <span class="frame-count">${escapeHtml(groupAssetCount(group))} assets</span>
+        <div class="move-card-actions">
+          ${generateButton}
+          <span class="frame-count">${escapeHtml(groupAssetCount(group))} assets</span>
+        </div>
       </header>
 
       <div class="move-card-body">
