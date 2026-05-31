@@ -42,6 +42,8 @@ const state = {
   previewFrames: new Map(),
   animationStates: new Map(),
   chatMessages: [],
+  generatingMoves: new Set(),
+  moveActivity: {},
 };
 
 const elements = {
@@ -229,37 +231,63 @@ async function createDraft() {
 
 const MOVE_IDS = ['base', 'punch', 'kick', 'special_1', 'special_2'];
 
+function logMoveActivity(moveId, message, level = '') {
+  if (!state.moveActivity[moveId]) state.moveActivity[moveId] = [];
+  state.moveActivity[moveId].push({ message, level, ts: Date.now() });
+  if (state.moveActivity[moveId].length > 50) state.moveActivity[moveId].shift();
+}
+
+function setMoveCardLoading(moveId, loading) {
+  const card = elements.characterWorkbench.querySelector(`[data-move-card="${moveId}"]`);
+  if (!card) return;
+  card.classList.toggle('move-card-loading', loading);
+  const btn = card.querySelector('[data-gen-move]');
+  if (btn) {
+    btn.disabled = loading;
+    btn.textContent = loading ? 'Generating…' : (groupAssetCount({ variants: [], projectiles: [] }) > 0 ? 'Regen' : 'Generate');
+  }
+}
+
 async function generateMoveRow(moveId) {
   const characterId = currentCharacterId();
   if (!characterId) return null;
+  if (state.generatingMoves.has(moveId)) return null;
 
-  const prompt = [
-    elements.characterBrief.value.trim(),
-    'Side-view fighting game sprite row. Magenta background, full body visible, generous gutters, no cropping.',
-  ].filter(Boolean).join(' ');
-  const result = await invokeTool('generate_sprite_sheet', { characterId, prompt, moveId });
-  state.sourceAssetKey = result.asset.key;
-  showLatestAsset(result.asset);
-  await selectCharacter(characterId, { silent: true, pushState: false });
-  return result;
+  state.generatingMoves.add(moveId);
+  setMoveCardLoading(moveId, true);
+  logMoveActivity(moveId, 'Generating sprite row…');
+  log(`> generate_sprite_sheet (${moveId})`);
+
+  try {
+    const prompt = [
+      elements.characterBrief.value.trim(),
+      'Side-view fighting game sprite row. Magenta background, full body visible, generous gutters, no cropping.',
+    ].filter(Boolean).join(' ');
+    const result = await postJson(`/api/tools/generate_sprite_sheet`, { characterId, prompt, moveId });
+    state.sourceAssetKey = result.result.asset.key;
+    showLatestAsset(result.result.asset);
+    logMoveActivity(moveId, `Generated: ${result.result.asset.key}`, 'pass');
+    log(`${moveId} row generated.`, 'pass');
+    state.generatingMoves.delete(moveId);
+    await selectCharacter(characterId, { silent: true, pushState: false });
+    return result.result;
+  } catch (error) {
+    logMoveActivity(moveId, error.message, 'error');
+    showError(error);
+    state.generatingMoves.delete(moveId);
+    setMoveCardLoading(moveId, false);
+    return null;
+  }
 }
 
 async function generateAllRows() {
   const characterId = currentCharacterId();
   if (!characterId) return;
 
-  setBusy(true);
-  try {
-    for (const moveId of MOVE_IDS) {
-      log(`Generating ${moveId} row...`);
-      await generateMoveRow(moveId);
-    }
-    log('All sprite rows generated.', 'pass');
-  } catch (error) {
-    showError(error);
-  } finally {
-    setBusy(false);
+  for (const moveId of MOVE_IDS) {
+    await generateMoveRow(moveId);
   }
+  log('All sprite rows generated.', 'pass');
 }
 
 async function generateSheet() {
@@ -556,6 +584,9 @@ function renderCharacterWorkbench(draft, assets) {
   for (const btn of elements.characterWorkbench.querySelectorAll('[data-gen-move]')) {
     btn.addEventListener('click', () => generateMoveRow(btn.dataset.genMove));
   }
+  for (const btn of elements.characterWorkbench.querySelectorAll('[data-move-activity]')) {
+    btn.addEventListener('click', () => openMoveActivityModal(btn.dataset.moveActivity));
+  }
 
   startAnimationPreviews();
 }
@@ -667,18 +698,25 @@ function renderMoveGroup(group) {
 
   const canGenerate = MOVE_IDS.includes(group.id);
   const hasFrames = groupAssetCount(group) > 0;
+  const isLoading = state.generatingMoves.has(group.id);
+  const activityEntries = state.moveActivity[group.id] ?? [];
   const generateButton = canGenerate
-    ? `<button type="button" class="move-gen-btn" data-gen-move="${escapeHtml(group.id)}">${hasFrames ? 'Regen' : 'Generate'}</button>`
+    ? `<button type="button" class="move-gen-btn" data-gen-move="${escapeHtml(group.id)}" ${isLoading ? 'disabled' : ''}>${isLoading ? 'Generating…' : (hasFrames ? 'Regen' : 'Generate')}</button>`
     : '';
+  const activityButton = canGenerate && activityEntries.length > 0
+    ? `<button type="button" class="move-activity-btn" data-move-activity="${escapeHtml(group.id)}" title="View activity log">${activityEntries.length}</button>`
+    : '';
+  const loadingClass = isLoading ? ' move-card-loading' : '';
 
   return `
-    <article class="move-card">
+    <article class="move-card${loadingClass}" data-move-card="${escapeHtml(group.id)}">
       <header class="move-card-header">
         <div>
-          <span class="eyebrow">${escapeHtml(group.id)}</span>
+          <span class="eyebrow">${escapeHtml(group.id)}${isLoading ? ' <span class="move-loading-badge">generating</span>' : ''}</span>
           <h3>${escapeHtml(moveGroupTitle(group))}</h3>
         </div>
         <div class="move-card-actions">
+          ${activityButton}
           ${generateButton}
           <span class="frame-count">${escapeHtml(groupAssetCount(group))} assets</span>
         </div>
@@ -1503,6 +1541,38 @@ function diagnoseWithCodex() {
 
   elements.chatMessage.value = diagMessage;
   elements.chatForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+}
+
+function openMoveActivityModal(moveId) {
+  const entries = state.moveActivity[moveId] ?? [];
+  if (entries.length === 0) return;
+
+  const rows = entries.map((entry) => {
+    const levelClass = entry.level === 'error' ? 'status-error' : entry.level === 'pass' ? 'status-pass' : '';
+    const time = new Date(entry.ts).toLocaleTimeString();
+    return `<div class="activity-entry ${levelClass}"><span class="activity-ts">${escapeHtml(time)}</span>${escapeHtml(entry.message)}</div>`;
+  }).join('');
+
+  elements.errorModal.innerHTML = `
+    <div class="error-modal-box" role="document">
+      <div class="error-modal-header">
+        <h2 id="error-modal-title" class="error-modal-title">${escapeHtml(moveId)} activity</h2>
+        <span class="error-modal-status error-modal-status-ok">${entries.length} events</span>
+        <button type="button" class="error-modal-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="error-modal-body">
+        <div class="activity-log">${rows}</div>
+      </div>
+      <div class="error-modal-footer">
+        <button type="button" class="error-modal-close-btn" style="background:#26303c;border-color:var(--line)">Close</button>
+      </div>
+    </div>
+  `;
+
+  elements.errorModal.querySelector('.error-modal-close').addEventListener('click', closeErrorModal);
+  elements.errorModal.querySelector('.error-modal-close-btn').addEventListener('click', closeErrorModal);
+  elements.errorModal.addEventListener('click', handleModalBackdropClick);
+  elements.errorModal.hidden = false;
 }
 
 // Close modal on Escape key

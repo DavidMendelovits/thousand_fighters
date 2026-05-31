@@ -434,6 +434,75 @@ button:disabled {
   color: var(--accent);
 }
 
+.move-activity-btn {
+  min-height: 24px;
+  min-width: 24px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 999px;
+  background: var(--panel-2);
+  border-color: var(--line);
+  color: var(--muted);
+  line-height: 1;
+}
+
+.move-activity-btn:hover {
+  border-color: var(--focus);
+  color: var(--focus);
+}
+
+.move-card-loading {
+  border-color: var(--accent);
+  animation: card-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes card-pulse {
+  0%, 100% { border-color: var(--accent); box-shadow: 0 0 0 0 rgb(84 214 162 / 0%); }
+  50% { border-color: rgb(84 214 162 / 60%); box-shadow: 0 0 12px 0 rgb(84 214 162 / 15%); }
+}
+
+.move-loading-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgb(84 214 162 / 15%);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  animation: badge-blink 1.5s ease-in-out infinite;
+}
+
+@keyframes badge-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.activity-log {
+  display: grid;
+  gap: 4px;
+}
+
+.activity-entry {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #cbd7e4;
+  padding: 4px 0;
+  border-bottom: 1px solid rgb(55 66 83 / 50%);
+}
+
+.activity-entry:last-child {
+  border-bottom: 0;
+}
+
+.activity-ts {
+  color: var(--muted);
+  font-size: 11px;
+  margin-right: 8px;
+}
+
 .frame-count {
   flex: 0 0 auto;
   color: var(--muted);
