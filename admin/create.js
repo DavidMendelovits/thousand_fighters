@@ -22,10 +22,162 @@ const ctx = {
   normalizedKey: '',
   qaReport: null,
   rowApprovals: { base: false, punch: false, kick: false, special_1: false, special_2: false },
+  refImageUrl: '',
 };
 
 // Track whether the user has manually edited the generation prompt
 let promptManuallyEdited = false;
+
+// --- localStorage persistence ---
+
+// Tracks the current storage key so we can migrate on id change and clean up on publish/reset
+let currentStorageKey = '';
+let _saveDebounceTimer = null;
+
+function getStorageKey(characterId) {
+  return characterId ? `tf-wizard-${characterId}` : '';
+}
+
+function saveWizardState() {
+  const characterId = document.getElementById('fighter-id').value.trim();
+  if (!characterId) return;
+
+  const key = getStorageKey(characterId);
+  const payload = {
+    savedAt: Date.now(),
+    ctx: {
+      highestUnlockedStep: ctx.highestUnlockedStep,
+      characterId: ctx.characterId,
+      draft: ctx.draft,
+      conceptAssetUrl: ctx.conceptAssetUrl,
+      conceptPrompt: ctx.conceptPrompt,
+      sourceAssetKey: ctx.sourceAssetKey,
+      sourceAssetUrl: ctx.sourceAssetUrl,
+      normalizedKey: ctx.normalizedKey,
+      qaReport: ctx.qaReport,
+      rowApprovals: { ...ctx.rowApprovals },
+      refImageUrl: ctx.refImageUrl,
+    },
+    form: {
+      fighterId: characterId,
+      brief: document.getElementById('fighter-brief').value,
+      artStyle: document.getElementById('art-style').value,
+      genPrompt: document.getElementById('gen-prompt').value,
+      promptManuallyEdited,
+    },
+  };
+
+  try {
+    localStorage.setItem(key, JSON.stringify(payload));
+    currentStorageKey = key;
+  } catch (err) {
+    // localStorage quota exceeded or unavailable — silently ignore
+  }
+}
+
+function debouncedSave() {
+  clearTimeout(_saveDebounceTimer);
+  _saveDebounceTimer = setTimeout(saveWizardState, 500);
+}
+
+function clearWizardState() {
+  if (currentStorageKey) {
+    try { localStorage.removeItem(currentStorageKey); } catch (_) {}
+    currentStorageKey = '';
+  }
+}
+
+function restoreWizardState() {
+  // Scan localStorage for any tf-wizard-* keys, pick the most recently saved one
+  let bestKey = null;
+  let bestSavedAt = 0;
+
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!k || !k.startsWith('tf-wizard-')) continue;
+      const raw = localStorage.getItem(k);
+      if (!raw) continue;
+      let parsed;
+      try { parsed = JSON.parse(raw); } catch { continue; }
+      if (parsed.savedAt > bestSavedAt) {
+        bestSavedAt = parsed.savedAt;
+        bestKey = k;
+      }
+    }
+  } catch (_) {
+    return;
+  }
+
+  if (!bestKey) return;
+
+  let saved;
+  try {
+    saved = JSON.parse(localStorage.getItem(bestKey));
+  } catch {
+    return;
+  }
+  if (!saved || !saved.ctx || !saved.form) return;
+
+  // Restore form fields
+  const { form } = saved;
+  if (form.fighterId) document.getElementById('fighter-id').value = form.fighterId;
+  if (form.brief) document.getElementById('fighter-brief').value = form.brief;
+  if (form.artStyle) document.getElementById('art-style').value = form.artStyle;
+  if (form.genPrompt) document.getElementById('gen-prompt').value = form.genPrompt;
+  promptManuallyEdited = !!form.promptManuallyEdited;
+
+  // Restore ctx
+  Object.assign(ctx, saved.ctx);
+  currentStorageKey = bestKey;
+
+  // Re-render unlocked steps
+  syncStepVisibility();
+
+  if (ctx.conceptAssetUrl) {
+    renderConceptPanels(ctx.conceptAssetUrl);
+    document.getElementById('concept-actions').style.display = '';
+  }
+
+  if (ctx.draft) {
+    renderDraftPreview(ctx.draft);
+  }
+
+  if (ctx.sourceAssetUrl) {
+    renderSpriteRows();
+  }
+
+  if (ctx.normalizedKey) {
+    renderFramesPreview();
+  }
+
+  if (ctx.qaReport) {
+    renderQaPreview(ctx.qaReport);
+  }
+
+  // Show saved reference image thumbnail if available
+  if (ctx.refImageUrl) {
+    showRefImageThumbnail(ctx.refImageUrl);
+  }
+
+  log(`Restored in-progress wizard for "${form.fighterId}".`);
+}
+
+function showRefImageThumbnail(url) {
+  // Remove any existing thumbnail first
+  const existing = document.getElementById('ref-image-thumbnail');
+  if (existing) existing.remove();
+
+  const refInput = document.getElementById('ref-image');
+  if (!refInput) return;
+
+  const thumb = document.createElement('img');
+  thumb.id = 'ref-image-thumbnail';
+  thumb.src = url;
+  thumb.alt = 'Reference image';
+  thumb.style.cssText = 'display:block;max-width:80px;max-height:80px;margin-top:6px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);object-fit:cover;';
+  refInput.insertAdjacentElement('afterend', thumb);
+}
 
 const $log = document.getElementById('create-log');
 const $stepNav = document.getElementById('step-nav');
@@ -60,6 +212,23 @@ document.getElementById('gen-prompt').addEventListener('input', () => {
 
 // Reference image upload
 document.getElementById('ref-image').addEventListener('change', onRefImageUpload);
+
+// Debounced saves on form field changes
+document.getElementById('fighter-brief').addEventListener('input', debouncedSave);
+document.getElementById('art-style').addEventListener('change', debouncedSave);
+document.getElementById('gen-prompt').addEventListener('input', debouncedSave);
+
+// Fighter ID changes: migrate storage key if id changes
+document.getElementById('fighter-id').addEventListener('input', () => {
+  const newKey = getStorageKey(document.getElementById('fighter-id').value.trim());
+  if (newKey && newKey !== currentStorageKey) {
+    if (currentStorageKey) {
+      try { localStorage.removeItem(currentStorageKey); } catch (_) {}
+    }
+    currentStorageKey = newKey;
+  }
+  debouncedSave();
+});
 
 // --- Step nav ---
 
@@ -146,6 +315,26 @@ async function onRefImageUpload(event) {
     } else {
       log('No description returned from image analysis.', 'error');
     }
+
+    // Save the reference image as a character asset so it persists after refresh
+    try {
+      const ext = file.type === 'image/jpeg' ? 'jpg' : 'png';
+      const saveResult = await invokeTool('add_character_asset', {
+        characterId,
+        relativePath: `source/reference.${ext}`,
+        contentBase64: imageBase64,
+        contentType: file.type || 'image/png',
+      });
+      ctx.refImageUrl = saveResult.asset?.apiUrl ?? saveResult.asset?.url ?? '';
+      if (ctx.refImageUrl) {
+        showRefImageThumbnail(ctx.refImageUrl);
+        log('Reference image saved as asset.');
+      }
+    } catch (saveErr) {
+      log(`Warning: could not save reference image as asset: ${saveErr.message}`, 'error');
+    }
+
+    saveWizardState();
   } catch (err) {
     log(`Error analyzing image: ${err.message}`, 'error');
   } finally {
@@ -184,6 +373,7 @@ async function onGenerateConcept(event) {
 
     renderConceptPanels(assetUrl, result.asset?.key);
     document.getElementById('concept-actions').style.display = '';
+    saveWizardState();
   } catch (err) {
     log(`Error: ${err.message}`, 'error');
     document.getElementById('concept-preview').innerHTML = '';
@@ -214,6 +404,7 @@ async function onRegenConcept() {
 
     renderConceptPanels(assetUrl, result.asset?.key);
     document.getElementById('concept-actions').style.display = '';
+    saveWizardState();
   } catch (err) {
     log(`Error: ${err.message}`, 'error');
     document.getElementById('concept-preview').innerHTML = '';
@@ -243,6 +434,7 @@ async function onApproveConcept() {
     log(`Draft created: ${ctx.draft.displayName ?? characterId}`);
     renderDraftPreview(ctx.draft);
     unlockUpTo(1);
+    saveWizardState();
   } catch (err) {
     log(`Error: ${err.message}`, 'error');
   } finally {
@@ -263,6 +455,7 @@ async function onRegenDraft() {
     ctx.draft = result.draft;
     log(`Draft regenerated: ${ctx.draft.displayName}`);
     renderDraftPreview(ctx.draft);
+    saveWizardState();
   } catch (err) {
     log(`Error: ${err.message}`, 'error');
   } finally {
@@ -292,6 +485,7 @@ async function generateSpriteSheet() {
     log(`Sprite sheet generated: ${result.asset.key}`);
     resetRowApprovals();
     renderSpriteRows();
+    saveWizardState();
   } catch (err) {
     log(`Error: ${err.message}`, 'error');
     setAllRowStatus('pending');
@@ -323,6 +517,7 @@ async function onRegenRow(rowId) {
     ctx.sourceAssetUrl = result.asset.apiUrl ?? result.asset.url;
     log(`Sheet regenerated for ${rowId}.`);
     renderSpriteRows();
+    saveWizardState();
   } catch (err) {
     log(`Error: ${err.message}`, 'error');
   } finally {
@@ -334,12 +529,14 @@ function onApproveRow(rowId) {
   ctx.rowApprovals[rowId] = true;
   renderSpriteRows();
   syncNormalizeButton();
+  saveWizardState();
 }
 
 function onAcceptAllRows() {
   for (const id of ROW_IDS) ctx.rowApprovals[id] = true;
   renderSpriteRows();
   syncNormalizeButton();
+  saveWizardState();
 }
 
 async function onUploadCustomSheet(event) {
@@ -362,6 +559,7 @@ async function onUploadCustomSheet(event) {
     log(`Custom sheet uploaded: ${result.asset.key}`);
     resetRowApprovals();
     renderSpriteRows();
+    saveWizardState();
   } catch (err) {
     log(`Error: ${err.message}`, 'error');
   } finally {
@@ -386,6 +584,7 @@ async function onNormalize() {
     });
     ctx.normalizedKey = result.normalized.outputKey;
     log(`Normalized: ${result.normalized.copiedFileCount} files, ${result.normalized.warnings?.length ?? 0} warnings`);
+    saveWizardState();
     await renderFramesPreview();
   } catch (err) {
     log(`Error: ${err.message}`, 'error');
@@ -412,6 +611,7 @@ async function onValidate() {
     ctx.qaReport = result.qa;
     log(`QA: ${result.qa.status} (${result.qa.summary?.passed ?? 0} passed, ${result.qa.summary?.errors ?? 0} errors)`);
     renderQaPreview(result.qa);
+    saveWizardState();
   } catch (err) {
     log(`Error: ${err.message}`, 'error');
   } finally {
@@ -433,6 +633,7 @@ async function onPublish() {
     log(`Published: ${result.published.bundleKey}`);
     renderDonePreview(result.published);
     unlockUpTo(5);
+    clearWizardState();
   } catch (err) {
     log(`Error: ${err.message}`, 'error');
   } finally {
@@ -441,6 +642,9 @@ async function onPublish() {
 }
 
 function onCreateAnother() {
+  // Clear persisted state BEFORE resetting ctx (use currentStorageKey, not ctx.characterId)
+  clearWizardState();
+
   ctx.characterId = '';
   ctx.draft = null;
   ctx.conceptAssetUrl = '';
@@ -450,8 +654,13 @@ function onCreateAnother() {
   ctx.normalizedKey = '';
   ctx.qaReport = null;
   ctx.highestUnlockedStep = 0;
+  ctx.refImageUrl = '';
   promptManuallyEdited = false;
   resetRowApprovals();
+
+  // Remove reference image thumbnail if present
+  const thumb = document.getElementById('ref-image-thumbnail');
+  if (thumb) thumb.remove();
   document.getElementById('concept-form').reset();
   document.getElementById('gen-prompt').value = '';
   document.getElementById('concept-preview').innerHTML = '';
@@ -858,3 +1067,6 @@ function esc(value) {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;');
 }
+
+// Boot-time restore — runs after all function definitions and event listeners are set up
+restoreWizardState();
