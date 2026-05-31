@@ -13,7 +13,7 @@ export class CodexImageGeneratorAdapter {
     this.timeoutMs = options.timeoutMs ?? Number(process.env.CODEX_IMAGE_TIMEOUT_MS ?? DEFAULT_TIMEOUT_MS);
     this.id = 'codex-image-generator';
     this.provider = 'codex';
-    this.capabilities = ['fighter-5x6-sheet', 'fighter-1x6-row', 'arena-background', 'character-concept', 'codex-image-gen', 'vision-describe'];
+    this.capabilities = ['fighter-1x6-row', 'arena-background', 'character-concept', 'codex-image-gen', 'vision-describe'];
   }
 
   async healthCheck() {
@@ -128,10 +128,6 @@ function extractDescription(codexOutput) {
 function buildCodexPrompt(task, userPrompt, context, moveId) {
   if (task === 'character-concept') {
     return `Generate an image: a character turnaround sheet, 1x3 grid of three equal square panels. Left=front view, center=3/4 profile, right=back view. Full body, light gray #f0f0f0 background, no text. Character: ${userPrompt ?? 'a fighter'}`;
-  }
-
-  if (task === 'fighter-5x6-sheet') {
-    return `Generate an image: a 5x6 fighting game sprite sheet. 5 rows (idle, punch, kick, special_1, special_2) x 6 frames each. Magenta #ff00ff background, full body visible, generous gutters. Character: ${userPrompt ?? 'a fighter'}`;
   }
 
   if (task === 'fighter-1x6-row') {

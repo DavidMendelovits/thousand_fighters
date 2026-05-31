@@ -232,11 +232,10 @@ async function generateSheet() {
   if (!characterId) return null;
 
   const prompt = [
-    'Create a 5x6 side-view fighting game sprite sheet.',
     elements.characterBrief.value.trim(),
-    'Magenta background, full body visible, generous gutters, no cropping.',
+    'Side-view fighting game sprite row. Magenta background, full body visible, generous gutters, no cropping.',
   ].filter(Boolean).join(' ');
-  const result = await invokeTool('generate_sprite_sheet', { characterId, prompt });
+  const result = await invokeTool('generate_sprite_sheet', { characterId, prompt, moveId: 'base' });
   state.sourceAssetKey = result.asset.key;
   showLatestAsset(result.asset);
   await selectCharacter(characterId, { silent: true });
@@ -441,7 +440,7 @@ function renderNextStepBanner(stage) {
         <div>
           <div class="next-step-label">Next Step</div>
           <p class="next-step-title">Generate Sprite Sheet</p>
-          <p class="next-step-detail">No source art yet. Generate a 5x6 sprite sheet to start building this fighter.</p>
+          <p class="next-step-detail">No source art yet. Generate sprite rows to start building this fighter.</p>
         </div>
         <button id="cta-generate-sheet" class="next-step-action" type="button">Generate Sheet</button>
       </div>

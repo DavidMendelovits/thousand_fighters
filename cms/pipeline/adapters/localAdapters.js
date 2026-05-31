@@ -33,7 +33,7 @@ export function createLocalPlaceholderImageGenerator(overrides = {}) {
   return {
     id: overrides.id ?? 'local-placeholder-image-generator',
     provider: overrides.provider ?? 'local',
-    capabilities: ['fighter-5x6-sheet', 'arena-background', 'character-concept'],
+    capabilities: ['fighter-1x6-row', 'arena-background', 'character-concept'],
     async healthCheck() {
       return {
         status: 'error',

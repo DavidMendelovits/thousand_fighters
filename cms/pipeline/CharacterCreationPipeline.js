@@ -85,21 +85,18 @@ export class CharacterCreationPipeline {
   async generateSpriteSheet({ characterId, prompt, moveId, referenceAssetKeys = [], targetPath, context = {} }) {
     const imageGenerator = this.registry.resolve(PipelinePort.IMAGE_GENERATOR);
     const repository = this.registry.resolve(PipelinePort.CHARACTER_REPOSITORY);
-    const task = moveId ? 'fighter-1x6-row' : 'fighter-5x6-sheet';
+    const resolvedMoveId = moveId ?? 'base';
     const result = await imageGenerator.generateImage({
-      task,
+      task: 'fighter-1x6-row',
       prompt,
-      moveId,
+      moveId: resolvedMoveId,
       referenceAssetKeys,
       context,
       onProgress: context.onProgress,
     });
 
     const contentType = result.contentType ?? 'image/png';
-    const defaultKey = moveId
-      ? `source/${characterId}_${moveId}_sheet${extensionForContentType(contentType)}`
-      : `source/${characterId}_imagegen_sheet${extensionForContentType(contentType)}`;
-    const key = targetPath ?? defaultKey;
+    const key = targetPath ?? `source/${characterId}_${resolvedMoveId}_sheet${extensionForContentType(contentType)}`;
     const asset = await repository.writeAsset(characterId, key, bytesFromImageResult(result), {
       contentType,
       provider: result.provider ?? imageGenerator.provider ?? 'unknown',

@@ -17,8 +17,6 @@ const ctx = {
   draft: null,
   conceptAssetUrl: '',
   conceptPrompt: '',
-  sourceAssetKey: '',
-  sourceAssetUrl: '',
   rowAssets: { base: null, punch: null, kick: null, special_1: null, special_2: null },
   normalizedKey: '',
   qaReport: null,
@@ -52,8 +50,6 @@ function saveWizardState() {
       draft: ctx.draft,
       conceptAssetUrl: ctx.conceptAssetUrl,
       conceptPrompt: ctx.conceptPrompt,
-      sourceAssetKey: ctx.sourceAssetKey,
-      sourceAssetUrl: ctx.sourceAssetUrl,
       rowAssets: { ...ctx.rowAssets },
       normalizedKey: ctx.normalizedKey,
       qaReport: ctx.qaReport,
@@ -149,7 +145,7 @@ function restoreWizardState() {
     renderDraftPreview(ctx.draft);
   }
 
-  if (ctx.sourceAssetUrl || ROW_IDS.some((id) => ctx.rowAssets[id])) {
+  if (ROW_IDS.some((id) => ctx.rowAssets[id])) {
     renderSpriteRows();
   }
 
@@ -201,7 +197,6 @@ document.getElementById('btn-regen-draft').addEventListener('click', onRegenDraf
 document.getElementById('btn-gen-all').addEventListener('click', onGenerateAll);
 document.getElementById('btn-accept-all').addEventListener('click', onAcceptAllRows);
 document.getElementById('btn-normalize').addEventListener('click', onNormalize);
-document.getElementById('custom-sheet').addEventListener('change', onUploadCustomSheet);
 document.getElementById('btn-validate').addEventListener('click', onValidate);
 document.getElementById('btn-publish').addEventListener('click', onPublish);
 document.getElementById('btn-back-to-frames').addEventListener('click', () => scrollToStep(3));
@@ -538,40 +533,11 @@ function onAcceptAllRows() {
   saveWizardState();
 }
 
-async function onUploadCustomSheet(event) {
-  const file = event.target.files?.[0];
-  if (!file || !ctx.characterId) return;
-
-  setBusy(true);
-  log('Uploading custom sprite sheet...');
-
-  try {
-    const base64 = await fileToBase64(file);
-    const result = await invokeTool('add_character_asset', {
-      characterId: ctx.characterId,
-      relativePath: `source/${ctx.characterId}_custom_sheet.png`,
-      contentBase64: base64,
-      contentType: 'image/png',
-    });
-    ctx.sourceAssetKey = result.asset.key;
-    ctx.sourceAssetUrl = result.asset.apiUrl ?? result.asset.url;
-    log(`Custom sheet uploaded: ${result.asset.key}`);
-    resetRowApprovals();
-    renderSpriteRows();
-    saveWizardState();
-  } catch (err) {
-    log(`Error: ${err.message}`, 'error');
-  } finally {
-    setBusy(false);
-  }
-}
-
 // --- Step 3: Normalize ---
 
 async function onNormalize() {
   const firstRowAsset = ROW_IDS.map((id) => ctx.rowAssets[id]).find((a) => a);
-  const sourceKey = firstRowAsset ? firstRowAsset.key : ctx.sourceAssetKey;
-  if (!sourceKey || !ctx.characterId) return;
+  if (!firstRowAsset || !ctx.characterId) return;
 
   setBusy(true);
   log('Normalizing sprite pack (extracting frames)...');
@@ -581,7 +547,7 @@ async function onNormalize() {
   try {
     const result = await invokeToolStreaming('normalize_sprite_pack', {
       characterId: ctx.characterId,
-      sourceAssetKey: sourceKey,
+      sourceAssetKey: firstRowAsset.key,
     });
     ctx.normalizedKey = result.normalized.outputKey;
     log(`Normalized: ${result.normalized.copiedFileCount} files, ${result.normalized.warnings?.length ?? 0} warnings`);
@@ -650,8 +616,6 @@ function onCreateAnother() {
   ctx.draft = null;
   ctx.conceptAssetUrl = '';
   ctx.conceptPrompt = '';
-  ctx.sourceAssetKey = '';
-  ctx.sourceAssetUrl = '';
   ctx.rowAssets = { base: null, punch: null, kick: null, special_1: null, special_2: null };
   ctx.normalizedKey = '';
   ctx.qaReport = null;
@@ -712,13 +676,9 @@ function renderSpriteRows() {
   const brief = document.getElementById('fighter-brief')?.value?.trim() ?? '';
   const promptSnippet = brief.length > 120 ? brief.slice(0, 120) + '...' : brief;
 
-  $el.innerHTML = ROW_IDS.map((rowId, rowIndex) => {
+  $el.innerHTML = ROW_IDS.map((rowId) => {
     const approved = ctx.rowApprovals[rowId];
-    const rowAsset = ctx.rowAssets[rowId];
-    // Legacy fallback: if no per-row asset but a legacy single-sheet exists, treat as having a sheet
-    const hasRowSheet = !!rowAsset;
-    const hasLegacySheet = !hasRowSheet && !!ctx.sourceAssetUrl;
-    const hasSheet = hasRowSheet || hasLegacySheet;
+    const hasSheet = !!ctx.rowAssets[rowId];
     const status = approved ? 'approved' : hasSheet ? 'pending' : 'waiting';
     const chroma = ROW_CHROMA[rowId];
     const label = ROW_LABELS[rowId];
@@ -741,7 +701,7 @@ function renderSpriteRows() {
         </div>
         ${hasSheet && promptSnippet ? `<div class="sprite-row-prompt">row: ${esc(rowId)} | ${esc(promptSnippet)}</div>` : ''}
         ${hasSheet
-          ? `<div class="sprite-row-frames">${hasRowSheet ? renderRowFrames(rowId) : renderRowFramesLegacy(rowIndex)}</div>`
+          ? `<div class="sprite-row-frames">${renderRowFrames(rowId)}</div>`
           : `<div class="sprite-row-empty">Generate a sheet to preview this row.</div>`
         }
       </div>
@@ -769,23 +729,6 @@ function renderRowFrames(rowId) {
     const xPercent = (col / 5) * 100; // 0%, 20%, 40%, 60%, 80%, 100%
     frames.push(`<div style="width:150px;height:150px;flex-shrink:0;overflow:hidden;background:url('${esc(rowAsset.url)}') ${xPercent}% 0 / 600% auto no-repeat;image-rendering:pixelated;border-right:1px solid rgba(255,255,255,0.06);" title="frame ${col + 1}"></div>`);
   }
-  return frames.join('');
-}
-
-function renderRowFramesLegacy(rowIndex) {
-  if (!ctx.sourceAssetUrl) return '';
-  const cw = 150;
-  const ch = 150;
-  const sheetW = 900;
-  const sheetH = 750;
-  const frames = [];
-
-  for (let col = 0; col < 6; col++) {
-    const vx = col * cw;
-    const vy = rowIndex * ch;
-    frames.push(`<div style="width:${cw}px;height:${ch}px;flex-shrink:0;overflow:hidden;background:url('${esc(ctx.sourceAssetUrl)}') -${vx}px -${vy}px / ${sheetW}px ${sheetH}px no-repeat;image-rendering:pixelated;border-right:1px solid rgba(255,255,255,0.06);" title="frame ${col + 1}"></div>`);
-  }
-
   return frames.join('');
 }
 

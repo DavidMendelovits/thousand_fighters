@@ -22,7 +22,6 @@ export class OpenAiResponsesImageGeneratorAdapter {
     this.capabilities = [
       'responses-api',
       'image-generation',
-      'fighter-5x6-sheet',
       'fighter-1x6-row',
       'sprite-source-sheet',
       'arena-background',
@@ -158,31 +157,6 @@ function imagePromptFor(request) {
       '',
       request.context ? `Context:\n${JSON.stringify(request.context, null, 2)}` : '',
     ].filter(Boolean).join('\n');
-  }
-  if (task === 'fighter-5x6-sheet') {
-    return [
-      'Draw a production-ready 2D fighting-game sprite source sheet for Thousand Fighters.',
-      '',
-      'Sheet format:',
-      '- Exactly 5 rows and 6 columns.',
-      '- Rows, in order: base idle, punch, kick, special_1, special_2.',
-      '- Each cell contains one full-body character frame, centered on a stable floor anchor.',
-      '- Use generous empty gutters between cells so no limb, weapon, projectile, hair, or effect touches a cell edge.',
-      '- Keep the entire character visible in every frame. Do not crop feet, head, hands, weapons, capes, or effects.',
-      '- Keep the camera, character scale, silhouette size, and facing direction consistent across all frames.',
-      '- Use a solid chroma-magenta background (#ff00ff), not transparency, scenery, gradients, shadows, labels, or text.',
-      '- Preserve sprite colors cleanly; do not let background removal remove character colors or projectile colors.',
-      '- Make animation rows readable as playable move states, not random poses.',
-      '',
-      'Character and move prompt:',
-      request.prompt ?? '',
-      '',
-      'Reference asset storage keys available to the pipeline:',
-      JSON.stringify(request.referenceAssetKeys ?? []),
-      '',
-      'Additional CMS context:',
-      JSON.stringify(request.context ?? {}, null, 2),
-    ].join('\n');
   }
   if (task === 'fighter-1x6-row') {
     const moveDescriptions = {
