@@ -27,6 +27,7 @@
     "cms:normalizer:smoke": "node scripts/smoke_cms_contour_normalizer.mjs",
     "cms:qa:smoke": "node scripts/smoke_cms_fighter_qa.mjs",
     "cms:arena:smoke": "node scripts/smoke_cms_arena_generator.mjs",
+    "cms:row:smoke": "node scripts/smoke_cms_row_generation.mjs",
     "cms:export": "node scripts/export_cms_character.mjs",
     "cms:export:smoke": "node scripts/smoke_cms_export.mjs",
     "cms:e2e": "node scripts/smoke_cms_e2e.mjs",
