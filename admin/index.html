@@ -52,15 +52,17 @@
             </form>
           </section>
 
-          <section class="panel inspector-panel">
-            <div class="panel-heading">
-              <h2>Pipeline</h2>
+          <details class="panel dev-tools-panel inspector-panel">
+            <summary class="dev-tools-summary">
+              <span>Pipeline</span>
               <span id="adapter-count" class="soft-label">0 adapters</span>
+            </summary>
+            <div class="dev-tools-body">
+              <div id="adapter-list" class="adapter-list"></div>
+              <h3>Remaining Work</h3>
+              <div id="gap-list" class="gap-list"></div>
             </div>
-            <div id="adapter-list" class="adapter-list"></div>
-            <h3>Remaining Work</h3>
-            <div id="gap-list" class="gap-list"></div>
-          </section>
+          </details>
 
           <details class="panel dev-tools-panel">
             <summary class="dev-tools-summary">
