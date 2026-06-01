@@ -161,6 +161,10 @@ async function handleApiRequest({ request, response, url, runtime }) {
 
   if (request.method === 'GET' && url.pathname.startsWith('/api/assets/')) {
     const key = decodeURIComponent(url.pathname.slice('/api/assets/'.length));
+    if (!key || key.startsWith('/') || key.split('/').includes('..')) {
+      sendJson(response, { error: 'Invalid asset key' }, 400);
+      return;
+    }
     const bytes = await runtime.storage.getBytes(key);
     const metadata = await runtime.storage.getMetadata(key);
     response.writeHead(200, {
