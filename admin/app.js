@@ -168,7 +168,7 @@ async function loadCharacters() {
   if (result.characters.length === 0) {
     const empty = document.createElement('div');
     empty.className = 'character-row';
-    empty.innerHTML = '<strong>No drafts yet</strong><span>Create one in the builder.</span>';
+    empty.innerHTML = '<strong>No fighters yet</strong><span>Click "+ New Fighter" above to create your first one.</span>';
     elements.characterList.replaceChildren(empty);
     renderEmptyWorkbench('Create or import a fighter to inspect its game data.');
     return;
@@ -265,6 +265,14 @@ async function generateMoveRow(moveId) {
     log(`${moveId} row generated.`, 'pass');
     state.generatingMoves.delete(moveId);
     await selectCharacter(characterId, { silent: true, pushState: false });
+
+    // Success flash on the move card
+    const successCard = elements.characterWorkbench.querySelector(`[data-move-card="${moveId}"]`);
+    if (successCard) {
+      successCard.classList.add('move-card-success');
+      setTimeout(() => successCard.classList.remove('move-card-success'), 2000);
+    }
+
     return result.result;
   } catch (error) {
     logMoveActivity(moveId, error.message, 'error');
@@ -378,6 +386,13 @@ async function sendChatMessage(event) {
 
   appendChatMessage({ role: 'user', text: message });
   elements.chatMessage.value = '';
+
+  // Show thinking indicator
+  const thinkingEntry = { role: 'assistant-thinking', text: 'Thinking...' };
+  state.chatMessages.push(thinkingEntry);
+  renderChatThread();
+
+  elements.sendChat.textContent = 'Sending...';
   setBusy(true);
 
   try {
@@ -387,6 +402,11 @@ async function sendChatMessage(event) {
       sourceAssetKey: state.sourceAssetKey,
       normalizedKey: state.normalizedKey,
     });
+
+    // Remove thinking indicator
+    const thinkingIndex = state.chatMessages.indexOf(thinkingEntry);
+    if (thinkingIndex !== -1) state.chatMessages.splice(thinkingIndex, 1);
+
     const chat = result.result;
     appendChatMessage({
       role: 'assistant',
@@ -403,10 +423,15 @@ async function sendChatMessage(event) {
     if (state.currentCharacterId) await selectCharacter(state.currentCharacterId, { silent: true, pushState: false });
     return chat;
   } catch (error) {
+    // Remove thinking indicator
+    const thinkingIndex = state.chatMessages.indexOf(thinkingEntry);
+    if (thinkingIndex !== -1) state.chatMessages.splice(thinkingIndex, 1);
+
     appendChatMessage({ role: 'assistant', text: error.message, isError: true });
     showError(error);
     return null;
   } finally {
+    elements.sendChat.textContent = 'Send';
     setBusy(false);
   }
 }
@@ -914,6 +939,16 @@ function renderChatThread() {
         });
       }
       row.textContent = message.text;
+      return row;
+    }
+
+    if (message.role === 'assistant-thinking') {
+      const row = document.createElement('article');
+      row.className = 'chat-message chat-assistant assistant-thinking';
+      row.innerHTML = `
+        <header><strong>Assistant</strong></header>
+        <p>${escapeHtml(message.text)}</p>
+      `;
       return row;
     }
 

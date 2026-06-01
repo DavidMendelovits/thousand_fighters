@@ -395,6 +395,7 @@ button:disabled {
   border-radius: 8px;
   background: var(--panel-2);
   overflow: hidden;
+  transition: border-color 0.3s ease;
 }
 
 .move-card-header {
@@ -1519,4 +1520,25 @@ details[open] .dev-tools-summary {
 
 .run-log-error-line:hover {
   opacity: 0.8;
+}
+
+/* ── Interaction states ────────────────────────────────────────────── */
+
+.assistant-thinking {
+  border-color: rgba(121, 168, 255, 0.3);
+  color: var(--muted);
+  font-style: italic;
+}
+
+.assistant-thinking p {
+  animation: thinking-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes thinking-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.move-card-success {
+  border-color: var(--accent);
 }
