@@ -916,8 +916,8 @@ input[type="file"] {
 
 .chat-thread {
   display: grid;
-  gap: 8px;
-  max-height: 360px;
+  gap: 4px;
+  max-height: min(500px, 50vh);
   overflow: auto;
   padding-right: 2px;
 }
@@ -1211,25 +1211,27 @@ details[open] .dev-tools-summary {
   font-size: 11px;
 }
 
-/* ── Log panel ───────────────────────────────────────────────────── */
+/* ── Activity system entries (unified feed) ──────────────────────── */
 
-.log-panel {
-  margin-top: 14px;
+.activity-system {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+  color: var(--muted);
+  border-bottom: 1px solid rgb(45 55 70 / 40%);
+  line-height: 1.45;
 }
 
-#run-log {
-  min-height: 180px;
-  max-height: 340px;
-  overflow: auto;
-  margin: 0;
-  padding: 12px;
-  border-radius: 6px;
-  background: #0a0e13;
-  color: #d8e8f7;
-  font-family: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
-  font-size: 12px;
-  line-height: 1.45;
-  white-space: pre-wrap;
+.activity-system:last-child {
+  border-bottom: 0;
+}
+
+.activity-system.status-error {
+  color: var(--danger);
+}
+
+.activity-system.status-pass {
+  color: var(--accent);
 }
 
 .status-pass {
@@ -1339,15 +1341,11 @@ details[open] .dev-tools-summary {
   }
 
   .chat-thread {
-    max-height: 300px;
+    max-height: min(400px, 50vh);
   }
 
   .stat-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  #run-log {
-    max-height: 240px;
   }
 }
 

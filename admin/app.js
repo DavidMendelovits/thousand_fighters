@@ -79,8 +79,6 @@ const elements = {
   chatMessage: document.querySelector('#chat-message'),
   sendChat: document.querySelector('#send-chat'),
   refreshRoster: document.querySelector('#refresh-roster'),
-  clearLog: document.querySelector('#clear-log'),
-  runLog: document.querySelector('#run-log'),
   errorModal: document.querySelector('#error-modal'),
 };
 
@@ -108,9 +106,6 @@ elements.chatForm.addEventListener('submit', sendChatMessage);
 elements.refreshRoster.addEventListener('click', async () => {
   await loadCharacters();
   handleRouteChange();
-});
-elements.clearLog.addEventListener('click', () => {
-  elements.runLog.textContent = '';
 });
 
 // Delegated click on chat thread: open error modal when an error tool call summary is clicked
@@ -896,17 +891,32 @@ function renderChatStatus(agent = {}) {
 
 function appendChatMessage(message) {
   state.chatMessages.push(message);
-  if (state.chatMessages.length > 20) state.chatMessages.shift();
+  if (state.chatMessages.length > 100) state.chatMessages.shift();
   renderChatThread();
 }
 
 function renderChatThread() {
   if (state.chatMessages.length === 0) {
-    elements.chatThread.innerHTML = '<div class="chat-empty">No assistant activity yet.</div>';
+    elements.chatThread.innerHTML = '<div class="chat-empty">No activity yet.</div>';
     return;
   }
 
   elements.chatThread.replaceChildren(...state.chatMessages.map((message, messageIndex) => {
+    if (message.role === 'system') {
+      const row = document.createElement('div');
+      const levelClass = message.level === 'error' ? ' status-error' : message.level === 'pass' ? ' status-pass' : '';
+      row.className = `activity-system${levelClass}`;
+      if (message.level === 'error') {
+        row.classList.add('run-log-error-line');
+        row.dataset.errorMessage = message.text;
+        row.addEventListener('click', () => {
+          openErrorModal({ name: 'run-log', status: 'error', input: null, result: null, error: message.text });
+        });
+      }
+      row.textContent = message.text;
+      return row;
+    }
+
     const row = document.createElement('article');
     row.className = `chat-message chat-${message.role}${message.isError ? ' chat-error' : ''}`;
     const provider = message.provider ? `<span>${escapeHtml(message.provider)}</span>` : '';
@@ -1435,24 +1445,10 @@ function setBusy(isBusy) {
 }
 
 function log(message, level = '') {
-  const prefix = level === 'error' ? '[error] ' : level === 'pass' ? '[ok] ' : '';
-  const line = `${prefix}${message}\n`;
-
-  if (level === 'error') {
-    // Append as a clickable span so the user can open the error detail modal
-    const span = document.createElement('span');
-    span.className = 'status-error run-log-error-line';
-    span.textContent = line;
-    span.dataset.errorMessage = message;
-    span.addEventListener('click', () => {
-      openErrorModal({ name: 'run-log', status: 'error', input: null, result: null, error: message });
-    });
-    elements.runLog.append(span);
-  } else {
-    elements.runLog.append(line);
-  }
-
-  elements.runLog.scrollTop = elements.runLog.scrollHeight;
+  const entry = { role: 'system', text: message, level, ts: Date.now() };
+  state.chatMessages.push(entry);
+  if (state.chatMessages.length > 100) state.chatMessages.shift();
+  renderChatThread();
 }
 
 // ---------------------------------------------------------------------------
