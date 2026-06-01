@@ -46,7 +46,7 @@ try {
     characterId: 'pluggable_fighter',
     prompt: '5x6 fighter sheet, magenta background.',
   });
-  assert.equal(spriteSheet.asset.key, 'characters/pluggable_fighter/assets/source/pluggable_fighter_imagegen_sheet.png');
+  assert.equal(spriteSheet.asset.key, 'characters/pluggable_fighter/assets/source/pluggable_fighter_base_sheet.png');
   assert.equal(await storage.exists(spriteSheet.asset.key), true);
 
   const normalized = await pipeline.normalizeSpritePack({
