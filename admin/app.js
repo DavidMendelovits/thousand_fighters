@@ -1031,6 +1031,14 @@ function buildMoveGroups(draft, assets) {
       continue;
     }
 
+    const sourceRow = parseSourceRowSheet(asset);
+    if (sourceRow && MOVE_IDS.includes(sourceRow.moveId)) {
+      const group = ensureGroup(sourceRow.moveId);
+      const variant = ensureVariant(group, 'source');
+      variant.sheet = asset;
+      continue;
+    }
+
     const projectile = parseProjectileAsset(asset);
     if (projectile) {
       ensureGroup('projectiles').projectiles.push({
@@ -1078,6 +1086,12 @@ function parseSheetAsset(asset) {
     actor: actorFromPrefix(match[1]),
     moveId: match[2],
   };
+}
+
+function parseSourceRowSheet(asset) {
+  const match = asset.relativePath.match(/^source\/.+_(base|punch|kick|special_1|special_2)_sheet\.png$/);
+  if (!match) return null;
+  return { moveId: match[1] };
 }
 
 function parseProjectileAsset(asset) {
