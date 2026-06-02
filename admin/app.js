@@ -239,7 +239,7 @@ function setMoveCardLoading(moveId, loading) {
   const btn = card.querySelector('[data-gen-move]');
   if (btn) {
     btn.disabled = loading;
-    btn.textContent = loading ? 'Generating…' : (groupAssetCount({ variants: [], projectiles: [] }) > 0 ? 'Regen' : 'Generate');
+    btn.textContent = loading ? 'Generating…' : 'Regen';
   }
 }
 
@@ -762,6 +762,24 @@ function renderMoveGroup(group) {
 
 function renderAnimationPlayer(animationId, frames, group) {
   if (frames.length === 0) {
+    const primarySheet = groupPrimarySheet(group);
+    if (primarySheet) {
+      return `
+        <section class="animation-player">
+          <div class="animation-toolbar">
+            <div>
+              <span class="eyebrow">Source sheet</span>
+              <strong>${escapeHtml(moveGroupTitle(group))}</strong>
+            </div>
+            <span class="soft-label">not yet normalized</span>
+          </div>
+          <div class="animation-preview">
+            <img src="${primarySheet.apiUrl}" alt="${escapeHtml(group.id)} source sheet" />
+          </div>
+        </section>
+      `;
+    }
+
     const label = group.id === 'projectiles' ? 'projectile assets' : `${group.id} frames`;
     return `
       <section class="animation-player">
@@ -1269,7 +1287,7 @@ function moveGroupTitle(group) {
 }
 
 function groupAssetCount(group) {
-  return group.variants.reduce((sum, variant) => sum + variant.frames.length, 0) + group.projectiles.length;
+  return group.variants.reduce((sum, variant) => sum + variant.frames.length + (variant.sheet ? 1 : 0), 0) + group.projectiles.length;
 }
 
 function inferAnimationId(moveId) {
