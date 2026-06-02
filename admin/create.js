@@ -490,6 +490,21 @@ async function generateRowSheet(rowId) {
     };
     ctx.rowApprovals[rowId] = false;
     log(`${rowId} row generated: ${result.asset.key}`);
+
+    // Auto-extract individual frames from the row sheet
+    try {
+      log(`Extracting frames from ${rowId} row...`);
+      await invokeTool('extract_row_frames', {
+        characterId: ctx.characterId,
+        sourceAssetKey: result.asset.key,
+        moveId: rowId,
+      });
+      log(`${rowId} frames extracted.`);
+    } catch (extractErr) {
+      log(`Frame extraction failed: ${extractErr.message}`, 'error');
+      // Non-fatal: the source sheet is still available
+    }
+
     renderSpriteRows();
     saveWizardState();
   } catch (err) {

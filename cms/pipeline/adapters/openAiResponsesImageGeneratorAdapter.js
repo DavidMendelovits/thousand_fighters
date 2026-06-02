@@ -54,8 +54,10 @@ export class OpenAiResponsesImageGeneratorAdapter {
       throw error;
     }
 
+    const size = request.task === 'fighter-1x6-row' ? '1536x1024' : this.size;
     const response = await this.createResponse({
       prompt: imagePromptFor(request),
+      size,
     });
     const imageCall = extractImageGenerationCall(response);
     const base64 = base64FromImageCall(imageCall);
@@ -74,14 +76,14 @@ export class OpenAiResponsesImageGeneratorAdapter {
     };
   }
 
-  async createResponse({ prompt }) {
+  async createResponse({ prompt, size }) {
     const body = {
       model: this.model,
       input: prompt,
       tools: [stripUndefined({
         type: 'image_generation',
         model: this.imageModel,
-        size: this.size,
+        size: size ?? this.size,
         quality: this.quality,
         background: this.background,
         output_format: this.outputFormat,

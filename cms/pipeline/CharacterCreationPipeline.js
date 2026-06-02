@@ -1,4 +1,12 @@
+import { execFile } from 'node:child_process';
+import { mkdtemp, writeFile, readFile, readdir, rm, mkdir } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { promisify } from 'node:util';
+
 import { PipelinePort } from './ports.js';
+
+const execFileAsync = promisify(execFile);
 
 export class CharacterCreationPipeline {
   constructor(registry, options = {}) {
@@ -111,6 +119,44 @@ export class CharacterCreationPipeline {
       model: result.model ?? null,
       promptRef: result.promptRef ?? null,
     };
+  }
+
+  async extractRowFrames({ characterId, sourceAssetKey, moveId, context = {} }) {
+    const storage = this.registry.resolve(PipelinePort.ASSET_STORAGE);
+    const repository = this.registry.resolve(PipelinePort.CHARACTER_REPOSITORY);
+
+    const sourceBytes = await storage.getBytes(sourceAssetKey);
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), 'tf-extract-'));
+    const inputPath = path.join(tempDir, 'source.png');
+    const outputDir = path.join(tempDir, 'frames');
+    await mkdir(outputDir, { recursive: true });
+    await writeFile(inputPath, sourceBytes);
+
+    const scriptPath = path.join(process.cwd(), 'scripts', 'extract_row_frames.py');
+    await execFileAsync('python3', [scriptPath, inputPath, outputDir, '--move-id', moveId], {
+      timeout: 30_000,
+    });
+
+    // Read extracted frames and store as character assets
+    const frameFiles = (await readdir(outputDir))
+      .filter((f) => f.endsWith('.png') && f.startsWith(moveId))
+      .sort();
+
+    const frames = [];
+    for (const file of frameFiles) {
+      const frameBytes = await readFile(path.join(outputDir, file));
+      const relativePath = `sprites/${moveId}/${file}`;
+      const asset = await repository.writeAsset(characterId, relativePath, frameBytes, {
+        contentType: 'image/png',
+        extractedFrom: sourceAssetKey,
+      });
+      frames.push(asset);
+    }
+
+    // Clean up temp directory
+    await rm(tempDir, { recursive: true, force: true });
+
+    return { frames, moveId };
   }
 
   async normalizeSpritePack(request) {

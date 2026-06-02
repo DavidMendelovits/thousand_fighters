@@ -263,6 +263,19 @@ async function generateMoveRow(moveId) {
     showLatestAsset(result.result.asset);
     logMoveActivity(moveId, `Generated: ${result.result.asset.key}`, 'pass');
     log(`${moveId} row generated.`, 'pass');
+
+    // Auto-extract individual frames from the row sheet
+    const sheetKey = result.result.asset.key;
+    try {
+      log(`Extracting frames from ${moveId} row...`);
+      logMoveActivity(moveId, 'Extracting individual frames...');
+      await postJson('/api/tools/extract_row_frames', { characterId, sourceAssetKey: sheetKey, moveId });
+      logMoveActivity(moveId, 'Frames extracted.', 'pass');
+    } catch (extractErr) {
+      logMoveActivity(moveId, `Frame extraction failed: ${extractErr.message}`, 'error');
+      // Non-fatal: the source sheet is still available
+    }
+
     state.generatingMoves.delete(moveId);
     await selectCharacter(characterId, { silent: true, pushState: false });
 

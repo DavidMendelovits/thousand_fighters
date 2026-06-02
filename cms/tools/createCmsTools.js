@@ -86,6 +86,18 @@ export function createCmsTools({ pipeline, repository, registry }) {
       },
     },
     {
+      name: 'extract_row_frames',
+      description: 'Extract individual frames from a generated 1x6 sprite row sheet. Detects character bounding boxes against the magenta background.',
+      inputSchema: objectSchema({
+        characterId: stringSchema('Character id.'),
+        sourceAssetKey: stringSchema('CMS key of the source row sheet to extract from.'),
+        moveId: stringSchema('Move id: base, punch, kick, special_1, or special_2.'),
+      }, ['characterId', 'sourceAssetKey', 'moveId']),
+      execute: async ({ characterId, sourceAssetKey, moveId }) => {
+        return pipeline.extractRowFrames({ characterId, sourceAssetKey, moveId });
+      },
+    },
+    {
       name: 'generate_character_concept',
       description: 'Generate character concept art showing front, profile, and back views.',
       inputSchema: objectSchema({
