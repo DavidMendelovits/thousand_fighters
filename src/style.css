@@ -6,6 +6,9 @@ body {
   background: #0e1117;
   overflow: hidden;
   overscroll-behavior: none;
+  /* Disable all browser zoom/pan gestures on the game page. */
+  touch-action: none;
+  -ms-touch-action: none;
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: 100%;
 }

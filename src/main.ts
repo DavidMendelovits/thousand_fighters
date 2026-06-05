@@ -1,7 +1,10 @@
 import Phaser from 'phaser';
 import { FightScene } from './scenes/FightScene';
 import { CANVAS_PARENT_ID, LayoutShell } from './ui/LayoutShell';
+import { disableZoom } from './util/disableZoom';
 import './style.css';
+
+disableZoom();
 
 const shell = new LayoutShell();
 
