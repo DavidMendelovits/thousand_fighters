@@ -471,6 +471,42 @@ try {
       assert.ok(parsed[field] !== undefined, `missing required field: ${field}`);
     }
   });
+
+  // Export again with copyAssets: true, after seeding pack assets and a
+  // generated SFX (sounds live outside the fighter pack).
+  await storage.putBytes(
+    'characters/smoke_fighter/assets/fighter-pack/sprites/base/base_001.png',
+    Buffer.from('fake png'),
+    { contentType: 'image/png' },
+  );
+  await storage.putBytes(
+    'characters/smoke_fighter/assets/sounds/hit.wav',
+    Buffer.from('fake wav'),
+    { contentType: 'audio/wav' },
+  );
+
+  const resultWithAssets = await exportCharacterToRuntime({
+    runtime: { repository, storage },
+    characterId: 'smoke_fighter',
+    outputDir,
+    copyAssets: true,
+  });
+
+  test('export copies fighter pack sprites', () => {
+    assert.ok(
+      resultWithAssets.filesCopied.some((f) => f.endsWith(path.join('sprites', 'base', 'base_001.png'))),
+      'sprites/base/base_001.png should be copied',
+    );
+  });
+
+  test('export copies generated sounds', async () => {
+    const soundPath = path.join(outputDir, 'smoke_fighter', 'sounds', 'hit.wav');
+    assert.ok(
+      resultWithAssets.filesCopied.includes(soundPath),
+      'sounds/hit.wav should be in filesCopied',
+    );
+    assert.equal(await readFile(soundPath, 'utf8'), 'fake wav');
+  });
 } finally {
   if (rootDir) await rm(rootDir, { force: true, recursive: true });
 }

@@ -78,6 +78,14 @@ export async function exportCharacterToRuntime({ runtime, characterId, outputDir
       const copied = await copyStorageAssets({ storage, storagePrefix, destDir });
       filesCopied.push(...copied);
     }
+
+    // Generated SFX live outside the fighter pack, at characters/{id}/assets/sounds/
+    const soundsCopied = await copyStorageAssets({
+      storage,
+      storagePrefix: `characters/${characterId}/assets/sounds`,
+      destDir: path.join(characterOutputDir, 'sounds'),
+    });
+    filesCopied.push(...soundsCopied);
   }
 
   return {
