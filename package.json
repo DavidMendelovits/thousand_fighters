@@ -31,6 +31,7 @@
     "cms:export": "node scripts/export_cms_character.mjs",
     "cms:export:smoke": "node scripts/smoke_cms_export.mjs",
     "cms:e2e": "node scripts/smoke_cms_e2e.mjs",
+    "cms:fullflow:smoke": "node scripts/smoke_cms_full_flow.mjs",
     "cms:remote:e2e": "node scripts/smoke_cms_http_remote.mjs",
     "cms:vercel:build": "node scripts/build_cms_admin_static.mjs",
     "test:admin:playwright": "playwright test tests/admin-cms.spec.js",

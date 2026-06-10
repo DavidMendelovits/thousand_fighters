@@ -71,6 +71,19 @@ export async function exportCharacterToRuntime({ runtime, characterId, outputDir
 
   // Optionally copy fighter pack assets (sheets/, sprites/, projectiles/)
   if (copyAssets) {
+    // Root-level pack files the assets index reads (manifest.json, frameData.json).
+    for (const fileName of ['manifest.json', 'frameData.json', 'normalization-report.json']) {
+      const key = `${assetRoot}/${fileName}`;
+      try {
+        if (!(await storage.exists(key))) continue;
+        const destPath = path.join(characterOutputDir, fileName);
+        await writeFile(destPath, await storage.getBytes(key));
+        filesCopied.push(destPath);
+      } catch {
+        // optional file — skip
+      }
+    }
+
     const assetDirsToSync = ['sheets', 'sprites', 'projectiles'];
     for (const subDir of assetDirsToSync) {
       const storagePrefix = `${assetRoot}/${subDir}`;

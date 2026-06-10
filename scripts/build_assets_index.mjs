@@ -4,7 +4,8 @@ import { writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
 const ROOT = resolve(import.meta.dirname, '..');
-const PUBLIC = join(ROOT, 'public');
+// ASSETS_PUBLIC_DIR lets tests index a temporary tree instead of public/.
+const PUBLIC = process.env.ASSETS_PUBLIC_DIR ? resolve(process.env.ASSETS_PUBLIC_DIR) : join(ROOT, 'public');
 const FIGHTERS_DIR = join(PUBLIC, 'fighters');
 const ARENAS_DIR = join(PUBLIC, 'arenas');
 const AUDIO_DIR = join(PUBLIC, 'audio');
