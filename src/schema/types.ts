@@ -72,9 +72,32 @@ export type Hurtbox = {
 
 export type FighterActorId = 'lead' | 'echo' | 'fusion' | (string & {});
 
+/**
+ * A command-grab/tether check. While active, overlap with the opponent's
+ * hurtbox locks them into the `grabbed` state: held at holdOffsetX (optionally
+ * pulled there from the contact point over pullFrames — the tentacle drag-in),
+ * then released with knockback. Grabs are unblockable but whiff against
+ * invulnerable, already-grabbed, downed, or dead opponents.
+ */
+export type GrabSpec = {
+  hitbox: Hurtbox;
+  damage?: number;
+  holdOffsetX: number;
+  holdOffsetY?: number;
+  holdDuration: number;
+  pullFrames?: number;
+  releaseKnockback?: { x: number; y: number };
+  releaseHitstun?: number;
+  releaseLaunches?: boolean;
+  releaseKnockdown?: boolean;
+  grabSound?: string;
+};
+
 export type MoveEvent =
   | { type: 'hitbox_active'; hitbox: Hitbox; id?: string; actor?: FighterActorId }
   | { type: 'hitbox_end'; id?: string; actor?: FighterActorId }
+  | { type: 'grab_check'; grab: GrabSpec; id?: string; actor?: FighterActorId }
+  | { type: 'grab_end'; id?: string }
   | { type: 'spawn_projectile'; projectile: ProjectileConfig; offsetX: number; offsetY: number }
   | { type: 'spawn_projectile_at_target'; projectile: ProjectileConfig; offsetX: number; offsetY: number }
   | { type: 'spawn_projectile_from_sky'; projectile: ProjectileConfig; targetOffsetX: number; spawnOffsetY: number }
@@ -191,6 +214,7 @@ export type FighterState =
   | 'attack'
   | 'hitstun'
   | 'blockstun'
+  | 'grabbed'
   | 'knockdown'
   | 'getup'
   | 'juggle'

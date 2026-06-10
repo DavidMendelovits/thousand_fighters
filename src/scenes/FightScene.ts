@@ -1012,6 +1012,9 @@ export class FightScene extends Phaser.Scene {
   }
 
   private resolveFighterSpacing(): void {
+    // A held fighter is position-locked to the grabber; pushing them apart
+    // would fight the grab every frame.
+    if (this.fighters.some((fighter) => fighter.state === 'grabbed')) return;
     const [leftFighter, rightFighter] =
       this.fighters[0].x <= this.fighters[1].x ? this.fighters : [this.fighters[1], this.fighters[0]];
     const overlap = MIN_FIGHTER_DISTANCE - (rightFighter.x - leftFighter.x);

@@ -33,6 +33,12 @@ export class DebugOverlay {
           scene.debugGraphics.lineStyle(2, colors.hitbox.stroke, 0.95);
           scene.debugGraphics.strokeRect(active.world.x, active.world.y, active.world.width, active.world.height);
         }
+        for (const active of fighter.getActiveGrabsWorld()) {
+          scene.debugGraphics.fillStyle(0x37d67a, 0.3);
+          scene.debugGraphics.fillRect(active.world.x, active.world.y, active.world.width, active.world.height);
+          scene.debugGraphics.lineStyle(2, 0x37d67a, 0.95);
+          scene.debugGraphics.strokeRect(active.world.x, active.world.y, active.world.width, active.world.height);
+        }
       }
     }
 

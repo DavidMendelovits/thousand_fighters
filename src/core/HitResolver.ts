@@ -1,8 +1,56 @@
 import type { Fighter } from './Fighter';
-import type { FighterScene, Hitbox } from '../schema/types';
+import type { FighterScene, GrabSpec, Hitbox } from '../schema/types';
 import { HitPause } from '../util/hitpause';
 
 export class HitResolver {
+  static resolveGrab(attacker: Fighter, defender: Fighter, grab: GrabSpec, grabId: string): boolean {
+    const hitKey = `${defender.id}:grab:${grabId}`;
+    if (attacker.hasHitThisMove.has(hitKey)) return false;
+    attacker.hasHitThisMove.add(hitKey);
+
+    // Grabs whiff against invulnerable, already-held, downed, or dead opponents.
+    if (defender.invulnerable) return false;
+    if (defender.state === 'grabbed' || defender.state === 'knockdown' || defender.state === 'getup' || defender.state === 'dead') {
+      return false;
+    }
+
+    defender.health = Math.max(0, defender.health - (grab.damage ?? 0));
+
+    // Facing-relative offset of the victim at the moment of contact, so a
+    // pull can start from where the tentacle actually caught them.
+    const contactOffsetX = (defender.x - attacker.x) * attacker.facing;
+    defender.grabbedBy = attacker;
+    defender.grabHold = {
+      offsetX: grab.holdOffsetX,
+      offsetY: grab.holdOffsetY ?? 0,
+      remaining: grab.holdDuration,
+      pull: grab.pullFrames
+        ? { fromX: contactOffsetX, frames: grab.pullFrames, elapsed: 0 }
+        : null,
+      release: {
+        knockback: grab.releaseKnockback ?? { x: 2.5, y: 0 },
+        hitstun: grab.releaseHitstun ?? 16,
+        launches: grab.releaseLaunches ?? false,
+        knockdown: grab.releaseKnockdown ?? false,
+      },
+    };
+    defender.changeState('grabbed');
+
+    if (defender.health <= 0) defender.changeState('dead');
+
+    if (grab.grabSound) {
+      const scene = attacker.scene as FighterScene;
+      const key = `${attacker.config.id}:${grab.grabSound}`;
+      const resolvedKey = scene.cache.audio.has(key) ? key : grab.grabSound;
+      if (scene.cache.audio.has(resolvedKey)) {
+        scene.sound.play(resolvedKey, { volume: 0.6 });
+      }
+    }
+
+    HitPause.trigger(attacker.scene, 4);
+    return true;
+  }
+
   static resolve(attacker: Fighter, defender: Fighter, hitbox: Hitbox, hitboxId: string): boolean {
     const hitKey = `${defender.id}:${hitboxId}`;
     if (attacker.hasHitThisMove.has(hitKey)) return false;

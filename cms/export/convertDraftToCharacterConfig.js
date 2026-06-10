@@ -361,7 +361,8 @@ function convertEvent(draftEvent, moveId, phaseIndex, eventIndex) {
   if (draftEvent.type === 'set_velocity' || draftEvent.type === 'teleport' ||
       draftEvent.type === 'invulnerable' || draftEvent.type === 'armor' ||
       draftEvent.type === 'screen_shake' || draftEvent.type === 'play_sound' ||
-      draftEvent.type === 'spawn_vfx' || draftEvent.type === 'modify_hurtbox') {
+      draftEvent.type === 'spawn_vfx' || draftEvent.type === 'modify_hurtbox' ||
+      draftEvent.type === 'grab_check' || draftEvent.type === 'grab_end') {
     return { ...draftEvent };
   }
 

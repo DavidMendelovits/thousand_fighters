@@ -8,6 +8,7 @@ import type {
   FighterActorId,
   FighterScene,
   FighterState,
+  GrabSpec,
   Hitbox,
   Hurtbox,
   Move,
@@ -27,6 +28,24 @@ const MOVE_SHEETS = new Set<SpriteSheetId>(['punch', 'kick', 'special_1', 'speci
 type ActiveHitbox = {
   actorId?: FighterActorId;
   hitbox: Hitbox;
+};
+
+type ActiveGrab = {
+  actorId?: FighterActorId;
+  grab: GrabSpec;
+};
+
+type GrabHold = {
+  offsetX: number;
+  offsetY: number;
+  remaining: number;
+  pull: { fromX: number; frames: number; elapsed: number } | null;
+  release: {
+    knockback: { x: number; y: number };
+    hitstun: number;
+    launches: boolean;
+    knockdown: boolean;
+  };
 };
 
 type ActorPose = {
@@ -82,7 +101,12 @@ export class Fighter {
   movePhaseIndex = 0;
   movePhaseFrame = 0;
   activeHitboxes = new Map<string, ActiveHitbox>();
+  activeGrabs = new Map<string, ActiveGrab>();
   hasHitThisMove = new Set<string>();
+
+  // Set while this fighter is held by the opponent's grab.
+  grabbedBy: Fighter | null = null;
+  grabHold: GrabHold | null = null;
 
   inputBuffer = new InputBuffer();
   animationKey = 'idle';
@@ -141,6 +165,10 @@ export class Fighter {
 
   changeState(next: FighterState): void {
     if (this.state === next) return;
+    if (this.state === 'grabbed' && next !== 'grabbed') {
+      this.grabbedBy = null;
+      this.grabHold = null;
+    }
     this.state = next;
     this.stateFrame = 0;
     this.animationKey = this.config.animations[next] ?? next;
@@ -150,6 +178,7 @@ export class Fighter {
       this.movePhaseIndex = 0;
       this.movePhaseFrame = 0;
       this.activeHitboxes.clear();
+      this.activeGrabs.clear();
       this.hurtboxOverride = null;
       this.hurtboxDisabled = false;
       this.clearActorMoveOverrides();
@@ -218,6 +247,11 @@ export class Fighter {
       return;
     }
 
+    if (this.state === 'grabbed') {
+      this.tickGrabbed();
+      return;
+    }
+
     if (this.state === 'knockdown') {
       this.vx *= 0.9;
       if (this.grounded && this.stateFrame > 30) this.changeState('getup');
@@ -279,6 +313,58 @@ export class Fighter {
     );
   }
 
+  private tickGrabbed(): void {
+    const grabber = this.grabbedBy;
+    const hold = this.grabHold;
+    // Grabber interrupted (hit out of the move, move ended early, died):
+    // drop out without release knockback.
+    if (!grabber || !hold || grabber.state !== 'attack') {
+      this.releaseGrab(false);
+      return;
+    }
+
+    let offsetX = hold.offsetX;
+    if (hold.pull && hold.pull.elapsed < hold.pull.frames) {
+      const t = hold.pull.elapsed / hold.pull.frames;
+      offsetX = hold.pull.fromX + (hold.offsetX - hold.pull.fromX) * t;
+      hold.pull.elapsed += 1;
+    }
+
+    this.vx = 0;
+    this.vy = 0;
+    this.x = grabber.x + offsetX * grabber.facing;
+    this.y = grabber.y + hold.offsetY;
+    this.facing = (grabber.facing * -1) as 1 | -1;
+    this.grounded = this.y >= FLOOR_Y;
+
+    hold.remaining -= 1;
+    if (hold.remaining <= 0) this.releaseGrab(true);
+  }
+
+  releaseGrab(applyRelease: boolean): void {
+    const grabber = this.grabbedBy;
+    const release = this.grabHold?.release ?? null;
+    this.grabbedBy = null;
+    this.grabHold = null;
+
+    if (applyRelease && release && grabber) {
+      this.vx = release.knockback.x * grabber.facing;
+      this.vy = release.knockback.y;
+      this.hitstun = release.hitstun;
+      if (release.launches || !this.grounded) {
+        this.grounded = false;
+        this.changeState('juggle');
+      } else if (release.knockdown) {
+        this.changeState('knockdown');
+      } else {
+        this.changeState('hitstun');
+      }
+      return;
+    }
+
+    this.changeState(this.grounded ? 'idle' : 'airborne');
+  }
+
   private startJump(input: RawInput): void {
     const forwardHeld = this.facing === 1 ? input.right : input.left;
     const backHeld = this.facing === 1 ? input.left : input.right;
@@ -301,6 +387,8 @@ export class Fighter {
   }
 
   private applyPhysics(): void {
+    // Position is locked to the grabber while held.
+    if (this.state === 'grabbed') return;
     if (!this.grounded || this.vy < 0) {
       this.vy = Math.min(this.config.maxFallSpeed, this.vy + this.config.gravity);
     }
@@ -429,6 +517,7 @@ export class Fighter {
       landing: 4,
       blockstun: 3,
       hitstun: 3,
+      grabbed: 3,
       juggle: 5,
       knockdown: 4,
       getup: 4,
@@ -473,6 +562,27 @@ export class Fighter {
 
   clearActiveHitbox(id: string): void {
     this.activeHitboxes.delete(id);
+  }
+
+  setActiveGrab(id: string, grab: GrabSpec, actorId?: FighterActorId): void {
+    this.activeGrabs.set(id, { actorId, grab });
+  }
+
+  clearActiveGrab(id: string): void {
+    this.activeGrabs.delete(id);
+  }
+
+  getActiveGrabsWorld(): Array<{ actorId: FighterActorId; id: string; grab: GrabSpec; world: AABB }> {
+    return [...this.activeGrabs.entries()].map(([id, active]) => {
+      const actor = this.actorFor(this.fusionFrames > 0 ? this.primaryActorId() : (active.actorId ?? this.primaryActorId()));
+      const pose = this.actorPose(actor);
+      return {
+        actorId: actor.id,
+        id,
+        grab: active.grab,
+        world: boxToWorld(active.grab.hitbox, pose.x, pose.y, pose.facing),
+      };
+    });
   }
 
   setActorOffset(actorId: FighterActorId, offsetX: number, offsetY = 0, duration: number | null = null): void {

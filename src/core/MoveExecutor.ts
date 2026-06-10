@@ -7,6 +7,7 @@ export class MoveExecutor {
     fighter.movePhaseIndex = 0;
     fighter.movePhaseFrame = 0;
     fighter.activeHitboxes.clear();
+    fighter.activeGrabs.clear();
     fighter.hasHitThisMove.clear();
     fighter.changeState('attack');
     fighter.animationKey = move.animation;
@@ -46,6 +47,12 @@ export class MoveExecutor {
         break;
       case 'hitbox_end':
         fighter.clearActiveHitbox(event.id ?? 'default');
+        break;
+      case 'grab_check':
+        fighter.setActiveGrab(event.id ?? 'grab', event.grab, event.actor);
+        break;
+      case 'grab_end':
+        fighter.clearActiveGrab(event.id ?? 'grab');
         break;
       case 'spawn_projectile':
         fighter.scene.projectiles.spawn(event.projectile, fighter, event.offsetX, event.offsetY);
@@ -143,6 +150,7 @@ export class MoveExecutor {
     const endState = fighter.currentMove?.endState;
     fighter.currentMove = null;
     fighter.activeHitboxes.clear();
+    fighter.activeGrabs.clear();
     fighter.hurtboxOverride = null;
     fighter.clearActorMoveOverrides();
     fighter.changeState(endState ?? (fighter.grounded ? 'idle' : 'airborne'));
