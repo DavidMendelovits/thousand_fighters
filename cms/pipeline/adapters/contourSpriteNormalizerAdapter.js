@@ -150,8 +150,20 @@ export class ContourSpriteNormalizerAdapter {
         throw new Error(`Contour normalizer script failed for ${characterId}: ${detail}`);
       }
 
-      // Walk output directory and upload all files to CMS storage
+      // The script must have produced the core pack files; fail loudly with
+      // stderr context instead of uploading a partial pack.
       const outputFiles = await collectFiles(tmpOutputDir);
+      const missingOutputs = ['manifest.json', 'frameData.json', 'normalization-report.json']
+        .filter((file) => !outputFiles.includes(file));
+      if (missingOutputs.length > 0) {
+        const stderrTail = (stderr ?? '').trim().split('\n').slice(-5).join('\n');
+        throw new Error(
+          `Contour normalizer did not produce ${missingOutputs.join(', ')} for ${characterId}.`
+          + (stderrTail ? ` stderr: ${stderrTail}` : ''),
+        );
+      }
+
+      // Walk output directory and upload all files to CMS storage
       for (const relativePath of outputFiles) {
         const absoluteFilePath = path.join(tmpOutputDir, relativePath.split('/').join(path.sep));
         const targetKey = `${normalizedRootKey}/${relativePath}`;
