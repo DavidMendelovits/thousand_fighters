@@ -13,7 +13,7 @@ export class CodexImageGeneratorAdapter {
     this.timeoutMs = options.timeoutMs ?? Number(process.env.CODEX_IMAGE_TIMEOUT_MS ?? DEFAULT_TIMEOUT_MS);
     this.id = 'codex-image-generator';
     this.provider = 'codex';
-    this.capabilities = ['fighter-1x6-row', 'arena-background', 'character-concept', 'codex-image-gen', 'vision-describe'];
+    this.capabilities = ['fighter-1x6-row', 'fighter-2x3-grid', 'arena-background', 'character-concept', 'codex-image-gen', 'vision-describe'];
   }
 
   async healthCheck() {
@@ -132,7 +132,12 @@ function buildCodexPrompt(task, userPrompt, context, moveId) {
 
   if (task === 'fighter-1x6-row') {
     const resolvedMoveId = moveId ?? context?.moveId ?? 'base';
-    return `Generate an image: a single-row fighting game sprite strip with exactly 6 frames for the "${resolvedMoveId}" move. Magenta #ff00ff background, full body visible, generous gutters. Show clear animation progression. Character: ${userPrompt ?? 'a fighter'}`;
+    return `Generate an image: a single-row fighting game sprite strip with exactly 6 frames for the "${resolvedMoveId}" move. Magenta #ff00ff background, full body visible, generous gutters, every limb visually connected to the body. Show clear animation progression. Character: ${userPrompt ?? 'a fighter'}`;
+  }
+
+  if (task === 'fighter-2x3-grid') {
+    const resolvedMoveId = moveId ?? context?.moveId ?? 'base';
+    return `Generate an image: a fighting game sprite sheet with exactly 2 rows and 3 columns (6 frames, left-to-right then top-to-bottom) for the "${resolvedMoveId}" move — a long-reach extending-limb attack. Wide cells; the extended limb stays connected to the body as one continuous silhouette. Magenta #ff00ff background, full body visible, generous gutters, consistent scale and floor line. Character: ${userPrompt ?? 'a fighter'}`;
   }
 
   if (task === 'arena-background') {

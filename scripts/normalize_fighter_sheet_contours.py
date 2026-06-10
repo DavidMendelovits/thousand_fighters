@@ -15,7 +15,7 @@ import shutil
 from collections import deque
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageFilter
 
 SHEET_IDS = ("base", "punch", "kick", "special_1", "special_2")
 
@@ -209,6 +209,10 @@ def frame_from_component(image: Image.Image, component: dict[str, object]) -> tu
 def isolate_largest_component(image: Image.Image) -> Image.Image:
     alpha = image.getchannel("A")
     alpha_pixels = alpha.load()
+    # Label on a dilated copy of the alpha so thin extensions (tentacles,
+    # whips, extended limbs) separated by small anti-aliasing gaps stay
+    # connected to the body instead of being dropped as separate components.
+    dilated_pixels = alpha.filter(ImageFilter.MaxFilter(7)).load()
     width, height = image.size
     seen = bytearray(width * height)
     largest_pixels: list[tuple[int, int]] = []
@@ -216,7 +220,7 @@ def isolate_largest_component(image: Image.Image) -> Image.Image:
     for y in range(height):
         for x in range(width):
             start_index = y * width + x
-            if seen[start_index] or not alpha_pixels[x, y]:
+            if seen[start_index] or not dilated_pixels[x, y]:
                 continue
 
             queue = deque([(x, y)])
@@ -234,7 +238,7 @@ def isolate_largest_component(image: Image.Image) -> Image.Image:
                 ):
                     if 0 <= next_x < width and 0 <= next_y < height:
                         next_index = next_y * width + next_x
-                        if not seen[next_index] and alpha_pixels[next_x, next_y]:
+                        if not seen[next_index] and dilated_pixels[next_x, next_y]:
                             seen[next_index] = 1
                             queue.append((next_x, next_y))
 
@@ -244,6 +248,7 @@ def isolate_largest_component(image: Image.Image) -> Image.Image:
     if not largest_pixels:
         return image
 
+    # Mask from the ORIGINAL alpha so the dilation halo stays transparent.
     mask = Image.new("L", image.size, 0)
     mask_pixels = mask.load()
     for x, y in largest_pixels:
@@ -368,11 +373,16 @@ def main() -> int:
             if edge_touch:
                 report["warnings"].append(f"{relative_file} touches output edge")
 
+            frame_bbox = frame.getchannel("A").getbbox()
             meta = {
                 "file": relative_file,
                 "width": frame.width,
                 "height": frame.height,
                 "anchor": {"x": anchor[0], "y": anchor[1]},
+                # Horizontal reach of the silhouette from the pivot, in pixels.
+                # Frames face right, so reachX is the forward extent — move
+                # tooling uses it to place hitbox keyframes at the limb tip.
+                "reachX": (frame_bbox[2] - 1 - anchor[0]) if frame_bbox else 0,
             }
             frame_data["frames"][sheet_id].append(meta)
             report["frames"][sheet_id].append(

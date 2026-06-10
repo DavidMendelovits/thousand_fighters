@@ -196,6 +196,7 @@ async function selectCharacter(characterId, options = {}) {
 
   const draft = draftResult.draft;
   const assets = assetResult.assets;
+  state.currentDraftData = draft;
   elements.characterId.value = draft.id;
   elements.characterBrief.value = draft.description ?? '';
   elements.selectedCharacter.textContent = `${draft.displayName ?? draft.id} · ${draft.lifecycle ?? 'draft'}`;
@@ -225,6 +226,12 @@ async function createDraft() {
 }
 
 const MOVE_IDS = ['base', 'punch', 'kick', 'special_1', 'special_2'];
+
+function moveSpriteProfile(moveId) {
+  const moves = state.currentDraftData?.moves ?? [];
+  const move = moves.find((candidate) => (candidate.animation ?? candidate.sheet) === moveId);
+  return move?.spriteProfile === 'wide' ? 'wide' : 'standard';
+}
 
 function logMoveActivity(moveId, message, level = '') {
   if (!state.moveActivity[moveId]) state.moveActivity[moveId] = [];
@@ -258,7 +265,8 @@ async function generateMoveRow(moveId) {
       elements.characterBrief.value.trim(),
       'Side-view fighting game sprite row. Magenta background, full body visible, generous gutters, no cropping.',
     ].filter(Boolean).join(' ');
-    const result = await postJson(`/api/tools/generate_sprite_sheet`, { characterId, prompt, moveId });
+    const spriteProfile = moveSpriteProfile(moveId);
+    const result = await postJson(`/api/tools/generate_sprite_sheet`, { characterId, prompt, moveId, spriteProfile });
     state.sourceAssetKey = result.result.asset.key;
     showLatestAsset(result.result.asset);
     logMoveActivity(moveId, `Generated: ${result.result.asset.key}`, 'pass');
@@ -269,7 +277,7 @@ async function generateMoveRow(moveId) {
     try {
       log(`Extracting frames from ${moveId} row...`);
       logMoveActivity(moveId, 'Extracting individual frames...');
-      await postJson('/api/tools/extract_row_frames', { characterId, sourceAssetKey: sheetKey, moveId });
+      await postJson('/api/tools/extract_row_frames', { characterId, sourceAssetKey: sheetKey, moveId, spriteProfile });
       logMoveActivity(moveId, 'Frames extracted.', 'pass');
     } catch (extractErr) {
       logMoveActivity(moveId, `Frame extraction failed: ${extractErr.message}`, 'error');

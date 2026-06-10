@@ -54,7 +54,7 @@ export class OpenAiResponsesImageGeneratorAdapter {
       throw error;
     }
 
-    const size = request.task === 'fighter-1x6-row' ? '1536x1024' : this.size;
+    const size = request.task === 'fighter-1x6-row' || request.task === 'fighter-2x3-grid' ? '1536x1024' : this.size;
     const response = await this.createResponse({
       prompt: imagePromptFor(request),
       size,
@@ -178,6 +178,7 @@ function imagePromptFor(request) {
       `- Animation: ${moveDesc}.`,
       '- Each cell contains one full-body character frame, centered on a stable floor anchor.',
       '- Use generous empty gutters between cells so no limb, weapon, projectile, hair, or effect touches a cell edge.',
+      '- Keep every limb, appendage, weapon, and effect visually connected to the body — no detached floating parts.',
       '- Keep the entire character visible in every frame. Do not crop feet, head, hands, weapons, capes, or effects.',
       '- Keep the camera, character scale, silhouette size, and facing direction consistent across all 6 frames.',
       '- Show clear animation progression from frame 1 to frame 6 — this must read as a playable move, not random poses.',
@@ -188,6 +189,28 @@ function imagePromptFor(request) {
       '',
       'Reference asset storage keys:',
       JSON.stringify(request.referenceAssetKeys ?? []),
+      '',
+      'Additional CMS context:',
+      JSON.stringify(request.context ?? {}, null, 2),
+    ].join('\n');
+  }
+  if (task === 'fighter-2x3-grid') {
+    const moveId = request.moveId ?? 'base';
+    return [
+      'Draw a production-ready 2D fighting-game sprite sheet for Thousand Fighters.',
+      '',
+      'Sheet format (WIDE move profile):',
+      '- Exactly 2 rows and 3 columns (6 frames total, read left-to-right, top-to-bottom).',
+      `- Animation: ${moveId} — a move with a LONG horizontal reach (an extending limb, tentacle, whip, or stretch attack).`,
+      '- Each cell is wide; let the extended limb use that width. The limb must stay visually CONNECTED to the body in every frame — one continuous silhouette, no detached floating parts.',
+      '- Each cell contains one full-body character frame on a stable floor anchor at a consistent height.',
+      '- Use generous empty gutters between cells so no limb or effect touches or crosses a cell edge.',
+      '- Keep the camera, character scale, and facing direction (facing right) consistent across all 6 frames.',
+      '- Show clear animation progression: wind-up, limb extending outward, full extension, retraction, recovery.',
+      '- Use a solid chroma-magenta background (#ff00ff), not transparency, scenery, gradients, shadows, labels, or text.',
+      '',
+      'Character prompt:',
+      request.prompt ?? '',
       '',
       'Additional CMS context:',
       JSON.stringify(request.context ?? {}, null, 2),

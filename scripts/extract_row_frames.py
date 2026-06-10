@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Extract individual frames from a 1x6 AI-generated sprite row sheet.
+"""Extract individual frames from an AI-generated sprite sheet (1x6 row by default).
 
 Detects character bounding boxes against a magenta (#ff00ff) chroma
 background, crops each frame with padding, keys magenta to transparency,
@@ -31,6 +31,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--move-id", required=True, help="Move id used as filename prefix."
     )
+    parser.add_argument(
+        "--rows", type=int, default=1,
+        help="Grid rows in the source sheet (default 1). Use 2 with --cols 3 for the wide profile.",
+    )
+    parser.add_argument(
+        "--cols", type=int, default=FRAME_COUNT,
+        help="Grid columns in the source sheet (default 6).",
+    )
     return parser.parse_args()
 
 
@@ -57,21 +65,22 @@ def chroma_key_magenta(image: Image.Image) -> Image.Image:
 
 
 def non_magenta_bbox(
-    image: Image.Image, x_start: int, x_end: int
+    image: Image.Image, x_start: int, x_end: int, y_start: int = 0, y_end: int | None = None
 ) -> tuple[int, int, int, int] | None:
-    """Find the bounding box of non-magenta pixels in a vertical column region.
+    """Find the bounding box of non-magenta pixels in a grid cell region.
 
     Returns (left, top, right, bottom) or None if no content found.
     """
     pixels = image.load()
     width, height = image.size
+    y_end = height if y_end is None else min(y_end, height)
     min_x = width
     min_y = height
     max_x = 0
     max_y = 0
     found = False
 
-    for y in range(height):
+    for y in range(y_start, y_end):
         for x in range(x_start, min(x_end, width)):
             if not is_magenta(pixels[x, y]):
                 found = True
@@ -87,30 +96,35 @@ def non_magenta_bbox(
 
 
 def extract_frames(
-    source: Path, output_dir: Path, move_id: str
+    source: Path, output_dir: Path, move_id: str, rows: int = 1, cols: int = FRAME_COUNT
 ) -> dict[str, object]:
-    """Extract 6 frames from a 1x6 row sheet and save as individual PNGs."""
+    """Extract frames from a rows x cols sheet (row-major) and save as individual PNGs."""
     output_dir.mkdir(parents=True, exist_ok=True)
 
     raw = Image.open(source).convert("RGBA")
     width, height = raw.size
-    col_width = width / FRAME_COUNT
+    frame_count = rows * cols
+    col_width = width / cols
+    row_height = height / rows
 
     report: dict[str, object] = {
         "source": str(source),
         "moveId": move_id,
         "sourceSize": [width, height],
-        "frameCount": FRAME_COUNT,
+        "grid": [rows, cols],
+        "frameCount": frame_count,
         "frames": [],
     }
 
-    for i in range(FRAME_COUNT):
+    for i in range(frame_count):
         frame_num = i + 1
         filename = f"{move_id}_{frame_num:03d}.png"
-        col_start = round(i * col_width)
-        col_end = round((i + 1) * col_width)
+        col_start = round((i % cols) * col_width)
+        col_end = round(((i % cols) + 1) * col_width)
+        row_start = round((i // cols) * row_height)
+        row_end = round(((i // cols) + 1) * row_height)
 
-        bbox = non_magenta_bbox(raw, col_start, col_end)
+        bbox = non_magenta_bbox(raw, col_start, col_end, row_start, row_end)
 
         if bbox is None:
             # Empty column -- output a transparent 1x1 PNG
@@ -164,7 +178,7 @@ def main() -> int:
         print(f"Error: source file not found: {args.input}", file=sys.stderr)
         return 1
 
-    report = extract_frames(args.input, args.output_dir, args.move_id)
+    report = extract_frames(args.input, args.output_dir, args.move_id, rows=args.rows, cols=args.cols)
     print(json.dumps(report, indent=2))
     return 0
 

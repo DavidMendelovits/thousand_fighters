@@ -74,12 +74,14 @@ export function createCmsTools({ pipeline, repository, registry }) {
         characterId: stringSchema('Character id.'),
         prompt: stringSchema('Sprite generation prompt.'),
         moveId: stringSchema('Move id: base, punch, kick, special_1, or special_2. Defaults to base.'),
+        spriteProfile: stringSchema('Sprite profile: standard (1x6 row) or wide (2x3 grid with ~2x wider cells, for long-reach extending-limb moves). Defaults to standard.'),
       }, ['characterId', 'prompt']),
-      execute: async ({ characterId, prompt, moveId, context }) => {
+      execute: async ({ characterId, prompt, moveId, spriteProfile, context }) => {
         const result = await pipeline.generateSpriteSheet({
           characterId,
           prompt,
           moveId: moveId || undefined,
+          spriteProfile: spriteProfile || undefined,
           context: context ?? {},
         });
         return withAssetApiUrl(result);
@@ -92,9 +94,10 @@ export function createCmsTools({ pipeline, repository, registry }) {
         characterId: stringSchema('Character id.'),
         sourceAssetKey: stringSchema('CMS key of the source row sheet to extract from.'),
         moveId: stringSchema('Move id: base, punch, kick, special_1, or special_2.'),
+        spriteProfile: stringSchema('Sprite profile used at generation time: standard (1x6 row) or wide (2x3 grid). Defaults to standard.'),
       }, ['characterId', 'sourceAssetKey', 'moveId']),
-      execute: async ({ characterId, sourceAssetKey, moveId }) => {
-        return pipeline.extractRowFrames({ characterId, sourceAssetKey, moveId });
+      execute: async ({ characterId, sourceAssetKey, moveId, spriteProfile }) => {
+        return pipeline.extractRowFrames({ characterId, sourceAssetKey, moveId, spriteProfile: spriteProfile || undefined });
       },
     },
     {
