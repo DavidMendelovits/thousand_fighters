@@ -128,10 +128,27 @@ export class CharacterContentRepository {
       contentType: 'application/json',
       reportType: 'fighter-pack-qa',
     });
+    // Maintain a stable pointer to the most recent report so publish gates
+    // can check QA status without listing runs.
+    await this.storage.putJson(this.latestQaReportKey(characterId), { ...report, runId, reportKey: key }, {
+      contentType: 'application/json',
+      reportType: 'fighter-pack-qa',
+      alias: 'latest',
+    });
     return {
       key,
       url: this.storage.urlFor(key),
     };
+  }
+
+  async getLatestQaReport(characterId) {
+    const key = this.latestQaReportKey(characterId);
+    if (!(await this.storage.exists(key))) return null;
+    return this.storage.getJson(key);
+  }
+
+  latestQaReportKey(characterId) {
+    return `characters/${this.safeCharacterId(characterId)}/qa/latest.json`;
   }
 
   draftKey(characterId) {

@@ -204,13 +204,32 @@ export function createLocalPublisher({ repository, storage } = {}) {
     capabilities: ['character-publish', 'local-release-bundle'],
     async healthCheck() {
       return {
-        status: 'warning',
-        message: 'Local publisher writes release JSON, but publish gates are not enforcing real QA yet.',
+        status: 'ok',
+        message: 'Local publisher writes release JSON. Publishing requires a non-failing QA report (pass force: true to override).',
       };
     },
     async publishCharacter(request) {
       const characterId = required(request.characterId, 'characterId');
       const releaseId = request.releaseId ?? `local-${new Date().toISOString().replaceAll(':', '-')}`;
+
+      // QA gate: require a current, non-failing QA report before publishing.
+      const qaReport = typeof repository.getLatestQaReport === 'function'
+        ? await repository.getLatestQaReport(characterId)
+        : null;
+      if (!request.force) {
+        if (!qaReport) {
+          throw new Error(
+            `QA gate: no QA report found for "${characterId}". Run validate_fighter_pack before publishing, or pass force: true to override.`,
+          );
+        }
+        if (qaReport.status === 'fail') {
+          const failed = (qaReport.checks ?? []).filter((c) => c.status === 'error').map((c) => c.id);
+          throw new Error(
+            `QA gate: latest QA report for "${characterId}" failed (${failed.join(', ') || 'see report'}). Fix the pack and re-validate, or pass force: true to override.`,
+          );
+        }
+      }
+
       const draft = await repository.getDraft(characterId);
       const version = await repository.createVersion(characterId, draft, {
         versionId: releaseId,
@@ -239,6 +258,9 @@ export function createLocalPublisher({ repository, storage } = {}) {
         versionId: version.versionId,
         bundleKey,
         latestKey,
+        qa: qaReport
+          ? { status: qaReport.status, reportKey: qaReport.reportKey ?? null, forced: Boolean(request.force) }
+          : { status: 'missing', reportKey: null, forced: Boolean(request.force) },
       };
     },
   };
