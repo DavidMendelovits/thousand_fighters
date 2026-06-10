@@ -143,9 +143,9 @@ try {
   assert.ok(manifest.cms, 'manifest.cms must be present');
   assert.equal(manifest.cms.workflow, 'contour-sprite-normalizer', 'manifest.cms.workflow must be contour-sprite-normalizer');
   assert.ok(manifest.cms.generatedAt, 'manifest.cms.generatedAt must be set');
-  assert.ok(manifest.sheet_paths, 'manifest.sheet_paths must be present');
-  assert.ok(manifest.sprite_paths, 'manifest.sprite_paths must be present');
-  assert.ok(manifest.frame_counts, 'manifest.frame_counts must be present');
+  assert.ok(manifest.sheets, 'manifest.sheets must be present');
+  assert.ok(manifest.sprites, 'manifest.sprites must be present');
+  assert.ok(manifest.frameCounts, 'manifest.frameCounts must be present');
   console.log(`  [PASS] manifest.json has correct CMS metadata`);
 
   // ---------------------------------------------------------------

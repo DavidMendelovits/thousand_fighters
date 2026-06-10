@@ -1,3 +1,5 @@
+import { normalizeManifest, validateManifestSchema } from '../manifestSchema.js';
+
 const EXPECTED_SHEETS = ['base', 'punch', 'kick', 'special_1', 'special_2'];
 const MIN_FRAME_COUNT = 4;
 const MIN_SHEETS_WITH_ENOUGH_FRAMES = 4;
@@ -37,6 +39,19 @@ export class FighterPackQaAdapter {
       manifest = manifestCheck._data;
     }
     delete manifestCheck._data;
+
+    // Check 1b: manifest-schema (canonical camelCase keys, counts consistent)
+    if (manifest) {
+      const schemaResult = validateManifestSchema(manifest);
+      checks.push({
+        id: 'manifest-schema',
+        status: !schemaResult.valid ? 'error' : schemaResult.warnings.length ? 'warning' : 'pass',
+        message: schemaResult.valid
+          ? schemaResult.warnings[0] ?? 'manifest.json matches the canonical schema.'
+          : `manifest.json schema errors: ${schemaResult.errors.join('; ')}`,
+      });
+      manifest = normalizeManifest(manifest, { id: characterId });
+    }
 
     // Check 2: framedata-exists
     const frameDataCheck = await this._checkFrameDataExists(assetRoot);
@@ -319,8 +334,8 @@ export class FighterPackQaAdapter {
     }
 
     const frameDataSheets = frameData.frames ?? {};
-    const manifestCounts = manifest.frame_counts ?? {};
-    const spritePaths = manifest.sprite_paths ?? manifest.sprites ?? {};
+    const manifestCounts = manifest.frameCounts ?? manifest.frame_counts ?? {};
+    const spritePaths = manifest.sprites ?? manifest.sprite_paths ?? {};
     const mismatches = [];
 
     for (const sheet of EXPECTED_SHEETS) {
@@ -329,7 +344,7 @@ export class FighterPackQaAdapter {
       const spriteFileCount = actualSpriteCounts[sheet] ?? (Array.isArray(spritePaths[sheet]) ? spritePaths[sheet].length : null);
 
       if (frameDataCount !== null && manifestCount !== null && frameDataCount !== manifestCount) {
-        mismatches.push(`${sheet}: frameData has ${frameDataCount} frames but manifest.frame_counts says ${manifestCount}`);
+        mismatches.push(`${sheet}: frameData has ${frameDataCount} frames but manifest.frameCounts says ${manifestCount}`);
       }
 
       if (frameDataCount !== null && spriteFileCount !== null && frameDataCount !== spriteFileCount) {
@@ -545,7 +560,7 @@ export class FighterPackQaAdapter {
   }
 
   _checkMinimumFrameCount(frameData, manifest) {
-    const framesSource = frameData?.frames ?? manifest?.frame_counts ?? null;
+    const framesSource = frameData?.frames ?? manifest?.frameCounts ?? manifest?.frame_counts ?? null;
 
     if (!framesSource) {
       return {

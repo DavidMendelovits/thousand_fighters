@@ -1,4 +1,5 @@
 import { createLocalPlaceholderSoundGenerator } from './localAdapters.js';
+import { createMockSoundGenerator } from './mockAdapters.js';
 import { OpenAiSoundGeneratorAdapter } from './openAiSoundGeneratorAdapter.js';
 import { ElevenLabsSoundGeneratorAdapter } from './elevenLabsSoundGeneratorAdapter.js';
 
@@ -12,6 +13,10 @@ export function createSoundGeneratorAdapter(options = {}) {
 
   if (provider === 'elevenlabs') {
     return new ElevenLabsSoundGeneratorAdapter(options);
+  }
+
+  if (provider === 'mock') {
+    return createMockSoundGenerator(options);
   }
 
   if (!provider || provider === 'local') {

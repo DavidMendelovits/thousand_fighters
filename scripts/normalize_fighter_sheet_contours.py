@@ -293,19 +293,31 @@ def assemble_sheet(frame_dir: Path, output_path: Path) -> None:
     sheet.save(output_path)
 
 
-def write_manifest(output_dir: Path, root_label: str) -> None:
+def write_manifest(output_dir: Path, character_id: str) -> None:
+    """Write the canonical (game-format) manifest: camelCase keys, paths relative to the fighter root."""
     manifest = {
-        "character_description": (output_dir / "description.txt").read_text(encoding="utf-8").strip(),
-        "moveset": {},
-        "sheet_paths": {},
-        "sprite_paths": {},
-        "frame_counts": {},
+        "id": character_id,
+        "artSource": "image-gen",
+        "frameData": "frameData.json",
+        "sheets": {},
+        "sprites": {},
+        "frameCounts": {},
     }
+    source_sheet = output_dir / "source" / f"{character_id}_imagegen_sheet.png"
+    if source_sheet.exists():
+        manifest["source"] = f"source/{source_sheet.name}"
+    if (output_dir / "description.txt").exists():
+        manifest["description"] = "description.txt"
+    if (output_dir / "moveset.txt").exists():
+        manifest["moveset"] = "moveset.txt"
     for sheet_id in SHEET_IDS:
-        manifest["sheet_paths"][sheet_id] = f"/{root_label}/sheets/{sheet_id}.png"
+        manifest["sheets"][sheet_id] = f"sheets/{sheet_id}.png"
         sprite_paths = sorted((output_dir / "sprites" / sheet_id).glob("*.png"))
-        manifest["sprite_paths"][sheet_id] = [f"/{root_label}/sprites/{sheet_id}/{path.name}" for path in sprite_paths]
-        manifest["frame_counts"][sheet_id] = len(sprite_paths)
+        manifest["sprites"][sheet_id] = [f"sprites/{sheet_id}/{path.name}" for path in sprite_paths]
+        manifest["frameCounts"][sheet_id] = len(sprite_paths)
+    projectile_files = sorted((output_dir / "projectiles").glob("*.png"))
+    if projectile_files:
+        manifest["projectiles"] = {path.stem: f"projectiles/{path.name}" for path in projectile_files}
     (output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
 
@@ -390,7 +402,7 @@ def main() -> int:
     shutil.copy2(args.moveset, output_dir / "moveset.txt")
     (output_dir / "frameData.json").write_text(json.dumps(frame_data, indent=2) + "\n", encoding="utf-8")
     (output_dir / "normalization-report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-    write_manifest(output_dir, f"fighters/{args.character_id}")
+    write_manifest(output_dir, args.character_id)
     print(json.dumps({"output": str(output_dir), "warnings": report["warnings"], "projectile": report["projectile"]}, indent=2))
     return 0
 

@@ -26,6 +26,10 @@ try {
       provider: 'file',
       rootDir,
     },
+    // Keyless run: mock the API-backed adapters so this smoke needs no env vars.
+    textModelOptions: { provider: 'mock' },
+    imageGeneratorOptions: { provider: 'mock' },
+    soundGeneratorOptions: { provider: 'mock' },
     // fighterQaOptions: { provider: 'real' }  // already the default
   });
   const { storage, repository, pipeline } = runtime;

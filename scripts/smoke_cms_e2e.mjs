@@ -11,6 +11,10 @@ const runtime = createLocalCmsRuntime({
     provider: 'file',
     rootDir,
   },
+  // Keyless run: mock the API-backed adapters so this smoke needs no env vars.
+  textModelOptions: { provider: 'mock' },
+  imageGeneratorOptions: { provider: 'mock' },
+  soundGeneratorOptions: { provider: 'mock' },
 });
 const server = createCmsServer({ runtime });
 
@@ -33,13 +37,13 @@ try {
     prompt: '5x6 fighter sheet with magenta background.',
   });
   const sourceAssetKey = sheet.result.asset.key;
-  assert.equal(sourceAssetKey, 'characters/e2e_fighter/assets/source/e2e_fighter_imagegen_sheet.svg');
-  assert.equal((await runtime.storage.getMetadata(sourceAssetKey)).contentType, 'image/svg+xml');
+  assert.equal(sourceAssetKey, 'characters/e2e_fighter/assets/source/e2e_fighter_base_sheet.png');
+  assert.equal((await runtime.storage.getMetadata(sourceAssetKey)).contentType, 'image/png');
 
   const assetResponse = await fetch(`${baseUrl}/api/assets/${encodeURIComponent(sourceAssetKey)}`);
   assert.equal(assetResponse.status, 200);
-  assert.equal(assetResponse.headers.get('content-type'), 'image/svg+xml');
-  assert.match(await assetResponse.text(), /<svg/);
+  assert.equal(assetResponse.headers.get('content-type'), 'image/png');
+  assert.ok((await assetResponse.arrayBuffer()).byteLength > 0);
 
   const normalized = await postTool(baseUrl, 'normalize_sprite_pack', {
     characterId: 'e2e_fighter',
@@ -52,7 +56,7 @@ try {
   const manifest = await runtime.storage.getJson(normalized.result.normalized.outputKey);
   assert.equal(manifest.cms.workflow, 'local-fixture-normalizer');
   assert.equal(manifest.cms.fixtureFighterId, 'janitor');
-  assert.equal(manifest.frame_counts.base, 6);
+  assert.equal(manifest.frameCounts.base, 6);
 
   const firstSprite = await runtime.storage.getBytes('characters/e2e_fighter/assets/fighter-pack/sprites/base/base_001.png');
   assert.equal(firstSprite.subarray(1, 4).toString('ascii'), 'PNG');

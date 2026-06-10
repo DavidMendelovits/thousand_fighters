@@ -7,12 +7,15 @@
  * @param {{ draft: object, frameData: object|null, manifest: object|null }} params
  * @returns {object} CharacterConfig-shaped plain object
  */
-export function convertDraftToCharacterConfig({ draft, frameData, manifest }) {
+import { normalizeManifest } from '../pipeline/manifestSchema.js';
+
+export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawManifest }) {
   if (!draft) throw new Error('convertDraftToCharacterConfig: draft is required');
 
   const id = draft.id;
   if (!id) throw new Error('convertDraftToCharacterConfig: draft.id is required');
 
+  const manifest = normalizeManifest(rawManifest, { id });
   const stats = draft.stats ?? {};
 
   return {
@@ -66,7 +69,7 @@ function buildSpriteConfig({ draft, frameData, manifest }) {
   return {
     basePath: `/fighters/${id}`,
     scale: sprite.scale ?? 0.55,
-    frameCounts: sprite.frameCounts ?? {
+    frameCounts: sprite.frameCounts ?? manifest?.frameCounts ?? {
       base: 6,
       punch: 6,
       kick: 6,
