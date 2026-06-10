@@ -297,7 +297,7 @@ function convertEvent(draftEvent, moveId, phaseIndex, eventIndex) {
     // This ensures hitbox_end events with no id correctly pair with these hitboxes.
     const hitboxId = draftEvent.id ?? 'default';
 
-    return {
+    const converted = {
       type: 'hitbox_active',
       id: hitboxId,
       hitbox: {
@@ -315,6 +315,12 @@ function convertEvent(draftEvent, moveId, phaseIndex, eventIndex) {
         level: hb.level ?? 'mid',
       },
     };
+    if (Array.isArray(draftEvent.keyframes) && draftEvent.keyframes.length) {
+      converted.keyframes = draftEvent.keyframes
+        .filter((kf) => kf && typeof kf.atFrame === 'number')
+        .map((kf) => ({ atFrame: kf.atFrame, x: kf.x, y: kf.y, width: kf.width, height: kf.height }));
+    }
+    return converted;
   }
 
   if (draftEvent.type === 'hitbox_end') {

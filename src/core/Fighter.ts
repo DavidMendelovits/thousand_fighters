@@ -10,6 +10,7 @@ import type {
   FighterState,
   GrabSpec,
   Hitbox,
+  HitboxKeyframe,
   Hurtbox,
   Move,
   RawInput,
@@ -17,6 +18,7 @@ import type {
   SpriteSheetId,
 } from '../schema/types';
 import { boxToWorld, type AABB } from '../util/aabb';
+import { interpolateHitboxGeometry } from './hitboxGeometry';
 
 const STAGE_LEFT = 96;
 const STAGE_RIGHT = 704;
@@ -28,6 +30,9 @@ const MOVE_SHEETS = new Set<SpriteSheetId>(['punch', 'kick', 'special_1', 'speci
 type ActiveHitbox = {
   actorId?: FighterActorId;
   hitbox: Hitbox;
+  keyframes?: HitboxKeyframe[];
+  // Frames since activation, drives keyframe interpolation.
+  age: number;
 };
 
 type ActiveGrab = {
@@ -209,7 +214,7 @@ export class Fighter {
         actorId: actor.id,
         id,
         hitbox: active.hitbox,
-        world: boxToWorld(active.hitbox, pose.x, pose.y, pose.facing),
+        world: boxToWorld(interpolateHitboxGeometry(active), pose.x, pose.y, pose.facing),
       };
     });
   }
@@ -556,8 +561,14 @@ export class Fighter {
     return Phaser.Math.Clamp(Math.floor((elapsed / Math.max(totalFrames, 1)) * frameCount), 0, maxFrame);
   }
 
-  setActiveHitbox(id: string, hitbox: Hitbox, actorId?: FighterActorId): void {
-    this.activeHitboxes.set(id, { actorId, hitbox });
+  setActiveHitbox(id: string, hitbox: Hitbox, actorId?: FighterActorId, keyframes?: HitboxKeyframe[]): void {
+    this.activeHitboxes.set(id, { actorId, hitbox, keyframes, age: 0 });
+  }
+
+  ageActiveHitboxes(): void {
+    for (const active of this.activeHitboxes.values()) {
+      active.age += 1;
+    }
   }
 
   clearActiveHitbox(id: string): void {

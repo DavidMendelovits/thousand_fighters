@@ -93,8 +93,23 @@ export type GrabSpec = {
   grabSound?: string;
 };
 
+/**
+ * Optional per-frame geometry for an active hitbox, interpolated linearly by
+ * frames since activation. Lets a hitbox ride an extending limb (a tentacle
+ * tip moving outward) instead of covering the whole reach for the whole
+ * active window. Omitted fields hold the base hitbox value. An implicit
+ * keyframe at atFrame 0 with the base geometry anchors the interpolation.
+ */
+export type HitboxKeyframe = {
+  atFrame: number;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+};
+
 export type MoveEvent =
-  | { type: 'hitbox_active'; hitbox: Hitbox; id?: string; actor?: FighterActorId }
+  | { type: 'hitbox_active'; hitbox: Hitbox; keyframes?: HitboxKeyframe[]; id?: string; actor?: FighterActorId }
   | { type: 'hitbox_end'; id?: string; actor?: FighterActorId }
   | { type: 'grab_check'; grab: GrabSpec; id?: string; actor?: FighterActorId }
   | { type: 'grab_end'; id?: string }

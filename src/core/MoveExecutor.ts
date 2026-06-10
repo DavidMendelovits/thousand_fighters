@@ -28,6 +28,7 @@ export class MoveExecutor {
       }
     }
 
+    fighter.ageActiveHitboxes();
     fighter.movePhaseFrame += 1;
 
     if (fighter.movePhaseFrame >= phase.frames) {
@@ -43,7 +44,7 @@ export class MoveExecutor {
   static handleEvent(fighter: Fighter, event: MoveEvent): void {
     switch (event.type) {
       case 'hitbox_active':
-        fighter.setActiveHitbox(event.id ?? 'default', event.hitbox, event.actor);
+        fighter.setActiveHitbox(event.id ?? 'default', event.hitbox, event.actor, event.keyframes);
         break;
       case 'hitbox_end':
         fighter.clearActiveHitbox(event.id ?? 'default');
