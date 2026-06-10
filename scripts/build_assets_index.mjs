@@ -39,11 +39,13 @@ async function listFiles(path, extensions) {
 async function indexFighter(fighterId, dir) {
   const manifest = await readJson(join(dir, 'manifest.json'));
   const frameData = await readJson(join(dir, 'frameData.json'));
+  const hasConfig = await exists(join(dir, 'config.json'));
 
   const entry = {
     displayName: manifest?.id ?? fighterId,
     basePath: `/fighters/${fighterId}`,
     artSource: manifest?.artSource ?? null,
+    config: hasConfig ? 'config.json' : null,
     sheets: manifest?.sheets ?? {},
     frameCounts: {},
     frameData: frameData?.frames ?? null,

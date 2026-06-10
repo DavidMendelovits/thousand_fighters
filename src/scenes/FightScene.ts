@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { playableCharacters } from '../characters/stamptownFighters';
+import { roster } from '../characters/roster';
 import { ComputerPlayer } from '../core/ComputerPlayer';
 import { Fighter } from '../core/Fighter';
 import { GameLoop } from '../core/GameLoop';
@@ -55,8 +55,8 @@ export class FightScene extends Phaser.Scene {
   readonly computerPlayer = new ComputerPlayer();
   singlePlayer = true;
   isPaused = false;
-  selectedP1Id = playableCharacters[0].id;
-  selectedP2Id = playableCharacters[2].id;
+  selectedP1Id = roster[0].id;
+  selectedP2Id = roster[2].id;
   p1Rounds = 0;
   p2Rounds = 0;
   roundNumber = 1;
@@ -82,8 +82,8 @@ export class FightScene extends Phaser.Scene {
 
   init(data: FightSceneData = {}): void {
     this.hasSceneData = Object.keys(data).length > 0;
-    this.selectedP1Id = data.p1Id ?? playableCharacters[0].id;
-    this.selectedP2Id = data.p2Id ?? playableCharacters[2].id;
+    this.selectedP1Id = data.p1Id ?? roster[0].id;
+    this.selectedP2Id = data.p2Id ?? roster[2].id;
     this.singlePlayer = prefersTouchControls() ? true : (data.cpu ?? true);
     this.p1Rounds = data.p1Rounds ?? 0;
     this.p2Rounds = data.p2Rounds ?? 0;
@@ -140,7 +140,7 @@ export class FightScene extends Phaser.Scene {
       }
     };
 
-    for (const character of playableCharacters) {
+    for (const character of roster) {
       if (character.sprite) preloadSpriteConfig(character.sprite, character.id);
       for (const actor of character.actors ?? []) {
         if (actor.sprite) preloadSpriteConfig(actor.sprite, `${character.id}:${actor.id}`);
@@ -188,8 +188,8 @@ export class FightScene extends Phaser.Scene {
     const p1FromQuery = params.get('p1');
     const p2FromQuery = params.get('p2');
     if (!this.hasSceneData) {
-      if (p1FromQuery) this.selectedP1Id = this.characterFromParam(p1FromQuery, playableCharacters[0]).id;
-      if (p2FromQuery) this.selectedP2Id = this.characterFromParam(p2FromQuery, playableCharacters[2]).id;
+      if (p1FromQuery) this.selectedP1Id = this.characterFromParam(p1FromQuery, roster[0]).id;
+      if (p2FromQuery) this.selectedP2Id = this.characterFromParam(p2FromQuery, roster[2]).id;
     }
 
     this.cameras.main.setBackgroundColor('#141820');
@@ -221,8 +221,8 @@ export class FightScene extends Phaser.Scene {
 
     this.projectiles = new ProjectilePool(this);
     this.fighters = [
-      new Fighter(this, this.characterFromParam(this.selectedP1Id, playableCharacters[0]), 1, { x: 200, y: FLOOR_Y }),
-      new Fighter(this, this.characterFromParam(this.selectedP2Id, playableCharacters[2]), 2, { x: 600, y: FLOOR_Y }),
+      new Fighter(this, this.characterFromParam(this.selectedP1Id, roster[0]), 1, { x: 200, y: FLOOR_Y }),
+      new Fighter(this, this.characterFromParam(this.selectedP2Id, roster[2]), 2, { x: 600, y: FLOOR_Y }),
     ];
 
     this.hudGraphics = this.add.graphics().setDepth(50);
@@ -685,7 +685,7 @@ export class FightScene extends Phaser.Scene {
         card.rect.setStrokeStyle(2, selected ? 0xfff0a3 : 0x485568, selected ? 1 : 0.85);
         card.rect.setFillStyle(selected ? 0x24364b : 0x0b0e13, 1);
       }
-      helpText.setText(`P1: ${this.characterFromParam(p1Id, playableCharacters[0]).displayName}     P2: ${this.characterFromParam(p2Id, playableCharacters[2]).displayName}     CPU: ${this.singlePlayer ? 'ON' : 'OFF'}`);
+      helpText.setText(`P1: ${this.characterFromParam(p1Id, roster[0]).displayName}     P2: ${this.characterFromParam(p2Id, roster[2]).displayName}     CPU: ${this.singlePlayer ? 'ON' : 'OFF'}`);
     };
 
     const createRow = (player: 1 | 2, y: number): void => {
@@ -696,11 +696,11 @@ export class FightScene extends Phaser.Scene {
           fontSize: '18px',
         })
         .setOrigin(0, 0.5);
-      const spacing = playableCharacters.length > 1 ? Math.min(124, 704 / (playableCharacters.length - 1)) : 124;
+      const spacing = roster.length > 1 ? Math.min(124, 704 / (roster.length - 1)) : 124;
       const cardWidth = Math.min(112, Math.max(58, spacing - 8));
       const cardHeight = 112;
       const startX = 48;
-      playableCharacters.forEach((character, index) => {
+      roster.forEach((character, index) => {
         const x = startX + index * spacing;
         const rect = this.add.rectangle(x, y, cardWidth, cardHeight, 0x0b0e13, 1).setInteractive({ useHandCursor: true });
         rect.on('pointerdown', () => {
@@ -737,8 +737,8 @@ export class FightScene extends Phaser.Scene {
       updateCards();
     });
     const backButton = this.createPauseButton(554, 406, 'DEFAULTS', () => {
-      p1Id = playableCharacters[0].id;
-      p2Id = playableCharacters[2].id;
+      p1Id = roster[0].id;
+      p2Id = roster[2].id;
       updateCards();
     });
     this.add.container(0, 0, [...startButton, ...cpuButton, ...backButton]).setDepth(10);
@@ -892,7 +892,7 @@ export class FightScene extends Phaser.Scene {
       .setOrigin(0, 0);
 
     let y = 42;
-    for (const character of playableCharacters) {
+    for (const character of roster) {
       if (characterFilter && character.id !== characterFilter) continue;
       if (!character.sprite) continue;
       this.add
@@ -991,7 +991,7 @@ export class FightScene extends Phaser.Scene {
 
   private characterFromParam(id: string | null, fallback: CharacterConfig): CharacterConfig {
     if (!id) return fallback;
-    return playableCharacters.find((character) => character.id === id) ?? fallback;
+    return roster.find((character) => character.id === id) ?? fallback;
   }
 
   private debugFrameMeta(sprite: CharacterSpriteConfig, sheet: SpriteSheetId, frameCount: number): SpriteFrameMeta[] {
