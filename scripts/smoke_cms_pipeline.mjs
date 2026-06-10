@@ -27,7 +27,7 @@ try {
     [PipelinePort.CHARACTER_REPOSITORY]: repository,
     [PipelinePort.TEXT_MODEL]: createMockTextModel(),
     [PipelinePort.IMAGE_GENERATOR]: createMockImageGenerator(),
-    [PipelinePort.SPRITE_NORMALIZER]: createMockNormalizer(),
+    [PipelinePort.SPRITE_NORMALIZER]: createMockNormalizer({ storage }),
     [PipelinePort.FIGHTER_QA]: createMockQa(),
     [PipelinePort.PUBLISHER]: createMockPublisher(),
   });
@@ -54,6 +54,11 @@ try {
     sourceAssetKey: spriteSheet.asset.key,
   });
   assert.equal(normalized.status, 'pass');
+  assert.equal(normalized.outputKey, 'characters/pluggable_fighter/assets/fighter-pack/manifest.json');
+  const normalizedManifest = await storage.getJson(normalized.outputKey);
+  assert.equal(normalizedManifest.frameCounts.base, 6);
+  const normalizedFrameData = await storage.getJson(normalized.frameDataKey);
+  assert.equal(normalizedFrameData.frames.base.length, 6);
 
   const qa = await pipeline.validateFighterPack({
     characterId: 'pluggable_fighter',

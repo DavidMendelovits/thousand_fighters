@@ -55,6 +55,8 @@ export function createMockImageGenerator(overrides = {}) {
 }
 
 export function createMockNormalizer(overrides = {}) {
+  const storage = overrides.storage ?? null;
+  const SHEETS = ['base', 'punch', 'kick', 'special_1', 'special_2'];
   return {
     id: overrides.id ?? 'mock-normalizer',
     provider: overrides.provider ?? 'mock',
@@ -63,11 +65,49 @@ export function createMockNormalizer(overrides = {}) {
       return { status: 'ok', message: 'Mock normalizer is available.' };
     },
     async normalizeFighterPack(request) {
+      const characterId = request.characterId;
+      const assetRootKey = `characters/${characterId}/assets/fighter-pack`;
+      const outputKey = `${assetRootKey}/manifest.json`;
+      const frameDataKey = `${assetRootKey}/frameData.json`;
+
+      // Honor the same storage contract as the real normalizers: a canonical
+      // manifest.json + frameData.json pair lands under the fighter pack root.
+      if (storage) {
+        const manifest = {
+          id: characterId,
+          artSource: 'mock',
+          frameData: 'frameData.json',
+          sheets: Object.fromEntries(SHEETS.map((s) => [s, `sheets/${s}.png`])),
+          sprites: Object.fromEntries(
+            SHEETS.map((s) => [s, Array.from({ length: 6 }, (_, i) => `sprites/${s}/${s}_${String(i + 1).padStart(3, '0')}.png`)]),
+          ),
+          frameCounts: Object.fromEntries(SHEETS.map((s) => [s, 6])),
+        };
+        const frameData = {
+          anchorConvention: 'frame anchor is the character pivot/feet, in pixels from each PNG top-left',
+          frames: Object.fromEntries(
+            SHEETS.map((s) => [
+              s,
+              Array.from({ length: 6 }, (_, i) => ({
+                file: `sprites/${s}/${s}_${String(i + 1).padStart(3, '0')}.png`,
+                width: 256,
+                height: 256,
+                anchor: { x: 128, y: 240 },
+              })),
+            ]),
+          ),
+        };
+        await storage.putJson(outputKey, manifest, { contentType: 'application/json', artifactType: 'normalized-manifest' });
+        await storage.putJson(frameDataKey, frameData, { contentType: 'application/json', artifactType: 'frame-data' });
+      }
+
       return {
         status: 'pass',
         provider: 'mock',
-        characterId: request.characterId,
-        outputKey: `characters/${request.characterId}/normalized/manifest.json`,
+        characterId,
+        outputKey,
+        frameDataKey,
+        assetRootKey,
       };
     },
   };
