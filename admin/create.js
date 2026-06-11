@@ -37,12 +37,10 @@ function getStorageKey(characterId) {
   return characterId ? `tf-wizard-${characterId}` : '';
 }
 
-function saveWizardState() {
-  const characterId = document.getElementById('fighter-id').value.trim();
-  if (!characterId) return;
+const WIZARD_STATE_PATH = 'wizard/state.json';
 
-  const key = getStorageKey(characterId);
-  const payload = {
+function buildWizardPayload(characterId) {
+  return {
     savedAt: Date.now(),
     ctx: {
       highestUnlockedStep: ctx.highestUnlockedStep,
@@ -64,6 +62,46 @@ function saveWizardState() {
       promptManuallyEdited,
     },
   };
+}
+
+// Once the draft exists server-side, the server copy of the wizard state is
+// the source of truth; localStorage is a fast pointer + offline fallback.
+async function pushWizardStateToServer(payload) {
+  if (!ctx.characterId) return;
+  try {
+    const json = JSON.stringify(payload);
+    await fetch(`/api/characters/${encodeURIComponent(ctx.characterId)}/assets`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        relativePath: WIZARD_STATE_PATH,
+        contentBase64: btoa(unescape(encodeURIComponent(json))),
+        contentType: 'application/json',
+        metadata: { artifactType: 'wizard-state' },
+      }),
+    });
+  } catch (_) {
+    // Offline or server restart — localStorage still has the state.
+  }
+}
+
+async function fetchServerWizardState(characterId) {
+  try {
+    const key = `characters/${characterId}/assets/${WIZARD_STATE_PATH}`;
+    const response = await fetch(`/api/assets/${encodeURIComponent(key)}`);
+    if (!response.ok) return null;
+    return await response.json();
+  } catch (_) {
+    return null;
+  }
+}
+
+function saveWizardState() {
+  const characterId = document.getElementById('fighter-id').value.trim();
+  if (!characterId) return;
+
+  const key = getStorageKey(characterId);
+  const payload = buildWizardPayload(characterId);
 
   try {
     localStorage.setItem(key, JSON.stringify(payload));
@@ -71,6 +109,8 @@ function saveWizardState() {
   } catch (err) {
     // localStorage quota exceeded or unavailable — silently ignore
   }
+
+  void pushWizardStateToServer(payload);
 }
 
 function debouncedSave() {
@@ -83,9 +123,10 @@ function clearWizardState() {
     try { localStorage.removeItem(currentStorageKey); } catch (_) {}
     currentStorageKey = '';
   }
+  void pushWizardStateToServer({ savedAt: Date.now(), completed: true });
 }
 
-function restoreWizardState() {
+async function restoreWizardState() {
   // Scan localStorage for any tf-wizard-* keys, pick the most recently saved one
   let bestKey = null;
   let bestSavedAt = 0;
@@ -116,6 +157,20 @@ function restoreWizardState() {
     return;
   }
   if (!saved || !saved.ctx || !saved.form) return;
+
+  // The server copy wins when it is newer (another browser/session continued
+  // this wizard) or when it marks the wizard completed.
+  const savedCharacterId = saved.ctx.characterId || saved.form.fighterId;
+  if (savedCharacterId) {
+    const serverState = await fetchServerWizardState(savedCharacterId);
+    if (serverState?.completed) {
+      try { localStorage.removeItem(bestKey); } catch (_) {}
+      return;
+    }
+    if (serverState?.ctx && serverState?.form && (serverState.savedAt ?? 0) > (saved.savedAt ?? 0)) {
+      saved = serverState;
+    }
+  }
 
   // Restore form fields
   const { form } = saved;
@@ -1053,4 +1108,4 @@ function esc(value) {
 }
 
 // Boot-time restore — runs after all function definitions and event listeners are set up
-restoreWizardState();
+void restoreWizardState();
