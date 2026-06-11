@@ -86,6 +86,58 @@ try {
   assert.equal(imageCalls[2].task, 'fighter-1x6-row', 'call 3 task');
   assert.equal(imageCalls[2].moveId, 'base', 'call 3 moveId (default)');
 
+  // 6. Extract the base row into the fighter pack — frames, anchors, manifest,
+  //    and frameData must all land under fighter-pack/ and merge per move.
+  const baseExtract = await pipeline.extractRowFrames({
+    characterId,
+    sourceAssetKey: expectedBaseKey,
+    moveId: 'base',
+  });
+  assert.equal(baseExtract.assetRootKey, `characters/${characterId}/assets/fighter-pack`);
+  assert.equal(baseExtract.frames.length, 6, 'six base frames extracted');
+  assert.equal(await storage.exists(baseExtract.sheetKey), true, 'assembled base sheet stored');
+
+  const frameDataAfterBase = await storage.getJson(baseExtract.frameDataKey);
+  assert.equal(frameDataAfterBase.frames.base.length, 6, 'base frameData merged');
+  const baseFrame = frameDataAfterBase.frames.base[0];
+  assert.ok(baseFrame.anchor.x > 0 && baseFrame.anchor.y > 0, 'base frames carry anchors');
+  assert.ok(baseFrame.silhouetteHeight > 0, 'base frames carry silhouette height');
+  assert.equal(baseFrame.anchor.y, baseFrame.height - 6, 'anchor sits on the floor padding');
+
+  // 7. Extract punch — must merge alongside base (not replace it) and be
+  //    rescaled to the base row's silhouette height.
+  const punchExtract = await pipeline.extractRowFrames({
+    characterId,
+    sourceAssetKey: expectedPunchKey,
+    moveId: 'punch',
+  });
+  assert.ok(punchExtract.targetHeight > 0, 'punch derived target height from base row');
+
+  const mergedFrameData = await storage.getJson(punchExtract.frameDataKey);
+  assert.equal(mergedFrameData.frames.base.length, 6, 'base survives punch merge');
+  assert.equal(mergedFrameData.frames.punch.length, 6, 'punch frameData merged');
+
+  const manifest = await storage.getJson(punchExtract.manifestKey);
+  assert.equal(manifest.sheets.base, 'sheets/base.png');
+  assert.equal(manifest.sheets.punch, 'sheets/punch.png');
+  assert.equal(manifest.frameCounts.punch, 6);
+  assert.equal(manifest.sprites.punch.length, 6);
+
+  const normReport = await storage.getJson(punchExtract.reportKey);
+  assert.equal(normReport.workflow, 'row-normalizer');
+  assert.ok(normReport.moves.base && normReport.moves.punch, 'per-move report sections merged');
+
+  // 8. Re-extracting the same move replaces frames idempotently.
+  const reExtract = await pipeline.extractRowFrames({
+    characterId,
+    sourceAssetKey: expectedPunchKey,
+    moveId: 'punch',
+  });
+  assert.equal(reExtract.frames.length, 6, 're-extraction yields six frames');
+  const packSprites = await storage.list(`characters/${characterId}/assets/fighter-pack/sprites/punch`);
+  const pngCount = packSprites.filter((key) => key.endsWith('.png')).length;
+  assert.equal(pngCount, 6, 'no stale frames after re-extraction');
+
   console.log(`CMS row generation smoke test passed: ${rootDir}`);
 } finally {
   await rm(rootDir, { force: true, recursive: true });

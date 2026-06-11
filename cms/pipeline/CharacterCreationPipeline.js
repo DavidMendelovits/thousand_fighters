@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 import { PipelinePort } from './ports.js';
+import { normalizeManifest } from './manifestSchema.js';
 
 const execFileAsync = promisify(execFile);
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -128,9 +129,26 @@ export class CharacterCreationPipeline {
     };
   }
 
-  async extractRowFrames({ characterId, sourceAssetKey, moveId, spriteProfile, context = {} }) {
+  async extractRowFrames({ characterId, sourceAssetKey, moveId, spriteProfile, targetHeight, context = {} }) {
     const storage = this.registry.resolve(PipelinePort.ASSET_STORAGE);
-    const repository = this.registry.resolve(PipelinePort.CHARACTER_REPOSITORY);
+    const packRoot = `characters/${characterId}/assets/fighter-pack`;
+
+    // Resolve the silhouette height this row should be normalized to: explicit
+    // override, else the fighter's existing base row. The base row defines the
+    // fighter's scale; every other row is rescaled to match it.
+    let resolvedTargetHeight = targetHeight ?? null;
+    if (!resolvedTargetHeight && moveId !== 'base') {
+      try {
+        const existing = await storage.getJson(`${packRoot}/frameData.json`);
+        const heights = (existing?.frames?.base ?? [])
+          .map((frame) => frame.silhouetteHeight)
+          .filter((value) => typeof value === 'number' && value > 0)
+          .sort((a, b) => a - b);
+        if (heights.length) resolvedTargetHeight = heights[Math.floor(heights.length / 2)];
+      } catch {
+        // no base row yet — this row sets its own scale
+      }
+    }
 
     const sourceBytes = await storage.getBytes(sourceAssetKey);
     const tempDir = await mkdtemp(path.join(os.tmpdir(), 'tf-extract-'));
@@ -140,53 +158,131 @@ export class CharacterCreationPipeline {
       await mkdir(outputDir, { recursive: true });
       await writeFile(inputPath, sourceBytes);
 
-      const gridArgs = spriteProfile === 'wide' ? ['--rows', '2', '--cols', '3'] : [];
+      const args = [EXTRACT_SCRIPT_PATH, inputPath, outputDir, '--move-id', moveId];
+      if (spriteProfile === 'wide') args.push('--rows', '2', '--cols', '3');
+      if (resolvedTargetHeight) args.push('--target-height', String(Math.round(resolvedTargetHeight)));
       try {
-        await execFileAsync('python3', [EXTRACT_SCRIPT_PATH, inputPath, outputDir, '--move-id', moveId, ...gridArgs], {
-          timeout: 30_000,
+        await execFileAsync('python3', args, {
+          timeout: 60_000,
           maxBuffer: 10 * 1024 * 1024,
         });
       } catch (error) {
         const detail = error.killed
-          ? 'extract_row_frames.py timed out after 30s'
+          ? 'extract_row_frames.py timed out after 60s'
           : (error.stderr?.trim() || error.message || 'Unknown error');
         throw new Error(`Frame extraction failed for ${characterId}/${moveId}: ${detail}`);
       }
 
-      // Read extracted frames and store as character assets
-      const frameFiles = (await readdir(outputDir))
-        .filter((f) => f.endsWith('.png') && f.startsWith(moveId))
-        .sort();
-      if (frameFiles.length === 0) {
+      const report = JSON.parse(await readFile(path.join(outputDir, 'extraction_report.json'), 'utf8'));
+      const fragment = report.frameData ?? [];
+      if (!fragment.some((frame) => frame.silhouetteHeight > 0)) {
         throw new Error(
-          `Frame extraction produced no frames for ${characterId}/${moveId}; the source sheet may be empty or fully transparent.`,
+          `Frame extraction produced no usable frames for ${characterId}/${moveId}; the source sheet may be empty or fully transparent.`,
         );
       }
 
+      const now = this.clock().toISOString();
+      const spritesPrefix = `${packRoot}/sprites/${moveId}`;
+
+      // Replace any stale frames from a previous extraction of this move.
+      const staleKeys = await storage.list(spritesPrefix).catch(() => []);
+      for (const key of staleKeys ?? []) {
+        await storage.delete?.(key)?.catch?.(() => {});
+      }
+
       const frames = [];
+      const frameFiles = (await readdir(outputDir))
+        .filter((file) => file.endsWith('.png') && file.startsWith(moveId))
+        .sort();
       for (const file of frameFiles) {
-        const frameBytes = await readFile(path.join(outputDir, file));
-        const relativePath = `sprites/${moveId}/${file}`;
-        const asset = await repository.writeAsset(characterId, relativePath, frameBytes, {
+        const key = `${spritesPrefix}/${file}`;
+        await storage.putBytes(key, await readFile(path.join(outputDir, file)), {
           contentType: 'image/png',
+          artifactType: 'row-normalized-frame',
           extractedFrom: sourceAssetKey,
         });
-        frames.push(asset);
+        frames.push({ key, url: storage.urlFor?.(key) ?? null });
       }
 
-      // Keep the extraction report alongside the frames for diagnosis
-      let report = null;
-      try {
-        const reportBytes = await readFile(path.join(outputDir, 'extraction_report.json'));
-        report = await repository.writeAsset(characterId, `sprites/${moveId}/extraction_report.json`, reportBytes, {
-          contentType: 'application/json',
-          extractedFrom: sourceAssetKey,
-        });
-      } catch {
-        // report is best-effort
-      }
+      const sheetKey = `${packRoot}/sheets/${moveId}.png`;
+      await storage.putBytes(sheetKey, await readFile(path.join(outputDir, 'sheet.png')), {
+        contentType: 'image/png',
+        artifactType: 'row-normalized-sheet',
+        extractedFrom: sourceAssetKey,
+      });
 
-      return { frames, moveId, report };
+      const extractionReportKey = `${spritesPrefix}/extraction_report.json`;
+      await storage.putJson(extractionReportKey, report, {
+        contentType: 'application/json',
+        artifactType: 'extraction-report',
+      });
+
+      // Merge this move's frames into the pack frameData.
+      const frameDataKey = `${packRoot}/frameData.json`;
+      let frameData = await storage.getJson(frameDataKey).catch(() => null);
+      if (!frameData?.frames || typeof frameData.frames !== 'object') {
+        frameData = {
+          anchorConvention: 'frame anchor is the character pivot/feet, in pixels from each PNG top-left',
+          frames: {},
+        };
+      }
+      frameData.frames[moveId] = fragment;
+      await storage.putJson(frameDataKey, frameData, {
+        contentType: 'application/json',
+        artifactType: 'frame-data',
+      });
+
+      // Merge into the canonical manifest.
+      const manifestKey = `${packRoot}/manifest.json`;
+      let manifest = await storage.getJson(manifestKey).catch(() => null);
+      manifest = normalizeManifest(manifest, { id: characterId }) ?? {};
+      manifest.id = manifest.id ?? characterId;
+      manifest.artSource = manifest.artSource ?? 'image-gen';
+      manifest.frameData = 'frameData.json';
+      manifest.sheets = { ...(manifest.sheets ?? {}), [moveId]: `sheets/${moveId}.png` };
+      manifest.sprites = { ...(manifest.sprites ?? {}), [moveId]: fragment.map((frame) => frame.file) };
+      manifest.frameCounts = { ...(manifest.frameCounts ?? {}), [moveId]: fragment.length };
+      await storage.putJson(manifestKey, manifest, {
+        contentType: 'application/json',
+        artifactType: 'normalized-manifest',
+      });
+
+      // Merge warnings/measurements into the pack normalization report.
+      const reportKey = `${packRoot}/normalization-report.json`;
+      let normReport = await storage.getJson(reportKey).catch(() => null);
+      if (!normReport || typeof normReport !== 'object') normReport = {};
+      normReport.workflow = normReport.workflow ?? 'row-normalizer';
+      normReport.moves = {
+        ...(normReport.moves ?? {}),
+        [moveId]: {
+          generatedAt: now,
+          sourceAssetKey,
+          grid: report.grid,
+          medianSilhouetteHeight: report.medianSilhouetteHeight,
+          scaleApplied: report.scaleApplied,
+          targetHeight: resolvedTargetHeight,
+          warnings: report.warnings ?? [],
+        },
+      };
+      normReport.warnings = Object.entries(normReport.moves)
+        .flatMap(([move, entry]) => (entry.warnings ?? []).map((warning) => `${move}: ${warning}`));
+      await storage.putJson(reportKey, normReport, {
+        contentType: 'application/json',
+        artifactType: 'normalization-report',
+      });
+
+      return {
+        frames,
+        moveId,
+        sheetKey,
+        frameDataKey,
+        manifestKey,
+        reportKey,
+        assetRootKey: packRoot,
+        targetHeight: resolvedTargetHeight,
+        scaleApplied: report.scaleApplied,
+        warnings: report.warnings ?? [],
+      };
     } finally {
       await rm(tempDir, { recursive: true, force: true });
     }

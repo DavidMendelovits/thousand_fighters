@@ -51,6 +51,16 @@ try {
   });
   assert.ok(await storage.exists(sheet.asset.key), 'generated row sheet should be stored');
 
+  // 2b. Row extraction normalizes into the fighter pack with anchors
+  const extracted = await pipeline.extractRowFrames({
+    characterId: CHARACTER_ID,
+    sourceAssetKey: sheet.asset.key,
+    moveId: 'punch',
+  });
+  assert.equal(extracted.frames.length, 6, 'row extraction yields 6 frames');
+  const extractedFrameData = await storage.getJson(extracted.frameDataKey);
+  assert.ok(extractedFrameData.frames.punch[0].anchor.y > 0, 'extracted frames carry anchors');
+
   // 3. SFX generation
   const sfx = await pipeline.generateCharacterSfx({
     characterId: CHARACTER_ID,

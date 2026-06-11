@@ -108,11 +108,17 @@ export function createMockTextModel(overrides = {}) {
   };
 }
 
+// A real (tiny) 1x6 sprite row: 192x64, magenta background, six blue body
+// blocks on a shared floor line with a growing arm — small enough to embed,
+// real enough that frame extraction and anchoring work keylessly.
+const MOCK_ROW_SHEET_BASE64 =
+  'iVBORw0KGgoAAAANSUhEUgAAAMAAAABACAIAAADDDu+IAAAA4ElEQVR42u3awQmEMBBA0XGxGSuwjS3VNqzAcuLBy7KKxGDQwHtXIQPyiR6mS5ECSn28AgSEgBAQAgIBISAEhIBAQAgIASEgEBACQkAICASEgHhWf/54+M45pyzTWDbe+a2f7wbCJwwBISAEBAJCQAgIAYGAEBACQkAgIARENLQPFFfWSoq3UvLXViqN+F2LqTHib+3m9hH7tZ57RxyuDW0j3ED4hCEgBISf6FL1fp+d//Lz3UD4hCEgBISAQEAICAEhIBAQAkJACAgEhIB4lS5F8hZwAyEgBISAQEAIiCasAMIy9fniDPYAAAAASUVORK5CYII=';
+
 export function createMockImageGenerator(overrides = {}) {
   return {
     id: overrides.id ?? 'mock-image-generator',
     provider: overrides.provider ?? 'mock',
-    capabilities: ['fighter-5x6-sheet'],
+    capabilities: ['fighter-1x6-row', 'fighter-2x3-grid'],
     async healthCheck() {
       return { status: 'ok', message: 'Mock image generator is available.' };
     },
@@ -122,7 +128,7 @@ export function createMockImageGenerator(overrides = {}) {
         model: 'mock-image-model',
         promptRef: `mock://${request.task}`,
         contentType: 'image/png',
-        bytes: Buffer.from(`mock image for ${request.prompt}`),
+        bytes: Buffer.from(MOCK_ROW_SHEET_BASE64, 'base64'),
       };
     },
   };
