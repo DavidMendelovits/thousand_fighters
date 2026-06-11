@@ -69,7 +69,7 @@ export function createCmsTools({ pipeline, repository, registry }) {
     },
     {
       name: 'generate_sprite_sheet',
-      description: 'Generate a 1x6 sprite row sheet for a single move (base, punch, kick, special_1, or special_2).',
+      description: 'Generate a sprite sheet for a single move (base, punch, kick, special_1, or special_2). Frame roles are canonical: 1-2 startup, 3 reaching/extending, 4 moment of contact / full extension, 5 follow-through, 6 recovery — author visualTimeline and hitbox keyframes against these roles.',
       inputSchema: objectSchema({
         characterId: stringSchema('Character id.'),
         prompt: stringSchema('Sprite generation prompt.'),
