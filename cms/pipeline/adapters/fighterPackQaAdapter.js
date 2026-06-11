@@ -87,6 +87,12 @@ export class FighterPackQaAdapter {
     // Check 10: minimum-frame-count
     checks.push(this._checkMinimumFrameCount(frameData, manifest));
 
+    // Check 11: frame-height-consistency (all rows at the fighter's scale)
+    checks.push(this._checkFrameHeightConsistency(frameData));
+
+    // Check 12: wide-reach-sanity (wide-profile moves actually reach further)
+    checks.push(await this._checkWideReachSanity(characterId, frameData));
+
     // Compute summary
     const errors = checks.filter((c) => c.status === 'error').length;
     const warnings = checks.filter((c) => c.status === 'warning').length;
@@ -556,6 +562,102 @@ export class FighterPackQaAdapter {
       id: 'projectile-assets',
       status: 'pass',
       message: `All ${projectileEntries.length} projectile asset(s) exist.`,
+    };
+  }
+
+  _checkFrameHeightConsistency(frameData) {
+    const sheets = frameData?.frames ?? {};
+    const medianHeight = (frames) => {
+      const heights = (frames ?? [])
+        .map((frame) => frame.silhouetteHeight)
+        .filter((value) => typeof value === 'number' && value > 0)
+        .sort((a, b) => a - b);
+      return heights.length ? heights[Math.floor(heights.length / 2)] : null;
+    };
+
+    const baseHeight = medianHeight(sheets.base);
+    if (!baseHeight) {
+      return {
+        id: 'frame-height-consistency',
+        status: 'pass',
+        message: 'Skipped: base frames carry no silhouetteHeight (legacy pack predates the row normalizer).',
+      };
+    }
+
+    const problems = [];
+    let worst = 0;
+    for (const [sheetId, frames] of Object.entries(sheets)) {
+      if (sheetId === 'base') continue;
+      const height = medianHeight(frames);
+      if (!height) continue;
+      const deviation = Math.abs(height - baseHeight) / baseHeight;
+      worst = Math.max(worst, deviation);
+      if (deviation > 0.15) {
+        problems.push(`${sheetId}: median silhouette ${height}px vs base ${baseHeight}px (${(deviation * 100).toFixed(0)}% off)`);
+      }
+    }
+
+    if (problems.length > 0) {
+      return {
+        id: 'frame-height-consistency',
+        status: worst > 0.25 ? 'error' : 'warning',
+        message: `Character scale drifts between move rows: ${problems.join('; ')}. Re-extract with the base row present so rescaling applies.`,
+      };
+    }
+    return {
+      id: 'frame-height-consistency',
+      status: 'pass',
+      message: `All move rows are within 15% of the base silhouette height (${baseHeight}px).`,
+    };
+  }
+
+  async _checkWideReachSanity(characterId, frameData) {
+    const sheets = frameData?.frames ?? {};
+    let draft = null;
+    try {
+      draft = await this.repository.getDraft(characterId);
+    } catch {
+      // no draft — skip
+    }
+    const wideSheets = [...new Set(
+      (draft?.moves ?? [])
+        .filter((move) => move.spriteProfile === 'wide')
+        .map((move) => move.animation ?? move.sheet)
+        .filter(Boolean),
+    )];
+    if (wideSheets.length === 0) {
+      return {
+        id: 'wide-reach-sanity',
+        status: 'pass',
+        message: 'Skipped: no wide-profile moves declared in the draft.',
+      };
+    }
+
+    const maxReach = (frames) => Math.max(0, ...(frames ?? [])
+      .map((frame) => frame.reachX)
+      .filter((value) => typeof value === 'number'));
+    const baseReach = maxReach(sheets.base);
+    const failures = [];
+    for (const sheetId of wideSheets) {
+      const reach = maxReach(sheets[sheetId]);
+      if (!reach) {
+        failures.push(`${sheetId}: no reachX data (re-extract with the current normalizer)`);
+      } else if (baseReach && reach <= baseReach) {
+        failures.push(`${sheetId}: max reach ${reach}px does not exceed base reach ${baseReach}px — the wide generation did not extend`);
+      }
+    }
+
+    if (failures.length > 0) {
+      return {
+        id: 'wide-reach-sanity',
+        status: 'warning',
+        message: `Wide-profile reach check: ${failures.join('; ')}.`,
+      };
+    }
+    return {
+      id: 'wide-reach-sanity',
+      status: 'pass',
+      message: `Wide-profile move(s) ${wideSheets.join(', ')} reach beyond the base silhouette.`,
     };
   }
 
