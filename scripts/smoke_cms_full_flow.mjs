@@ -69,17 +69,27 @@ try {
   });
   assert.equal(sfx.asset.key, `characters/${CHARACTER_ID}/assets/sounds/hit.wav`);
 
-  // 4. Normalize (fixture normalizer copies a real fighter pack)
+  // 4. Normalize fills the gaps from the fixture but must PRESERVE the
+  //    row-normalized punch sheet.
   const normalized = await pipeline.normalizeSpritePack({
     characterId: CHARACTER_ID,
     sourceAssetKey: sheet.asset.key,
   });
   assert.equal(normalized.status, 'pass');
+  assert.deepEqual(normalized.preservedSheets, ['punch'], 'row-normalized punch is preserved');
+  assert.ok(normalized.filledSheets.includes('base'), 'missing sheets are filled from the fixture');
 
   // Canonical manifest schema lands in the pack
   const packManifest = await storage.getJson(normalized.outputKey);
   assert.ok(packManifest.sheets, 'pack manifest must use canonical "sheets" key');
   assert.ok(packManifest.frameCounts, 'pack manifest must use canonical "frameCounts" key');
+
+  // The punch entries still carry row-normalizer data after the fixture fill.
+  const mergedFrameData = await storage.getJson(normalized.frameDataKey);
+  assert.ok(mergedFrameData.frames.punch[0].silhouetteHeight > 0, 'punch frameData survived the fixture fill');
+  assert.ok(mergedFrameData.frames.base?.length === 6, 'base frameData filled from fixture');
+  const punchFrame = await storage.getBytes(`characters/${CHARACTER_ID}/assets/fighter-pack/sprites/punch/punch_001.png`);
+  assert.ok(punchFrame.length < 5000, 'punch frame is the tiny row-extracted PNG, not the fixture sprite');
 
   // 5. Publish before QA must hit the gate
   await assert.rejects(

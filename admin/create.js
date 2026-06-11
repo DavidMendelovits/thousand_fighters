@@ -610,8 +610,8 @@ async function onNormalize() {
   if (!firstRowAsset || !ctx.characterId) return;
 
   setBusy(true);
-  log('Normalizing sprite pack (extracting frames)...');
-  document.getElementById('frames-preview').innerHTML = '<div class="spinner-text">Extracting frames&hellip;</div>';
+  log('Finalizing sprite pack (generated rows are kept; missing sheets are filled)...');
+  document.getElementById('frames-preview').innerHTML = '<div class="spinner-text">Finalizing pack&hellip;</div>';
   unlockUpTo(3);
 
   try {
@@ -620,7 +620,11 @@ async function onNormalize() {
       sourceAssetKey: firstRowAsset.key,
     });
     ctx.normalizedKey = result.normalized.outputKey;
-    log(`Normalized: ${result.normalized.copiedFileCount} files, ${result.normalized.warnings?.length ?? 0} warnings`);
+    const preserved = result.normalized.preservedSheets ?? [];
+    const filled = result.normalized.filledSheets ?? [];
+    if (preserved.length) log(`Kept generated rows: ${preserved.join(', ')}.`);
+    if (filled.length) log(`Filled placeholder sheets: ${filled.join(', ')} — regenerate those rows to replace them.`);
+    log(`Pack finalized: ${result.normalized.copiedFileCount} files, ${result.normalized.warnings?.length ?? 0} warnings`);
     saveWizardState();
     await renderFramesPreview();
   } catch (err) {

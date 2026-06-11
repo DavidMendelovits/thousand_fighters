@@ -1,6 +1,7 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { normalizeManifest } from '../manifestSchema.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..', '..');
@@ -105,12 +106,30 @@ export function createLocalSpriteNormalizer({ storage, fixtureFighterId = 'janit
         throw new Error(`Cannot normalize missing source asset: ${sourceAssetKey}`);
       }
 
+      // Row-normalized sheets are the real fighter; the fixture only fills the
+      // gaps. Never clobber a sheet the row normalizer already produced.
+      const existingFrameData = await storage.getJson(frameDataKey).catch(() => null);
+      const existingManifest = await storage.getJson(normalizedKey).catch(() => null);
+      const existingReport = await storage.getJson(reportKey).catch(() => null);
+      const preserved = new Set();
+      if (existingReport?.workflow === 'row-normalizer' && existingFrameData?.frames) {
+        for (const [sheetId, frames] of Object.entries(existingFrameData.frames)) {
+          if (Array.isArray(frames) && frames.length > 0) preserved.add(sheetId);
+        }
+      }
+
       const files = await collectFiles(resolvedFixtureRoot);
+      const mergedJsonFiles = new Set(['manifest.json', 'frameData.json', 'normalization-report.json']);
       const copiedFiles = [];
       for (const relativePath of files) {
-        const fixturePath = path.join(resolvedFixtureRoot, relativePath);
+        if (mergedJsonFiles.has(relativePath)) continue;
+        const sheetMatch = relativePath.match(/^sprites\/([^/]+)\//) ?? relativePath.match(/^sheets\/([^/]+)\.png$/);
+        if (sheetMatch && preserved.has(sheetMatch[1])) continue;
         const targetKey = `${normalizedRootKey}/${relativePath}`;
-        await storage.putBytes(targetKey, await readFile(fixturePath), {
+        // When gap-filling, leave already-present non-sheet assets (custom
+        // projectiles, sources) untouched.
+        if (!sheetMatch && preserved.size > 0 && (await storage.exists(targetKey))) continue;
+        await storage.putBytes(targetKey, await readFile(path.join(resolvedFixtureRoot, relativePath)), {
           contentType: contentTypeFor(relativePath),
           artifactType: 'fixture-normalized-asset',
           sourceFixture: `/fighters/${fixtureFighterId}/${relativePath}`,
@@ -118,24 +137,75 @@ export function createLocalSpriteNormalizer({ storage, fixtureFighterId = 'janit
         copiedFiles.push(targetKey);
       }
 
-      const manifest = await readJsonIfPresent(path.join(resolvedFixtureRoot, 'manifest.json'));
-      if (manifest) {
-        await storage.putJson(normalizedKey, {
-          ...manifest,
-          characterId,
-          cms: {
-            workflow: 'local-fixture-normalizer',
-            sourceAssetKey,
-            fixtureFighterId,
-            assetRootKey: normalizedRootKey,
-            generatedAt: now,
-            copiedFileCount: copiedFiles.length,
-          },
-        }, {
-          contentType: 'application/json',
-          artifactType: 'normalized-manifest',
-          sourceFixture: `/fighters/${fixtureFighterId}/manifest.json`,
-        });
+      // frameData: fixture entries for filled sheets, row entries preserved.
+      const fixtureFrameData = await readJsonIfPresent(path.join(resolvedFixtureRoot, 'frameData.json'));
+      const mergedFrameData = fixtureFrameData?.frames
+        ? fixtureFrameData
+        : { anchorConvention: 'frame anchor is the character pivot/feet, in pixels from each PNG top-left', frames: {} };
+      for (const sheetId of preserved) {
+        mergedFrameData.frames[sheetId] = existingFrameData.frames[sheetId];
+      }
+      await storage.putJson(frameDataKey, mergedFrameData, {
+        contentType: 'application/json',
+        artifactType: 'frame-data',
+        sourceFixture: `/fighters/${fixtureFighterId}/frameData.json`,
+      });
+      copiedFiles.push(frameDataKey);
+
+      // manifest: fixture entries overlaid with the preserved sheets.
+      const fixtureManifest = await readJsonIfPresent(path.join(resolvedFixtureRoot, 'manifest.json'));
+      const manifest = normalizeManifest(fixtureManifest ?? {}, { id: characterId }) ?? {};
+      manifest.id = characterId;
+      manifest.sheets = manifest.sheets ?? {};
+      manifest.sprites = manifest.sprites ?? {};
+      manifest.frameCounts = manifest.frameCounts ?? {};
+      for (const sheetId of preserved) {
+        manifest.sheets[sheetId] = existingManifest?.sheets?.[sheetId] ?? `sheets/${sheetId}.png`;
+        manifest.sprites[sheetId] = existingManifest?.sprites?.[sheetId]
+          ?? mergedFrameData.frames[sheetId].map((frame) => frame.file);
+        manifest.frameCounts[sheetId] = manifest.sprites[sheetId].length;
+      }
+      const filledSheets = Object.keys(manifest.sheets).filter((sheetId) => !preserved.has(sheetId));
+      await storage.putJson(normalizedKey, {
+        ...manifest,
+        characterId,
+        cms: {
+          workflow: 'local-fixture-normalizer',
+          sourceAssetKey,
+          fixtureFighterId,
+          assetRootKey: normalizedRootKey,
+          generatedAt: now,
+          copiedFileCount: copiedFiles.length,
+          preservedSheets: [...preserved],
+          filledSheets,
+        },
+      }, {
+        contentType: 'application/json',
+        artifactType: 'normalized-manifest',
+        sourceFixture: `/fighters/${fixtureFighterId}/manifest.json`,
+      });
+      copiedFiles.push(normalizedKey);
+
+      // report: keep the row normalizer's sections, record the fixture fill.
+      const fixtureReport = await readJsonIfPresent(path.join(resolvedFixtureRoot, 'normalization-report.json'));
+      const report = preserved.size > 0 ? (existingReport ?? {}) : (fixtureReport ?? {});
+      report.fixtureFill = {
+        fixtureFighterId,
+        generatedAt: now,
+        filledSheets,
+        preservedSheets: [...preserved],
+      };
+      await storage.putJson(reportKey, report, {
+        contentType: 'application/json',
+        artifactType: 'normalization-report',
+      });
+      copiedFiles.push(reportKey);
+
+      const warnings = [];
+      if (filledSheets.length > 0) {
+        warnings.push(
+          `Filled ${filledSheets.join(', ')} from the ${fixtureFighterId} fixture; generate those rows to replace placeholder art.`,
+        );
       }
 
       return {
@@ -147,8 +217,10 @@ export function createLocalSpriteNormalizer({ storage, fixtureFighterId = 'janit
         reportKey,
         assetRootKey: normalizedRootKey,
         copiedFileCount: copiedFiles.length,
+        preservedSheets: [...preserved],
+        filledSheets,
         fixtureFighterId,
-        warnings: [`Copied fixture assets from ${fixtureFighterId}; replace with contour normalizer before production publishing.`],
+        warnings,
       };
     },
   };

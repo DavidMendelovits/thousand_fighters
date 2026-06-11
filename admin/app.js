@@ -454,6 +454,10 @@ async function normalizePack() {
     sourceAssetKey: state.sourceAssetKey,
   });
   state.normalizedKey = result.normalized.outputKey;
+  const preserved = result.normalized.preservedSheets ?? [];
+  const filled = result.normalized.filledSheets ?? [];
+  if (preserved.length) log(`Kept generated rows: ${preserved.join(', ')}.`, 'pass');
+  if (filled.length) log(`Filled placeholder sheets: ${filled.join(', ')} — generate those rows to replace them.`);
   await selectCharacter(characterId, { silent: true });
   return result;
 }
