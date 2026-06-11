@@ -12,3 +12,4 @@ stamptown-qlab/
 .gstack/
 .wrangler/
 generated/
+scripts/__pycache__/
