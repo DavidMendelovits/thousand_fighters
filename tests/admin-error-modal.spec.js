@@ -35,16 +35,15 @@ test.describe('Error detail modal', () => {
     const workbench = page.locator('#character-workbench');
     await expect(workbench.locator('.character-summary')).toBeVisible();
 
-    // Expand Dev Tools to access the Normalize button
-    const devTools = page.locator('details.dev-tools-panel');
-    await devTools.locator('summary').click();
-    await expect(devTools).toHaveAttribute('open', '');
+    // Open the Tools tab to access the Normalize button
+    await page.locator('[data-ops-tab="tools"]').click();
 
     // Click Normalize without a source asset — this will log an error
     await page.locator('#normalize-pack').click();
 
-    // The run log should now contain an error line
-    const runLog = page.locator('#run-log');
+    // The activity feed should now contain an error line
+    await page.locator('[data-ops-tab="activity"]').click();
+    const runLog = page.locator('#chat-thread');
     await expect(runLog.locator('.run-log-error-line').first()).toBeVisible({ timeout: 10000 });
 
     // Click the error line to open the modal
@@ -74,10 +73,11 @@ test.describe('Error detail modal', () => {
     await expect(workbench.locator('.character-summary')).toBeVisible();
 
     // Expand Dev Tools and trigger an error
-    await page.locator('details.dev-tools-panel summary').click();
+    await page.locator('[data-ops-tab="tools"]').click();
     await page.locator('#normalize-pack').click();
 
-    const runLog = page.locator('#run-log');
+    await page.locator('[data-ops-tab="activity"]').click();
+    const runLog = page.locator('#chat-thread');
     await expect(runLog.locator('.run-log-error-line').first()).toBeVisible({ timeout: 10000 });
     await runLog.locator('.run-log-error-line').first().click();
 
@@ -96,10 +96,11 @@ test.describe('Error detail modal', () => {
     await expect(workbench.locator('.character-summary')).toBeVisible();
 
     // Expand Dev Tools and trigger an error
-    await page.locator('details.dev-tools-panel summary').click();
+    await page.locator('[data-ops-tab="tools"]').click();
     await page.locator('#normalize-pack').click();
 
-    const runLog = page.locator('#run-log');
+    await page.locator('[data-ops-tab="activity"]').click();
+    const runLog = page.locator('#chat-thread');
     await expect(runLog.locator('.run-log-error-line').first()).toBeVisible({ timeout: 10000 });
     await runLog.locator('.run-log-error-line').first().click();
 
@@ -118,10 +119,11 @@ test.describe('Error detail modal', () => {
     await expect(workbench.locator('.character-summary')).toBeVisible();
 
     // Expand Dev Tools and trigger an error
-    await page.locator('details.dev-tools-panel summary').click();
+    await page.locator('[data-ops-tab="tools"]').click();
     await page.locator('#normalize-pack').click();
 
-    const runLog = page.locator('#run-log');
+    await page.locator('[data-ops-tab="activity"]').click();
+    const runLog = page.locator('#chat-thread');
     await expect(runLog.locator('.run-log-error-line').first()).toBeVisible({ timeout: 10000 });
     await runLog.locator('.run-log-error-line').first().click();
 
@@ -145,10 +147,11 @@ test.describe('Error detail modal', () => {
     await expect(workbench.locator('.character-summary')).toBeVisible();
 
     // Expand Dev Tools and trigger an error
-    await page.locator('details.dev-tools-panel summary').click();
+    await page.locator('[data-ops-tab="tools"]').click();
     await page.locator('#normalize-pack').click();
 
-    const runLog = page.locator('#run-log');
+    await page.locator('[data-ops-tab="activity"]').click();
+    const runLog = page.locator('#chat-thread');
     await expect(runLog.locator('.run-log-error-line').first()).toBeVisible({ timeout: 10000 });
     await runLog.locator('.run-log-error-line').first().click();
 

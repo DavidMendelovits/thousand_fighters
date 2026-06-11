@@ -21,7 +21,9 @@ function navigateTo(path) {
 function handleRouteChange() {
   const route = getCurrentRoute();
   if (route.page === 'pipeline') {
-    renderPipelineView();
+    // Legacy route: pipeline now lives in the ops column, no workbench detour.
+    renderEmptyWorkbench('Select a fighter to inspect moves, frames, animation, stats, and assets.');
+    setOpsTab('pipeline');
   } else if (route.characterId) {
     selectCharacter(route.characterId, { pushState: false });
   } else {
@@ -35,6 +37,7 @@ window.addEventListener('popstate', () => {
 
 const state = {
   currentCharacterId: '',
+  openActivityMove: null,
   characters: [],
   sourceAssetKey: '',
   normalizedKey: '',
@@ -80,7 +83,24 @@ const elements = {
   sendChat: document.querySelector('#send-chat'),
   refreshRoster: document.querySelector('#refresh-roster'),
   errorModal: document.querySelector('#error-modal'),
+  opsPanel: document.querySelector('.ops-panel'),
+  opsTabs: document.querySelector('.ops-tabs'),
+  pipelineSummary: document.querySelector('#pipeline-summary'),
+  adapterHealthStrip: document.querySelector('#adapter-health-strip'),
+  moveActivityPanel: document.querySelector('#move-activity-panel'),
 };
+
+function setOpsTab(name) {
+  if (!elements.opsPanel) return;
+  for (const tab of elements.opsPanel.querySelectorAll('[data-ops-tab]')) {
+    const active = tab.dataset.opsTab === name;
+    tab.classList.toggle('active', active);
+    tab.setAttribute('aria-selected', String(active));
+  }
+  for (const pane of elements.opsPanel.querySelectorAll('[data-ops-pane]')) {
+    pane.hidden = pane.dataset.opsPane !== name;
+  }
+}
 
 elements.draftForm.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -102,11 +122,56 @@ elements.assetPath.addEventListener('input', () => {
 });
 elements.assetFile.addEventListener('change', syncAssetPath);
 elements.characterWorkbench.addEventListener('click', handleAnimationControl);
+elements.characterWorkbench.addEventListener('click', handleWorkbenchClick);
+
+const WORKBENCH_CTA_HANDLERS = {
+  'cta-generate-sheet': () => generateSheet(),
+  'cta-normalize-pack': () => normalizePack(),
+  'cta-validate-pack': () => validatePack(),
+  'cta-publish-character': () => publishCharacter(),
+};
+
+function handleWorkbenchClick(event) {
+  const cta = event.target.closest('[id^="cta-"]');
+  if (cta && WORKBENCH_CTA_HANDLERS[cta.id]) {
+    WORKBENCH_CTA_HANDLERS[cta.id]();
+    return;
+  }
+
+  const genButton = event.target.closest('[data-gen-move]');
+  if (genButton) {
+    generateMoveRow(genButton.dataset.genMove);
+    return;
+  }
+
+  const activityButton = event.target.closest('[data-move-activity]');
+  if (activityButton) {
+    openMoveActivityPanel(activityButton.dataset.moveActivity);
+    return;
+  }
+
+  const tabButton = event.target.closest('[data-move-tab]');
+  if (tabButton) {
+    const card = tabButton.closest('.move-card');
+    if (!card) return;
+    for (const tab of card.querySelectorAll('[data-move-tab]')) {
+      tab.classList.toggle('active', tab === tabButton);
+    }
+    for (const pane of card.querySelectorAll('[data-move-pane]')) {
+      pane.hidden = pane.dataset.movePane !== tabButton.dataset.moveTab;
+    }
+  }
+}
 elements.chatForm.addEventListener('submit', sendChatMessage);
 elements.refreshRoster.addEventListener('click', async () => {
   await loadCharacters();
   handleRouteChange();
 });
+elements.opsTabs?.addEventListener('click', (event) => {
+  const tab = event.target.closest('[data-ops-tab]');
+  if (tab) setOpsTab(tab.dataset.opsTab);
+});
+elements.adapterHealthStrip?.addEventListener('click', () => setOpsTab('pipeline'));
 
 // Delegated click on chat thread: open error modal when an error tool call summary is clicked
 elements.chatThread.addEventListener('click', (event) => {
@@ -155,10 +220,30 @@ async function loadChatHealth() {
 
 async function loadPipeline() {
   const pipeline = await getJson('/api/pipeline');
-  elements.adapterCount.textContent = `${pipeline.adapters.length} adapters`;
+  elements.adapterCount.textContent = String(pipeline.adapters.length);
   const healthByPort = new Map((pipeline.adapterHealth ?? []).map((health) => [health.port, health]));
   elements.adapterList.replaceChildren(...pipeline.adapters.map((adapter) => renderAdapter(adapter, healthByPort.get(adapter.port))));
   elements.gapList.replaceChildren(...pipeline.gaps.map(renderGap));
+
+  const statuses = pipeline.adapters.map((adapter) => healthByPort.get(adapter.port)?.status ?? 'unknown');
+  const problems = statuses.filter((status) => status === 'error').length;
+  const warnings = statuses.filter((status) => status === 'warning').length;
+  if (elements.pipelineSummary) {
+    elements.pipelineSummary.textContent = problems
+      ? `${problems} adapter problem${problems > 1 ? 's' : ''}`
+      : warnings
+        ? `${warnings} warning${warnings > 1 ? 's' : ''}`
+        : 'All adapters healthy';
+  }
+  if (elements.adapterHealthStrip) {
+    elements.adapterHealthStrip.replaceChildren(...pipeline.adapters.map((adapter) => {
+      const health = healthByPort.get(adapter.port);
+      const dot = document.createElement('span');
+      dot.className = `health-dot health-dot-${health?.status ?? 'unknown'}`;
+      dot.title = `${adapter.port}: ${health?.status ?? 'unknown'}`;
+      return dot;
+    }));
+  }
 }
 
 async function loadCharacters() {
@@ -237,6 +322,7 @@ function logMoveActivity(moveId, message, level = '') {
   if (!state.moveActivity[moveId]) state.moveActivity[moveId] = [];
   state.moveActivity[moveId].push({ message, level, ts: Date.now() });
   if (state.moveActivity[moveId].length > 50) state.moveActivity[moveId].shift();
+  refreshMoveActivityPanel(moveId);
 }
 
 function setMoveCardLoading(moveId, loading) {
@@ -604,31 +690,8 @@ function renderCharacterWorkbench(draft, assets) {
     </section>
   `;
 
-  // Wire up CTA buttons (they are re-created with each render)
-  const ctaGenerateSheet = elements.characterWorkbench.querySelector('#cta-generate-sheet');
-  if (ctaGenerateSheet) {
-    ctaGenerateSheet.addEventListener('click', generateSheet);
-  }
-  const ctaNormalize = elements.characterWorkbench.querySelector('#cta-normalize-pack');
-  if (ctaNormalize) {
-    ctaNormalize.addEventListener('click', normalizePack);
-  }
-  const ctaValidate = elements.characterWorkbench.querySelector('#cta-validate-pack');
-  if (ctaValidate) {
-    ctaValidate.addEventListener('click', validatePack);
-  }
-  const ctaPublish = elements.characterWorkbench.querySelector('#cta-publish-character');
-  if (ctaPublish) {
-    ctaPublish.addEventListener('click', publishCharacter);
-  }
-
-  for (const btn of elements.characterWorkbench.querySelectorAll('[data-gen-move]')) {
-    btn.addEventListener('click', () => generateMoveRow(btn.dataset.genMove));
-  }
-  for (const btn of elements.characterWorkbench.querySelectorAll('[data-move-activity]')) {
-    btn.addEventListener('click', () => openMoveActivityModal(btn.dataset.moveActivity));
-  }
-
+  // All workbench buttons are handled by the delegated click handler —
+  // no per-render listener attachment.
   startAnimationPreviews();
 }
 
@@ -637,53 +700,6 @@ function renderEmptyWorkbench(message) {
   elements.characterWorkbench.className = 'character-workbench empty-state';
   elements.characterWorkbench.textContent = message;
   elements.selectedCharacter.textContent = 'No draft loaded';
-}
-
-async function renderPipelineView() {
-  clearAnimationTimers();
-  elements.characterWorkbench.className = 'character-workbench';
-  elements.selectedCharacter.textContent = 'Pipeline Inspector';
-  elements.characterWorkbench.innerHTML = '<p class="soft-label" style="padding:16px">Loading pipeline…</p>';
-
-  try {
-    const pipeline = await getJson('/api/pipeline');
-    const healthByPort = new Map((pipeline.adapterHealth ?? []).map((health) => [health.port, health]));
-    const adapterNodes = pipeline.adapters.map((adapter) => renderAdapter(adapter, healthByPort.get(adapter.port)));
-    const gapNodes = pipeline.gaps.map(renderGap);
-
-    elements.characterWorkbench.innerHTML = '';
-    const section = document.createElement('section');
-    section.className = 'character-summary';
-    section.innerHTML = `
-      <div>
-        <span class="eyebrow">pipeline</span>
-        <h2>Pipeline Inspector</h2>
-        <p>${pipeline.adapters.length} registered adapters</p>
-      </div>
-    `;
-    elements.characterWorkbench.appendChild(section);
-
-    const adaptersSection = document.createElement('section');
-    adaptersSection.className = 'move-board';
-    const adaptersHeading = document.createElement('h3');
-    adaptersHeading.style.cssText = 'margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.08em;opacity:.6';
-    adaptersHeading.textContent = 'Adapters';
-    adaptersSection.appendChild(adaptersHeading);
-    for (const node of adapterNodes) adaptersSection.appendChild(node);
-
-    if (gapNodes.length > 0) {
-      const gapsHeading = document.createElement('h3');
-      gapsHeading.style.cssText = 'margin:16px 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.08em;opacity:.6';
-      gapsHeading.textContent = 'Remaining Work';
-      adaptersSection.appendChild(gapsHeading);
-      for (const node of gapNodes) adaptersSection.appendChild(node);
-    }
-
-    elements.characterWorkbench.appendChild(adaptersSection);
-  } catch (error) {
-    showError(error);
-    elements.characterWorkbench.innerHTML = `<p class="soft-label" style="padding:16px;color:var(--error)">Failed to load pipeline data.</p>`;
-  }
 }
 
 function renderStatGrid(stats) {
@@ -769,16 +785,68 @@ function renderMoveGroup(group) {
           ${primarySheet ? `<a class="sheet-link" href="${primarySheet.apiUrl}" target="_blank" rel="noreferrer">Open sheet · ${escapeHtml(primarySheet.relativePath)}</a>` : '<span class="sheet-link muted-link">No sheet asset found</span>'}
         </div>
         <div class="move-data-pane">
-          ${renderMoveData(group)}
+          ${renderMoveCardTabs(group)}
         </div>
-      </div>
-
-      <div class="variant-list">
-        ${group.projectiles.length > 0 ? renderProjectileAssets(group.projectiles) : ''}
-        ${group.variants.map(renderVariant).join('') || (group.projectiles.length > 0 ? '' : '<span class="empty-inline">No individual frame assets found for this move.</span>')}
       </div>
     </article>
   `;
+}
+
+function renderMoveCardTabs(group) {
+  const frameCount = group.variants.reduce((sum, variant) => sum + variant.frames.length, 0);
+  const hasFrames = frameCount > 0 || group.projectiles.length > 0;
+  const sounds = collectMoveSounds(group);
+  const primarySheet = groupPrimarySheet(group);
+  const defaultTab = hasFrames ? 'frames' : 'data';
+
+  const tab = (id, label, badge) => `
+    <button type="button" class="move-tab${id === defaultTab ? ' active' : ''}" data-move-tab="${id}">
+      ${label}${badge ? ` <span class="move-tab-badge">${badge}</span>` : ''}
+    </button>`;
+  const pane = (id, content) => `
+    <div class="move-tab-pane" data-move-pane="${id}" ${id === defaultTab ? '' : 'hidden'}>${content}</div>`;
+
+  const framesPane = `
+    ${group.projectiles.length > 0 ? renderProjectileAssets(group.projectiles) : ''}
+    ${group.variants.map(renderVariant).join('') || (group.projectiles.length > 0 ? '' : '<span class="empty-inline">No individual frame assets found for this move.</span>')}
+  `;
+  const soundsPane = sounds.length > 0
+    ? `<div class="sound-pill-list">${sounds.map((sound) => `<span class="sound-pill">${escapeHtml(sound)}</span>`).join('')}</div>`
+    : '<span class="empty-inline">No sound bindings on this move yet.</span>';
+  const sourcePane = primarySheet
+    ? `<a href="${primarySheet.apiUrl}" target="_blank" rel="noreferrer" class="source-sheet-link">
+         <img loading="lazy" src="${primarySheet.apiUrl}" alt="${escapeHtml(group.id)} source sheet" class="source-sheet-img" />
+         <span class="soft-label">${escapeHtml(primarySheet.relativePath)}</span>
+       </a>`
+    : '<span class="empty-inline">No source sheet generated for this move yet.</span>';
+
+  return `
+    <div class="move-tabs">
+      ${tab('frames', 'Frames', frameCount || (group.projectiles.length || ''))}
+      ${tab('data', 'Data')}
+      ${tab('sounds', 'Sounds', sounds.length || '')}
+      ${tab('source', 'Source')}
+    </div>
+    ${pane('frames', framesPane)}
+    ${pane('data', renderMoveData(group))}
+    ${pane('sounds', soundsPane)}
+    ${pane('source', sourcePane)}
+  `;
+}
+
+function collectMoveSounds(group) {
+  const sounds = new Set();
+  for (const move of group.moves ?? []) {
+    for (const phase of move.phases ?? []) {
+      for (const entry of phase.events ?? []) {
+        const event = entry.event ?? entry;
+        if (event?.type === 'play_sound' && event.name) sounds.add(event.name);
+        if (event?.hitbox?.hitSound) sounds.add(event.hitbox.hitSound);
+        if (event?.grab?.grabSound) sounds.add(event.grab.grabSound);
+      }
+    }
+  }
+  return [...sounds];
 }
 
 function renderAnimationPlayer(animationId, frames, group) {
@@ -1627,41 +1695,61 @@ function diagnoseWithCodex() {
   elements.chatForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
 }
 
-function openMoveActivityModal(moveId) {
-  const entries = state.moveActivity[moveId] ?? [];
-  if (entries.length === 0) return;
+// ---------------------------------------------------------------------------
+// Move activity slide-over (separate surface from the error modal)
+// ---------------------------------------------------------------------------
 
-  const rows = entries.map((entry) => {
+function renderMoveActivityRows(moveId) {
+  const entries = state.moveActivity[moveId] ?? [];
+  return entries.map((entry) => {
     const levelClass = entry.level === 'error' ? 'status-error' : entry.level === 'pass' ? 'status-pass' : '';
     const time = new Date(entry.ts).toLocaleTimeString();
     return `<div class="activity-entry ${levelClass}"><span class="activity-ts">${escapeHtml(time)}</span>${escapeHtml(entry.message)}</div>`;
   }).join('');
-
-  elements.errorModal.innerHTML = `
-    <div class="error-modal-box" role="document">
-      <div class="error-modal-header">
-        <h2 id="error-modal-title" class="error-modal-title">${escapeHtml(moveId)} activity</h2>
-        <span class="error-modal-status error-modal-status-ok">${entries.length} events</span>
-        <button type="button" class="error-modal-close" aria-label="Close">&times;</button>
-      </div>
-      <div class="error-modal-body">
-        <div class="activity-log">${rows}</div>
-      </div>
-      <div class="error-modal-footer">
-        <button type="button" class="error-modal-close-btn" style="background:#26303c;border-color:var(--line)">Close</button>
-      </div>
-    </div>
-  `;
-
-  elements.errorModal.querySelector('.error-modal-close').addEventListener('click', closeErrorModal);
-  elements.errorModal.querySelector('.error-modal-close-btn').addEventListener('click', closeErrorModal);
-  elements.errorModal.addEventListener('click', handleModalBackdropClick);
-  elements.errorModal.hidden = false;
 }
 
-// Close modal on Escape key
+function openMoveActivityPanel(moveId) {
+  const entries = state.moveActivity[moveId] ?? [];
+  if (entries.length === 0) return;
+  state.openActivityMove = moveId;
+
+  elements.moveActivityPanel.innerHTML = `
+    <div class="move-activity-header">
+      <h2 id="move-activity-title" class="move-activity-title">${escapeHtml(moveId)} activity</h2>
+      <span class="soft-label" data-activity-count>${entries.length} events</span>
+      <button type="button" class="move-activity-close" aria-label="Close activity log">&times;</button>
+    </div>
+    <div class="activity-log" data-activity-log>${renderMoveActivityRows(moveId)}</div>
+  `;
+  elements.moveActivityPanel.querySelector('.move-activity-close').addEventListener('click', closeMoveActivityPanel);
+  elements.moveActivityPanel.hidden = false;
+}
+
+function closeMoveActivityPanel() {
+  state.openActivityMove = null;
+  elements.moveActivityPanel.hidden = true;
+  elements.moveActivityPanel.innerHTML = '';
+}
+
+function refreshMoveActivityPanel(moveId) {
+  if (state.openActivityMove !== moveId || elements.moveActivityPanel.hidden) return;
+  const logEl = elements.moveActivityPanel.querySelector('[data-activity-log]');
+  const countEl = elements.moveActivityPanel.querySelector('[data-activity-count]');
+  if (logEl) {
+    logEl.innerHTML = renderMoveActivityRows(moveId);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+  if (countEl) countEl.textContent = `${(state.moveActivity[moveId] ?? []).length} events`;
+}
+
+// Close overlays on Escape: activity panel first, then the error modal
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape' && !elements.errorModal.hidden) {
+  if (event.key !== 'Escape') return;
+  if (!elements.moveActivityPanel.hidden) {
+    closeMoveActivityPanel();
+    return;
+  }
+  if (!elements.errorModal.hidden) {
     closeErrorModal();
   }
 });

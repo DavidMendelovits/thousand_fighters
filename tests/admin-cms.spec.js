@@ -34,15 +34,17 @@ test.describe('CMS admin platform', () => {
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'Character CMS' })).toBeVisible();
     await expect(page.locator('#system-status')).toContainText('thousand-fighters-cms');
+    await page.locator('[data-ops-tab="pipeline"]').click();
     await expect(page.locator('.health-badge').first()).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Pipeline' })).toBeVisible();
+    await page.locator('[data-ops-tab="tools"]').click();
     await expect(page.getByRole('heading', { name: 'Add Sprite Asset' })).toBeVisible();
 
     await page.locator(`[data-character-id="${characterId}"]`).click();
     const workbench = page.locator('#character-workbench');
     await expect(workbench).toContainText('Base / States');
     await expect(workbench).toContainText('Punch Moves');
-    await expect(workbench).toContainText('Kick');
+    await expect(workbench).toContainText('Roundhouse');
     await expect(workbench).toContainText('Animation');
     await expect(workbench.locator('[data-animation-player]').first()).toBeVisible();
     await expect(workbench.locator('.frame-strip img').first()).toBeVisible();
@@ -59,7 +61,8 @@ test.describe('CMS admin platform', () => {
     });
     await expect(page.locator('#asset-path')).toHaveValue('projectiles/playwright_projectile.png');
     await page.getByRole('button', { name: 'Add Sprite' }).click();
-    await expect(page.locator('#run-log')).toContainText('Added projectiles/playwright_projectile.png');
+    await page.locator('[data-ops-tab="activity"]').click();
+    await expect(page.locator('#chat-thread')).toContainText('Added projectiles/playwright_projectile.png');
     await expect(workbench).toContainText('Projectiles / Effects');
     await expect(workbench).toContainText('playwright_projectile');
   });

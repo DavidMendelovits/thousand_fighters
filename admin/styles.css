@@ -101,6 +101,117 @@ button:disabled {
   min-width: 0;
 }
 
+.ops-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: sticky;
+  top: 12px;
+  max-height: calc(100vh - 24px);
+  min-height: 360px;
+}
+
+.ops-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 8px;
+  flex: 0 0 auto;
+}
+
+.ops-tab {
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.ops-tab:hover {
+  color: var(--text);
+  background: #202732;
+}
+
+.ops-tab.active {
+  color: var(--text);
+  background: #202732;
+  border-color: var(--line);
+}
+
+.ops-tab-badge {
+  display: inline-block;
+  min-width: 16px;
+  border-radius: 999px;
+  background: #2d3746;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+  padding: 0 4px;
+  margin-left: 4px;
+}
+
+.ops-tab-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.ops-tab-pane[hidden] {
+  display: none;
+}
+
+.ops-pane-scroll {
+  overflow: auto;
+  min-height: 0;
+  flex: 1 1 auto;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  padding-right: 2px;
+}
+
+.adapter-health-strip {
+  appearance: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 9px;
+  cursor: pointer;
+}
+
+.adapter-health-strip:hover {
+  border-color: var(--focus);
+}
+
+.health-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #5c6b7e;
+}
+
+.health-dot-ok {
+  background: var(--accent);
+}
+
+.health-dot-warning {
+  background: var(--accent-2);
+}
+
+.health-dot-error {
+  background: var(--danger);
+}
+
 .panel {
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -892,8 +1003,14 @@ input[type="file"] {
 }
 
 .chat-panel {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 10px;
+  min-height: 0;
+}
+
+.chat-form {
+  flex: 0 0 auto;
 }
 
 .chat-health {
@@ -918,7 +1035,9 @@ input[type="file"] {
 .chat-thread {
   display: grid;
   gap: 4px;
-  max-height: min(500px, 50vh);
+  align-content: start;
+  flex: 1 1 auto;
+  min-height: 160px;
   overflow: auto;
   padding-right: 2px;
 }
@@ -1302,17 +1421,13 @@ details[open] .dev-tools-summary {
     grid-template-columns: 1fr;
   }
 
-  /* Reorder ops-column on mobile: chat first, then pipeline, then dev tools */
-  .chat-panel {
-    order: -1;
+  .ops-panel {
+    position: static;
+    max-height: none;
   }
 
-  .inspector-panel {
-    order: 0;
-  }
-
-  .dev-tools-panel {
-    order: 1;
+  .chat-thread {
+    max-height: min(400px, 50vh);
   }
 
   .asset-upload-form {
@@ -1351,6 +1466,168 @@ details[open] .dev-tools-summary {
 }
 
 /* ── Error detail modal ──────────────────────────────────────────── */
+
+
+/* Long generated ids/names must wrap instead of widening the mobile layout. */
+.character-summary h2,
+.character-summary .eyebrow,
+.character-summary p {
+  overflow-wrap: anywhere;
+}
+
+.move-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.move-tab {
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+
+.move-tab:hover {
+  color: var(--text);
+  background: #202732;
+}
+
+.move-tab.active {
+  color: var(--text);
+  background: #202732;
+  border-color: var(--line);
+}
+
+.move-tab-badge {
+  display: inline-block;
+  min-width: 14px;
+  border-radius: 999px;
+  background: #2d3746;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 14px;
+  text-align: center;
+  padding: 0 3px;
+}
+
+.move-tab-pane {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.move-tab-pane .frame-strip,
+.move-tab-pane .projectile-strip {
+  overflow-x: auto;
+}
+
+.move-data-pane {
+  min-width: 0;
+}
+
+.move-tab-pane[hidden] {
+  display: none;
+}
+
+.sound-pill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sound-pill {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #111820;
+  color: var(--text);
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  padding: 3px 10px;
+}
+
+.source-sheet-link {
+  display: grid;
+  gap: 6px;
+  text-decoration: none;
+}
+
+.source-sheet-img {
+  max-width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #111820;
+}
+
+.move-activity-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(380px, 92vw);
+  background: var(--panel);
+  border-left: 1px solid var(--line);
+  box-shadow: -18px 0 40px rgba(0, 0, 0, 0.45);
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+}
+
+.move-activity-panel[hidden] {
+  display: none;
+}
+
+.move-activity-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 10px;
+}
+
+.move-activity-title {
+  margin: 0;
+  font-size: 15px;
+  flex: 1;
+  text-transform: capitalize;
+}
+
+.move-activity-close {
+  appearance: none;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+  padding: 4px 9px;
+  cursor: pointer;
+}
+
+.move-activity-close:hover {
+  color: var(--text);
+  border-color: var(--focus);
+}
+
+.move-activity-panel .activity-log {
+  overflow: auto;
+  flex: 1 1 auto;
+  display: grid;
+  gap: 4px;
+  align-content: start;
+}
 
 .error-modal {
   position: fixed;

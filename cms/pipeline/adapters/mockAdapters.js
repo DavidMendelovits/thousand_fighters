@@ -27,7 +27,81 @@ export function createMockTextModel(overrides = {}) {
               special_2: 6,
             },
           },
-          moves: [],
+          moves: [
+            {
+              id: 'jab',
+              displayName: 'Jab',
+              animation: 'punch',
+              description: 'Quick standing jab.',
+              trigger: { allowedStates: ['idle', 'walk_forward', 'walk_back'], sequence: ['lp'] },
+              phases: [
+                { name: 'startup', frames: 4, events: [] },
+                {
+                  name: 'active',
+                  frames: 3,
+                  events: [
+                    {
+                      onFrame: 0,
+                      event: {
+                        type: 'hitbox_active',
+                        hitbox: { x: 30, y: -100, width: 60, height: 36, damage: 50, hitstun: 14, blockstun: 8, knockback: { x: 3, y: 0 } },
+                      },
+                    },
+                    { onFrame: 0, event: { type: 'play_sound', name: 'hit' } },
+                  ],
+                },
+                { name: 'recovery', frames: 7, events: [] },
+              ],
+            },
+            {
+              id: 'cross',
+              displayName: 'Cross',
+              animation: 'punch',
+              description: 'Straight cross follow-up.',
+              trigger: { allowedStates: ['idle'], sequence: ['mp'], cancelFrom: ['jab'] },
+              phases: [
+                { name: 'startup', frames: 6, events: [] },
+                {
+                  name: 'active',
+                  frames: 3,
+                  events: [
+                    {
+                      onFrame: 0,
+                      event: {
+                        type: 'hitbox_active',
+                        hitbox: { x: 34, y: -104, width: 64, height: 38, damage: 70, hitstun: 18, blockstun: 10, knockback: { x: 4, y: 0 } },
+                      },
+                    },
+                  ],
+                },
+                { name: 'recovery', frames: 9, events: [] },
+              ],
+            },
+            {
+              id: 'roundhouse',
+              displayName: 'Roundhouse',
+              animation: 'kick',
+              description: 'Spinning kick with knockdown.',
+              trigger: { allowedStates: ['idle'], sequence: ['hk'] },
+              phases: [
+                { name: 'startup', frames: 8, events: [] },
+                {
+                  name: 'active',
+                  frames: 4,
+                  events: [
+                    {
+                      onFrame: 0,
+                      event: {
+                        type: 'hitbox_active',
+                        hitbox: { x: 36, y: -110, width: 70, height: 44, damage: 90, hitstun: 22, blockstun: 14, knockback: { x: 5, y: 0 }, knockdown: true },
+                      },
+                    },
+                  ],
+                },
+                { name: 'recovery', frames: 12, events: [] },
+              ],
+            },
+          ],
         },
       };
     },

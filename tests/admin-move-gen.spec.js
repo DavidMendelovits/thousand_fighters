@@ -105,19 +105,20 @@ test.describe('Per-move sprite generation', () => {
     if (activityVisible) {
       await activityBtn.click();
 
-      // The error modal element is reused for the activity modal
-      const modal = page.locator('#error-modal');
-      await expect(modal).not.toBeHidden();
-      await expect(modal.locator('.error-modal-title')).toContainText(moveId);
-      await expect(modal.locator('.activity-log')).toBeVisible();
+      // Move activity opens in its own slide-over panel, not the error modal
+      const panel = page.locator('#move-activity-panel');
+      await expect(panel).not.toBeHidden();
+      await expect(panel.locator('.move-activity-title')).toContainText(moveId);
+      await expect(panel.locator('.activity-log')).toBeVisible();
+      await expect(page.locator('#error-modal')).toBeHidden();
 
-      // Close the modal
-      await modal.locator('.error-modal-close').click();
-      await expect(modal).toBeHidden();
+      // Close the panel
+      await panel.locator('.move-activity-close').click();
+      await expect(panel).toBeHidden();
     } else {
       // Activity badge didn't render (card may not re-render on error path).
       // Verify activity log state was populated via the run log error line instead.
-      const runLog = page.locator('#run-log');
+      const runLog = page.locator('#chat-thread');
       await expect(runLog).toContainText('Intentional test failure');
     }
   });
