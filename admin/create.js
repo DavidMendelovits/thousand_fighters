@@ -606,30 +606,42 @@ function onAcceptAllRows() {
 // --- Step 3: Normalize ---
 
 async function onNormalize() {
-  const firstRowAsset = ROW_IDS.map((id) => ctx.rowAssets[id]).find((a) => a);
-  if (!firstRowAsset || !ctx.characterId) return;
+  if (!ctx.characterId) return;
 
   setBusy(true);
-  log('Finalizing sprite pack (generated rows are kept; missing sheets are filled)...');
-  document.getElementById('frames-preview').innerHTML = '<div class="spinner-text">Finalizing pack&hellip;</div>';
+  log('Reviewing extracted frames...');
+  document.getElementById('frames-preview').innerHTML = '<div class="spinner-text">Loading frames&hellip;</div>';
   unlockUpTo(3);
 
   try {
-    const result = await invokeToolStreaming('normalize_sprite_pack', {
-      characterId: ctx.characterId,
-      sourceAssetKey: firstRowAsset.key,
-    });
-    ctx.normalizedKey = result.normalized.outputKey;
-    const preserved = result.normalized.preservedSheets ?? [];
-    const filled = result.normalized.filledSheets ?? [];
-    if (preserved.length) log(`Kept generated rows: ${preserved.join(', ')}.`);
-    if (filled.length) log(`Filled placeholder sheets: ${filled.join(', ')} — regenerate those rows to replace them.`);
-    log(`Pack finalized: ${result.normalized.copiedFileCount} files, ${result.normalized.warnings?.length ?? 0} warnings`);
+    // Row extraction already normalized each generated row into the fighter
+    // pack (frames + anchors + frameData). This step just reviews the result.
+    const packRoot = `characters/${ctx.characterId}/assets/fighter-pack`;
+    ctx.normalizedKey = `${packRoot}/manifest.json`;
+
+    const ROW_SET = ['base', 'punch', 'kick', 'special_1', 'special_2'];
+    let presentSheets = [];
+    try {
+      const frameDataResponse = await fetch(`/api/assets/${encodeURIComponent(`${packRoot}/frameData.json`)}`);
+      if (frameDataResponse.ok) {
+        const frameData = await frameDataResponse.json();
+        presentSheets = ROW_SET.filter((id) => (frameData.frames?.[id] ?? []).length > 0);
+      }
+    } catch (_) { /* pack not started yet */ }
+
+    const missingSheets = ROW_SET.filter((id) => !presentSheets.includes(id));
+    if (presentSheets.length) log(`Extracted rows in the pack: ${presentSheets.join(', ')}.`);
+    if (missingSheets.length) {
+      log(`Missing rows: ${missingSheets.join(', ')} — go back to Sprites and generate them before QA.`, 'error');
+    } else {
+      log('All five rows are extracted and anchored.', 'pass');
+    }
+
     saveWizardState();
     await renderFramesPreview();
   } catch (err) {
     log(`Error: ${err.message}`, 'error');
-    document.getElementById('frames-preview').innerHTML = `<div class="spinner-text" style="color:var(--danger)">Normalization failed.</div>`;
+    document.getElementById('frames-preview').innerHTML = `<div class="spinner-text" style="color:var(--danger)">Failed to load frames.</div>`;
   } finally {
     setBusy(false);
   }
@@ -739,10 +751,9 @@ function setRowStatus(rowId, status) {
 }
 
 function syncNormalizeButton() {
-  const allApproved = ROW_IDS.every((id) => ctx.rowApprovals[id]);
-  const allGenerated = ROW_IDS.every((id) => ctx.rowAssets[id]);
+  const anyGenerated = ROW_IDS.some((id) => ctx.rowAssets[id]);
   const btn = document.getElementById('btn-normalize');
-  if (btn) btn.disabled = !(allApproved && allGenerated);
+  if (btn) btn.disabled = !anyGenerated;
 }
 
 function renderSpriteRows() {

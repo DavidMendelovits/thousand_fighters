@@ -112,9 +112,15 @@ export function createLocalSpriteNormalizer({ storage, fixtureFighterId = 'janit
       const existingManifest = await storage.getJson(normalizedKey).catch(() => null);
       const existingReport = await storage.getJson(reportKey).catch(() => null);
       const preserved = new Set();
-      if (existingReport?.workflow === 'row-normalizer' && existingFrameData?.frames) {
+      if (existingFrameData?.frames) {
+        const markedRowNormalized = existingReport?.workflow === 'row-normalizer';
         for (const [sheetId, frames] of Object.entries(existingFrameData.frames)) {
-          if (Array.isArray(frames) && frames.length > 0) preserved.add(sheetId);
+          if (!Array.isArray(frames) || frames.length === 0) continue;
+          // silhouetteHeight is the row normalizer's signature — trust it even
+          // when the report marker is missing (packs from older sessions).
+          const rowNormalized = markedRowNormalized
+            || frames.some((frame) => typeof frame.silhouetteHeight === 'number' && frame.silhouetteHeight > 0);
+          if (rowNormalized) preserved.add(sheetId);
         }
       }
 
