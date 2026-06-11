@@ -97,16 +97,45 @@ export class CharacterCreationPipeline {
   async generateSpriteSheet({ characterId, prompt, moveId, spriteProfile, referenceAssetKeys = [], targetPath, context = {} }) {
     const imageGenerator = this.registry.resolve(PipelinePort.IMAGE_GENERATOR);
     const repository = this.registry.resolve(PipelinePort.CHARACTER_REPOSITORY);
+    const storage = this.registry.resolve(PipelinePort.ASSET_STORAGE);
     const resolvedMoveId = moveId ?? 'base';
     // 'wide' renders the 6 frames as a 2x3 grid so each cell is ~2x wider —
     // for moves whose limb extends far laterally (tentacle grabs, whips).
     const resolvedProfile = spriteProfile === 'wide' ? 'wide' : 'standard';
+
+    // Reference images keep all rows of one fighter visually consistent.
+    // Explicit keys win; otherwise non-base rows default to the approved base
+    // row plus concept art when they exist.
+    let referenceKeys = referenceAssetKeys;
+    if (!referenceKeys.length && resolvedMoveId !== 'base') {
+      referenceKeys = [
+        `characters/${characterId}/assets/source/${characterId}_base_sheet.png`,
+        `characters/${characterId}/assets/concept/concept_art.png`,
+      ];
+    }
+    const referenceImages = [];
+    for (const key of referenceKeys) {
+      try {
+        if (!(await storage.exists(key))) continue;
+        const bytes = await storage.getBytes(key);
+        const metadata = await storage.getMetadata?.(key).catch(() => null);
+        referenceImages.push({
+          base64: Buffer.from(bytes).toString('base64'),
+          contentType: metadata?.contentType ?? 'image/png',
+          sourceKey: key,
+        });
+      } catch {
+        // missing/unreadable reference — generate without it
+      }
+    }
+
     const result = await imageGenerator.generateImage({
       task: resolvedProfile === 'wide' ? 'fighter-2x3-grid' : 'fighter-1x6-row',
       prompt,
       moveId: resolvedMoveId,
       spriteProfile: resolvedProfile,
-      referenceAssetKeys,
+      referenceAssetKeys: referenceKeys,
+      referenceImages,
       context,
       onProgress: context.onProgress,
     });

@@ -23,7 +23,7 @@ try {
   const imageGenerator = {
     ...baseMock,
     async generateImage(request) {
-      imageCalls.push({ task: request.task, moveId: request.moveId });
+      imageCalls.push({ task: request.task, moveId: request.moveId, referenceImages: request.referenceImages?.length ?? 0 });
       return baseMock.generateImage(request);
     },
   };
@@ -85,6 +85,17 @@ try {
 
   assert.equal(imageCalls[2].task, 'fighter-1x6-row', 'call 3 task');
   assert.equal(imageCalls[2].moveId, 'base', 'call 3 moveId (default)');
+
+  // 5b. Once the base row exists, non-base generations attach it as a real
+  //     reference image for identity/scale consistency.
+  await pipeline.generateSpriteSheet({
+    characterId,
+    prompt: '1x6 punch row, magenta background.',
+    moveId: 'punch',
+  });
+  const lastCall = imageCalls[imageCalls.length - 1];
+  assert.equal(lastCall.referenceImages, 1, 'punch regen carries the base row as a reference image');
+  assert.equal(imageCalls[0].referenceImages, 0, 'first punch had no base row to reference yet');
 
   // 6. Extract the base row into the fighter pack — frames, anchors, manifest,
   //    and frameData must all land under fighter-pack/ and merge per move.

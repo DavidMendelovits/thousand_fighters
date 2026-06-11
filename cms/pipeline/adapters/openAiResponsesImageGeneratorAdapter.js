@@ -58,6 +58,7 @@ export class OpenAiResponsesImageGeneratorAdapter {
     const response = await this.createResponse({
       prompt: imagePromptFor(request),
       size,
+      referenceImages: request.referenceImages,
     });
     const imageCall = extractImageGenerationCall(response);
     const base64 = base64FromImageCall(imageCall);
@@ -76,10 +77,26 @@ export class OpenAiResponsesImageGeneratorAdapter {
     };
   }
 
-  async createResponse({ prompt, size }) {
+  async createResponse({ prompt, size, referenceImages }) {
+    // Reference images (approved base row, concept art) are sent as real
+    // input_image parts so the model matches identity, palette, and scale —
+    // a text prompt alone cannot carry that.
+    const input = referenceImages?.length
+      ? [{
+          role: 'user',
+          content: [
+            { type: 'input_text', text: prompt },
+            ...referenceImages.map((image) => ({
+              type: 'input_image',
+              image_url: `data:${image.contentType ?? 'image/png'};base64,${image.base64}`,
+            })),
+          ],
+        }]
+      : prompt;
+
     const body = {
       model: this.model,
-      input: prompt,
+      input,
       tools: [stripUndefined({
         type: 'image_generation',
         model: this.imageModel,
@@ -112,6 +129,12 @@ export class OpenAiResponsesImageGeneratorAdapter {
     }
     return value;
   }
+}
+
+function referenceNote(request) {
+  const count = request.referenceImages?.length ?? 0;
+  if (!count) return '';
+  return `${count} reference image(s) are attached. Match their character identity, proportions, palette, outfit, and on-screen scale exactly — this is the same fighter.`;
 }
 
 function imagePromptFor(request) {
@@ -187,8 +210,7 @@ function imagePromptFor(request) {
       'Character prompt:',
       request.prompt ?? '',
       '',
-      'Reference asset storage keys:',
-      JSON.stringify(request.referenceAssetKeys ?? []),
+      referenceNote(request),
       '',
       'Additional CMS context:',
       JSON.stringify(request.context ?? {}, null, 2),
@@ -211,6 +233,8 @@ function imagePromptFor(request) {
       '',
       'Character prompt:',
       request.prompt ?? '',
+      '',
+      referenceNote(request),
       '',
       'Additional CMS context:',
       JSON.stringify(request.context ?? {}, null, 2),
