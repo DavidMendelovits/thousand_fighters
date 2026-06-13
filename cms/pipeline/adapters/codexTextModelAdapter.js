@@ -198,10 +198,14 @@ function characterContentDraftSchema() {
       },
       sprite: {
         type: 'object',
-        required: ['basePath', 'scale', 'frameCounts'],
+        required: ['basePath', 'scale', 'relativeHeight', 'frameCounts'],
         properties: {
           basePath: { type: 'string' },
           scale: { type: 'number' },
+          relativeHeight: {
+            type: 'number',
+            description: 'On-screen height relative to a standard fighter. 1.0 = standard, up to 1.6 for giants, down to 0.5 for tiny fighters.',
+          },
           frameCounts: {
             type: 'object',
             required: ['base', 'punch', 'kick', 'special_1', 'special_2'],

@@ -34,38 +34,57 @@ export class CodexImageGeneratorAdapter {
 
   async generateImage(request) {
     const task = request.task ?? 'image-generation';
-    const codexPrompt = buildCodexPrompt(task, request.prompt, request.context, request.moveId);
+    const referenceImages = request.referenceImages ?? [];
+    const codexPrompt = buildCodexPrompt(task, request.prompt, request.context, request.moveId, referenceImages.length);
     const onProgress = request.onProgress;
     const maxAttempts = 2;
 
     onProgress?.({ type: 'prompt', task, prompt: codexPrompt });
 
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      const beforeTimestamp = Date.now() - 3000;
-
-      const codexOutput = await spawnWithStdin(
-        this.codexBin,
-        ['exec', '--sandbox', 'workspace-write'],
-        codexPrompt,
-        { timeout: this.timeoutMs, onData: onProgress ? (chunk) => onProgress({ type: chunk.stream, data: chunk.data }) : undefined },
-      );
-
-      const imageFile = await findNewestImage(GENERATED_IMAGES_DIR, beforeTimestamp);
-      if (imageFile) {
-        const bytes = await readFile(imageFile);
-        onProgress?.({ type: 'complete', imageFound: true });
-        return {
-          provider: 'codex',
-          model: 'codex-image-gen',
-          promptRef: null,
-          contentType: 'image/png',
-          base64: bytes.toString('base64'),
-          bytes,
-        };
+    // Reference images (approved base row, concept art) ride along as -i
+    // attachments so codex matches identity, palette, and scale.
+    let tmpDir = null;
+    const imageArgs = [];
+    if (referenceImages.length) {
+      tmpDir = await mkdtemp(path.join(os.tmpdir(), 'codex-ref-'));
+      for (const [index, image] of referenceImages.entries()) {
+        const ext = image.contentType === 'image/webp' ? '.webp' : image.contentType === 'image/jpeg' ? '.jpg' : '.png';
+        const refPath = path.join(tmpDir, `reference_${index}${ext}`);
+        await writeFile(refPath, Buffer.from(image.base64, 'base64'));
+        imageArgs.push('-i', refPath);
       }
+    }
 
-      if (attempt < maxAttempts) continue;
-      throw new Error(`Codex did not generate an image after ${maxAttempts} attempts. Last output:\n${codexOutput.slice(0, 300)}`);
+    try {
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        const beforeTimestamp = Date.now() - 3000;
+
+        const codexOutput = await spawnWithStdin(
+          this.codexBin,
+          ['exec', '--sandbox', 'workspace-write', ...imageArgs],
+          codexPrompt,
+          { timeout: this.timeoutMs, onData: onProgress ? (chunk) => onProgress({ type: chunk.stream, data: chunk.data }) : undefined },
+        );
+
+        const imageFile = await findNewestImage(GENERATED_IMAGES_DIR, beforeTimestamp);
+        if (imageFile) {
+          const bytes = await readFile(imageFile);
+          onProgress?.({ type: 'complete', imageFound: true });
+          return {
+            provider: 'codex',
+            model: 'codex-image-gen',
+            promptRef: null,
+            contentType: 'image/png',
+            base64: bytes.toString('base64'),
+            bytes,
+          };
+        }
+
+        if (attempt < maxAttempts) continue;
+        throw new Error(`Codex did not generate an image after ${maxAttempts} attempts. Last output:\n${codexOutput.slice(0, 300)}`);
+      }
+    } finally {
+      if (tmpDir) await rm(tmpDir, { recursive: true, force: true }).catch(() => {});
     }
   }
 
@@ -125,19 +144,26 @@ function extractDescription(codexOutput) {
   return contentLines.join('\n').trim();
 }
 
-function buildCodexPrompt(task, userPrompt, context, moveId) {
+function buildCodexPrompt(task, userPrompt, context, moveId, referenceCount = 0) {
+  const referenceNote = referenceCount
+    ? ` ${referenceCount} reference image(s) are attached — match their character identity, proportions, palette, outfit, and on-screen scale exactly; this is the same fighter.`
+    : '';
+
   if (task === 'character-concept') {
-    return `Generate an image: a character turnaround sheet, 1x3 grid of three equal square panels. Left=front view, center=3/4 profile, right=back view. Full body, light gray #f0f0f0 background, no text. Character: ${userPrompt ?? 'a fighter'}`;
+    return `Generate an image: a character turnaround sheet, 1x3 grid of three equal square panels. Left=front view, center=3/4 profile, right=back view. Full body, light gray #f0f0f0 background, no text. Character: ${userPrompt ?? 'a fighter'}${referenceNote}`;
   }
 
   if (task === 'fighter-1x6-row') {
     const resolvedMoveId = moveId ?? context?.moveId ?? 'base';
-    return `Generate an image: a single-row fighting game sprite strip with exactly 6 frames for the "${resolvedMoveId}" move. Magenta #ff00ff background, full body visible, generous gutters, every limb visually connected to the body. Frame roles: 1-2 startup, 3 reaching, 4 moment of contact, 5 follow-through, 6 recovery. Character: ${userPrompt ?? 'a fighter'}`;
+    const motionNote = resolvedMoveId === 'base'
+      ? 'This is an IDLE LOOP: motion between frames must be subtle — a few pixels of breathing and sway, feet planted on the same floor spot, silhouette near-identical across all 6 frames. Frame roles: 1 neutral, 2-3 gentle inhale, 4 peak of breath, 5-6 settle back to neutral.'
+      : 'Frame roles: 1-2 startup, 3 reaching, 4 moment of contact, 5 follow-through, 6 recovery.';
+    return `Generate an image: a single-row fighting game sprite strip with exactly 6 frames for the "${resolvedMoveId}" move. Magenta #ff00ff background, full body visible, generous gutters, every limb visually connected to the body. Frames must never overlap: leave a wide band of pure magenta between neighbors — not a single pixel of one frame may cross into another frame's cell. ${motionNote} Character: ${userPrompt ?? 'a fighter'}${referenceNote}`;
   }
 
   if (task === 'fighter-2x3-grid') {
     const resolvedMoveId = moveId ?? context?.moveId ?? 'base';
-    return `Generate an image: a fighting game sprite sheet with exactly 2 rows and 3 columns (6 frames, left-to-right then top-to-bottom) for the "${resolvedMoveId}" move — a long-reach extending-limb attack. Wide cells; the extended limb stays connected to the body as one continuous silhouette. Frame roles: 1-2 startup, 3 extending, 4 full extension at maximum reach, 5 retraction, 6 recovery. Magenta #ff00ff background, full body visible, generous gutters, consistent scale and floor line. Character: ${userPrompt ?? 'a fighter'}`;
+    return `Generate an image: a fighting game sprite sheet with exactly 2 rows and 3 columns (6 frames, left-to-right then top-to-bottom) for the "${resolvedMoveId}" move — a long-reach extending-limb attack. Wide cells; the extended limb stays connected to the body as one continuous silhouette. Frames must never overlap: leave a wide band of pure magenta between neighbors — not a single pixel of one frame may cross into another frame's cell. Frame roles: 1-2 startup, 3 extending, 4 full extension at maximum reach, 5 retraction, 6 recovery. Magenta #ff00ff background, full body visible, generous gutters, consistent scale and floor line. Character: ${userPrompt ?? 'a fighter'}${referenceNote}`;
   }
 
   if (task === 'arena-background') {

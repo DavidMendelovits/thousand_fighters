@@ -17,6 +17,7 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
 
   const manifest = normalizeManifest(rawManifest, { id });
   const stats = draft.stats ?? {};
+  const scale = deriveSpriteScale(draft.sprite ?? {}, frameData);
 
   return {
     id,
@@ -30,8 +31,8 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
     maxFallSpeed: stats.maxFallSpeed ?? 12,
     maxHealth: stats.maxHealth ?? 1000,
     pivotOffsetY: 0,
-    sprite: buildSpriteConfig({ draft, frameData, manifest }),
-    hurtboxes: generateDefaultHurtboxes(frameData),
+    sprite: buildSpriteConfig({ draft, frameData, manifest, scale }),
+    hurtboxes: generateDefaultHurtboxes(frameData, scale),
     animations: {
       idle: 'idle',
       walk_forward: 'walk_forward',
@@ -46,7 +47,7 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
       getup: 'getup',
       dead: 'dead',
     },
-    moves: (draft.moves ?? []).map((draftMove) => convertMove(draftMove)),
+    moves: (draft.moves ?? []).map((draftMove) => convertMove(draftMove, { frameData, scale })),
   };
 }
 
@@ -54,7 +55,42 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
 // Sprite config builder
 // ---------------------------------------------------------------------------
 
-function buildSpriteConfig({ draft, frameData, manifest }) {
+// On-screen silhouette height every fighter is normalized to, in canvas pixels
+// (canvas is 800x450). Calibrated against the hand-tuned roster: janitor's
+// base frames are ~290px tall at scale 0.55 ≈ 160px on screen.
+const TARGET_SILHOUETTE_PX = 160;
+
+/**
+ * Derive the render scale from measured frame data instead of trusting the
+ * drafted sprite.scale: the text model invents that number before any art
+ * exists, so it has no relationship to the generated frame pixel sizes.
+ *
+ * sprite.relativeHeight (0.5–1.6, default 1) carries intended character
+ * height — a giant should tower, a gremlin should be small — which pixels
+ * cannot express because sheet pixel density is generation noise.
+ * sprite.scaleAdjust remains as a manual fine-tune multiplier.
+ */
+function deriveSpriteScale(sprite, frameData) {
+  const adjust = typeof sprite.scaleAdjust === 'number' && sprite.scaleAdjust > 0
+    ? sprite.scaleAdjust
+    : 1;
+
+  const heights = (frameData?.frames?.base ?? [])
+    .map((frame) => frame.silhouetteHeight)
+    .filter((value) => typeof value === 'number' && value > 0)
+    .sort((a, b) => a - b);
+  if (!heights.length) return (sprite.scale ?? 0.55) * adjust;
+
+  const relativeHeight = typeof sprite.relativeHeight === 'number'
+    ? Math.min(1.6, Math.max(0.5, sprite.relativeHeight))
+    : 1;
+
+  const median = heights[Math.floor(heights.length / 2)];
+  const derived = TARGET_SILHOUETTE_PX / median;
+  return Math.min(2, Math.max(0.05, derived)) * relativeHeight * adjust;
+}
+
+function buildSpriteConfig({ draft, frameData, manifest, scale }) {
   const sprite = draft.sprite ?? {};
   const id = draft.id;
 
@@ -68,7 +104,7 @@ function buildSpriteConfig({ draft, frameData, manifest }) {
 
   return {
     basePath: `/fighters/${id}`,
-    scale: sprite.scale ?? 0.55,
+    scale: scale ?? deriveSpriteScale(sprite, frameData),
     frameCounts: sprite.frameCounts ?? manifest?.frameCounts ?? {
       base: 6,
       punch: 6,
@@ -99,14 +135,34 @@ function buildSpriteConfig({ draft, frameData, manifest }) {
 // Hurtbox generation
 // ---------------------------------------------------------------------------
 
+// Which base-row frame each fighter state displays — mirrors the
+// stateFrames map in buildSpriteConfig, so the measured hurtbox always
+// matches the sprite actually on screen for that state.
+const STATE_BASE_FRAME = {
+  idle: 0,
+  walk_forward: 1,
+  walk_back: 1,
+  crouch: 2,
+  airborne: 3,
+  hitstun: 4,
+  blockstun: 1,
+  juggle: 3,
+};
+
 /**
- * Generate reasonable default hurtboxes from frame data.
- * If no frame data is available, falls back to hardcoded typical values.
+ * Generate hurtboxes from frame data, in world units.
+ *
+ * Preferred path: each frame's measured silhouette hurtbox (emitted by the
+ * extractor, anchor-relative frame pixels) scaled into world units, picked
+ * per state via STATE_BASE_FRAME. Falls back to anchor-based heuristics for
+ * packs extracted before hurtbox measurement existed, then to hardcoded
+ * typical values when there is no frame data at all.
  *
  * @param {object|null} frameData
+ * @param {number} scale - render scale converting frame pixels to world units
  * @returns {object} Partial record of FighterState -> Hurtbox
  */
-export function generateDefaultHurtboxes(frameData) {
+export function generateDefaultHurtboxes(frameData, scale = 1) {
   const baseFrames = frameData?.frames?.base;
   if (!baseFrames?.length) {
     return {
@@ -122,12 +178,36 @@ export function generateDefaultHurtboxes(frameData) {
     };
   }
 
-  // Use the first base frame's anchor to estimate body proportions:
+  const measured = baseFrames.some((frame) => frame?.hurtbox);
+  if (measured) {
+    const worldBoxFor = (frameIndex, pad = 0) => {
+      const frame = baseFrames[Math.min(frameIndex, baseFrames.length - 1)];
+      const box = frame?.hurtbox ?? baseFrames.find((candidate) => candidate?.hurtbox)?.hurtbox;
+      return {
+        x: Math.round(box.x * scale) - pad,
+        y: Math.round(box.y * scale) - pad,
+        width: Math.max(1, Math.round(box.width * scale)) + pad * 2,
+        height: Math.max(1, Math.round(box.height * scale)) + pad,
+      };
+    };
+
+    const hurtboxes = {};
+    for (const [state, frameIndex] of Object.entries(STATE_BASE_FRAME)) {
+      hurtboxes[state] = worldBoxFor(frameIndex);
+    }
+    // While attacking the body still occupies the idle envelope; the extended
+    // limb is the hitbox's business, not the hurtbox's.
+    hurtboxes.attack = worldBoxFor(STATE_BASE_FRAME.idle, 2);
+    return hurtboxes;
+  }
+
+  // Legacy heuristic path (no measured hurtboxes): estimate from the first
+  // base frame's proportions, then convert frame pixels to world units.
   // Width ≈ 20% of frame width (this is the half-width)
   // Height ≈ anchor.y * 0.85 (feet-to-top body height estimate)
   const frame = baseFrames[0];
-  const bodyWidth = Math.round(frame.width * 0.2);
-  const bodyHeight = Math.round(frame.anchor.y * 0.85);
+  const bodyWidth = Math.round(frame.width * 0.2 * scale);
+  const bodyHeight = Math.round(frame.anchor.y * 0.85 * scale);
 
   return {
     idle: { x: -bodyWidth, y: -bodyHeight, width: bodyWidth * 2, height: bodyHeight },
@@ -180,18 +260,20 @@ export function generateDefaultHurtboxes(frameData) {
  * Convert a draft move to the runtime Move format.
  *
  * @param {object} draftMove
+ * @param {{ frameData?: object|null, scale?: number }} [context]
  * @returns {object} Runtime Move object
  */
-function convertMove(draftMove) {
+function convertMove(draftMove, context = {}) {
   const moveId = draftMove.id;
   const phases = (draftMove.phases ?? []).map((draftPhase, phaseIndex) =>
     convertPhase(draftPhase, phaseIndex, moveId, draftMove.phases)
   );
 
-  return {
+  const animation = draftMove.animation ?? 'punch';
+  const move = {
     id: moveId,
     displayName: draftMove.displayName ?? moveId,
-    animation: draftMove.animation ?? 'punch',
+    animation,
     trigger: {
       allowedStates: draftMove.trigger?.allowedStates ?? ['idle', 'walk_forward', 'walk_back'],
       sequence: (draftMove.trigger?.sequence ?? []).map(normalizeInputToken),
@@ -200,6 +282,111 @@ function convertMove(draftMove) {
     phases,
     cancelInto: draftMove.cancelInto ?? [],
   };
+  if (Array.isArray(draftMove.visualTimeline) && draftMove.visualTimeline.length) {
+    move.visualTimeline = draftMove.visualTimeline;
+  }
+
+  applyMeasuredHitboxGeometry(move, context.frameData?.frames?.[animation], context.scale ?? 1);
+  return move;
+}
+
+// ---------------------------------------------------------------------------
+// Measured hitbox geometry
+// ---------------------------------------------------------------------------
+
+/**
+ * Sprite frame shown at a given gameplay tick of a move — mirrors
+ * Fighter.getMoveSpriteFrame: explicit visualTimeline wins, else the row
+ * plays evenly across the move's total duration.
+ */
+function spriteFrameAt(elapsed, totalFrames, frameCount, visualTimeline) {
+  const clampFrame = (value) => Math.min(frameCount - 1, Math.max(0, value));
+  if (visualTimeline?.length) {
+    let cursor = 0;
+    for (const visualFrame of visualTimeline) {
+      cursor += visualFrame.duration;
+      if (elapsed < cursor) return clampFrame(visualFrame.frame);
+    }
+    return clampFrame(visualTimeline[visualTimeline.length - 1].frame);
+  }
+  return clampFrame(Math.floor((elapsed / Math.max(totalFrames, 1)) * frameCount));
+}
+
+/** Nearest frame with a usable attackBox, searching outward from index. */
+function attackBoxNear(rowFrames, index) {
+  for (let distance = 0; distance < rowFrames.length; distance++) {
+    for (const candidate of [index - distance, index + distance]) {
+      const box = rowFrames[candidate]?.attackBox;
+      if (box && box.width > 0 && box.height > 0) return box;
+    }
+  }
+  return null;
+}
+
+/**
+ * Replace AI-guessed hitbox geometry with boxes measured from the sprite
+ * silhouettes: for each hitbox's active window, the geometry tracks the
+ * attackBox of whichever sprite frame is on screen, emitted as keyframes
+ * (MoveExecutor interpolates them). The AI keeps authoring damage, hitstun,
+ * and knockback — gameplay numbers, not geometry.
+ */
+function applyMeasuredHitboxGeometry(move, rowFrames, scale) {
+  if (!Array.isArray(rowFrames) || !rowFrames.some((frame) => frame?.attackBox)) return;
+
+  const totalFrames = move.phases.reduce((sum, phase) => sum + (phase.frames ?? 1), 0);
+  const frameCount = rowFrames.length;
+
+  // Resolve each hitbox activation's [start, end) tick window.
+  const activations = [];
+  const open = new Map();
+  let offset = 0;
+  for (const phase of move.phases) {
+    for (const entry of phase.events ?? []) {
+      const tick = offset + (entry.onFrame ?? 0);
+      const event = entry.event;
+      if (event?.type === 'hitbox_active' && event.hitbox) {
+        open.set(event.id ?? 'default', { event, startTick: tick });
+      } else if (event?.type === 'hitbox_end') {
+        const activation = open.get(event.id ?? 'default');
+        if (activation) {
+          activations.push({ ...activation, endTick: tick });
+          open.delete(event.id ?? 'default');
+        }
+      }
+    }
+    offset += phase.frames ?? 1;
+  }
+  for (const activation of open.values()) {
+    activations.push({ ...activation, endTick: totalFrames });
+  }
+
+  const toWorld = (box) => ({
+    x: Math.round(box.x * scale),
+    y: Math.round(box.y * scale),
+    width: Math.max(1, Math.round(box.width * scale)),
+    height: Math.max(1, Math.round(box.height * scale)),
+  });
+
+  for (const { event, startTick, endTick } of activations) {
+    const track = [];
+    let lastSpriteFrame = -1;
+    for (let tick = startTick; tick < Math.max(endTick, startTick + 1); tick++) {
+      const spriteFrame = spriteFrameAt(tick, totalFrames, frameCount, move.visualTimeline);
+      if (spriteFrame === lastSpriteFrame) continue;
+      lastSpriteFrame = spriteFrame;
+      const box = attackBoxNear(rowFrames, spriteFrame);
+      if (box) track.push({ atFrame: tick - startTick, ...toWorld(box) });
+    }
+    if (!track.length) continue;
+
+    const { atFrame: _first, ...baseGeometry } = track[0];
+    Object.assign(event.hitbox, baseGeometry);
+    if (track.length > 1) {
+      event.keyframes = track;
+    } else {
+      delete event.keyframes;
+    }
+  }
 }
 
 /**
@@ -290,9 +477,11 @@ function collectUnclosedHitboxIds(allPhases, targetPhaseIndex, moveId) {
 function convertEvent(draftEvent, moveId, phaseIndex, eventIndex) {
   if (!draftEvent) return { type: 'hitbox_end' };
 
-  if (draftEvent.type === 'hitbox_active' && draftEvent.hitbox) {
+  // Some drafts (older schema versions, lenient models) say `hitbox` instead
+  // of `hitbox_active`. A hitbox payload makes the intent unambiguous.
+  if ((draftEvent.type === 'hitbox_active' || draftEvent.type === 'hitbox') && draftEvent.hitbox) {
     const hb = draftEvent.hitbox;
-    const hitstun = hb.hitstun ?? 14;
+    const hitstun = hb.hitstun ?? hb.stun ?? 14;
     // Use 'default' when no id is specified — mirrors MoveExecutor's (event.id ?? 'default') fallback.
     // This ensures hitbox_end events with no id correctly pair with these hitboxes.
     const hitboxId = draftEvent.id ?? 'default';

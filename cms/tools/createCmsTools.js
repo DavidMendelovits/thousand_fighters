@@ -69,19 +69,25 @@ export function createCmsTools({ pipeline, repository, registry }) {
     },
     {
       name: 'generate_sprite_sheet',
-      description: 'Generate a sprite sheet for a single move (base, punch, kick, special_1, or special_2). Frame roles are canonical: 1-2 startup, 3 reaching/extending, 4 moment of contact / full extension, 5 follow-through, 6 recovery — author visualTimeline and hitbox keyframes against these roles.',
+      description: 'Generate a sprite sheet for a single move (base, punch, kick, special_1, or special_2). Generate the base row FIRST: it is automatically attached as a reference image to every other row so the fighter stays visually consistent. Frame roles are canonical: 1-2 startup, 3 reaching/extending, 4 moment of contact / full extension, 5 follow-through, 6 recovery — author visualTimeline and hitbox keyframes against these roles.',
       inputSchema: objectSchema({
         characterId: stringSchema('Character id.'),
         prompt: stringSchema('Sprite generation prompt.'),
         moveId: stringSchema('Move id: base, punch, kick, special_1, or special_2. Defaults to base.'),
         spriteProfile: stringSchema('Sprite profile: standard (1x6 row) or wide (2x3 grid with ~2x wider cells, for long-reach extending-limb moves). Defaults to standard.'),
+        referenceAssetKeys: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Optional storage keys of reference images. Defaults to the concept art for the base row, and to the base sheet plus concept art for every other row.',
+        },
       }, ['characterId', 'prompt']),
-      execute: async ({ characterId, prompt, moveId, spriteProfile, context }) => {
+      execute: async ({ characterId, prompt, moveId, spriteProfile, referenceAssetKeys, context }) => {
         const result = await pipeline.generateSpriteSheet({
           characterId,
           prompt,
           moveId: moveId || undefined,
           spriteProfile: spriteProfile || undefined,
+          referenceAssetKeys: referenceAssetKeys ?? [],
           context: context ?? {},
         });
         return withAssetApiUrl(result);

@@ -193,6 +193,16 @@ function imagePromptFor(request) {
     };
     const moveId = request.moveId ?? 'base';
     const moveDesc = moveDescriptions[moveId] ?? moveId;
+    const motionLines = moveId === 'base'
+      ? [
+          '- This is an IDLE LOOP, not an action: motion between frames must be SUBTLE — a few pixels of breathing rise and fall, slight weight sway. The silhouette stays near-identical across all 6 frames.',
+          '- Frame roles are fixed: frame 1 = neutral stance, frames 2-3 = gentle inhale (chest rises slightly), frame 4 = peak of the breath, frames 5-6 = settle back to neutral so the loop closes cleanly.',
+          '- Feet stay planted on the exact same floor spot in every frame. No steps, no lunges, no big arm swings, no pose changes.',
+        ]
+      : [
+          '- Show clear animation progression from frame 1 to frame 6 — this must read as a playable move, not random poses.',
+          '- Frame roles are fixed: frames 1-2 = startup/wind-up, frame 3 = reaching toward the target, frame 4 = the MOMENT OF CONTACT (fullest extension/impact), frame 5 = follow-through, frame 6 = recovery back toward neutral.',
+        ];
     return [
       'Draw a production-ready 2D fighting-game sprite row for Thousand Fighters.',
       '',
@@ -201,11 +211,11 @@ function imagePromptFor(request) {
       `- Animation: ${moveDesc}.`,
       '- Each cell contains one full-body character frame, centered on a stable floor anchor.',
       '- Use generous empty gutters between cells so no limb, weapon, projectile, hair, or effect touches a cell edge.',
+      '- CRITICAL: cells must never overlap. Leave a wide band of pure #ff00ff between neighboring frames — not a single pixel of one frame may cross into another frame\'s cell.',
       '- Keep every limb, appendage, weapon, and effect visually connected to the body — no detached floating parts.',
       '- Keep the entire character visible in every frame. Do not crop feet, head, hands, weapons, capes, or effects.',
       '- Keep the camera, character scale, silhouette size, and facing direction consistent across all 6 frames.',
-      '- Show clear animation progression from frame 1 to frame 6 — this must read as a playable move, not random poses.',
-      '- Frame roles are fixed: frames 1-2 = startup/wind-up, frame 3 = reaching toward the target, frame 4 = the MOMENT OF CONTACT (fullest extension/impact), frame 5 = follow-through, frame 6 = recovery back toward neutral.',
+      ...motionLines,
       '- Use a solid chroma-magenta background (#ff00ff), not transparency, scenery, gradients, shadows, labels, or text.',
       '',
       'Character prompt:',
@@ -228,6 +238,7 @@ function imagePromptFor(request) {
       '- Each cell is wide; let the extended limb use that width. The limb must stay visually CONNECTED to the body in every frame — one continuous silhouette, no detached floating parts.',
       '- Each cell contains one full-body character frame on a stable floor anchor at a consistent height.',
       '- Use generous empty gutters between cells so no limb or effect touches or crosses a cell edge.',
+      '- CRITICAL: cells must never overlap. Leave a wide band of pure #ff00ff between neighboring frames — not a single pixel of one frame may cross into another frame\'s cell.',
       '- Keep the camera, character scale, and facing direction (facing right) consistent across all 6 frames.',
       '- Frame roles are fixed: frames 1-2 = startup/wind-up, frame 3 = limb extending outward, frame 4 = FULL EXTENSION at maximum reach (the grab/contact moment), frame 5 = retraction or holding, frame 6 = recovery back toward neutral.',
       '- Use a solid chroma-magenta background (#ff00ff), not transparency, scenery, gradients, shadows, labels, or text.',

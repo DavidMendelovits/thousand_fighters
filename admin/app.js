@@ -1,5 +1,17 @@
 const MOVE_ORDER = ['base', 'punch', 'kick', 'special_1', 'special_2', 'projectiles'];
 
+// Where the Vite-served game (and the single-player testbed) lives. The testbed
+// reads this character's draft + assets back through the admin API via a Vite
+// proxy, so the game dev server (npm run dev) must be running alongside the CMS
+// admin server. Override with window.TESTBED_BASE_URL if your ports differ.
+const TESTBED_BASE_URL = window.TESTBED_BASE_URL || 'http://127.0.0.1:5173';
+
+function openTestbed(characterId) {
+  if (!characterId) return;
+  const url = `${TESTBED_BASE_URL}/testbed.html?id=${encodeURIComponent(characterId)}`;
+  window.open(url, `testbed-${characterId}`);
+}
+
 // ---------------------------------------------------------------------------
 // Client-side router
 // ---------------------------------------------------------------------------
@@ -8,6 +20,7 @@ function getCurrentRoute() {
   const pathname = location.pathname;
   if (pathname === '/pipeline') return { page: 'pipeline' };
   if (pathname === '/roster') return { page: 'roster' };
+  if (pathname === '/roster/new') return { page: 'roster', isNew: true };
   const rosterMatch = pathname.match(/^\/roster\/([a-z][a-z0-9_]{2,})$/);
   if (rosterMatch) return { page: 'roster', characterId: rosterMatch[1] };
   return { page: 'roster' };
@@ -24,6 +37,8 @@ function handleRouteChange() {
     // Legacy route: pipeline now lives in the ops column, no workbench detour.
     renderEmptyWorkbench('Select a fighter to inspect moves, frames, animation, stats, and assets.');
     setOpsTab('pipeline');
+  } else if (route.isNew) {
+    renderNewFighterWorkbench();
   } else if (route.characterId) {
     selectCharacter(route.characterId, { pushState: false });
   } else {
@@ -47,6 +62,10 @@ const state = {
   chatMessages: [],
   generatingMoves: new Set(),
   moveActivity: {},
+  currentAssets: [],
+  qaReports: {},
+  selectSeq: 0,
+  movePrompts: {},
 };
 
 const elements = {
@@ -123,8 +142,16 @@ elements.assetPath.addEventListener('input', () => {
 elements.assetFile.addEventListener('change', syncAssetPath);
 elements.characterWorkbench.addEventListener('click', handleAnimationControl);
 elements.characterWorkbench.addEventListener('click', handleWorkbenchClick);
+// Per-row prompt edits live in state so workbench re-renders (e.g. while other
+// rows finish generating) don't wipe them.
+elements.characterWorkbench.addEventListener('input', (event) => {
+  const promptInput = event.target.closest('[data-move-prompt]');
+  if (!promptInput) return;
+  state.movePrompts[`${state.currentCharacterId}:${promptInput.dataset.movePrompt}`] = promptInput.value;
+});
 
 const WORKBENCH_CTA_HANDLERS = {
+  'cta-generate-concept': () => generateConcept(),
   'cta-generate-sheet': () => generateSheet(),
   'cta-normalize-pack': () => normalizePack(),
   'cta-validate-pack': () => validatePack(),
@@ -135,6 +162,18 @@ function handleWorkbenchClick(event) {
   const cta = event.target.closest('[id^="cta-"]');
   if (cta && WORKBENCH_CTA_HANDLERS[cta.id]) {
     WORKBENCH_CTA_HANDLERS[cta.id]();
+    return;
+  }
+
+  const playtestButton = event.target.closest('[data-playtest]');
+  if (playtestButton) {
+    openTestbed(playtestButton.dataset.playtest);
+    return;
+  }
+
+  const conceptButton = event.target.closest('[data-gen-concept]');
+  if (conceptButton) {
+    generateConcept();
     return;
   }
 
@@ -166,6 +205,10 @@ elements.chatForm.addEventListener('submit', sendChatMessage);
 elements.refreshRoster.addEventListener('click', async () => {
   await loadCharacters();
   handleRouteChange();
+});
+document.querySelector('.new-fighter-link')?.addEventListener('click', (event) => {
+  event.preventDefault();
+  navigateTo('/roster/new');
 });
 elements.opsTabs?.addEventListener('click', (event) => {
   const tab = event.target.closest('[data-ops-tab]');
@@ -274,14 +317,22 @@ async function selectCharacter(characterId, options = {}) {
     }
   }
 
-  const [draftResult, assetResult] = await Promise.all([
+  // Parallel row generation refreshes the workbench as each row lands —
+  // the sequence token keeps a slow, stale response from clobbering a newer one.
+  const seq = ++state.selectSeq;
+
+  const [draftResult, assetResult, qaReport] = await Promise.all([
     getJson(`/api/characters/${encodeURIComponent(characterId)}/draft`),
     getJson(`/api/characters/${encodeURIComponent(characterId)}/assets`),
+    getJson(`/api/assets/${encodeURIComponent(`characters/${characterId}/qa/latest.json`)}`).catch(() => null),
   ]);
+  if (seq !== state.selectSeq || state.currentCharacterId !== characterId) return;
 
   const draft = draftResult.draft;
   const assets = assetResult.assets;
   state.currentDraftData = draft;
+  state.currentAssets = assets;
+  state.qaReports[characterId] = qaReport;
   elements.characterId.value = draft.id;
   elements.characterBrief.value = draft.description ?? '';
   elements.selectedCharacter.textContent = `${draft.displayName ?? draft.id} · ${draft.lifecycle ?? 'draft'}`;
@@ -336,6 +387,44 @@ function setMoveCardLoading(moveId, loading) {
   }
 }
 
+function spriteBrief() {
+  return (state.currentDraftData?.description ?? elements.characterBrief.value ?? '').trim();
+}
+
+function buildRowPrompt() {
+  return [
+    spriteBrief(),
+    'Side-view fighting game sprite row. Magenta background, full body visible, generous gutters, no cropping.',
+  ].filter(Boolean).join(' ');
+}
+
+// Prompt shown (and used) for a row: an unsent edit wins, then the prompt the
+// current sheet was actually generated with, then the auto-built default.
+function rowPromptFor(moveId) {
+  const key = `${state.currentCharacterId}:${moveId}`;
+  if (typeof state.movePrompts[key] === 'string') return state.movePrompts[key];
+  const sheetAsset = state.currentAssets.find((asset) =>
+    asset.relativePath === `source/${state.currentCharacterId}_${moveId}_sheet.png`);
+  const generatedWith = sheetAsset?.metadata?.prompt;
+  return typeof generatedWith === 'string' && generatedWith.trim() ? generatedWith : buildRowPrompt();
+}
+
+function hasBaseSheet(characterId) {
+  return state.currentAssets.some((asset) =>
+    asset.relativePath === `source/${characterId}_base_sheet.png`);
+}
+
+function shortAssetKey(key) {
+  return String(key ?? '').split('/').slice(-1)[0];
+}
+
+function logMoveStream(moveId, data) {
+  for (const line of String(data ?? '').split('\n')) {
+    const trimmed = line.trim();
+    if (trimmed) logMoveActivity(moveId, trimmed.slice(0, 160));
+  }
+}
+
 async function generateMoveRow(moveId) {
   const characterId = currentCharacterId();
   if (!characterId) return null;
@@ -346,24 +435,43 @@ async function generateMoveRow(moveId) {
   logMoveActivity(moveId, 'Generating sprite row…');
   log(`> generate_sprite_sheet (${moveId})`);
 
+  if (moveId !== 'base' && !hasBaseSheet(characterId)) {
+    logMoveActivity(moveId, 'No base sheet yet — generating without the base reference may drift from the fighter\'s look.', 'error');
+  }
+
   try {
-    const prompt = [
-      elements.characterBrief.value.trim(),
-      'Side-view fighting game sprite row. Magenta background, full body visible, generous gutters, no cropping.',
-    ].filter(Boolean).join(' ');
+    const prompt = rowPromptFor(moveId);
     const spriteProfile = moveSpriteProfile(moveId);
-    const result = await postJson(`/api/tools/generate_sprite_sheet`, { characterId, prompt, moveId, spriteProfile });
-    state.sourceAssetKey = result.result.asset.key;
-    showLatestAsset(result.result.asset);
-    logMoveActivity(moveId, `Generated: ${result.result.asset.key}`, 'pass');
+    const result = await invokeToolStreaming('generate_sprite_sheet',
+      { characterId, prompt, moveId, spriteProfile },
+      (event) => {
+        if (event.type === 'stdout' || event.type === 'stderr') logMoveStream(moveId, event.data);
+      });
+    state.sourceAssetKey = result.asset.key;
+    showLatestAsset({ ...result.asset, apiUrl: result.asset.apiUrl ?? result.asset.url });
+    const references = result.referencesUsed ?? [];
+    logMoveActivity(moveId,
+      references.length
+        ? `Generated with reference(s): ${references.map(shortAssetKey).join(', ')}`
+        : 'Generated without reference images',
+      'pass');
+    for (const warning of result.warnings ?? []) {
+      logMoveActivity(moveId, warning, 'error');
+      log(`${moveId}: ${warning}`, 'error');
+    }
     log(`${moveId} row generated.`, 'pass');
 
     // Auto-extract individual frames from the row sheet
-    const sheetKey = result.result.asset.key;
     try {
-      log(`Extracting frames from ${moveId} row...`);
       logMoveActivity(moveId, 'Extracting individual frames...');
-      await postJson('/api/tools/extract_row_frames', { characterId, sourceAssetKey: sheetKey, moveId, spriteProfile });
+      const extraction = await postJson('/api/tools/extract_row_frames', {
+        characterId, sourceAssetKey: result.asset.key, moveId, spriteProfile,
+      });
+      for (const warning of extraction.result?.warnings ?? []) {
+        const severe = /fused|truncat|bleed|empty cell|near-magenta/.test(warning);
+        logMoveActivity(moveId, warning, severe ? 'error' : '');
+        if (severe) log(`${moveId}: ${warning}`, 'error');
+      }
       logMoveActivity(moveId, 'Frames extracted.', 'pass');
     } catch (extractErr) {
       logMoveActivity(moveId, `Frame extraction failed: ${extractErr.message}`, 'error');
@@ -380,7 +488,7 @@ async function generateMoveRow(moveId) {
       setTimeout(() => successCard.classList.remove('move-card-success'), 2000);
     }
 
-    return result.result;
+    return result;
   } catch (error) {
     logMoveActivity(moveId, error.message, 'error');
     showError(error);
@@ -390,14 +498,32 @@ async function generateMoveRow(moveId) {
   }
 }
 
+// The base row defines the fighter's look and scale, so it must exist before
+// the other rows generate — they all attach it as a reference image. Once it
+// does, the four attack rows have no ordering dependency and run in parallel.
 async function generateAllRows() {
   const characterId = currentCharacterId();
   if (!characterId) return;
 
-  for (const moveId of MOVE_IDS) {
-    await generateMoveRow(moveId);
+  if (!hasBaseSheet(characterId)) {
+    log('Generating base row first — it anchors the look of every other row.');
+    const base = await generateMoveRow('base');
+    if (!base) {
+      log('Base row failed — skipping the remaining rows. Fix the base row and try again.', 'error');
+      return;
+    }
+  } else {
+    log('Base sheet already exists — generating the four attack rows in parallel against it. Regenerate the base row from its card if you want a fresh look.');
   }
-  log('All sprite rows generated.', 'pass');
+
+  const attackRows = MOVE_IDS.filter((id) => id !== 'base');
+  const results = await Promise.all(attackRows.map((id) => generateMoveRow(id)));
+  const failed = attackRows.filter((id, index) => !results[index]);
+  if (failed.length) {
+    log(`Some rows failed: ${failed.join(', ')} — regenerate them from their move cards.`, 'error');
+  } else {
+    log('All sprite rows generated.', 'pass');
+  }
 }
 
 async function generateSheet() {
@@ -579,6 +705,61 @@ async function invokeTool(name, input) {
   }
 }
 
+// SSE variant of invokeTool for long-running generation tools. Progress events
+// (provider stdout/stderr, prompts) stream to onProgress while the call runs.
+async function invokeToolStreaming(name, input, onProgress) {
+  const response = await fetch(`/api/tools/${name}?stream`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || `HTTP ${response.status}`);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let result = null;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    // SSE events are separated by blank lines
+    let separatorIndex;
+    while ((separatorIndex = buffer.indexOf('\n\n')) !== -1) {
+      const rawEvent = buffer.slice(0, separatorIndex);
+      buffer = buffer.slice(separatorIndex + 2);
+
+      let eventType = 'message';
+      let eventData = '';
+      for (const line of rawEvent.split('\n')) {
+        if (line.startsWith('event: ')) eventType = line.slice(7).trim();
+        else if (line.startsWith('data: ')) eventData += line.slice(6);
+      }
+      if (!eventData) continue;
+
+      let parsed;
+      try { parsed = JSON.parse(eventData); } catch { continue; }
+
+      if (eventType === 'progress') {
+        try { onProgress?.(parsed); } catch {}
+      } else if (eventType === 'result') {
+        result = parsed.result;
+      } else if (eventType === 'error') {
+        throw new Error(parsed.error ?? 'Unknown streaming error');
+      }
+    }
+  }
+
+  if (result === null || result === undefined) throw new Error('Stream ended without result');
+  return result;
+}
+
 function renderCharacter(character) {
   const button = document.createElement('button');
   button.type = 'button';
@@ -589,16 +770,22 @@ function renderCharacter(character) {
   return button;
 }
 
+function findConceptAsset(assets) {
+  return assets.find((asset) => /^concept\/concept_art\.(png|webp|jpg|svg)$/i.test(asset.relativePath)) ?? null;
+}
+
 function detectCharacterStage(draft, assets) {
   const lifecycle = draft.lifecycle ?? 'draft';
   if (lifecycle === 'version') return 'published';
 
-  const hasSource = assets.some((asset) => /^source\/.+\.(svg|png)$/i.test(asset.relativePath));
+  const hasConcept = Boolean(findConceptAsset(assets));
+  const hasSource = assets.some((asset) => /^source\/.+_(?:base|punch|kick|special_1|special_2)_sheet\.(svg|png)$/i.test(asset.relativePath));
   const hasNormalized = assets.some((asset) =>
     /(?:^|\/)(fighter-pack|normalized)\/manifest\.json$/i.test(asset.relativePath)
   );
   const hasFrames = assets.some((asset) => parseSpriteAsset(asset) !== null);
 
+  if (!hasSource && !hasFrames && !hasConcept) return 'no-concept';
   if (!hasSource) return 'no-source';
   if (!hasNormalized && !hasFrames) return 'no-frames';
   return 'ready-to-publish';
@@ -617,15 +804,31 @@ function renderNextStepBanner(stage) {
     `;
   }
 
+  if (stage === 'no-concept') {
+    return `
+      <div class="next-step-banner">
+        <div>
+          <div class="next-step-label">Next Step</div>
+          <p class="next-step-title">Generate Concept Art</p>
+          <p class="next-step-detail">Concept art anchors the fighter's look — the base row references it, and every move row references the base row.</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-direction:column;align-items:stretch">
+          <button id="cta-generate-concept" class="next-step-action" type="button">Generate Concept</button>
+          <button id="cta-generate-sheet" class="next-step-action" type="button" style="font-size:12px;padding:7px 14px;background:#26303c;border-color:var(--accent-2);color:var(--accent-2)">Skip — Generate Rows</button>
+        </div>
+      </div>
+    `;
+  }
+
   if (stage === 'no-source') {
     return `
       <div class="next-step-banner">
         <div>
           <div class="next-step-label">Next Step</div>
-          <p class="next-step-title">Generate Sprite Sheet</p>
-          <p class="next-step-detail">No source art yet. Generate sprite rows to start building this fighter.</p>
+          <p class="next-step-title">Generate Sprite Rows</p>
+          <p class="next-step-detail">The base row generates first to lock the look and scale, then the four attack rows generate in parallel against it.</p>
         </div>
-        <button id="cta-generate-sheet" class="next-step-action" type="button">Generate Sheet</button>
+        <button id="cta-generate-sheet" class="next-step-action" type="button">Generate All Rows</button>
       </div>
     `;
   }
@@ -659,6 +862,226 @@ function renderNextStepBanner(stage) {
   `;
 }
 
+function renderConceptSection(conceptAsset) {
+  const panels = conceptAsset
+    ? `
+      <div class="concept-panels">
+        ${['Front', 'Profile', 'Back'].map((label, index) => `
+          <div class="concept-panel">
+            <div class="concept-panel-img" style="background-image:url('${conceptAsset.apiUrl}');background-position:${(index / 2) * 100}% 0;background-size:300% 100%;"></div>
+            <span class="concept-panel-label">${label}</span>
+          </div>
+        `).join('')}
+      </div>
+      <details class="concept-full-sheet">
+        <summary>Full sheet</summary>
+        <img src="${conceptAsset.apiUrl}" alt="Full concept sheet" />
+      </details>
+    `
+    : '<span class="empty-inline">No concept art yet. The base row uses it as a reference, so generating it first keeps the whole fighter consistent.</span>';
+
+  return `
+    <section class="concept-section">
+      <header class="concept-section-header">
+        <div>
+          <span class="eyebrow">Concept</span>
+          <h3>Reference Art</h3>
+        </div>
+        <button type="button" class="move-gen-btn" data-gen-concept>${conceptAsset ? 'Regen' : 'Generate'}</button>
+      </header>
+      ${panels}
+    </section>
+  `;
+}
+
+function renderQaSection(report) {
+  if (!report?.summary) return '';
+  const summary = report.summary;
+  const checks = report.checks ?? [];
+  return `
+    <section class="qa-section">
+      <header class="concept-section-header">
+        <div>
+          <span class="eyebrow">QA</span>
+          <h3>Fighter Pack Validation</h3>
+        </div>
+        <span class="soft-label">${escapeHtml(report.generatedAt ?? '')}</span>
+      </header>
+      <div class="qa-summary ${escapeHtml(report.status)}">
+        ${report.status === 'pass' ? 'All checks passed' : report.status === 'fail' ? `Failed: ${summary.errors} error(s)` : `Warnings: ${summary.warnings}`}
+        &mdash; ${summary.passed ?? 0} passed, ${summary.warnings ?? 0} warnings, ${summary.errors ?? 0} errors
+      </div>
+      ${checks.map((check) => `
+        <div class="qa-check ${escapeHtml(check.status)}">
+          <span>${escapeHtml(check.message)}</span>
+        </div>
+      `).join('')}
+    </section>
+  `;
+}
+
+async function generateConcept() {
+  const characterId = currentCharacterId();
+  if (!characterId) return null;
+
+  const prompt = spriteBrief();
+  if (!prompt) {
+    log('Add a character description before generating concept art.', 'error');
+    return null;
+  }
+
+  const button = elements.characterWorkbench.querySelector('[data-gen-concept]');
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'Generating…';
+  }
+  log('> generate_character_concept');
+
+  try {
+    const result = await invokeToolStreaming('generate_character_concept', { characterId, prompt });
+    log('Concept art generated.', 'pass');
+    await selectCharacter(characterId, { silent: true, pushState: false });
+    return result;
+  } catch (error) {
+    showError(error);
+    if (button) {
+      button.disabled = false;
+      button.textContent = 'Generate';
+    }
+    return null;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// New fighter mode — the same workbench, before the draft exists
+// ---------------------------------------------------------------------------
+
+let newFighterRefImage = null;
+
+function renderNewFighterWorkbench() {
+  clearAnimationTimers();
+  state.currentCharacterId = '';
+  state.currentDraftData = null;
+  state.currentAssets = [];
+  setActiveCharacterRow('');
+  elements.selectedCharacter.textContent = 'New fighter';
+  newFighterRefImage = null;
+
+  elements.characterWorkbench.className = 'character-workbench';
+  elements.characterWorkbench.innerHTML = `
+    <div class="next-step-banner">
+      <div>
+        <div class="next-step-label">New Fighter</div>
+        <p class="next-step-title">Describe your fighter</p>
+        <p class="next-step-detail">Creating the draft adds it to the roster immediately — concept art, sprite rows, QA, and publishing all happen on its page. Stop at any point and it stays a draft you can pick back up.</p>
+      </div>
+    </div>
+    <section class="character-summary">
+      <form id="new-fighter-form" class="new-fighter-form">
+        <label>
+          Character ID
+          <input id="new-fighter-id" name="characterId" autocomplete="off" placeholder="e.g. rooftop_ronin" pattern="[a-z][a-z0-9_]{2,}" required />
+          <span class="field-hint">Lowercase, underscores, no spaces. Becomes the asset folder name.</span>
+        </label>
+        <div class="new-fighter-row">
+          <label>
+            Reference Image (optional)
+            <input id="new-fighter-ref" type="file" accept="image/png,image/jpeg,image/webp" />
+            <span class="field-hint">AI describes it and fills in the brief.</span>
+          </label>
+          <label>
+            Art Style
+            <select id="new-fighter-style">
+              <option value="">AI decides</option>
+              <option value="pixel art">Pixel art</option>
+              <option value="painterly">Painterly</option>
+              <option value="cel-shaded">Cel-shaded</option>
+              <option value="realistic">Realistic</option>
+              <option value="sketch">Sketch / line art</option>
+            </select>
+          </label>
+        </div>
+        <label>
+          Character Brief
+          <textarea id="new-fighter-brief" rows="5" required placeholder="A rooftop samurai who fights with a broken antenna. Fast but fragile. Special moves involve throwing roof tiles and a diving slash from above."></textarea>
+          <span class="field-hint">Personality, fighting style, weapon, specials.</span>
+        </label>
+        <button id="new-fighter-create" type="submit">Create Fighter</button>
+      </form>
+    </section>
+  `;
+
+  document.getElementById('new-fighter-form').addEventListener('submit', onCreateNewFighter);
+  document.getElementById('new-fighter-ref').addEventListener('change', onNewFighterRefImage);
+}
+
+async function onNewFighterRefImage(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  try {
+    const base64 = await fileToBase64(file);
+    newFighterRefImage = { base64, contentType: file.type || 'image/png' };
+    log('Analyzing reference image…');
+    const characterId = document.getElementById('new-fighter-id')?.value.trim() || 'new_fighter';
+    const result = await postJson('/api/tools/describe_character_image', {
+      characterId,
+      imageBase64: base64,
+      contentType: file.type || 'image/png',
+    });
+    const description = result.result?.description ?? '';
+    if (description) {
+      const brief = document.getElementById('new-fighter-brief');
+      if (brief) brief.value = description;
+      log('Reference image analyzed — brief filled in.', 'pass');
+    } else {
+      log('No description returned from image analysis.', 'error');
+    }
+  } catch (error) {
+    showError(error);
+  }
+}
+
+async function onCreateNewFighter(event) {
+  event.preventDefault();
+  const characterId = document.getElementById('new-fighter-id').value.trim();
+  const briefText = document.getElementById('new-fighter-brief').value.trim();
+  const artStyle = document.getElementById('new-fighter-style').value;
+  if (!characterId || !briefText) return;
+
+  const brief = [briefText, artStyle ? `Art style: ${artStyle}.` : ''].filter(Boolean).join(' ');
+  const button = document.getElementById('new-fighter-create');
+  button.disabled = true;
+  button.textContent = 'Creating…';
+  log(`> create_character_draft (${characterId})`);
+
+  try {
+    const result = await postJson('/api/tools/create_character_draft', { characterId, brief });
+    const draft = result.result.draft;
+
+    // Persist the uploaded reference image with the character so the look
+    // survives refreshes and other sessions.
+    if (newFighterRefImage) {
+      const ext = newFighterRefImage.contentType === 'image/jpeg' ? 'jpg' : 'png';
+      await postJson(`/api/characters/${encodeURIComponent(characterId)}/assets`, {
+        relativePath: `source/reference.${ext}`,
+        contentBase64: newFighterRefImage.base64,
+        contentType: newFighterRefImage.contentType,
+        metadata: { artifactType: 'reference-image' },
+      }).catch(() => {});
+      newFighterRefImage = null;
+    }
+
+    log(`Draft created: ${draft.displayName ?? characterId}.`, 'pass');
+    await loadCharacters();
+    navigateTo(`/roster/${draft.id}`);
+  } catch (error) {
+    showError(error);
+    button.disabled = false;
+    button.textContent = 'Create Fighter';
+  }
+}
+
 function renderCharacterWorkbench(draft, assets) {
   clearAnimationTimers();
   const moveGroups = buildMoveGroups(draft, assets);
@@ -673,6 +1096,8 @@ function renderCharacterWorkbench(draft, assets) {
 
   const stage = detectCharacterStage(draft, assets);
   const bannerHtml = renderNextStepBanner(stage);
+  const conceptAsset = findConceptAsset(assets);
+  const qaReport = state.qaReports[draft.id] ?? null;
 
   elements.characterWorkbench.className = 'character-workbench';
   elements.characterWorkbench.innerHTML = `
@@ -683,15 +1108,20 @@ function renderCharacterWorkbench(draft, assets) {
         <h2>${escapeHtml(draft.displayName ?? draft.id)}</h2>
         <p>${escapeHtml(draft.description ?? 'No character description yet.')}</p>
         <div class="summary-pills">${characterStatus.map((item) => `<span>${escapeHtml(item)}</span>`).join('')}</div>
+        <div class="summary-actions">
+          <button type="button" class="playtest-btn" data-playtest="${escapeHtml(draft.id)}" title="Open the single-player testbed for this fighter">▶ Playtest</button>
+        </div>
       </div>
       <div class="summary-side">
         <div class="stat-grid">${renderStatGrid(stats)}</div>
         ${renderAnimationBindings(draft.animations)}
       </div>
     </section>
+    ${renderConceptSection(conceptAsset)}
     <section class="move-board">
       ${moveGroups.map(renderMoveGroup).join('')}
     </section>
+    ${renderQaSection(qaReport)}
   `;
 
   // All workbench buttons are handled by the delegated click handler —
@@ -801,6 +1231,7 @@ function renderMoveCardTabs(group) {
   const hasFrames = frameCount > 0 || group.projectiles.length > 0;
   const sounds = collectMoveSounds(group);
   const primarySheet = groupPrimarySheet(group);
+  const canGenerate = MOVE_IDS.includes(group.id);
   const defaultTab = hasFrames ? 'frames' : 'data';
 
   const tab = (id, label, badge) => `
@@ -823,16 +1254,22 @@ function renderMoveCardTabs(group) {
          <span class="soft-label">${escapeHtml(primarySheet.relativePath)}</span>
        </a>`
     : '<span class="empty-inline">No source sheet generated for this move yet.</span>';
+  const promptPane = `
+    <textarea class="move-prompt-input" data-move-prompt="${escapeHtml(group.id)}" rows="4" spellcheck="false">${escapeHtml(rowPromptFor(group.id))}</textarea>
+    <p class="move-note">Sent to the image generator when you hit Generate/Regen on this row. Auto-built from the character brief; edit freely — your edit sticks until the page reloads, and the prompt actually used is saved with the sheet.</p>
+  `;
 
   return `
     <div class="move-tabs">
       ${tab('frames', 'Frames', frameCount || (group.projectiles.length || ''))}
       ${tab('data', 'Data')}
+      ${canGenerate ? tab('prompt', 'Prompt') : ''}
       ${tab('sounds', 'Sounds', sounds.length || '')}
       ${tab('source', 'Source')}
     </div>
     ${pane('frames', framesPane)}
     ${pane('data', renderMoveData(group))}
+    ${canGenerate ? pane('prompt', promptPane) : ''}
     ${pane('sounds', soundsPane)}
     ${pane('source', sourcePane)}
   `;

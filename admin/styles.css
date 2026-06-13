@@ -532,6 +532,28 @@ button:disabled {
   flex: 0 0 auto;
 }
 
+.summary-actions {
+  margin-top: 12px;
+}
+
+.playtest-btn {
+  min-height: 30px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  background: #1c2733;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.playtest-btn:hover {
+  background: var(--accent);
+  color: #07101c;
+}
+
 .move-gen-btn {
   min-height: 28px;
   padding: 4px 10px;
@@ -1818,4 +1840,150 @@ details[open] .dev-tools-summary {
 
 .move-card-success {
   border-color: var(--accent);
+}
+
+/* ── Unified creation: concept section, QA section, new-fighter form ── */
+
+.concept-section,
+.qa-section {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-2);
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.concept-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.concept-section-header h3 {
+  margin: 2px 0 0;
+  font-size: 15px;
+}
+
+.concept-panels {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 220px));
+  gap: 10px;
+}
+
+.concept-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.concept-panel-img {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background-color: #f0f0f0;
+  background-repeat: no-repeat;
+}
+
+.concept-panel-label {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.concept-full-sheet summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.concept-full-sheet img {
+  width: 100%;
+  max-width: 720px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+}
+
+.qa-summary {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.qa-summary.pass { background: #0d2818; color: var(--accent); border: 1px solid #1a4a2e; }
+.qa-summary.fail { background: #2d1216; color: var(--danger); border: 1px solid #4a1a20; }
+.qa-summary.warning { background: #2d2210; color: var(--accent-2); border: 1px solid #4a3a1a; }
+
+.qa-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  background: var(--bg);
+}
+
+.qa-check.pass::before { content: "\2713"; color: var(--accent); font-weight: 700; }
+.qa-check.warning::before { content: "\26A0"; color: var(--accent-2); }
+.qa-check.error::before { content: "\2717"; color: var(--danger); font-weight: 700; }
+
+.new-fighter-form {
+  display: grid;
+  gap: 14px;
+  max-width: 640px;
+}
+
+.new-fighter-form label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.new-fighter-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.new-fighter-form .field-hint {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.new-fighter-form input[type="file"] {
+  font-size: 12px;
+}
+
+#new-fighter-create {
+  justify-self: start;
+  padding: 10px 22px;
+  font-size: 14px;
+}
+
+.move-prompt-input {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  font-family: inherit;
+}
+
+.move-prompt-input:focus {
+  outline: none;
+  border-color: var(--focus, #79a8ff);
 }

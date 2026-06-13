@@ -104,14 +104,16 @@ export class CharacterCreationPipeline {
     const resolvedProfile = spriteProfile === 'wide' ? 'wide' : 'standard';
 
     // Reference images keep all rows of one fighter visually consistent.
-    // Explicit keys win; otherwise non-base rows default to the approved base
-    // row plus concept art when they exist.
+    // Explicit keys win; otherwise the base row anchors to the concept art,
+    // and every other row anchors to the approved base row plus concept art.
     let referenceKeys = referenceAssetKeys;
-    if (!referenceKeys.length && resolvedMoveId !== 'base') {
-      referenceKeys = [
-        `characters/${characterId}/assets/source/${characterId}_base_sheet.png`,
-        `characters/${characterId}/assets/concept/concept_art.png`,
-      ];
+    if (!referenceKeys.length) {
+      referenceKeys = resolvedMoveId === 'base'
+        ? [`characters/${characterId}/assets/concept/concept_art.png`]
+        : [
+            `characters/${characterId}/assets/source/${characterId}_base_sheet.png`,
+            `characters/${characterId}/assets/concept/concept_art.png`,
+          ];
     }
     const referenceImages = [];
     for (const key of referenceKeys) {
@@ -150,11 +152,20 @@ export class CharacterCreationPipeline {
       prompt,
     });
 
+    // Non-base rows generated without the base sheet drift visually — surface
+    // that so callers can warn or regenerate once the base row exists.
+    const referencesUsed = referenceImages.map((image) => image.sourceKey);
+    const baseReferenceAttached = referencesUsed.some((key) => key.endsWith(`${characterId}_base_sheet.png`));
+
     return {
       asset,
       provider: result.provider ?? imageGenerator.provider ?? 'unknown',
       model: result.model ?? null,
       promptRef: result.promptRef ?? null,
+      referencesUsed,
+      warnings: resolvedMoveId !== 'base' && !baseReferenceAttached
+        ? ['no base sheet was available as a reference — this row may not match the fighter\'s look; regenerate it after the base row exists']
+        : [],
     };
   }
 
@@ -164,18 +175,27 @@ export class CharacterCreationPipeline {
 
     // Resolve the silhouette height this row should be normalized to: explicit
     // override, else the fighter's existing base row. The base row defines the
-    // fighter's scale; every other row is rescaled to match it.
+    // fighter's scale; every other row is rescaled to match it. The base row's
+    // median reach also defines the body envelope used to carve attack boxes
+    // (pixels protruding beyond the idle body are the attacking limb/weapon).
     let resolvedTargetHeight = targetHeight ?? null;
-    if (!resolvedTargetHeight && moveId !== 'base') {
+    let bodyHalfWidth = null;
+    if (moveId !== 'base') {
       try {
         const existing = await storage.getJson(`${packRoot}/frameData.json`);
-        const heights = (existing?.frames?.base ?? [])
-          .map((frame) => frame.silhouetteHeight)
-          .filter((value) => typeof value === 'number' && value > 0)
-          .sort((a, b) => a - b);
-        if (heights.length) resolvedTargetHeight = heights[Math.floor(heights.length / 2)];
+        const baseFrames = existing?.frames?.base ?? [];
+        const median = (values) => {
+          const sorted = values
+            .filter((value) => typeof value === 'number' && value > 0)
+            .sort((a, b) => a - b);
+          return sorted.length ? sorted[Math.floor(sorted.length / 2)] : null;
+        };
+        if (!resolvedTargetHeight) {
+          resolvedTargetHeight = median(baseFrames.map((frame) => frame.silhouetteHeight));
+        }
+        bodyHalfWidth = median(baseFrames.map((frame) => frame.reachX));
       } catch {
-        // no base row yet — this row sets its own scale
+        // no base row yet — this row sets its own scale and gets no attack boxes
       }
     }
 
@@ -190,6 +210,7 @@ export class CharacterCreationPipeline {
       const args = [EXTRACT_SCRIPT_PATH, inputPath, outputDir, '--move-id', moveId];
       if (spriteProfile === 'wide') args.push('--rows', '2', '--cols', '3');
       if (resolvedTargetHeight) args.push('--target-height', String(Math.round(resolvedTargetHeight)));
+      if (bodyHalfWidth) args.push('--body-half-width', String(Math.round(bodyHalfWidth)));
       try {
         await execFileAsync('python3', args, {
           timeout: 60_000,

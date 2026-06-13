@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assetRecordForKey, writeCharacterAssetUpload } from '../assets/uploadCharacterAsset.js';
 import { createLocalCmsRuntime } from '../runtime/createLocalCmsRuntime.js';
+import { convertDraftToCharacterConfig } from '../export/convertDraftToCharacterConfig.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -132,6 +133,23 @@ async function handleApiRequest({ request, response, url, runtime }) {
     return;
   }
 
+  // Runtime CharacterConfig for the single-player testbed. Runs the same
+  // draft -> runtime transform that `cms:export` ships, so the testbed plays
+  // exactly what the game will, with no schema drift.
+  const runtimeConfigMatch = url.pathname.match(/^\/api\/characters\/([^/]+)\/runtime-config$/);
+  if (request.method === 'GET' && runtimeConfigMatch) {
+    const characterId = decodeURIComponent(runtimeConfigMatch[1]);
+    const draft = await runtime.repository.getDraft(characterId);
+    const keys = await runtime.repository.listCharacterAssets(characterId);
+    const frameDataKey = keys.find((key) => key.endsWith('frameData.json'));
+    const manifestKey = keys.find((key) => key.endsWith('manifest.json'));
+    const frameData = frameDataKey ? await runtime.storage.getJson(frameDataKey) : null;
+    const manifest = manifestKey ? await runtime.storage.getJson(manifestKey) : null;
+    const config = convertDraftToCharacterConfig({ draft, frameData, manifest });
+    sendJson(response, { config });
+    return;
+  }
+
   const assetsMatch = url.pathname.match(/^\/api\/characters\/([^/]+)\/assets$/);
   if (request.method === 'GET' && assetsMatch) {
     const characterId = decodeURIComponent(assetsMatch[1]);
@@ -163,6 +181,10 @@ async function handleApiRequest({ request, response, url, runtime }) {
     const key = decodeURIComponent(url.pathname.slice('/api/assets/'.length));
     if (!key || key.startsWith('/') || key.split('/').includes('..')) {
       sendJson(response, { error: 'Invalid asset key' }, 400);
+      return;
+    }
+    if (typeof runtime.storage.exists === 'function' && !(await runtime.storage.exists(key))) {
+      sendJson(response, { error: `Asset not found: ${key}` }, 404);
       return;
     }
     const bytes = await runtime.storage.getBytes(key);
@@ -237,15 +259,9 @@ async function serveAdminAsset({ response, url, adminRoot }) {
     return;
   }
 
-  // 2. Creation wizard: /roster/new → serve create.html
-  if (pathname === '/roster/new') {
-    const absolutePath = path.resolve(adminRoot, 'create.html');
-    response.writeHead(200, { 'content-type': contentTypeFor(absolutePath), 'cache-control': 'no-store' });
-    createReadStream(absolutePath).pipe(response);
-    return;
-  }
-
-  // 3. SPA fallback: /roster, /roster/:id, /pipeline → serve index.html
+  // 2. SPA fallback: /roster, /roster/new, /roster/:id, /pipeline → serve index.html.
+  // Creation is the same single-page app as editing — a new fighter is just a
+  // roster page whose draft doesn't exist yet.
   if (pathname === '/roster' || pathname.startsWith('/roster/') || pathname === '/pipeline') {
     const absolutePath = path.resolve(adminRoot, 'index.html');
     response.writeHead(200, { 'content-type': contentTypeFor(absolutePath), 'cache-control': 'no-store' });
@@ -253,7 +269,7 @@ async function serveAdminAsset({ response, url, adminRoot }) {
     return;
   }
 
-  // 4. Static files (css, js, images, etc.)
+  // 3. Static files (css, js, images, etc.)
   const relativePath = pathname.replace(/^\/+/, '');
   const absolutePath = path.resolve(adminRoot, relativePath);
 

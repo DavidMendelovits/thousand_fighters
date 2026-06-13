@@ -151,6 +151,7 @@ function instructionsFor(request) {
       'Create a playable fighting-game character from the brief.',
       'Keep animation ids aligned with these move rows: punch, kick, special_1, special_2.',
       'Use six-frame generated fighter assumptions unless context explicitly says otherwise.',
+      'Set sprite.relativeHeight from the brief: 1.0 for a standard fighter, up to 1.6 for giants, down to 0.5 for tiny fighters. This is how intended character height reaches the game.',
       'Moves should be mechanically readable and usable by the runtime config.',
       'Do not include markdown. Return only JSON matching the supplied schema.',
     ].join('\n');
@@ -217,10 +218,14 @@ function characterContentDraftSchema() {
       sprite: {
         type: 'object',
         additionalProperties: false,
-        required: ['basePath', 'scale', 'frameCounts'],
+        required: ['basePath', 'scale', 'relativeHeight', 'frameCounts'],
         properties: {
           basePath: { type: 'string' },
           scale: { type: 'number' },
+          relativeHeight: {
+            type: 'number',
+            description: 'On-screen height relative to a standard fighter. 1.0 = standard. Giants/towering characters up to 1.6, small/childlike characters down to 0.5. Render scale is derived from the art; this is the only place intended height lives.',
+          },
           frameCounts: {
             type: 'object',
             additionalProperties: false,
