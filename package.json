@@ -42,7 +42,8 @@
     "engine:guard:smoke": "tsx scripts/smoke_engine_guard.mjs",
     "engine:rows:smoke": "tsx scripts/smoke_engine_rows.mjs",
     "rows:smoke": "node scripts/smoke_animation_rows.mjs",
-    "cms:combo:smoke": "node scripts/smoke_cms_combo.mjs"
+    "cms:combo:smoke": "node scripts/smoke_cms_combo.mjs",
+    "cms:combo:gen:smoke": "node scripts/smoke_cms_combo_generation.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1048.0",

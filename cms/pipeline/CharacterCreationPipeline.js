@@ -95,7 +95,7 @@ export class CharacterCreationPipeline {
     return textModel.describeImage({ imageBase64, contentType, prompt, context, onProgress: context.onProgress });
   }
 
-  async generateSpriteSheet({ characterId, prompt, moveId, spriteProfile, referenceAssetKeys = [], targetPath, context = {} }) {
+  async generateSpriteSheet({ characterId, prompt, moveId, spriteProfile, referenceAssetKeys = [], extraReferenceAssetKeys = [], targetPath, context = {} }) {
     const imageGenerator = this.registry.resolve(PipelinePort.IMAGE_GENERATOR);
     const repository = this.registry.resolve(PipelinePort.CHARACTER_REPOSITORY);
     const storage = this.registry.resolve(PipelinePort.ASSET_STORAGE);
@@ -115,6 +115,12 @@ export class CharacterCreationPipeline {
             `characters/${characterId}/assets/source/${characterId}_base_sheet.png`,
             `characters/${characterId}/assets/concept/concept_art.png`,
           ];
+    }
+    // Continuity / supplemental references appended AFTER the identity refs (vs
+    // replacing them like explicit referenceAssetKeys do) — combo segments use
+    // this to carry the prior segment's sheet for pose overlap (T22). Deduped.
+    if (extraReferenceAssetKeys.length) {
+      referenceKeys = [...new Set([...referenceKeys, ...extraReferenceAssetKeys])];
     }
     const referenceImages = [];
     for (const key of referenceKeys) {
@@ -168,6 +174,53 @@ export class CharacterCreationPipeline {
         ? ['no base sheet was available as a reference — this row may not match the fighter\'s look; regenerate it after the base row exists']
         : [],
     };
+  }
+
+  /**
+   * Generate the rows of a combo SEQUENTIALLY (T22). Each segment after the
+   * first carries the prior segment's source sheet as an extra reference, and
+   * is prompted to begin from that strip's final cell, so the chain's poses
+   * overlap.
+   *
+   * This is SOFT pose continuity — reference-conditioning is a nudge, not a
+   * pixel-exact `start[K+1] == end[K]` guarantee (hard continuity would be a
+   * frame-copy operation, a different mechanism). The threading is what's
+   * deterministic and testable; visual alignment is model-dependent.
+   *
+   * @param {object} args
+   * @param {string} args.characterId
+   * @param {Array<{ moveId: string, prompt?: string, spriteProfile?: string }>} args.segments
+   *   Ordered combo segments. Each moveId is generated as its own row.
+   * @param {string} [args.basePrompt]  Fallback prompt for segments without one.
+   * @param {object} [args.context]
+   * @returns {Promise<{ segments: object[] }>}
+   */
+  async generateComboSequence({ characterId, segments, basePrompt, context = {} }) {
+    if (!Array.isArray(segments) || segments.length < 2) {
+      throw new Error('generateComboSequence: a combo needs at least 2 segments');
+    }
+    const results = [];
+    let priorSheetKey = null;
+    for (const segment of segments) {
+      const moveId = segment?.moveId;
+      if (!moveId) throw new Error('generateComboSequence: every segment needs a moveId');
+      const continuityNote = priorSheetKey
+        ? ' Pose continuity: begin frame 1 from the pose in the FINAL cell of the attached reference strip, so this move flows out of the previous move in the combo.'
+        : '';
+      const result = await this.generateSpriteSheet({
+        characterId,
+        prompt: `${segment.prompt ?? basePrompt ?? ''}${continuityNote}`,
+        moveId,
+        spriteProfile: segment.spriteProfile,
+        extraReferenceAssetKeys: priorSheetKey ? [priorSheetKey] : [],
+        context,
+      });
+      results.push({ moveId, ...result });
+      // The sheet just written becomes the continuity reference for the next
+      // segment (its final cell is the end pose).
+      priorSheetKey = result.asset.key;
+    }
+    return { segments: results };
   }
 
   async extractRowFrames({ characterId, sourceAssetKey, moveId, spriteProfile, targetHeight, context = {} }) {

@@ -1,6 +1,7 @@
 import { assetApiUrl, writeCharacterAssetUpload } from '../assets/uploadCharacterAsset.js';
 import { exportCharacterToRuntime } from '../export/exportCharacterToRuntime.js';
 import { SHEET_IDS } from '../../shared/animationRows.js';
+import { validateCombos } from '../export/convertDraftToCharacterConfig.js';
 
 // Row ids an agent can generate, sourced from the registry so the tool schema
 // can't drift from the engine's row set (T20/T21).
@@ -96,6 +97,66 @@ export function createCmsTools({ pipeline, repository, registry }) {
           context: context ?? {},
         });
         return withAssetApiUrl(result);
+      },
+    },
+    {
+      name: 'define_combo',
+      description: 'Define (or replace) a combo on the draft: an ordered list of existing move ids that chain. Convert wires each move to cancelInto the next, so the chain is playable once the moves have cancellable phases (author the cancel windows separately). Validates that every segment is an existing move and the combo has >= 2 segments — fails loudly on a bad reference.',
+      inputSchema: objectSchema({
+        characterId: stringSchema('Character id.'),
+        comboId: stringSchema('Combo id (stable key; re-defining the same id replaces it).'),
+        displayName: stringSchema('Optional human-readable combo name.'),
+        segments: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Ordered move ids that make up the combo (>= 2). Each must be an existing draft move id.',
+        },
+      }, ['characterId', 'comboId', 'segments']),
+      execute: async ({ characterId, comboId, displayName, segments }) => {
+        const current = await repository.getDraft(characterId);
+        const moveIds = (current.moves ?? []).map((move) => move.id);
+        const combo = { id: comboId, segments: segments ?? [], ...(displayName ? { displayName } : {}) };
+        const others = (current.combos ?? []).filter((existing) => existing.id !== comboId);
+        const combos = [...others, combo];
+        const errors = validateCombos(combos, moveIds);
+        if (errors.length) {
+          throw new Error(`define_combo rejected: ${errors.join('; ')}`);
+        }
+        await repository.saveDraft(characterId, { ...current, combos }, {
+          provider: 'cms-tool',
+          adapterId: 'define-combo',
+        });
+        return { comboId, segments: combo.segments, combos };
+      },
+    },
+    {
+      name: 'generate_combo',
+      description: 'Generate the rows of a combo SEQUENTIALLY so the poses overlap: each segment after the first carries the prior segment\'s sheet as a reference and is prompted to begin from its final pose. Generate the base row first (it anchors identity). This is soft pose continuity — a visual nudge, not a pixel-exact frame match.',
+      inputSchema: objectSchema({
+        characterId: stringSchema('Character id.'),
+        basePrompt: stringSchema('Fallback generation prompt applied to segments without their own prompt.'),
+        segments: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              moveId: { type: 'string', description: 'Row id to generate for this segment.' },
+              prompt: { type: 'string', description: 'Optional per-segment prompt.' },
+              spriteProfile: { type: 'string', description: 'Optional: standard or wide.' },
+            },
+            required: ['moveId'],
+          },
+          description: 'Ordered combo segments (>= 2), generated in sequence.',
+        },
+      }, ['characterId', 'segments']),
+      execute: async ({ characterId, basePrompt, segments, context }) => {
+        const result = await pipeline.generateComboSequence({
+          characterId,
+          segments: segments ?? [],
+          basePrompt: basePrompt || undefined,
+          context: context ?? {},
+        });
+        return { segments: result.segments.map((segment) => withAssetApiUrl(segment)) };
       },
     },
     {
