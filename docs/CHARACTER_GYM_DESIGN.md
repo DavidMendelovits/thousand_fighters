@@ -464,10 +464,21 @@ row-generation work.
   (jump arc, crouch-squash interaction with the 0.58 body scale) deferred — no test gates
   whether a row *looks* good. Pre-existing unrelated failure noted: `cms:openai:image:smoke`
   (`fighter-5x6-sheet` branch absent from the adapter; fails identically without T21 edits).
-- [ ] **T22 (P1) — sequential combo generation.** A combo descriptor (ordered move ids); the
-  generator produces each segment conditioned on the previous segment's end frame so poses
-  overlap. Persist combo metadata on the draft; convert chains them. Unit-test the chaining +
-  pose-continuity contract.
+- [x] **T22 (P1) — sequential combo generation. DONE.** Combo descriptor on the draft
+  (`draft.combos: [{ id, displayName?, segments: [moveId, ...] }]`). **Convert chaining**
+  (`applyComboChaining` in convert): wires each adjacent segment a→b into a's `cancelInto`
+  (MERGE + dedupe — pre-authored links survive, a move in 2 combos accumulates both, double-run
+  idempotent; terminal segment untouched; lenient — never emits a dangling link). Deliberately
+  does NOT fabricate phase `cancellable`: `tryCancel` needs `cancelInto` AND a cancellable
+  window, and the window is authoring data — a combo links but won't *fire* until a cancel
+  window is authored (documented gap, like dash). `validateCombos` (strict, definition-time)
+  powers `define_combo`. **Sequential generation** (`generateComboSequence`): each segment after
+  the first carries the prior segment's source sheet as an extra reference (via new
+  `extraReferenceAssetKeys`, appended to identity refs, not replacing them) and is prompted to
+  begin from its final cell — SOFT continuity (a nudge, not pixel-exact start==end). CMS tools:
+  `define_combo` (validate+persist), `generate_combo` (run the sequence). Tests:
+  `cms:combo:smoke` (15 — merge semantics, leniency, validation, convert, persistence),
+  `cms:combo:gen:smoke` (8 — threading contract + tool validate/persist/replace).
 - [ ] **T23 (P1) — projectile generation + editor.** Projectile specials generate the
   projectile sprite + a projectile entity on the draft; a projectile editor in the gym edits
   it like a move (geometry, lifetime, velocity, hitbox numbers). Convert already emits
