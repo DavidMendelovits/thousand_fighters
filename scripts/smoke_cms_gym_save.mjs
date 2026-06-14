@@ -298,6 +298,35 @@ try {
     const cfg = convertDraftToCharacterConfig({ draft, frameData, manifest: null });
     assert.deepEqual(cfg.guardboxes, {}, 'config guardboxes empty — fallback to level enum logic');
   });
+
+  // -------------------------------------------------------------------------
+  console.log('\n[7] hitbox-number patch normalizes a both-shapes knockback (codex P2)');
+
+  await test('patch on a hitbox carrying BOTH flat + nested knockback leaves one representation', async () => {
+    // A malformed draft event with both knockbackX and knockback:{x,y}. convert
+    // reads flat first (knockbackX ?? knockback?.x), so a patch that wrote only
+    // nested would silently no-op. The tool must clear the opposite shape.
+    await repository.saveDraft('dual_kb', {
+      id: 'dual_kb',
+      moves: [{
+        id: 'slam', animation: 'punch',
+        phases: [{ name: 'active', frames: 3, events: [{ frame: 0, event: {
+          type: 'hitbox_active',
+          hitbox: { x: 0, y: 0, width: 1, height: 1, damage: 10, hitstun: 5, knockbackX: 4, knockbackY: 1, knockback: { x: 4, y: 1 } },
+        } }] }],
+      }],
+    });
+    const res = await save({ characterId: 'dual_kb', hitboxNumbers: [{ moveId: 'slam', knockbackX: 9, knockbackY: 2 }] });
+    assert.equal(res.draft.status, 'saved');
+    assert.equal(res.draft.patchedEvents, 1);
+
+    const draft = await repository.getDraft('dual_kb');
+    const hb = draft.moves[0].phases[0].events[0].event.hitbox;
+    assert.equal(hb.knockbackX, 9, 'flat field updated (convert reads this first)');
+    assert.equal(hb.knockbackY, 2);
+    assert.equal(hb.knockback?.x, undefined, 'stale nested.x cleared so convert cannot prefer it');
+    assert.equal(hb.knockback?.y, undefined, 'stale nested.y cleared');
+  });
 } finally {
   if (rootDir) await rm(rootDir, { force: true, recursive: true });
 }

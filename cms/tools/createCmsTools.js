@@ -436,13 +436,26 @@ function patchHitboxFields(hitbox, patch) {
   for (const field of ['damage', 'hitstun', 'blockstun', 'level']) {
     if (patch[field] !== undefined) hitbox[field] = patch[field];
   }
+  // Write a single knockback representation per axis. If only the nested
+  // `knockback:{x,y}` shape exists, patch it; otherwise write the flat field
+  // (which convert reads first: `knockbackX ?? knockback?.x`) AND clear the
+  // nested coordinate so a malformed both-shapes event can't leave a stale value
+  // that convert would prefer over the patch (codex P2).
   if (patch.knockbackX !== undefined) {
-    if (isPlainObject(hitbox.knockback)) hitbox.knockback.x = patch.knockbackX;
-    else hitbox.knockbackX = patch.knockbackX;
+    if (isPlainObject(hitbox.knockback) && hitbox.knockbackX === undefined) {
+      hitbox.knockback.x = patch.knockbackX;
+    } else {
+      hitbox.knockbackX = patch.knockbackX;
+      if (isPlainObject(hitbox.knockback)) delete hitbox.knockback.x;
+    }
   }
   if (patch.knockbackY !== undefined) {
-    if (isPlainObject(hitbox.knockback)) hitbox.knockback.y = patch.knockbackY;
-    else hitbox.knockbackY = patch.knockbackY;
+    if (isPlainObject(hitbox.knockback) && hitbox.knockbackY === undefined) {
+      hitbox.knockback.y = patch.knockbackY;
+    } else {
+      hitbox.knockbackY = patch.knockbackY;
+      if (isPlainObject(hitbox.knockback)) delete hitbox.knockback.y;
+    }
   }
 }
 

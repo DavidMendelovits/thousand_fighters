@@ -615,6 +615,11 @@ async function save(): Promise<void> {
   const sendingDraft = draftDirty;
   if (sendingFrame) {
     applyAnchorRecompute();
+    // Advance the recompute baseline WITH the box shift (not on save success), so a
+    // retry after a frameData-half failure never re-applies Δanchor and double-shifts
+    // the collision boxes (codex P1). The in-memory frameData is self-consistent
+    // regardless of the save outcome; the file just persists it on a later success.
+    snapshotAnchors();
     payload.frameData = data.frameData;
   }
   if (sendingDraft) {
@@ -636,7 +641,7 @@ async function save(): Promise<void> {
     let frameOk = true;
     let draftOk = true;
     if (sendingFrame) {
-      if (result.frameData?.status === 'saved') { frameDirty = false; snapshotAnchors(); }
+      if (result.frameData?.status === 'saved') frameDirty = false;
       else frameOk = false;
     }
     if (sendingDraft) {
