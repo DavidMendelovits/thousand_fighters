@@ -1,5 +1,10 @@
 import { assetApiUrl, writeCharacterAssetUpload } from '../assets/uploadCharacterAsset.js';
 import { exportCharacterToRuntime } from '../export/exportCharacterToRuntime.js';
+import { SHEET_IDS } from '../../shared/animationRows.js';
+
+// Row ids an agent can generate, sourced from the registry so the tool schema
+// can't drift from the engine's row set (T20/T21).
+const ROW_ID_LIST = SHEET_IDS.join(', ');
 
 export function createCmsTools({ pipeline, repository, registry }) {
   const tools = [
@@ -69,11 +74,11 @@ export function createCmsTools({ pipeline, repository, registry }) {
     },
     {
       name: 'generate_sprite_sheet',
-      description: 'Generate a sprite sheet for a single move (base, punch, kick, special_1, or special_2). Generate the base row FIRST: it is automatically attached as a reference image to every other row so the fighter stays visually consistent. Frame roles are canonical: 1-2 startup, 3 reaching/extending, 4 moment of contact / full extension, 5 follow-through, 6 recovery — author visualTimeline and hitbox keyframes against these roles.',
+      description: `Generate a sprite sheet for a single row (${ROW_ID_LIST}). Generate the base row FIRST: it is automatically attached as a reference image to every other row so the fighter stays visually consistent. Each row has canonical frame roles (e.g. attacks: 1-2 startup, 3 reaching/extending, 4 moment of contact / full extension, 5 follow-through, 6 recovery; state rows like crouch/block/jump end on the held pose) — author visualTimeline and hitbox keyframes against these roles.`,
       inputSchema: objectSchema({
         characterId: stringSchema('Character id.'),
         prompt: stringSchema('Sprite generation prompt.'),
-        moveId: stringSchema('Move id: base, punch, kick, special_1, or special_2. Defaults to base.'),
+        moveId: stringSchema(`Row id (one of: ${ROW_ID_LIST}). Defaults to base.`),
         spriteProfile: stringSchema('Sprite profile: standard (1x6 row) or wide (2x3 grid with ~2x wider cells, for long-reach extending-limb moves). Defaults to standard.'),
         referenceAssetKeys: {
           type: 'array',
@@ -99,7 +104,7 @@ export function createCmsTools({ pipeline, repository, registry }) {
       inputSchema: objectSchema({
         characterId: stringSchema('Character id.'),
         sourceAssetKey: stringSchema('CMS key of the source row sheet to extract from.'),
-        moveId: stringSchema('Move id: base, punch, kick, special_1, or special_2.'),
+        moveId: stringSchema(`Row id (one of: ${ROW_ID_LIST}).`),
         spriteProfile: stringSchema('Sprite profile used at generation time: standard (1x6 row) or wide (2x3 grid). Defaults to standard.'),
       }, ['characterId', 'sourceAssetKey', 'moveId']),
       execute: async ({ characterId, sourceAssetKey, moveId, spriteProfile }) => {

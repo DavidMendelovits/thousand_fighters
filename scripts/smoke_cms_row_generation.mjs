@@ -149,6 +149,36 @@ try {
   const pngCount = packSprites.filter((key) => key.endsWith('.png')).length;
   assert.equal(pngCount, 6, 'no stale frames after re-extraction');
 
+  // 9. A T21 row (`block`) generates + extracts through the same moveId-agnostic
+  //    path — proving new rows need no per-row pipeline plumbing. Asserts the
+  //    source sheet, assembled sheet, per-row frameData, and manifest all land
+  //    under the new id.
+  const blockGen = await pipeline.generateSpriteSheet({
+    characterId,
+    prompt: '1x6 block row, magenta background.',
+    moveId: 'block',
+  });
+  const expectedBlockKey = `characters/${characterId}/assets/source/${characterId}_block_sheet.png`;
+  assert.equal(blockGen.asset.key, expectedBlockKey, 'block asset key uses the new row id');
+  assert.equal(await storage.exists(expectedBlockKey), true, 'block source sheet stored');
+  assert.equal(imageCalls[imageCalls.length - 1].moveId, 'block', 'image generator saw moveId=block');
+
+  const blockExtract = await pipeline.extractRowFrames({
+    characterId,
+    sourceAssetKey: expectedBlockKey,
+    moveId: 'block',
+  });
+  assert.equal(blockExtract.frames.length, 6, 'six block frames extracted');
+  assert.equal(await storage.exists(blockExtract.sheetKey), true, 'assembled block sheet stored');
+
+  const frameDataAfterBlock = await storage.getJson(blockExtract.frameDataKey);
+  assert.equal(frameDataAfterBlock.frames.block.length, 6, 'block frameData merged under the new id');
+  assert.equal(frameDataAfterBlock.frames.base.length, 6, 'base survives the block merge');
+
+  const manifestAfterBlock = await storage.getJson(blockExtract.manifestKey);
+  assert.equal(manifestAfterBlock.sheets.block, 'sheets/block.png', 'manifest carries the block sheet');
+  assert.equal(manifestAfterBlock.frameCounts.block, 6, 'manifest frameCount for block');
+
   console.log(`CMS row generation smoke test passed: ${rootDir}`);
 } finally {
   await rm(rootDir, { force: true, recursive: true });

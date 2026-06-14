@@ -404,6 +404,14 @@ async function createDraft() {
 // Sprite-row ids (the registry rows, no 'projectiles'). See MOVE_ORDER above.
 const MOVE_IDS = ['base', 'punch', 'kick', 'special_1', 'special_2', 'jump', 'crouch', 'dash_forward', 'dash_back', 'block', 'grab', 'throw'];
 
+// Source-sheet filename detection (`..._<rowId>_sheet.png`) built from MOVE_IDS,
+// longest-first so multi-token ids (special_1, dash_forward) win over any
+// prefix. Keeping these regexes derived from MOVE_IDS means adding a row can't
+// silently break source-sheet detection (T21).
+const ROW_ID_PATTERN = [...MOVE_IDS].sort((a, b) => b.length - a.length).join('|');
+const SOURCE_SHEET_ANY_RE = new RegExp(`^source\\/.+_(?:${ROW_ID_PATTERN})_sheet\\.(svg|png)$`, 'i');
+const SOURCE_ROW_SHEET_RE = new RegExp(`^source\\/.+_(${ROW_ID_PATTERN})_sheet\\.png$`);
+
 function moveSpriteProfile(moveId) {
   const moves = state.currentDraftData?.moves ?? [];
   const move = moves.find((candidate) => (candidate.animation ?? candidate.sheet) === moveId);
@@ -843,7 +851,7 @@ function detectCharacterStage(draft, assets) {
   if (lifecycle === 'version') return 'published';
 
   const hasConcept = Boolean(findConceptAsset(assets));
-  const hasSource = assets.some((asset) => /^source\/.+_(?:base|punch|kick|special_1|special_2)_sheet\.(svg|png)$/i.test(asset.relativePath));
+  const hasSource = assets.some((asset) => SOURCE_SHEET_ANY_RE.test(asset.relativePath));
   const hasNormalized = assets.some((asset) =>
     /(?:^|\/)(fighter-pack|normalized)\/manifest\.json$/i.test(asset.relativePath)
   );
@@ -1714,7 +1722,7 @@ function parseSheetAsset(asset) {
 }
 
 function parseSourceRowSheet(asset) {
-  const match = asset.relativePath.match(/^source\/.+_(base|punch|kick|special_1|special_2)_sheet\.png$/);
+  const match = asset.relativePath.match(SOURCE_ROW_SHEET_RE);
   if (!match) return null;
   return { moveId: match[1] };
 }

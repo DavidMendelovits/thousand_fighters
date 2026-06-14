@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process';
 import { mkdtemp, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
+import { rowPromptProfile } from '../rowPromptProfiles.js';
 
 const DEFAULT_CODEX_BIN = 'codex';
 const DEFAULT_TIMEOUT_MS = 180_000;
@@ -155,9 +156,7 @@ function buildCodexPrompt(task, userPrompt, context, moveId, referenceCount = 0)
 
   if (task === 'fighter-1x6-row') {
     const resolvedMoveId = moveId ?? context?.moveId ?? 'base';
-    const motionNote = resolvedMoveId === 'base'
-      ? 'This is an IDLE LOOP: motion between frames must be subtle — a few pixels of breathing and sway, feet planted on the same floor spot, silhouette near-identical across all 6 frames. Frame roles: 1 neutral, 2-3 gentle inhale, 4 peak of breath, 5-6 settle back to neutral.'
-      : 'Frame roles: 1-2 startup, 3 reaching, 4 moment of contact, 5 follow-through, 6 recovery.';
+    const motionNote = rowPromptProfile(resolvedMoveId).shortRoles;
     return `Generate an image: a single-row fighting game sprite strip with exactly 6 frames for the "${resolvedMoveId}" move. Magenta #ff00ff background, full body visible, generous gutters, every limb visually connected to the body. Frames must never overlap: leave a wide band of pure magenta between neighbors — not a single pixel of one frame may cross into another frame's cell. ${motionNote} Character: ${userPrompt ?? 'a fighter'}${referenceNote}`;
   }
 

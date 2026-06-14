@@ -22,6 +22,7 @@ import {
   getRow,
   sheetGroups,
 } from '../shared/animationRows.js';
+import { rowsMissingProfiles } from '../cms/pipeline/rowPromptProfiles.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -78,6 +79,14 @@ assert.deepEqual(
   ANIMATION_ROWS.filter((row) => row.moveAnimation).map((row) => row.id),
   MOVE_SHEET_IDS,
   'MOVE_SHEET_IDS must equal the moveAnimation rows in order',
+);
+
+// 1b. Every registry row must have an image-generation prompt profile, or it
+//     generates with only the generic fallback arc (drift guard, T21).
+assert.deepEqual(
+  rowsMissingProfiles(),
+  [],
+  'every registry row needs a prompt profile in cms/pipeline/rowPromptProfiles.js',
 );
 
 // 2. admin/app.js literal guard. Parse the two ordering arrays and assert they

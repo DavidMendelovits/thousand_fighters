@@ -1,3 +1,5 @@
+import { rowPromptProfile } from '../rowPromptProfiles.js';
+
 const DEFAULT_RESPONSES_MODEL = 'gpt-5.5';
 const DEFAULT_IMAGE_MODEL = 'gpt-image-2';
 const DEFAULT_BASE_URL = 'https://api.openai.com/v1';
@@ -184,24 +186,18 @@ function imagePromptFor(request) {
     ].filter(Boolean).join('\n');
   }
   if (task === 'fighter-1x6-row') {
-    const moveDescriptions = {
-      base: 'base idle stance — subtle breathing/sway animation loop, facing right, neutral pose',
-      punch: 'punch attack — wind-up, extension, contact, follow-through, recovery frames',
-      kick: 'kick attack — chamber, extension, contact, follow-through, recovery frames',
-      special_1: 'special move 1 — dramatic startup, active frames with effect/projectile, recovery',
-      special_2: 'special move 2 — dramatic startup, active frames with effect/projectile, recovery',
-    };
     const moveId = request.moveId ?? 'base';
-    const moveDesc = moveDescriptions[moveId] ?? moveId;
-    const motionLines = moveId === 'base'
+    const profile = rowPromptProfile(moveId);
+    const moveDesc = profile.description;
+    const motionLines = profile.idle
       ? [
           '- This is an IDLE LOOP, not an action: motion between frames must be SUBTLE — a few pixels of breathing rise and fall, slight weight sway. The silhouette stays near-identical across all 6 frames.',
-          '- Frame roles are fixed: frame 1 = neutral stance, frames 2-3 = gentle inhale (chest rises slightly), frame 4 = peak of the breath, frames 5-6 = settle back to neutral so the loop closes cleanly.',
+          `- Frame roles are fixed: ${profile.frameRoles}.`,
           '- Feet stay planted on the exact same floor spot in every frame. No steps, no lunges, no big arm swings, no pose changes.',
         ]
       : [
           '- Show clear animation progression from frame 1 to frame 6 — this must read as a playable move, not random poses.',
-          '- Frame roles are fixed: frames 1-2 = startup/wind-up, frame 3 = reaching toward the target, frame 4 = the MOMENT OF CONTACT (fullest extension/impact), frame 5 = follow-through, frame 6 = recovery back toward neutral.',
+          `- Frame roles are fixed: ${profile.frameRoles}.`,
         ];
     return [
       'Draw a production-ready 2D fighting-game sprite row for Thousand Fighters.',
