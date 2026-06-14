@@ -306,8 +306,13 @@ export function createCmsTools({ pipeline, repository, registry }) {
           description: 'Targeted in-place patches to authored hitbox numbers (damage/hitstun/blockstun/knockbackX/knockbackY/level) on draft hitbox_active events. Each item: { moveId, hitboxId?, ...fields }. Matched by moveId + (event.id ?? "default").',
           items: { type: 'object', additionalProperties: true },
         },
+        projectiles: {
+          type: 'array',
+          description: 'Full draft.projectiles entity list (T23 gym projectile editor) — REPLACES draft.projectiles wholesale, validated before write. Omit to leave projectiles untouched.',
+          items: { type: 'object', additionalProperties: true },
+        },
       }, ['characterId']),
-      execute: async ({ characterId, frameData, overrides, hitboxNumbers }) => {
+      execute: async ({ characterId, frameData, overrides, hitboxNumbers, projectiles }) => {
         const result = { ok: true };
 
         // --- Half 1: frameData → asset store (written first, per save order A2/A3) ---
@@ -337,14 +342,19 @@ export function createCmsTools({ pipeline, repository, registry }) {
           }
         }
 
-        // --- Half 2: draft overrides + hitbox numbers → draft store ---
+        // --- Half 2: draft overrides + hitbox numbers + projectiles → draft store ---
         const hasNumberPatches = Array.isArray(hitboxNumbers) && hitboxNumbers.length > 0;
-        if (overrides !== undefined || hasNumberPatches) {
+        if (overrides !== undefined || hasNumberPatches || projectiles !== undefined) {
           try {
             const draft = await repository.getDraft(characterId);
             if (!draft) throw new Error(`No draft to update for ${characterId}`);
             if (overrides !== undefined) {
               draft.overrides = sanitizeOverrides(overrides);
+            }
+            if (projectiles !== undefined) {
+              const errors = validateProjectiles(projectiles);
+              if (errors.length) throw new Error(`invalid projectiles: ${errors.join('; ')}`);
+              draft.projectiles = projectiles;
             }
             let patchedEvents = 0;
             for (const patch of hitboxNumbers ?? []) {

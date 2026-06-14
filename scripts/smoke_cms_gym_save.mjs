@@ -327,6 +327,36 @@ try {
     assert.equal(hb.knockback?.x, undefined, 'stale nested.x cleared so convert cannot prefer it');
     assert.equal(hb.knockback?.y, undefined, 'stale nested.y cleared');
   });
+
+  console.log('\n[5] projectiles editor persistence (T23 gym projectile editor)');
+
+  await test('save_gym_edits replaces draft.projectiles wholesale, validated', async () => {
+    await repository.saveDraft('proj_gym', {
+      id: 'proj_gym',
+      moves: [],
+      projectiles: [{ id: 'old', width: 10, height: 10, lifetime: 60 }],
+    });
+    const entity = {
+      id: 'fireball', animation: 'proj_gym_fireball', width: 48, height: 32, speed: 9,
+      velocity: { x: 9, y: 0, relativeToFacing: true }, lifetime: 80,
+      hitbox: { x: -24, y: -16, width: 48, height: 32, damage: 85, hitstun: 20, blockstun: 14, knockback: { x: 6, y: -1 }, level: 'mid' },
+    };
+    const res = await save({ characterId: 'proj_gym', projectiles: [entity] });
+    assert.equal(res.draft.status, 'saved');
+    const draft = await repository.getDraft('proj_gym');
+    assert.equal(draft.projectiles.length, 1, 'wholesale replace (old entity gone)');
+    assert.equal(draft.projectiles[0].id, 'fireball');
+    assert.equal(draft.projectiles[0].hitbox.damage, 85, 'tuned hitbox number persisted');
+  });
+
+  await test('save_gym_edits rejects invalid projectiles (draft half errors, stays dirty)', async () => {
+    const res = await save({ characterId: 'proj_gym', projectiles: [{ id: 'bad', width: 0, height: 10, lifetime: 60 }] });
+    assert.equal(res.draft.status, 'error');
+    assert.match(res.draft.error, /invalid projectiles/);
+    // The good entity from the prior save must be untouched.
+    const draft = await repository.getDraft('proj_gym');
+    assert.equal(draft.projectiles[0].id, 'fireball', 'rejected save did not clobber the draft');
+  });
 } finally {
   if (rootDir) await rm(rootDir, { force: true, recursive: true });
 }

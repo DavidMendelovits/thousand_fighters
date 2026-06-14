@@ -61,7 +61,29 @@ export type DraftHitbox = {
 export type DraftEvent = { type?: string; id?: string; hitbox?: DraftHitbox | null };
 export type DraftPhase = { name?: string; frames?: number; events?: { frame?: number; onFrame?: number; event?: DraftEvent }[] };
 export type DraftMove = { id: string; displayName?: string; animation?: SpriteSheetId; phases?: DraftPhase[] };
-export type GymDraft = { id?: string; overrides?: DraftOverrides; moves?: DraftMove[] } & Record<string, unknown>;
+
+/** A first-class projectile entity authored on the draft (T23). Editable in the gym. */
+export type ProjectileEntity = {
+  id: string;
+  animation?: string;
+  sourceKey?: string;
+  width?: number;
+  height?: number;
+  speed?: number;
+  velocity?: { x?: number; y?: number; relativeToFacing?: boolean };
+  gravity?: number;
+  lifetime?: number;
+  pierces?: number;
+  clashesWithProjectiles?: boolean;
+  hitbox?: {
+    x?: number; y?: number; width?: number; height?: number;
+    damage?: number; hitstun?: number; blockstun?: number;
+    knockback?: { x?: number; y?: number };
+    level?: string;
+  };
+};
+
+export type GymDraft = { id?: string; overrides?: DraftOverrides; moves?: DraftMove[]; projectiles?: ProjectileEntity[] } & Record<string, unknown>;
 
 export type GymData = {
   config: CharacterConfig;

@@ -7,6 +7,7 @@ import {
   type DraftOverrides,
   type OverrideBox,
   type DraftMove,
+  type ProjectileEntity,
 } from './loadGymData';
 import { GymScene, GYM_CANVAS, type BoundsMode } from './GymScene';
 import { translateBoxesForAnchorDelta } from './anchorMath';
@@ -68,6 +69,11 @@ type Activation = { moveId: string; hitboxId: string; animation: SpriteSheetId; 
 let activations: Activation[] = [];
 let currentActivation: Activation | null = null;
 
+/** Live, editable projectile entities (cloned from the draft; sent wholesale on save). T23. */
+let projectiles: ProjectileEntity[] = [];
+let currentProjectileId: string | null = null;
+let projectilesDirty = false;
+
 async function main(): Promise<void> {
   const params = new URLSearchParams(window.location.search);
   const idParam = params.get('id');
@@ -90,6 +96,7 @@ async function main(): Promise<void> {
   hideStatus();
   snapshotAnchors();
   cloneOverrides();
+  cloneProjectiles();
 
   $('char-name').textContent = data.config.displayName ?? characterId;
   document.title = `Gym · ${data.config.displayName ?? characterId}`;
@@ -139,6 +146,7 @@ async function main(): Promise<void> {
   buildGuardStates();
   buildHitActivations();
   wireCollisionInspector();
+  buildProjectileEditor();
   wireTransport();
   setPlayButton(false);
   wireKeyboard();
@@ -622,6 +630,8 @@ async function save(): Promise<void> {
   if (sendingDraft) {
     payload.overrides = overrides;
     payload.hitboxNumbers = buildHitboxNumberPatches();
+    // Only send projectiles when actually edited — omit leaves them untouched.
+    if (projectilesDirty) payload.projectiles = projectiles;
   }
 
   try {
@@ -642,7 +652,7 @@ async function save(): Promise<void> {
       else frameOk = false;
     }
     if (sendingDraft) {
-      if (result.draft?.status === 'saved') { draftDirty = false; numberEdits.clear(); }
+      if (result.draft?.status === 'saved') { draftDirty = false; numberEdits.clear(); projectilesDirty = false; }
       else draftOk = false;
     }
     refreshDirty();
@@ -714,6 +724,91 @@ function cloneOverrides(): void {
     ),
     guardboxes: { ...(src.guardboxes ?? {}) },
   };
+}
+
+// --- Projectile editor (T23) -------------------------------------------------
+
+function cloneProjectiles(): void {
+  // Deep clone so edits don't mutate the loaded draft until saved.
+  projectiles = (data.draft?.projectiles ?? []).map((p) => structuredClone(p));
+  currentProjectileId = projectiles[0]?.id ?? null;
+  projectilesDirty = false;
+}
+
+/** Read a dotted path (e.g. "hitbox.knockback.x") off a projectile entity. */
+function readProjectilePath(entity: ProjectileEntity, path: string): unknown {
+  return path.split('.').reduce<unknown>((node, key) => (node && typeof node === 'object' ? (node as Record<string, unknown>)[key] : undefined), entity);
+}
+
+/** Write a dotted path, creating intermediate objects as needed. */
+function writeProjectilePath(entity: ProjectileEntity, path: string, value: number | string): void {
+  const keys = path.split('.');
+  let node = entity as Record<string, unknown>;
+  for (let i = 0; i < keys.length - 1; i += 1) {
+    const key = keys[i];
+    if (!node[key] || typeof node[key] !== 'object') node[key] = {};
+    node = node[key] as Record<string, unknown>;
+  }
+  node[keys[keys.length - 1]] = value;
+}
+
+function currentProjectile(): ProjectileEntity | null {
+  return projectiles.find((p) => p.id === currentProjectileId) ?? null;
+}
+
+function buildProjectileEditor(): void {
+  const select = $('proj-select') as HTMLSelectElement;
+  select.innerHTML = '';
+  for (const entity of projectiles) {
+    const option = document.createElement('option');
+    option.value = entity.id;
+    option.textContent = entity.id;
+    select.appendChild(option);
+  }
+  if (currentProjectileId) select.value = currentProjectileId;
+  select.addEventListener('change', () => {
+    currentProjectileId = select.value;
+    renderProjectileFields();
+  });
+
+  // Wire every [data-proj] input/select to its dotted path.
+  document.querySelectorAll<HTMLElement>('#proj-fields [data-proj]').forEach((el) => {
+    el.addEventListener('change', () => {
+      const entity = currentProjectile();
+      if (!entity) return;
+      const path = el.dataset.proj!;
+      const input = el as HTMLInputElement | HTMLSelectElement;
+      const value: number | string = input instanceof HTMLSelectElement
+        ? input.value
+        : Number(input.value);
+      if (typeof value === 'number' && Number.isNaN(value)) return;
+      writeProjectilePath(entity, path, value);
+      projectilesDirty = true;
+      markDraftDirty();
+    });
+  });
+
+  renderProjectileFields();
+}
+
+function renderProjectileFields(): void {
+  const entity = currentProjectile();
+  const empty = $('proj-empty');
+  const fields = $('proj-fields');
+  if (!entity) {
+    empty.hidden = false;
+    fields.hidden = true;
+    return;
+  }
+  empty.hidden = true;
+  fields.hidden = false;
+  document.querySelectorAll<HTMLElement>('#proj-fields [data-proj]').forEach((el) => {
+    const value = readProjectilePath(entity, el.dataset.proj!);
+    const input = el as HTMLInputElement | HTMLSelectElement;
+    input.value = value === undefined || value === null ? '' : String(value);
+  });
+  const sprite = entity.animation ? `texture: ${entity.animation}` : 'no sprite generated yet';
+  $('proj-note').textContent = `${sprite}. Boxes are in projectile-local px; convert maps them to the runtime ProjectileConfig.`;
 }
 
 function roundBox(b: OverrideBox): OverrideBox {

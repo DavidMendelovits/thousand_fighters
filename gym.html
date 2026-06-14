@@ -341,6 +341,39 @@
           <div class="ro-note" id="hit-note"></div>
         </section>
 
+        <section class="panel" id="projectile-panel">
+          <h2>Projectile</h2>
+          <div class="num-grid">
+            <label for="proj-select">Entity</label>
+            <select class="mono" id="proj-select"></select>
+          </div>
+          <div class="ro-note" id="proj-empty">No projectiles on this draft. Generate one in the admin (generate_projectile).</div>
+          <div id="proj-fields" hidden>
+            <h3 class="subhead">Motion</h3>
+            <div class="num-grid">
+              <label for="proj-w">Width</label><input class="mono" id="proj-w" type="number" step="1" data-proj="width" />
+              <label for="proj-h">Height</label><input class="mono" id="proj-h" type="number" step="1" data-proj="height" />
+              <label for="proj-speed">Speed</label><input class="mono" id="proj-speed" type="number" step="0.5" data-proj="speed" />
+              <label for="proj-vx">Vel X</label><input class="mono" id="proj-vx" type="number" step="0.5" data-proj="velocity.x" />
+              <label for="proj-vy">Vel Y</label><input class="mono" id="proj-vy" type="number" step="0.5" data-proj="velocity.y" />
+              <label for="proj-gravity">Gravity</label><input class="mono" id="proj-gravity" type="number" step="0.1" data-proj="gravity" />
+              <label for="proj-lifetime">Lifetime</label><input class="mono" id="proj-lifetime" type="number" step="1" data-proj="lifetime" />
+              <label for="proj-pierces">Pierces</label><input class="mono" id="proj-pierces" type="number" step="1" data-proj="pierces" />
+            </div>
+            <h3 class="subhead">Hitbox</h3>
+            <div class="num-grid">
+              <label for="proj-hb-damage">Damage</label><input class="mono" id="proj-hb-damage" type="number" step="1" data-proj="hitbox.damage" />
+              <label for="proj-hb-hitstun">Hitstun</label><input class="mono" id="proj-hb-hitstun" type="number" step="1" data-proj="hitbox.hitstun" />
+              <label for="proj-hb-blockstun">Blockstun</label><input class="mono" id="proj-hb-blockstun" type="number" step="1" data-proj="hitbox.blockstun" />
+              <label for="proj-hb-kbx">Knock X</label><input class="mono" id="proj-hb-kbx" type="number" step="0.5" data-proj="hitbox.knockback.x" />
+              <label for="proj-hb-kby">Knock Y</label><input class="mono" id="proj-hb-kby" type="number" step="0.5" data-proj="hitbox.knockback.y" />
+              <label for="proj-hb-level">Level</label>
+              <select class="mono" id="proj-hb-level" data-proj="hitbox.level"><option value="high">high</option><option value="mid">mid</option><option value="low">low</option></select>
+            </div>
+            <div class="ro-note" id="proj-note"></div>
+          </div>
+        </section>
+
         <section class="panel">
           <h2>Live status</h2>
           <div class="num-grid mono" id="hud"></div>
