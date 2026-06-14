@@ -76,9 +76,89 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
       getup: 'getup',
       dead: 'dead',
     },
-    moves: (draft.moves ?? []).map((draftMove) =>
-      convertMove(draftMove, { frameData, scale, hitboxOverrides: overrides.hitboxes?.[draftMove.id] })),
+    moves: applyComboChaining(
+      (draft.moves ?? []).map((draftMove) =>
+        convertMove(draftMove, { frameData, scale, hitboxOverrides: overrides.hitboxes?.[draftMove.id] })),
+      draft.combos,
+    ),
   };
+}
+
+// ---------------------------------------------------------------------------
+// Combo chaining (T22)
+// ---------------------------------------------------------------------------
+
+/**
+ * Wire combo chaining onto converted moves. For each combo's adjacent segment
+ * pair (a → b), union b into a's `cancelInto` (deduped); the terminal segment
+ * is left untouched. This is pure translation of an explicit, ordered descriptor
+ * — `draft.combos: [{ id, segments: [moveId, ...] }]`.
+ *
+ * Deliberately does NOT touch phase `cancellable`. A cancel WINDOW is authoring
+ * data: `MoveExecutor.tryCancel` fires only when the current phase is
+ * `cancellable` AND `cancelInto` lists the next move. So a combo wired here but
+ * with no authored cancellable window links correctly but won't fire — by
+ * design, not a bug (fabricating `cancellable` here would silently change the
+ * move's behavior in non-combo contexts too).
+ *
+ * Lenient by design: a segment referencing a move that doesn't exist is skipped
+ * (never emits a dangling `cancelInto`). Strict validation belongs at combo
+ * DEFINITION time — see `validateCombos`, used by the CMS tool.
+ *
+ * @param {object[]} moves   Converted runtime Move objects (mutated in place).
+ * @param {object[]} [combos]
+ * @returns {object[]} moves
+ */
+export function applyComboChaining(moves, combos) {
+  if (!Array.isArray(combos) || combos.length === 0) return moves;
+  const byId = new Map(moves.map((move) => [move.id, move]));
+  for (const combo of combos) {
+    const segments = Array.isArray(combo?.segments) ? combo.segments : [];
+    for (let i = 0; i < segments.length - 1; i += 1) {
+      const move = byId.get(segments[i]);
+      const next = segments[i + 1];
+      // Lenient: only wire when both endpoints exist, so we never emit a
+      // dangling cancelInto for a half-authored combo (keeps live convert from
+      // throwing on the testbed/runtime-config path).
+      if (!move || !byId.has(next)) continue;
+      const existing = Array.isArray(move.cancelInto) ? move.cancelInto : [];
+      if (!existing.includes(next)) move.cancelInto = [...existing, next];
+    }
+  }
+  return moves;
+}
+
+/**
+ * Strict validation for combo descriptors at definition time. Returns an array
+ * of human-readable error strings (empty when valid) so the caller can fail
+ * loudly before persisting — a combo pointing at a nonexistent move must be
+ * rejected here, not silently dropped later.
+ *
+ * @param {object[]} [combos]
+ * @param {string[]} moveIds  Ids of the draft's existing moves.
+ * @returns {string[]} errors
+ */
+export function validateCombos(combos, moveIds) {
+  const errors = [];
+  if (combos === undefined || combos === null) return errors;
+  if (!Array.isArray(combos)) return ['combos must be an array'];
+  const known = new Set(moveIds ?? []);
+  const seenIds = new Set();
+  for (const combo of combos) {
+    const cid = combo?.id ?? '(unnamed)';
+    if (combo?.id) {
+      if (seenIds.has(combo.id)) errors.push(`duplicate combo id "${combo.id}"`);
+      seenIds.add(combo.id);
+    }
+    const segments = Array.isArray(combo?.segments) ? combo.segments : [];
+    if (segments.length < 2) {
+      errors.push(`combo "${cid}" needs at least 2 segments (got ${segments.length})`);
+    }
+    for (const segId of segments) {
+      if (!known.has(segId)) errors.push(`combo "${cid}" references unknown move "${segId}"`);
+    }
+  }
+  return errors;
 }
 
 // ---------------------------------------------------------------------------
