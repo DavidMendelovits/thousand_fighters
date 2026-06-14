@@ -76,10 +76,13 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
       getup: 'getup',
       dead: 'dead',
     },
-    moves: applyComboChaining(
-      (draft.moves ?? []).map((draftMove) =>
-        convertMove(draftMove, { frameData, scale, hitboxOverrides: overrides.hitboxes?.[draftMove.id] })),
-      draft.combos,
+    moves: resolveProjectileEntities(
+      applyComboChaining(
+        (draft.moves ?? []).map((draftMove) =>
+          convertMove(draftMove, { frameData, scale, hitboxOverrides: overrides.hitboxes?.[draftMove.id] })),
+        draft.combos,
+      ),
+      draft.projectiles,
     ),
   };
 }
@@ -156,6 +159,122 @@ export function validateCombos(combos, moveIds) {
     }
     for (const segId of segments) {
       if (!known.has(segId)) errors.push(`combo "${cid}" references unknown move "${segId}"`);
+    }
+  }
+  return errors;
+}
+
+// ---------------------------------------------------------------------------
+// Projectile entities (T23)
+// ---------------------------------------------------------------------------
+
+/**
+ * Build a runtime ProjectileConfig from a draft projectile entity, filling
+ * sensible defaults for anything unauthored. The entity is the authoring shape
+ * of `src/schema/types.ts` ProjectileConfig.
+ *
+ * @param {object} entity  draft.projectiles[i]
+ * @returns {object} runtime ProjectileConfig
+ */
+function projectileConfigFromEntity(entity) {
+  const hb = entity.hitbox ?? {};
+  const width = entity.width ?? 32;
+  const height = entity.height ?? 32;
+  const speed = entity.speed ?? entity.velocity?.x ?? 6;
+  const config = {
+    id: entity.id,
+    animation: entity.animation ?? 'special_2',
+    width,
+    height,
+    speed,
+    velocity: {
+      x: entity.velocity?.x ?? speed,
+      y: entity.velocity?.y ?? 0,
+      relativeToFacing: entity.velocity?.relativeToFacing ?? true,
+    },
+    lifetime: entity.lifetime ?? 120,
+    hitbox: {
+      x: hb.x ?? -Math.round(width / 2),
+      y: hb.y ?? -Math.round(height / 2),
+      width: hb.width ?? width,
+      height: hb.height ?? height,
+      damage: hb.damage ?? 60,
+      hitstun: hb.hitstun ?? 18,
+      blockstun: hb.blockstun ?? 12,
+      knockback: { x: hb.knockback?.x ?? hb.knockbackX ?? 3, y: hb.knockback?.y ?? hb.knockbackY ?? 0 },
+      level: hb.level ?? 'mid',
+    },
+  };
+  if (typeof entity.gravity === 'number') config.gravity = entity.gravity;
+  if (typeof entity.pierces === 'number') config.pierces = entity.pierces;
+  if (typeof entity.clashesWithProjectiles === 'boolean') config.clashesWithProjectiles = entity.clashesWithProjectiles;
+  if (entity.spawnPolicy && typeof entity.spawnPolicy === 'object') config.spawnPolicy = entity.spawnPolicy;
+  return config;
+}
+
+/**
+ * Resolve spawn events that reference a projectile ENTITY by id (T23). Walks
+ * every move's phase events; for each `spawn_projectile*` event carrying a
+ * `projectileId`, fills in `projectile` from `draft.projectiles` and strips the
+ * id. Lenient: an event whose `projectileId` has no matching entity is DROPPED
+ * (the runtime spawn event requires a projectile config — a dangling one would
+ * crash), not emitted broken. Inline-projectile events (legacy) are untouched.
+ *
+ * @param {object[]} moves      Converted runtime Move objects (mutated in place).
+ * @param {object[]} [projectiles]  draft.projectiles entities.
+ * @returns {object[]} moves
+ */
+export function resolveProjectileEntities(moves, projectiles) {
+  const byId = new Map((Array.isArray(projectiles) ? projectiles : []).map((entity) => [entity.id, entity]));
+  for (const move of moves) {
+    for (const phase of move.phases ?? []) {
+      const events = phase.events ?? [];
+      const resolved = [];
+      for (const wrapped of events) {
+        const event = wrapped.event ?? wrapped;
+        if (event && typeof event.projectileId === 'string' && !event.projectile) {
+          const entity = byId.get(event.projectileId);
+          if (!entity) continue; // lenient: drop a dangling reference rather than emit a broken spawn
+          const { projectileId: _id, ...rest } = event;
+          const filled = { ...rest, projectile: projectileConfigFromEntity(entity) };
+          resolved.push(wrapped.event ? { ...wrapped, event: filled } : filled);
+        } else {
+          resolved.push(wrapped);
+        }
+      }
+      phase.events = resolved;
+    }
+  }
+  return moves;
+}
+
+/**
+ * Strict validation for projectile entities at definition time. Returns
+ * human-readable error strings (empty when valid).
+ *
+ * @param {object[]} [projectiles]
+ * @returns {string[]} errors
+ */
+export function validateProjectiles(projectiles) {
+  const errors = [];
+  if (projectiles === undefined || projectiles === null) return errors;
+  if (!Array.isArray(projectiles)) return ['projectiles must be an array'];
+  const seenIds = new Set();
+  for (const entity of projectiles) {
+    const pid = entity?.id ?? '(unnamed)';
+    if (!entity?.id || typeof entity.id !== 'string') {
+      errors.push(`projectile "${pid}" needs a string id`);
+    } else {
+      if (seenIds.has(entity.id)) errors.push(`duplicate projectile id "${entity.id}"`);
+      seenIds.add(entity.id);
+    }
+    for (const field of ['width', 'height', 'lifetime']) {
+      if (entity?.[field] !== undefined && (typeof entity[field] !== 'number' || entity[field] <= 0)) {
+        errors.push(`projectile "${pid}": ${field} must be a positive number`);
+      }
+    }
+    if (entity?.hitbox !== undefined && (typeof entity.hitbox !== 'object' || entity.hitbox === null)) {
+      errors.push(`projectile "${pid}": hitbox must be an object`);
     }
   }
   return errors;
@@ -699,6 +818,20 @@ function convertEvent(draftEvent, moveId, phaseIndex, eventIndex) {
     const result = { type: 'hitbox_end' };
     if (draftEvent.id) result.id = draftEvent.id;
     return result;
+  }
+
+  // T23: a spawn event can reference a first-class projectile ENTITY on the
+  // draft (draft.projectiles) by id instead of carrying an inline projectile.
+  // Pass the reference through verbatim (preserving the spawn variant + its
+  // offset fields); resolveProjectileEntities fills in the resolved config in a
+  // post-pass that has access to draft.projectiles.
+  if (draftEvent.projectileId && !draftEvent.projectile) {
+    const ref = { type: draftEvent.type ?? 'spawn_projectile', projectileId: draftEvent.projectileId };
+    // Preserve whichever offset fields the spawn variant uses.
+    for (const field of ['offsetX', 'offsetY', 'targetOffsetX', 'spawnOffsetY']) {
+      if (typeof draftEvent[field] === 'number') ref[field] = draftEvent[field];
+    }
+    return ref;
   }
 
   if (draftEvent.projectile) {
