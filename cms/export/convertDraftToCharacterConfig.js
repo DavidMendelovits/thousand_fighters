@@ -280,6 +280,34 @@ export function validateProjectiles(projectiles) {
   return errors;
 }
 
+/**
+ * Reference-integrity check (codex P1): every `spawn_projectile*` event in the
+ * draft's moves must reference a projectile entity that still exists. Convert
+ * drops a dangling reference leniently (runtime safety), so this surfaces the
+ * loss at authoring/save time instead of letting a renamed/removed entity
+ * silently stop a move from spawning. Returns human-readable warnings (empty
+ * when all references resolve).
+ *
+ * @param {object} draft
+ * @returns {string[]} warnings
+ */
+export function validateProjectileReferences(draft) {
+  const warnings = [];
+  const known = new Set((Array.isArray(draft?.projectiles) ? draft.projectiles : []).map((entity) => entity?.id));
+  for (const move of draft?.moves ?? []) {
+    for (const phase of move?.phases ?? []) {
+      for (const wrapped of phase?.events ?? []) {
+        const event = wrapped?.event ?? wrapped;
+        const pid = event?.projectileId;
+        if (typeof pid === 'string' && !event.projectile && !known.has(pid)) {
+          warnings.push(`move "${move?.id ?? '(unknown)'}" spawns projectile "${pid}", which no longer exists on the draft — it will silently NOT spawn at runtime`);
+        }
+      }
+    }
+  }
+  return warnings;
+}
+
 // ---------------------------------------------------------------------------
 // Override helpers (frame-px, anchor-relative -> world units via scale)
 // ---------------------------------------------------------------------------

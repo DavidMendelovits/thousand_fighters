@@ -23,6 +23,7 @@ import { FileCmsStorage } from '../cms/storage/FileCmsStorage.js';
 import {
   resolveProjectileEntities,
   validateProjectiles,
+  validateProjectileReferences,
   convertDraftToCharacterConfig,
 } from '../cms/export/convertDraftToCharacterConfig.js';
 
@@ -135,6 +136,33 @@ test('non-object hitbox → error', () => {
 test('undefined/null projectiles → no errors (optional)', () => {
   assert.deepEqual(validateProjectiles(undefined), []);
   assert.deepEqual(validateProjectiles(null), []);
+});
+
+// ---------------------------------------------------------------------------
+console.log('\n[B2] validateProjectileReferences — surface dangling spawn refs (codex P1)');
+
+test('a spawn event referencing a missing projectile is reported, not silent', () => {
+  const draft = {
+    projectiles: [{ id: 'fireball' }],
+    moves: [{ id: 'm', phases: [{ events: [{ onFrame: 0, event: { type: 'spawn_projectile', projectileId: 'ghost' } }] }] }],
+  };
+  const warnings = validateProjectileReferences(draft);
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0], /spawns projectile "ghost"/);
+});
+test('resolvable references produce no warnings', () => {
+  const draft = {
+    projectiles: [{ id: 'fireball' }],
+    moves: [{ id: 'm', phases: [{ events: [{ onFrame: 0, event: { type: 'spawn_projectile', projectileId: 'fireball' } }] }] }],
+  };
+  assert.deepEqual(validateProjectileReferences(draft), []);
+});
+test('inline-projectile events are not flagged (only projectileId refs)', () => {
+  const draft = {
+    projectiles: [],
+    moves: [{ id: 'm', phases: [{ events: [{ onFrame: 0, event: { type: 'spawn_projectile', projectile: { id: 'inline' } } }] }] }],
+  };
+  assert.deepEqual(validateProjectileReferences(draft), []);
 });
 
 // ---------------------------------------------------------------------------

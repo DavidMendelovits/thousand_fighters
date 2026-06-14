@@ -357,6 +357,18 @@ try {
     const draft = await repository.getDraft('proj_gym');
     assert.equal(draft.projectiles[0].id, 'fireball', 'rejected save did not clobber the draft');
   });
+
+  await test('save_gym_edits surfaces a dangling spawn reference (codex P1, not silent)', async () => {
+    // A move spawns "fireball"; removing it via a projectiles replace orphans the spawn.
+    await repository.saveDraft('proj_gym', {
+      id: 'proj_gym', projectiles: [{ id: 'fireball', width: 10, height: 10, lifetime: 60 }],
+      moves: [{ id: 'shoot', phases: [{ events: [{ frame: 0, event: { type: 'spawn_projectile', projectileId: 'fireball' } }] }] }],
+    });
+    const res = await save({ characterId: 'proj_gym', projectiles: [{ id: 'renamed', width: 10, height: 10, lifetime: 60 }] });
+    assert.equal(res.draft.status, 'saved');
+    assert.ok(Array.isArray(res.draft.warnings) && res.draft.warnings.length >= 1, 'orphaned spawn ref surfaced as a warning');
+    assert.match(res.draft.warnings[0], /spawns projectile "fireball"/);
+  });
 } finally {
   if (rootDir) await rm(rootDir, { force: true, recursive: true });
 }

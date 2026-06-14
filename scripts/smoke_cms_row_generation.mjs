@@ -179,6 +179,21 @@ try {
   assert.equal(manifestAfterBlock.sheets.block, 'sheets/block.png', 'manifest carries the block sheet');
   assert.equal(manifestAfterBlock.frameCounts.block, 6, 'manifest frameCount for block');
 
+  // 10. The generate/extract tools reject a row id outside the registry (codex
+  //     P2) — a typo would otherwise produce assets the runtime never loads.
+  const { createCmsTools } = await import('../cms/tools/createCmsTools.js');
+  const tools = createCmsTools({ pipeline, repository, registry });
+  await assert.rejects(
+    tools.invoke('generate_sprite_sheet', { characterId, prompt: 'x', moveId: 'dash_forwad' }),
+    /unknown row id "dash_forwad"/,
+    'generate_sprite_sheet must reject a typo row id',
+  );
+  await assert.rejects(
+    tools.invoke('extract_row_frames', { characterId, sourceAssetKey: expectedBaseKey, moveId: 'kik' }),
+    /unknown row id "kik"/,
+    'extract_row_frames must reject a typo row id',
+  );
+
   console.log(`CMS row generation smoke test passed: ${rootDir}`);
 } finally {
   await rm(rootDir, { force: true, recursive: true });

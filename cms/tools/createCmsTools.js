@@ -1,11 +1,20 @@
 import { assetApiUrl, writeCharacterAssetUpload } from '../assets/uploadCharacterAsset.js';
 import { exportCharacterToRuntime } from '../export/exportCharacterToRuntime.js';
 import { SHEET_IDS } from '../../shared/animationRows.js';
-import { validateCombos, validateProjectiles } from '../export/convertDraftToCharacterConfig.js';
+import { validateCombos, validateProjectiles, validateProjectileReferences } from '../export/convertDraftToCharacterConfig.js';
 
 // Row ids an agent can generate, sourced from the registry so the tool schema
 // can't drift from the engine's row set (T20/T21).
 const ROW_ID_LIST = SHEET_IDS.join(', ');
+const ROW_ID_SET = new Set(SHEET_IDS);
+
+// Reject a row id the runtime would never load (codex P2): runtime paths iterate
+// the registry SHEET_IDS, so a typo'd moveId silently produces orphan assets.
+function assertRowId(moveId) {
+  if (moveId && !ROW_ID_SET.has(moveId)) {
+    throw new Error(`unknown row id "${moveId}" — must be one of: ${ROW_ID_LIST}`);
+  }
+}
 
 export function createCmsTools({ pipeline, repository, registry }) {
   const tools = [
@@ -88,6 +97,7 @@ export function createCmsTools({ pipeline, repository, registry }) {
         },
       }, ['characterId', 'prompt']),
       execute: async ({ characterId, prompt, moveId, spriteProfile, referenceAssetKeys, context }) => {
+        assertRowId(moveId);
         const result = await pipeline.generateSpriteSheet({
           characterId,
           prompt,
@@ -222,6 +232,7 @@ export function createCmsTools({ pipeline, repository, registry }) {
         spriteProfile: stringSchema('Sprite profile used at generation time: standard (1x6 row) or wide (2x3 grid). Defaults to standard.'),
       }, ['characterId', 'sourceAssetKey', 'moveId']),
       execute: async ({ characterId, sourceAssetKey, moveId, spriteProfile }) => {
+        assertRowId(moveId);
         return pipeline.extractRowFrames({ characterId, sourceAssetKey, moveId, spriteProfile: spriteProfile || undefined });
       },
     },
@@ -351,10 +362,14 @@ export function createCmsTools({ pipeline, repository, registry }) {
             if (overrides !== undefined) {
               draft.overrides = sanitizeOverrides(overrides);
             }
+            let projectileWarnings = [];
             if (projectiles !== undefined) {
               const errors = validateProjectiles(projectiles);
               if (errors.length) throw new Error(`invalid projectiles: ${errors.join('; ')}`);
               draft.projectiles = projectiles;
+              // Surface (don't silently drop) spawn events orphaned by this
+              // projectiles replacement — convert drops them leniently (codex P1).
+              projectileWarnings = validateProjectileReferences(draft);
             }
             let patchedEvents = 0;
             for (const patch of hitboxNumbers ?? []) {
@@ -362,6 +377,7 @@ export function createCmsTools({ pipeline, repository, registry }) {
             }
             await repository.saveDraft(characterId, draft, { source: 'character-gym' });
             result.draft = { status: 'saved', patchedEvents };
+            if (projectileWarnings.length) result.draft.warnings = projectileWarnings;
           } catch (error) {
             result.ok = false;
             result.draft = { status: 'error', error: error.message };
