@@ -7,6 +7,7 @@ import { promisify } from 'node:util';
 
 import { PipelinePort } from './ports.js';
 import { normalizeManifest } from './manifestSchema.js';
+import { mergePreservedAnchorFrames } from './preserveTunedAnchors.js';
 
 const execFileAsync = promisify(execFile);
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -267,7 +268,11 @@ export class CharacterCreationPipeline {
         artifactType: 'extraction-report',
       });
 
-      // Merge this move's frames into the pack frameData.
+      // Merge this move's frames into the pack frameData. Preserve hand-tuned
+      // anchors from the Character Gym (frame.anchorEdited) instead of clobbering
+      // them with freshly-measured ones — but only while the frame dimensions
+      // still match (same art). If the art changed size the manual anchor no
+      // longer maps, so take the fresh one and warn (A6/T5).
       const frameDataKey = `${packRoot}/frameData.json`;
       let frameData = await storage.getJson(frameDataKey).catch(() => null);
       if (!frameData?.frames || typeof frameData.frames !== 'object') {
@@ -276,7 +281,11 @@ export class CharacterCreationPipeline {
           frames: {},
         };
       }
-      frameData.frames[moveId] = fragment;
+      frameData.frames[moveId] = mergePreservedAnchorFrames(
+        frameData.frames[moveId],
+        fragment,
+        (warning) => { report.warnings = (report.warnings ?? []).concat(warning); },
+      );
       await storage.putJson(frameDataKey, frameData, {
         contentType: 'application/json',
         artifactType: 'frame-data',

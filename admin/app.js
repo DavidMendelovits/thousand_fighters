@@ -12,6 +12,14 @@ function openTestbed(characterId) {
   window.open(url, `testbed-${characterId}`);
 }
 
+// The Character Gym is a sibling Vite route (src/gym), reached the same way as
+// the testbed — admin is static JS and can't host Phaser itself.
+function openGym(characterId) {
+  if (!characterId) return;
+  const url = `${TESTBED_BASE_URL}/gym.html?id=${encodeURIComponent(characterId)}`;
+  window.open(url, `gym-${characterId}`);
+}
+
 // ---------------------------------------------------------------------------
 // Client-side router
 // ---------------------------------------------------------------------------
@@ -66,7 +74,21 @@ const state = {
   qaReports: {},
   selectSeq: 0,
   movePrompts: {},
+  assetCacheBust: 0,
 };
+
+// Regenerated rows overwrite assets at the same key, so the apiUrl is identical
+// and the browser reuses the in-memory image (the route's no-store header does
+// not stop <img> reuse within a session). Bump this on every post-mutation
+// refresh so the URL changes and the new sprite is actually fetched.
+function bustAssetCache() {
+  state.assetCacheBust = Date.now();
+}
+
+function withCacheBust(apiUrl) {
+  if (!apiUrl || !state.assetCacheBust) return apiUrl;
+  return `${apiUrl}${apiUrl.includes('?') ? '&' : '?'}v=${state.assetCacheBust}`;
+}
 
 const elements = {
   systemStatus: document.querySelector('#system-status'),
@@ -111,6 +133,9 @@ const elements = {
 
 function setOpsTab(name) {
   if (!elements.opsPanel) return;
+  if (name === 'activity') {
+    elements.opsPanel.querySelector('[data-ops-tab="activity"]')?.classList.remove('has-unread', 'has-error');
+  }
   for (const tab of elements.opsPanel.querySelectorAll('[data-ops-tab]')) {
     const active = tab.dataset.opsTab === name;
     tab.classList.toggle('active', active);
@@ -162,6 +187,12 @@ function handleWorkbenchClick(event) {
   const cta = event.target.closest('[id^="cta-"]');
   if (cta && WORKBENCH_CTA_HANDLERS[cta.id]) {
     WORKBENCH_CTA_HANDLERS[cta.id]();
+    return;
+  }
+
+  const gymButton = event.target.closest('[data-gym]');
+  if (gymButton) {
+    openGym(gymButton.dataset.gym);
     return;
   }
 
@@ -329,7 +360,12 @@ async function selectCharacter(characterId, options = {}) {
   if (seq !== state.selectSeq || state.currentCharacterId !== characterId) return;
 
   const draft = draftResult.draft;
-  const assets = assetResult.assets;
+  // A silent reselect is the refresh fired after a mutation (generate, normalize,
+  // upload, publish, chat). Bump the cache token so regenerated images refetch;
+  // plain navigation leaves it stable so unchanged images stay cached.
+  if (options.silent) bustAssetCache();
+  const assets = assetResult.assets.map((asset) =>
+    asset.apiUrl ? { ...asset, apiUrl: withCacheBust(asset.apiUrl) } : asset);
   state.currentDraftData = draft;
   state.currentAssets = assets;
   state.qaReports[characterId] = qaReport;
@@ -430,6 +466,13 @@ async function generateMoveRow(moveId) {
   if (!characterId) return null;
   if (state.generatingMoves.has(moveId)) return null;
 
+  // Every attack row references the base row, so regenerating an existing base
+  // silently makes the others inconsistent. Confirm before overwriting it.
+  if (moveId === 'base' && hasBaseSheet(characterId)
+    && !confirm('Regenerate the base row? Every attack row references it, so they may look inconsistent until you regenerate them too.')) {
+    return null;
+  }
+
   state.generatingMoves.add(moveId);
   setMoveCardLoading(moveId, true);
   logMoveActivity(moveId, 'Generating sprite row…');
@@ -479,13 +522,19 @@ async function generateMoveRow(moveId) {
     }
 
     state.generatingMoves.delete(moveId);
-    await selectCharacter(characterId, { silent: true, pushState: false });
 
-    // Success flash on the move card
-    const successCard = elements.characterWorkbench.querySelector(`[data-move-card="${moveId}"]`);
-    if (successCard) {
-      successCard.classList.add('move-card-success');
-      setTimeout(() => successCard.classList.remove('move-card-success'), 2000);
+    // The user may have navigated to another fighter while this row generated —
+    // don't reselect the original out from under them. They'll see fresh assets
+    // when they next open this fighter.
+    if (state.currentCharacterId === characterId) {
+      await selectCharacter(characterId, { silent: true, pushState: false });
+
+      // Success flash on the move card
+      const successCard = elements.characterWorkbench.querySelector(`[data-move-card="${moveId}"]`);
+      if (successCard) {
+        successCard.classList.add('move-card-success');
+        setTimeout(() => successCard.classList.remove('move-card-success'), 2000);
+      }
     }
 
     return result;
@@ -1110,6 +1159,7 @@ function renderCharacterWorkbench(draft, assets) {
         <div class="summary-pills">${characterStatus.map((item) => `<span>${escapeHtml(item)}</span>`).join('')}</div>
         <div class="summary-actions">
           <button type="button" class="playtest-btn" data-playtest="${escapeHtml(draft.id)}" title="Open the single-player testbed for this fighter">▶ Playtest</button>
+          <button type="button" class="gym-btn" data-gym="${escapeHtml(draft.id)}" title="Open the Character Gym to align frames and tune bounds">🛠 Gym</button>
         </div>
       </div>
       <div class="summary-side">
@@ -1466,6 +1516,18 @@ function appendChatMessage(message) {
   state.chatMessages.push(message);
   if (state.chatMessages.length > 100) state.chatMessages.shift();
   renderChatThread();
+  markActivityUnread(message.isError ? 'error' : '');
+}
+
+// Operations report into the Activity pane, which is one of three ops tabs. When
+// it's hidden (user is on Pipeline/Tools), flag the tab so a Publish/Normalize
+// click from the center column doesn't produce zero visible feedback.
+function markActivityUnread(level) {
+  const tab = elements.opsPanel?.querySelector('[data-ops-tab="activity"]');
+  const pane = elements.opsPanel?.querySelector('[data-ops-pane="activity"]');
+  if (!tab || !pane || !pane.hidden) return;
+  tab.classList.add('has-unread');
+  if (level === 'error') tab.classList.add('has-error');
 }
 
 function renderChatThread() {
@@ -1904,10 +1966,13 @@ function buildAssetRelativePath(file) {
 }
 
 function showLatestAsset(asset) {
+  // Always a freshly produced asset — bump so its preview never shows the
+  // previous render's cached image at the same key.
+  bustAssetCache();
   elements.assetLabel.textContent = asset.key;
   if (isPreviewableImage(asset)) {
     elements.assetPreview.className = 'asset-preview-frame';
-    elements.assetPreview.innerHTML = `<img src="${asset.apiUrl}" alt="${escapeHtml(asset.relativePath ?? asset.key)} preview" />`;
+    elements.assetPreview.innerHTML = `<img src="${withCacheBust(asset.apiUrl)}" alt="${escapeHtml(asset.relativePath ?? asset.key)} preview" />`;
     return;
   }
 
@@ -2046,6 +2111,7 @@ function log(message, level = '') {
   state.chatMessages.push(entry);
   if (state.chatMessages.length > 100) state.chatMessages.shift();
   renderChatThread();
+  markActivityUnread(level);
 }
 
 // ---------------------------------------------------------------------------

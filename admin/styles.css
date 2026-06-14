@@ -155,6 +155,21 @@ button:disabled {
   margin-left: 4px;
 }
 
+.ops-tab.has-unread::after {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.ops-tab.has-error::after {
+  background: var(--danger);
+}
+
 .ops-tab-pane {
   display: flex;
   flex-direction: column;

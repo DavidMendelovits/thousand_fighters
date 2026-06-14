@@ -168,6 +168,38 @@ export function createCmsTools({ pipeline, repository, registry }) {
       }),
     },
     {
+      name: 'save_gym_edits',
+      description: 'Persist Character Gym edits. Phase 1 writes the full frameData.json (per-frame anchors + anchor-relative collision boxes). The gym applies the anchor-delta box recompute before sending; this tool stores the result. Phase 2 will extend it to write draft hurtbox/hitbox overrides.',
+      inputSchema: objectSchema({
+        characterId: stringSchema('Character id.'),
+        frameData: {
+          type: 'object',
+          description: 'Full frameData object to write — replaces frameData.json wholesale.',
+          additionalProperties: true,
+        },
+      }, ['characterId', 'frameData']),
+      execute: async ({ characterId, frameData }) => {
+        const keys = await repository.listCharacterAssets(characterId);
+        const prefix = `characters/${repository.safeCharacterId(characterId)}/assets/`;
+        const key = keys.find((candidate) => candidate.endsWith('frameData.json'));
+        if (!key) throw new Error(`No frameData.json asset to update for ${characterId}`);
+        const relativePath = key.startsWith(prefix) ? key.slice(prefix.length) : key;
+        const json = `${JSON.stringify(frameData, null, 2)}\n`;
+        const asset = await writeCharacterAssetUpload({
+          repository,
+          storage: repository.storage,
+          characterId,
+          input: {
+            relativePath,
+            contentBase64: Buffer.from(json, 'utf8').toString('base64'),
+            contentType: 'application/json',
+          },
+          source: 'character-gym',
+        });
+        return { ok: true, key: asset.key, relativePath };
+      },
+    },
+    {
       name: 'validate_fighter_pack',
       description: 'Run fighter pack QA and persist the report.',
       inputSchema: objectSchema({

@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
+import { mergePreservedFrameData } from '../preserveTunedAnchors.js';
 
 const execFileAsync = promisify(execFile);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -163,6 +164,10 @@ export class ContourSpriteNormalizerAdapter {
         );
       }
 
+      // Capture any hand-tuned anchors BEFORE the upload loop overwrites
+      // frameData.json, so we can preserve them across this re-normalize (A6/T5).
+      const priorFrameData = await this.storage.getJson(frameDataKey).catch(() => null);
+
       // Walk output directory and upload all files to CMS storage
       for (const relativePath of outputFiles) {
         const absoluteFilePath = path.join(tmpOutputDir, relativePath.split('/').join(path.sep));
@@ -198,8 +203,23 @@ export class ContourSpriteNormalizerAdapter {
         sourceAssetKey,
       });
 
+      // Re-apply hand-tuned anchors over the freshly-normalized frameData (A6/T5).
+      const preserveWarnings = [];
+      if (priorFrameData?.frames) {
+        const freshFrameData = await readJsonFromFile(path.join(tmpOutputDir, 'frameData.json'));
+        if (freshFrameData?.frames) {
+          const merged = mergePreservedFrameData(priorFrameData, freshFrameData, (w) => preserveWarnings.push(w));
+          await this.storage.putJson(frameDataKey, merged, {
+            contentType: 'application/json',
+            artifactType: 'frame-data',
+            sourceAssetKey,
+          });
+        }
+      }
+
+      const warnings = [...(report.warnings ?? []), ...preserveWarnings];
       return {
-        status: report.warnings?.length > 0 ? 'warning' : 'pass',
+        status: warnings.length > 0 ? 'warning' : 'pass',
         provider: 'local',
         characterId,
         outputKey: normalizedKey,
@@ -207,7 +227,7 @@ export class ContourSpriteNormalizerAdapter {
         reportKey,
         assetRootKey: normalizedRootKey,
         copiedFileCount: outputFiles.length,
-        warnings: report.warnings ?? [],
+        warnings,
       };
     } finally {
       await rm(tmpParent, { force: true, recursive: true });

@@ -21,6 +21,7 @@ export default defineConfig({
       input: {
         main: 'index.html',
         testbed: 'testbed.html',
+        gym: 'gym.html',
       },
     },
   },
