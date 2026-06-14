@@ -660,6 +660,16 @@ async function publishCharacter() {
     characterId,
     releaseId: `local-${Date.now()}`,
   });
+  // A5: publishing must also ship the converted runtime config to
+  // public/fighters/<id>/ so the roster plays exactly what the gym authored —
+  // tuned anchors (copied frameData) + collision overrides (folded into
+  // config.json by convert). The release bundle alone never touches public/.
+  // The bundle write already succeeded, so a failed export is logged, not fatal.
+  try {
+    await invokeTool('export_character_config', { characterId });
+  } catch (error) {
+    log(`publish: runtime config export failed — ${error.message}`, 'fail');
+  }
   await Promise.all([loadCharacters(), loadPipeline()]);
   await selectCharacter(characterId, { silent: true });
   return result;

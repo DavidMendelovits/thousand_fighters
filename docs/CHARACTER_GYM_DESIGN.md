@@ -357,20 +357,55 @@ contract migration. Run with Claude Code or Codex; checkbox as you ship.
   - Files: `cms/export/convertDraftToCharacterConfig.js`.
   - Verified: `npm run cms:export:smoke` (§9 — hurtbox/hitbox override wins, keyframes
     cleared, non-overridden states untouched, override survives a fresh frameData).
-- [ ] **T11 (P1, human: ~4h / CC: ~45min)** — collision inspector — per-state hurtbox +
-  per-phase hitbox editing, MEASURED/OVERRIDDEN badges, reset-to-measured (unset via
-  `save_gym_edits`). Handle multi-id/actor/synthesized-end/keyframe-by-age + `modify_hurtbox` (A8).
-  - Surfaced by: §6/A8, Codex #7/#8. Verify: state/phase selectors edit correct entries.
-- [ ] **T12 (P1, human: ~3h / CC: ~30min)** — `save_gym_edits` set/unset + partial-failure
-  (A2/A3) — atomic-ish two-store write, ordered frameData→draft, per-half result.
-  - Surfaced by: §11, A2/A3, Codex #3/#4/#12. Files: `createCmsTools.js`, `createCmsServer.js`.
-  - Verify: single-field edit doesn't clobber moves array; delete-override works; partial-fail reported.
-- [ ] **T13 (P1, human: ~3h / CC: ~30min)** — contract tests (Codex #13) — export smoke,
-  runtime-config matches saved draft+frameData+published assets, QA-adapter update.
-  - Surfaced by: §3, Codex #13. Verify: `npm run cms:pipeline:smoke` + new runtime-config test green.
-- [ ] **T14 (P1, human: ~2h / CC: ~20min)** — publish path (A5) — `publish_character`
-  carries anchors+overrides into `public/fighters/<id>/`; A1 recompute runs pre-publish.
-  - Surfaced by: §11/A5. Verify: publish → public frameData has tuned anchors + overrides.
+- [x] **T11 (P1) — collision inspector** — DONE. Per-state hurtbox + per-activation hitbox
+  editing in `src/gym/` (`main.ts`, `GymScene.ts`, `loadGymData.ts`). Inspector switches by
+  BOUNDS mode (§6 asymmetry): Hurtbox = per-`FighterState` dropdown, canvas jumps to the
+  state's base frame; Hitbox = per move+id activation dropdown, geometry override (static,
+  clears keyframes) + authored numbers (damage/hitstun/blockstun/knockback/level). Editable
+  box has a Move/Scale gizmo (Q/W) in frame-px anchor-relative space (the override space);
+  MEASURED/OVERRIDDEN badge driven by key existence; Override seeds from measured, Reset
+  unsets. Multi-id handled (per-id activations); per-activation static-box is the A8 fallback
+  layer (per-keyframe-age / `modify_hurtbox` authoring remain measured-pass-derived).
+  - Files: `src/gym/main.ts`, `src/gym/GymScene.ts`, `src/gym/loadGymData.ts`, `gym.html`.
+  - Verified: `tsc` + `vite build` clean; persistence covered by `cms:gym:smoke`.
+- [x] **T12 (P1) — `save_gym_edits` set/unset + partial-failure** — DONE. Two-store write
+  (frameData→asset store, overrides+numbers→draft), ordered frameData first, per-half
+  `{frameData, draft}` result. `overrides` replaces `draft.overrides` wholesale (unset =
+  key absent, which deepMerge can't do); `hitboxNumbers` patches matching `hitbox_active`
+  events in place (no moves-array clobber, preserves knockback shape). Errors are returned,
+  not thrown, so a partial failure keeps the unsaved half dirty in the gym.
+  - Files: `cms/tools/createCmsTools.js`. Verified: `npm run cms:gym:smoke` (12 tests).
+- [x] **T13 (P1) — contract tests** — DONE. `scripts/smoke_cms_gym_save.mjs` (round-trip:
+  gym edit → tool → FileCmsStorage → reload → convert reflects it; set/unset; in-place
+  number patch; partial-failure). `smoke_cms_export.mjs` §10 (ship path carries tuned
+  anchors + overrides). QA-adapter needs no change: overrides live on the draft, not the
+  pack QA validates; the extra `anchorEdited` flag on frameData is inert to anchor-stability QA.
+  - Verified: `npm run cms:export:smoke` (52) + `npm run cms:gym:smoke` (12).
+- [x] **T14 (P1) — publish path (A5)** — DONE. The admin Publish action now also runs
+  `export_character_config` after `publish_character`, shipping the converted config (gym
+  overrides folded in by convert) + the copied tuned frameData to `public/fighters/<id>/`.
+  No separate A1 recompute at publish: the gym bakes the Δanchor box shift into frameData at
+  save time, so stored frameData is already consistent (asserted in export smoke §10).
+  - Files: `admin/app.js`. Verified: `smoke_cms_export.mjs` §10.
+
+### Phase 3 — collision-model gaps (from the reference "character gym")
+
+Surfaced by a reference walkthrough (2026-06-14): the reference gym authors a **guard box**
+and a **collision/ground box** that our model lacks. Our engine fakes high/low blocking via
+`hitbox.level` + crouch state (`HitResolver.isBlocking`, `HitResolver.ts:117-119`); there is
+no authored guard geometry and no character pushbox.
+
+- [ ] **T17 (P2) — guard box.** New per-state guard bounds (with height) so high/low guard
+  resolves by geometry, not just the `level` enum. Spans `types.ts` (Hurtbox/`FighterState`
+  sibling), `HitResolver.isBlocking`, `convertDraftToCharacterConfig` (measured + override),
+  the `overrides.guardboxes` block, and a Guard BOUNDS mode in the gym. Tests in
+  `cms:export:smoke` + `cms:gym:smoke`.
+- [ ] **T18 (P2) — pushbox / ground-collision box.** Per-state body box for character-vs-
+  character collision + honest ground planting (today only the feet anchor + floor line).
+  Engine collision pass + schema + convert + gym mode. (May be descoped if char-vs-char
+  overlap is acceptable — confirm before building.)
+- [ ] **T19 (P3) — hit `level` visualization.** Show a hitbox's `high|mid|low` as a band in
+  the gym Hitbox mode (cheap half of T17; the `level` field already exists and is authored).
 
 ### Deferred (P3)
 - [ ] **T15 (P3)** — re-segmentation from the gym (adjust grid, re-run extractor).
