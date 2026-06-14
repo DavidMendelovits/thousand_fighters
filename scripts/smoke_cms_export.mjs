@@ -700,6 +700,59 @@ console.log('\n[10] Ship path carries gym anchors + overrides (A5)');
 }
 
 // ---------------------------------------------------------------------------
+// Section 11: guard-box overrides (T17 — override-only, no measured pass)
+// ---------------------------------------------------------------------------
+console.log('\n[11] Guard-box overrides (T17)');
+
+const GUARD_DRAFT_BASE = {
+  id: 'guard_fighter',
+  sprite: { scale: 1, frameCounts: { base: 1 } },
+  moves: [],
+};
+
+test('no guardboxes by default — empty object, not undefined', () => {
+  const cfg = convertDraftToCharacterConfig({ draft: GUARD_DRAFT_BASE, frameData: null, manifest: null });
+  assert.ok(cfg.guardboxes !== undefined, 'guardboxes key should be present');
+  assert.deepEqual(cfg.guardboxes, {}, 'guardboxes should be empty when no override');
+});
+
+const GUARD_DRAFT_WITH_OVERRIDE = {
+  ...GUARD_DRAFT_BASE,
+  overrides: {
+    hurtboxes: {},
+    hitboxes: {},
+    guardboxes: {
+      idle:  { x: -20, y: -120, width: 40, height: 120 },
+      crouch: { x: -22, y: -80, width: 44, height: 80 },
+    },
+  },
+};
+
+test('guard-box override appears scaled in the config (scale=1 → pass-through)', () => {
+  const cfg = convertDraftToCharacterConfig({ draft: GUARD_DRAFT_WITH_OVERRIDE, frameData: null, manifest: null });
+  assert.deepEqual(cfg.guardboxes.idle,   { x: -20, y: -120, width: 40, height: 120 });
+  assert.deepEqual(cfg.guardboxes.crouch, { x: -22, y: -80,  width: 44, height: 80 });
+});
+
+test('guard-box override scales with sprite scale', () => {
+  const scaledDraft = { ...GUARD_DRAFT_WITH_OVERRIDE, sprite: { scale: 2, frameCounts: { base: 1 } } };
+  const cfg = convertDraftToCharacterConfig({ draft: scaledDraft, frameData: null, manifest: null });
+  // x=-20 × 2 = -40, y=-120 × 2 = -240, w=40 × 2 = 80, h=120 × 2 = 240
+  assert.deepEqual(cfg.guardboxes.idle, { x: -40, y: -240, width: 80, height: 240 });
+});
+
+test('guard-box override does not pollute hurtboxes', () => {
+  const cfg = convertDraftToCharacterConfig({ draft: GUARD_DRAFT_WITH_OVERRIDE, frameData: null, manifest: null });
+  // hurtboxes are generated fresh from frame data; guard overrides must not bleed in
+  assert.ok(!('guardboxes' in cfg.hurtboxes), 'hurtboxes must not contain guardboxes key');
+});
+
+test('hurtboxes still generated when guardboxes override present', () => {
+  const cfg = convertDraftToCharacterConfig({ draft: GUARD_DRAFT_WITH_OVERRIDE, frameData: null, manifest: null });
+  assert.ok(cfg.hurtboxes.idle, 'hurtbox.idle should still exist when guard override is present');
+});
+
+// ---------------------------------------------------------------------------
 // Summary
 // ---------------------------------------------------------------------------
 console.log('');

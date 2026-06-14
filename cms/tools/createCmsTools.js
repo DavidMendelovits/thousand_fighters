@@ -397,10 +397,11 @@ export function createCmsTools({ pipeline, repository, registry }) {
  * deepMerge (deepMerge cannot delete keys).
  */
 function sanitizeOverrides(overrides) {
-  if (!isPlainObject(overrides)) return { hurtboxes: {}, hitboxes: {} };
+  if (!isPlainObject(overrides)) return { hurtboxes: {}, hitboxes: {}, guardboxes: {} };
   return {
     hurtboxes: isPlainObject(overrides.hurtboxes) ? overrides.hurtboxes : {},
     hitboxes: isPlainObject(overrides.hitboxes) ? overrides.hitboxes : {},
+    guardboxes: isPlainObject(overrides.guardboxes) ? overrides.guardboxes : {},
   };
 }
 

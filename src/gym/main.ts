@@ -13,6 +13,7 @@ import { translateBoxesForAnchorDelta } from './anchorMath';
 /** Overlay colours (mirror gym.html tokens / design §9). */
 const COLOR_HURT = 0x79a8ff;
 const COLOR_HIT = 0xff6b6b;
+const COLOR_GUARD = 0x9fe6b0;
 
 /**
  * Which base-row frame each fighter state displays — mirrors STATE_BASE_FRAME in
@@ -66,10 +67,11 @@ let characterId = '';
 let originalAnchors: Record<string, { x: number; y: number }[]> = {};
 
 /** Live, editable override layer (cloned from the draft; sent wholesale on save). */
-let overrides: DraftOverrides = { hurtboxes: {}, hitboxes: {} };
+let overrides: DraftOverrides = { hurtboxes: {}, hitboxes: {}, guardboxes: {} };
 /** Authored hitbox-number edits, keyed `${moveId}::${hitboxId}` → patch fields. */
 const numberEdits = new Map<string, Record<string, number | string>>();
 let currentHurtState = 'idle';
+let currentGuardState = 'idle';
 /** Flat list of draft hitbox activations (one per move + hitbox id). */
 type Activation = { moveId: string; hitboxId: string; animation: SpriteSheetId; label: string };
 let activations: Activation[] = [];
@@ -134,6 +136,7 @@ async function main(): Promise<void> {
   scene.onCollisionBoxChange = (box) => {
     if (currentMode === 'hurtbox') onHurtBoxDragged(box);
     else if (currentMode === 'hitbox') onHitBoxDragged(box);
+    else if (currentMode === 'guard') onGuardBoxDragged(box);
   };
 
   buildNavigator();
@@ -142,6 +145,7 @@ async function main(): Promise<void> {
   wireAnchorInputs();
   wireGizmo();
   buildHurtStates();
+  buildGuardStates();
   buildHitActivations();
   wireCollisionInspector();
   wireTransport();
@@ -325,6 +329,7 @@ const MODE_NOTES: Record<BoundsMode, string> = {
   visual: 'Visual bounds are the intrinsic frame size (read-only; no runtime consumer).',
   hurtbox: 'Per-state body hurtbox. Override the measured box to author one that survives re-extraction.',
   hitbox: 'Per-activation attack box + authored numbers. Override geometry for a static box (clears keyframes).',
+  guard: 'Per-state guard box (T17). Override-only — no measured pass. When authored, blocking resolves by AABB overlap instead of the high/mid/low enum.',
 };
 
 function show(id: string, on: boolean): void {
@@ -346,9 +351,10 @@ function applyModeUI(mode: BoundsMode): void {
   currentMode = mode;
   scene.setMode(mode);
   show('anchor-panel', mode === 'anchor');
-  show('gizmo-panel', mode === 'hurtbox' || mode === 'hitbox');
+  show('gizmo-panel', mode === 'hurtbox' || mode === 'hitbox' || mode === 'guard');
   show('hurtbox-panel', mode === 'hurtbox');
   show('hitbox-panel', mode === 'hitbox');
+  show('guardbox-panel', mode === 'guard');
   $('mode-note').textContent = MODE_NOTES[mode];
 
   if (mode === 'hurtbox') {
@@ -356,6 +362,8 @@ function applyModeUI(mode: BoundsMode): void {
   } else if (mode === 'hitbox') {
     if (!currentActivation && activations.length) currentActivation = activations[0];
     selectActivation(currentActivation);
+  } else if (mode === 'guard') {
+    selectGuardState(currentGuardState);
   } else {
     scene.setCollisionBox(null, { editable: false, color: 0 });
   }
@@ -457,6 +465,11 @@ function nudgeActiveBox(dx: number, dy: number): void {
     if (!b) return;
     onHitBoxDragged({ x: b.x + dx, y: b.y + dy, width: b.width, height: b.height });
     scene.setCollisionBox(b, { editable: true, color: COLOR_HIT });
+  } else if (currentMode === 'guard') {
+    const b = overrides.guardboxes?.[currentGuardState];
+    if (!b) return;
+    onGuardBoxDragged({ x: b.x + dx, y: b.y + dy, width: b.width, height: b.height });
+    scene.setCollisionBox(overrides.guardboxes![currentGuardState], { editable: true, color: COLOR_GUARD });
   }
 }
 
@@ -697,6 +710,7 @@ function cloneOverrides(): void {
     hitboxes: Object.fromEntries(
       Object.entries(src.hitboxes ?? {}).map(([moveId, ids]) => [moveId, { ...ids }]),
     ),
+    guardboxes: { ...(src.guardboxes ?? {}) },
   };
 }
 
@@ -789,6 +803,55 @@ function onHurtBoxDragged(box: OverrideBox): void {
   overrides.hurtboxes = overrides.hurtboxes ?? {};
   overrides.hurtboxes[currentHurtState] = roundBox(box);
   setBoxInputs('hurt', overrides.hurtboxes[currentHurtState], true);
+  markDraftDirty();
+}
+
+// ---- Guard box (per FighterState, T17) ----
+// Guard boxes are OVERRIDE-ONLY — there is no measured pass. The badge shows
+// "NONE" (not "MEASURED") when no override exists, and "OVERRIDDEN" when present.
+
+/** Badge variant for override-only fields: "NONE" vs "OVERRIDDEN". */
+function setGuardBadge(overridden: boolean): void {
+  const el = $('guard-badge');
+  el.textContent = overridden ? 'OVERRIDDEN' : 'NONE';
+  el.classList.toggle('overridden', overridden);
+}
+
+function buildGuardStates(): void {
+  const sel = $('guard-state') as HTMLSelectElement;
+  sel.innerHTML = HURT_STATES.map((s) => `<option value="${s}">${s}</option>`).join('');
+  sel.value = currentGuardState;
+}
+
+function selectGuardState(state: string): void {
+  currentGuardState = state;
+  ($('guard-state') as HTMLSelectElement).value = state;
+  // Drive the canvas off the base frame for this state so the silhouette matches.
+  if (currentSheet !== 'base') selectSheet('base');
+  scene.setPlaying(false);
+  setPlayButton(false);
+  scene.setFrame(STATE_BASE_FRAME[state] ?? 0);
+  renderGuardboxInspector();
+}
+
+function renderGuardboxInspector(): void {
+  const state = currentGuardState;
+  const override = overrides.guardboxes?.[state] ?? null;
+  const has = Boolean(override);
+  setBoxInputs('guard', override, has);
+  setGuardBadge(has);
+  show('guard-override', !has);
+  show('guard-reset', has);
+  $('guard-note').textContent = has
+    ? 'Authoring a guard box — drag or type. Blocking now requires the hitbox to overlap this region.'
+    : 'No guard box for this state — blocking falls back to the high/mid/low level enum. Click Override to author one.';
+  scene.setCollisionBox(override, { editable: has, color: COLOR_GUARD });
+}
+
+function onGuardBoxDragged(box: OverrideBox): void {
+  overrides.guardboxes = overrides.guardboxes ?? {};
+  overrides.guardboxes[currentGuardState] = roundBox(box);
+  setBoxInputs('guard', overrides.guardboxes[currentGuardState], true);
   markDraftDirty();
 }
 
@@ -938,8 +1001,11 @@ function setNumberInputs(act: Activation | null): void {
     el.disabled = !act;
   }
   const lvl = $('hb-level') as HTMLSelectElement;
-  lvl.value = (nums?.level as string) ?? 'mid';
+  const levelVal = (nums?.level as string) ?? 'mid';
+  lvl.value = levelVal;
   lvl.disabled = !act;
+  // T19: push the level to the scene so the hit-level band follows.
+  scene.setHitLevel(act ? (levelVal as 'high' | 'mid' | 'low') : null);
 }
 
 function onNumberEdit(field: string, raw: string): void {
@@ -949,6 +1015,8 @@ function onNumberEdit(field: string, raw: string): void {
   const cur = numberEdits.get(key) ?? {};
   if (field === 'level') {
     cur[field] = raw;
+    // T19: keep the hit-level band in sync when the user changes the level field.
+    scene.setHitLevel(raw as 'high' | 'mid' | 'low');
   } else {
     const n = Number(raw);
     if (!Number.isFinite(n)) return;
@@ -981,6 +1049,30 @@ function wireCollisionInspector(): void {
       if (!box) return;
       overrides.hurtboxes[currentHurtState] = box;
       scene.setCollisionBox(box, { editable: true, color: COLOR_HURT });
+      markDraftDirty();
+    });
+  }
+
+  // Guard box controls (T17).
+  ($('guard-state') as HTMLSelectElement).addEventListener('change', (e) => selectGuardState((e.target as HTMLSelectElement).value));
+  $('guard-override').addEventListener('click', () => {
+    overrides.guardboxes = overrides.guardboxes ?? {};
+    overrides.guardboxes[currentGuardState] = hurtMeasuredPx(currentGuardState) ?? { x: -25, y: -120, width: 50, height: 120 };
+    markDraftDirty();
+    renderGuardboxInspector();
+  });
+  $('guard-reset').addEventListener('click', () => {
+    if (overrides.guardboxes) delete overrides.guardboxes[currentGuardState];
+    markDraftDirty();
+    renderGuardboxInspector();
+  });
+  for (const suffix of ['x', 'y', 'w', 'h']) {
+    $(`guard-${suffix}`).addEventListener('change', () => {
+      if (!overrides.guardboxes?.[currentGuardState]) return;
+      const box = readBoxInputs('guard');
+      if (!box) return;
+      overrides.guardboxes[currentGuardState] = box;
+      scene.setCollisionBox(box, { editable: true, color: COLOR_GUARD });
       markDraftDirty();
     });
   }

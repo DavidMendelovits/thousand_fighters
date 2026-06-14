@@ -253,6 +253,51 @@ try {
     assert.equal(res.draft.status, 'error');
     assert.ok(res.draft.error, 'an error message is surfaced for the draft half');
   });
+
+  // -------------------------------------------------------------------------
+  console.log('\n[6] guard-box overrides round-trip (T17)');
+
+  await test('guardbox set -> reload -> present in config', async () => {
+    const res = await save({
+      characterId: 'gym_fighter',
+      overrides: {
+        hurtboxes: { crouch: { x: -40, y: -60, width: 80, height: 60 } },
+        hitboxes: {},
+        guardboxes: { idle: { x: -20, y: -120, width: 40, height: 120 } },
+      },
+    });
+    assert.equal(res.ok, true);
+    assert.equal(res.draft.status, 'saved');
+
+    const draft = await repository.getDraft('gym_fighter');
+    assert.deepEqual(draft.overrides.guardboxes.idle, { x: -20, y: -120, width: 40, height: 120 },
+      'guardbox override persisted to draft');
+
+    const frameData = await storage.getJson(frameDataKey);
+    const cfg = convertDraftToCharacterConfig({ draft, frameData, manifest: null });
+    assert.deepEqual(cfg.guardboxes.idle, { x: -20, y: -120, width: 40, height: 120 },
+      'guardbox override appears in config at scale=1');
+  });
+
+  await test('guardbox unset -> reload -> gone from config', async () => {
+    // Send overrides without guardboxes key (empty) to unset all guardboxes.
+    const res = await save({
+      characterId: 'gym_fighter',
+      overrides: {
+        hurtboxes: { crouch: { x: -40, y: -60, width: 80, height: 60 } },
+        hitboxes: {},
+        guardboxes: {},
+      },
+    });
+    assert.equal(res.ok, true);
+
+    const draft = await repository.getDraft('gym_fighter');
+    assert.deepEqual(draft.overrides.guardboxes, {}, 'guardboxes empty after unset');
+
+    const frameData = await storage.getJson(frameDataKey);
+    const cfg = convertDraftToCharacterConfig({ draft, frameData, manifest: null });
+    assert.deepEqual(cfg.guardboxes, {}, 'config guardboxes empty — fallback to level enum logic');
+  });
 } finally {
   if (rootDir) await rm(rootDir, { force: true, recursive: true });
 }

@@ -194,6 +194,14 @@ export class Fighter {
     return this.getHurtboxesWorld()[0]?.world ?? null;
   }
 
+  getGuardboxWorld(): AABB | null {
+    const guardbox = this.config.guardboxes?.[this.state];
+    if (!guardbox) return null;
+    const actor = this.actorFor(this.primaryActorId());
+    const pose = this.actorPose(actor);
+    return boxToWorld(guardbox, pose.x, pose.y, pose.facing);
+  }
+
   getHurtboxesWorld(): Array<{ actorId: FighterActorId; world: AABB }> {
     if (this.hurtboxDisabled) return [];
     return this.activeCollisionActors().flatMap((actor) => {

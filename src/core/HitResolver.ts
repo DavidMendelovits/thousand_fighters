@@ -1,6 +1,7 @@
 import type { Fighter } from './Fighter';
 import type { FighterScene, GrabSpec, Hitbox } from '../schema/types';
 import { HitPause } from '../util/hitpause';
+import { boxesOverlap, boxToWorld, type AABB } from '../util/aabb';
 
 export class HitResolver {
   static resolveGrab(attacker: Fighter, defender: Fighter, grab: GrabSpec, grabId: string): boolean {
@@ -114,10 +115,28 @@ export class HitResolver {
     const holdingBack = (awayFromAttacker === 1 && input.right) || (awayFromAttacker === -1 && input.left);
     if (!holdingBack) return false;
 
+    // Guard-box path (T17): if the defender has a gym-authored guardbox for its
+    // current state, block only when the incoming hitbox world AABB overlaps the
+    // guard world AABB. No guardbox → fall through to the legacy level/crouch logic.
+    const guardWorld = defender.getGuardboxWorld();
+    if (guardWorld !== null) {
+      const hitboxWorld = boxToWorld(hitbox, attacker.x, attacker.y, attacker.facing);
+      return guardCovers(hitboxWorld, guardWorld);
+    }
+
     const crouching = defender.state === 'crouch';
     if (hitbox.level === 'low' && !crouching) return false;
     if (hitbox.level === 'high' && crouching) return false;
 
     return true;
   }
+}
+
+/**
+ * True when the incoming hitbox world AABB overlaps the defender's guard AABB.
+ * Exported as a pure helper so `smoke_engine_guard.mjs` can unit-test it
+ * without touching the game engine.
+ */
+export function guardCovers(hitboxWorld: AABB, guardWorld: AABB): boolean {
+  return boxesOverlap(hitboxWorld, guardWorld);
 }

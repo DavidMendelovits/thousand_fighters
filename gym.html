@@ -22,6 +22,7 @@
         --ov-anchor: #f0b35b;
         --ov-hurt: #79a8ff;
         --ov-hit: #ff6b6b;
+        --ov-guard: #9fe6b0;
       }
       * { box-sizing: border-box; }
       html, body { margin: 0; height: 100%; }
@@ -78,6 +79,7 @@
       #topbar .legend .l-anchor::before { background: var(--ov-anchor); }
       #topbar .legend .l-hurt::before { background: var(--ov-hurt); }
       #topbar .legend .l-hit::before { background: var(--ov-hit); }
+      #topbar .legend .l-guard::before { background: var(--ov-guard); }
       #dirty { color: var(--accent-2); font-size: 11px; display: none; }
       #dirty.on { display: inline; }
       button {
@@ -220,6 +222,7 @@
           <span class="l-anchor">anchor</span>
           <span class="l-hurt">hurtbox</span>
           <span class="l-hit">hitbox</span>
+          <span class="l-guard">guard</span>
         </div>
         <span id="dirty">● Unsaved</span>
         <button id="undo-btn" disabled title="Undo (⌘Z)">↶ Undo</button>
@@ -243,6 +246,7 @@
             <button data-mode="anchor" class="active">Anchor</button>
             <button data-mode="hurtbox">Hurtbox</button>
             <button data-mode="hitbox">Hitbox</button>
+            <button data-mode="guard">Guard</button>
           </div>
           <div class="ro-note" id="mode-note">Anchor: drag the feet pivot on the canvas, or type below. Other modes are read-only in Phase 1.</div>
         </section>
@@ -284,6 +288,26 @@
             <label for="hurt-h">H</label><input class="mono" id="hurt-h" type="number" step="1" disabled />
           </div>
           <div class="ro-note" id="hurt-note"></div>
+        </section>
+
+        <section class="panel" id="guardbox-panel" hidden>
+          <h2>Guard box (per state)</h2>
+          <div class="num-grid">
+            <label for="guard-state">State</label>
+            <select class="mono" id="guard-state"></select>
+          </div>
+          <div class="badge-row">
+            <span id="guard-badge" class="badge">NONE</span>
+            <button id="guard-override">Override</button>
+            <button id="guard-reset" hidden>Reset (remove)</button>
+          </div>
+          <div class="num-grid">
+            <label for="guard-x">X</label><input class="mono" id="guard-x" type="number" step="1" disabled />
+            <label for="guard-y">Y</label><input class="mono" id="guard-y" type="number" step="1" disabled />
+            <label for="guard-w">W</label><input class="mono" id="guard-w" type="number" step="1" disabled />
+            <label for="guard-h">H</label><input class="mono" id="guard-h" type="number" step="1" disabled />
+          </div>
+          <div class="ro-note" id="guard-note"></div>
         </section>
 
         <section class="panel" id="hitbox-panel" hidden>

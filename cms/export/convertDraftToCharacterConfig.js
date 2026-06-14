@@ -58,6 +58,10 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
     sprite: buildSpriteConfig({ draft, frameData, manifest, scale }),
     // Measured hurtboxes first, then gym overrides win (D2).
     hurtboxes: applyHurtboxOverrides(generateDefaultHurtboxes(frameData, scale), overrides.hurtboxes, scale),
+    // Guard boxes are override-only — no measured/default pass. Fighters with no
+    // gym-authored guardboxes get an empty map and fall back to the legacy
+    // level/crouch logic in HitResolver (T17).
+    guardboxes: applyGuardboxOverrides({}, overrides.guardboxes, scale),
     animations: {
       idle: 'idle',
       walk_forward: 'walk_forward',
@@ -112,6 +116,24 @@ function applyHurtboxOverrides(hurtboxes, overrides, scale) {
     if (isBox(box)) hurtboxes[state] = scaleBox(box, scale);
   }
   return hurtboxes;
+}
+
+/**
+ * Apply per-state guard-box overrides. Guard boxes are OVERRIDE-ONLY — there is
+ * no measured/default pass, so the starting map is always `{}`. Fighters with no
+ * gym-authored guardboxes produce an empty map and fall back to the legacy
+ * level/crouch logic in HitResolver (T17).
+ *
+ * @param {object} guardboxes - empty base map (mutated + returned)
+ * @param {object|undefined} overrides - per-state BoxPx map (frame-px)
+ * @param {number} scale
+ */
+function applyGuardboxOverrides(guardboxes, overrides, scale) {
+  if (!overrides || typeof overrides !== 'object') return guardboxes;
+  for (const [state, box] of Object.entries(overrides)) {
+    if (isBox(box)) guardboxes[state] = scaleBox(box, scale);
+  }
+  return guardboxes;
 }
 
 /**

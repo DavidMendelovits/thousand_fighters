@@ -29,7 +29,7 @@ const CANVAS_H = 450;
 const FLOOR_Y = 360;
 const PIVOT_X = 400;
 
-export type BoundsMode = 'visual' | 'anchor' | 'hurtbox' | 'hitbox';
+export type BoundsMode = 'visual' | 'anchor' | 'hurtbox' | 'hitbox' | 'guard';
 
 export type GymSnapshot = {
   ready: boolean;
@@ -64,13 +64,15 @@ export class GymScene extends Phaser.Scene {
 
   private gizmo: 'move' | 'scale' = 'move';
   /**
-   * Editable collision box for hurtbox/hitbox modes, in frame-px anchor-relative
+   * Editable collision box for hurtbox/hitbox/guard modes, in frame-px anchor-relative
    * space (the override space). The page owns the data and supplies it; the scene
    * renders it and, when `collisionEditable`, lets the gizmo drag/resize it.
    */
   private collisionBox: Box | null = null;
   private collisionEditable = false;
   private collisionColor = 0x79a8ff;
+  /** T19: hit-level band to show in hitbox mode ('high' | 'mid' | 'low' | null). */
+  private hitLevel: 'high' | 'mid' | 'low' | null = null;
 
   private sprite!: Phaser.GameObjects.Image;
   private onionSprites: Phaser.GameObjects.Image[] = [];
@@ -188,6 +190,16 @@ export class GymScene extends Phaser.Scene {
     this.drawOverlay();
   }
 
+  /**
+   * T19: pass the active hitbox's level so the canvas can show a faint band
+   * indicating which height zone (high / mid / low) the hit occupies relative to
+   * a nominal ~160px fighter standing on the floor line. Pass null to clear.
+   */
+  setHitLevel(level: 'high' | 'mid' | 'low' | null): void {
+    this.hitLevel = level;
+    this.drawOverlay();
+  }
+
   setPlaying(playing: boolean): void {
     this.playing = playing;
     this.accumulatorMs = 0;
@@ -300,8 +312,8 @@ export class GymScene extends Phaser.Scene {
       this.drag = { px: p.x, py: p.y, ax: meta.anchor.x, ay: meta.anchor.y };
       return;
     }
-    // Hurtbox/Hitbox: drag the supplied editable box (Move translates, Scale resizes).
-    if ((this.mode === 'hurtbox' || this.mode === 'hitbox') && this.collisionEditable && this.collisionBox) {
+    // Hurtbox/Hitbox/Guard: drag the supplied editable box (Move translates, Scale resizes).
+    if ((this.mode === 'hurtbox' || this.mode === 'hitbox' || this.mode === 'guard') && this.collisionEditable && this.collisionBox) {
       this.boxDrag = { px: p.x, py: p.y, box: { ...this.collisionBox } };
     }
   }
@@ -365,7 +377,11 @@ export class GymScene extends Phaser.Scene {
       // Anchor mode shows both measured collision boxes read-only for context.
       if (meta?.hurtbox) this.drawBox(g, meta.hurtbox, scale, 0x79a8ff, 0.16);
       if (meta?.attackBox) this.drawBox(g, meta.attackBox, scale, 0xff6b6b, 0.18);
-    } else if (this.mode === 'hurtbox' || this.mode === 'hitbox') {
+    } else if (this.mode === 'hurtbox' || this.mode === 'hitbox' || this.mode === 'guard') {
+      // T19: in hitbox mode, show a faint horizontal band for the active hit level.
+      if (this.mode === 'hitbox' && this.hitLevel !== null) {
+        this.drawHitLevelBand(g, this.hitLevel);
+      }
       // Collision-edit modes: the page supplies the box (measured OR override).
       if (this.collisionBox) {
         this.drawBox(g, this.collisionBox, scale, this.collisionColor, this.collisionEditable ? 0.2 : 0.1);
@@ -381,6 +397,30 @@ export class GymScene extends Phaser.Scene {
     g.lineStyle(1.5, 0xf0b35b, 0.95);
     g.lineBetween(PIVOT_X - 10, FLOOR_Y, PIVOT_X + 10, FLOOR_Y);
     g.lineBetween(PIVOT_X, FLOOR_Y - 10, PIVOT_X, FLOOR_Y + 10);
+  }
+
+  /**
+   * T19: Draw a faint horizontal band indicating the hit-level zone relative to a
+   * nominal ~160px fighter standing on the floor line. Zones divide the fighter
+   * height into thirds: low = bottom 40%, mid = middle 40%, high = top 20%.
+   * These thresholds match common fighting-game conventions (low sweep ≈ shins;
+   * overhead ≈ head). The band is purely advisory — no game logic reads it.
+   */
+  private drawHitLevelBand(g: Phaser.GameObjects.Graphics, level: 'high' | 'mid' | 'low'): void {
+    const FIGHTER_H = 160; // nominal fighter height in screen-px at game scale
+    const bandColor: Record<string, number> = { high: 0xf0b35b, mid: 0x79a8ff, low: 0x9fe6b0 };
+    const color = bandColor[level] ?? 0xffffff;
+
+    // Band Y extents in screen px, relative to FLOOR_Y (upward = negative).
+    const zones: Record<string, [number, number]> = {
+      low:  [FLOOR_Y - FIGHTER_H * 0.4, FLOOR_Y],
+      mid:  [FLOOR_Y - FIGHTER_H * 0.8, FLOOR_Y - FIGHTER_H * 0.4],
+      high: [FLOOR_Y - FIGHTER_H,       FLOOR_Y - FIGHTER_H * 0.8],
+    };
+    const [top, bottom] = zones[level];
+    g.fillStyle(color, 0.07).fillRect(0, top, CANVAS_W, bottom - top);
+    g.lineStyle(1, color, 0.22).lineBetween(0, top, CANVAS_W, top);
+    g.lineStyle(1, color, 0.22).lineBetween(0, bottom, CANVAS_W, bottom);
   }
 
   /** Corner squares on an editable box: top-left (move origin) + bottom-right (scale). */

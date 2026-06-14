@@ -247,6 +247,7 @@ export type CharacterConfig = {
   maxFallSpeed: number;
   maxHealth: number;
   hurtboxes: Partial<Record<FighterState, Hurtbox>>;
+  guardboxes?: Partial<Record<FighterState, Hurtbox>>;
   pivotOffsetY: number;
   sprite?: CharacterSpriteConfig;
   actors?: FighterActorConfig[];

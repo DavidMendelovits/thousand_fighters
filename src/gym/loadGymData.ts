@@ -46,6 +46,8 @@ export type OverrideBox = { x: number; y: number; width: number; height: number 
 export type DraftOverrides = {
   hurtboxes?: Record<string, OverrideBox>;
   hitboxes?: Record<string, Record<string, OverrideBox>>;
+  /** Per-state guard boxes authored in the gym (T17). Override-only — no measured pass. */
+  guardboxes?: Record<string, OverrideBox>;
 };
 
 /** Minimal shape of a draft hitbox_active event the gym reads numbers from. */
