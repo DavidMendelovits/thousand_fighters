@@ -642,7 +642,7 @@ async function save(): Promise<void> {
     });
     const json = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
-    const result = (json.result ?? {}) as { frameData?: { status: string; error?: string }; draft?: { status: string; error?: string } };
+    const result = (json.result ?? {}) as { frameData?: { status: string; error?: string }; draft?: { status: string; error?: string; warnings?: string[] } };
 
     // Per-half: clear only the halves that actually persisted; keep the rest dirty.
     let frameOk = true;
@@ -656,6 +656,12 @@ async function save(): Promise<void> {
       else draftOk = false;
     }
     refreshDirty();
+
+    // Surface non-fatal save warnings (e.g. a renamed projectile orphaning a
+    // spawn event — codex P1) so the edit isn't silently behavior-changing.
+    if (result.draft?.warnings?.length) {
+      showStatus(`Saved with warnings: ${result.draft.warnings.join(' · ')}`, true);
+    }
 
     if (frameOk && draftOk) {
       btn.textContent = 'Saved';
