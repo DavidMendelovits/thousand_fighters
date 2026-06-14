@@ -479,10 +479,20 @@ row-generation work.
   `define_combo` (validate+persist), `generate_combo` (run the sequence). Tests:
   `cms:combo:smoke` (15 — merge semantics, leniency, validation, convert, persistence),
   `cms:combo:gen:smoke` (8 — threading contract + tool validate/persist/replace).
-- [ ] **T23 (P1) — projectile generation + editor.** Projectile specials generate the
-  projectile sprite + a projectile entity on the draft; a projectile editor in the gym edits
-  it like a move (geometry, lifetime, velocity, hitbox numbers). Convert already emits
-  `spawn_projectile`; extend it to consume authored projectile entities. Unit-test.
+- [x] **T23 (P1) — projectile generation + editor. DONE** (3 units). **Schema/convert**
+  (`a833c2c`): projectiles are first-class draft entities (`draft.projectiles`, authoring shape
+  of runtime `ProjectileConfig`); `spawn_projectile*` events reference one by `projectileId`;
+  `resolveProjectileEntities` (convert post-pass) fills the config from the entity
+  (animation/size/hitbox/velocity/lifetime/pierces/gravity all flow — no more hardcoded
+  `special_2`/32×32), lenient-drops dangling refs; `validateProjectiles` for definition-time.
+  **Generation** (`19ba574`): `projectile-sprite` gen task (single centered sprite) in both
+  adapters; `generateProjectile` stores the sprite + upserts the entity (regen preserves
+  authored numbers); `generate_projectile` + `define_projectile` tools. **Gym editor**
+  (`e840a46`): `save_gym_edits` persists a validated `projectiles` list; a Projectile inspector
+  panel edits motion + hitbox numbers bound to dotted paths. Tests: `cms:projectile:smoke` (13),
+  `cms:projectile:gen:smoke` (6), `cms:gym:smoke` (+2 → 17). Deferred polish: live projectile
+  preview on the gym canvas, projectile-sprite transparency extraction (analogous to row frame
+  extraction). Legacy inline-projectile events still convert (back-compat).
 - [ ] **T24 (P1) — module tests + `/codex` review.** Full smoke coverage for T20–T23; run
   `/codex review` and fold findings.
 
