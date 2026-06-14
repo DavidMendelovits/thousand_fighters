@@ -27,11 +27,26 @@
 
 /** @type {AnimationRow[]} */
 export const ANIMATION_ROWS = [
+  // Canonical 5 (the default registry — existing fighters are exactly these).
   { id: 'base', label: 'Idle / base', group: 'Base', frameCount: 6, role: 'base', moveAnimation: false },
   { id: 'punch', label: 'Punch', group: 'Normals', frameCount: 6, role: 'normal', moveAnimation: true },
   { id: 'kick', label: 'Kick', group: 'Normals', frameCount: 6, role: 'normal', moveAnimation: true },
   { id: 'special_1', label: 'Special 1', group: 'Specials', frameCount: 6, role: 'special', moveAnimation: true },
   { id: 'special_2', label: 'Special 2', group: 'Specials', frameCount: 6, role: 'special', moveAnimation: true },
+  // T21 rows. jump/crouch/block are state-driven — the engine plays them via
+  // the state→row map (src/core/animationRowPlayback.ts) when a fighter owns
+  // the row, falling back to base otherwise. dash_forward/dash_back are
+  // generatable + authorable but have no FighterState yet, so they do not play
+  // in-engine (documented gap; needs a movement-system change). grab/throw are
+  // move-triggered (moveAnimation:true → MOVE_SHEETS) — latent until a move
+  // references them.
+  { id: 'jump', label: 'Jump', group: 'Movement', frameCount: 6, role: 'movement', moveAnimation: false },
+  { id: 'crouch', label: 'Crouch', group: 'Movement', frameCount: 6, role: 'movement', moveAnimation: false },
+  { id: 'dash_forward', label: 'Dash Forward', group: 'Movement', frameCount: 6, role: 'movement', moveAnimation: false },
+  { id: 'dash_back', label: 'Dash Back', group: 'Movement', frameCount: 6, role: 'movement', moveAnimation: false },
+  { id: 'block', label: 'Block', group: 'Defense', frameCount: 6, role: 'defense', moveAnimation: false },
+  { id: 'grab', label: 'Grab', group: 'Grapple', frameCount: 6, role: 'grab', moveAnimation: true },
+  { id: 'throw', label: 'Throw', group: 'Grapple', frameCount: 6, role: 'grab', moveAnimation: true },
 ];
 
 /** Ordered list of every row id. */

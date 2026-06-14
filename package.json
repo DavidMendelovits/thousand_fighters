@@ -40,6 +40,7 @@
     "preview": "vite preview",
     "cms:gym:smoke": "node scripts/smoke_cms_gym_save.mjs",
     "engine:guard:smoke": "tsx scripts/smoke_engine_guard.mjs",
+    "engine:rows:smoke": "tsx scripts/smoke_engine_rows.mjs",
     "rows:smoke": "node scripts/smoke_animation_rows.mjs"
   },
   "dependencies": {

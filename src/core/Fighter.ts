@@ -18,6 +18,7 @@ import type {
   SpriteSheetId,
 } from '../schema/types';
 import { MOVE_SHEET_IDS } from '../../shared/animationRows.js';
+import { resolveStateSheet, stateRowFrame } from './animationRowPlayback';
 import { boxToWorld, type AABB } from '../util/aabb';
 import { interpolateHitboxGeometry } from './hitboxGeometry';
 
@@ -507,6 +508,19 @@ export class Fighter {
       return {
         sheet: this.currentMove.animation as SpriteSheetId,
         frame: this.moveVisualFrame(this.currentMove, visualDelay, sprite),
+      };
+    }
+
+    // State-driven row playback (T21): if this fighter owns a dedicated row for
+    // the current state (jump/crouch/block), play it. Gated on row ownership so
+    // fighters without these rows fall through to the base logic below,
+    // byte-for-byte unchanged.
+    const stateSheet = resolveStateSheet(this.state, (row) => (sprite?.frameCounts?.[row] ?? 0) > 0);
+    if (stateSheet !== 'base') {
+      const elapsed = Math.max(0, this.stateFrame - visualDelay);
+      return {
+        sheet: stateSheet,
+        frame: stateRowFrame(elapsed, sprite?.frameCounts?.[stateSheet] ?? 1),
       };
     }
 

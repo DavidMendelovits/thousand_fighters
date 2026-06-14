@@ -47,6 +47,27 @@ for (const id of CANONICAL_MOVE_IDS) {
 assert.ok(!MOVE_SHEET_IDS.includes('base'), 'base must not be a move-animation row');
 assert.equal(getRow('base').role, 'base', 'base row role must be "base"');
 
+// T21 rows. grab/throw are move-triggered (enter MOVE_SHEETS — latent until a
+// move references them). jump/crouch/dash/block are state-driven or
+// authoring-only and must NOT be move-animation rows, or they would change the
+// engine's MOVE_SHEETS playback set for existing fighters.
+const T21_ROWS = ['jump', 'crouch', 'dash_forward', 'dash_back', 'block', 'grab', 'throw'];
+for (const id of T21_ROWS) {
+  assert.ok(getRow(id), `registry is missing T21 row "${id}"`);
+}
+for (const id of ['grab', 'throw']) {
+  assert.ok(MOVE_SHEET_IDS.includes(id), `T21: "${id}" must be a move-animation row`);
+}
+for (const id of ['jump', 'crouch', 'dash_forward', 'dash_back', 'block']) {
+  assert.ok(!MOVE_SHEET_IDS.includes(id), `T21: "${id}" must NOT be a move-animation row`);
+}
+// The full move set after T21 is the canonical 4 normals/specials + grab + throw.
+assert.deepEqual(
+  MOVE_SHEET_IDS,
+  [...CANONICAL_MOVE_IDS, 'grab', 'throw'],
+  'MOVE_SHEET_IDS must be the canonical normals/specials followed by grab, throw',
+);
+
 // SHEET_IDS / MOVE_SHEET_IDS / SHEET_LABELS / sheetGroups all derive from the
 // same source — assert they stay mutually consistent.
 assert.deepEqual(Object.keys(SHEET_LABELS), SHEET_IDS, 'SHEET_LABELS keys must equal SHEET_IDS');

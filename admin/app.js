@@ -1,4 +1,8 @@
-const MOVE_ORDER = ['base', 'punch', 'kick', 'special_1', 'special_2', 'projectiles'];
+// Row tab order. Mirrors the animation-row registry (shared/animationRows.js),
+// guarded by scripts/smoke_animation_rows.mjs — this browser file is served
+// behind a static server and can't import the Node module, so it keeps a
+// literal copy. 'projectiles' is a virtual tab (not a sprite row).
+const MOVE_ORDER = ['base', 'punch', 'kick', 'special_1', 'special_2', 'jump', 'crouch', 'dash_forward', 'dash_back', 'block', 'grab', 'throw', 'projectiles'];
 
 // Where the Vite-served game (and the single-player testbed) lives. The testbed
 // reads this character's draft + assets back through the admin API via a Vite
@@ -397,7 +401,8 @@ async function createDraft() {
   return result.draft;
 }
 
-const MOVE_IDS = ['base', 'punch', 'kick', 'special_1', 'special_2'];
+// Sprite-row ids (the registry rows, no 'projectiles'). See MOVE_ORDER above.
+const MOVE_IDS = ['base', 'punch', 'kick', 'special_1', 'special_2', 'jump', 'crouch', 'dash_forward', 'dash_back', 'block', 'grab', 'throw'];
 
 function moveSpriteProfile(moveId) {
   const moves = state.currentDraftData?.moves ?? [];
