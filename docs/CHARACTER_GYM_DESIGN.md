@@ -348,11 +348,15 @@ contract migration. Run with Claude Code or Codex; checkbox as you ship.
 
 ### Phase 2 — Collision migration
 
-- [ ] **T10 (P1, human: ~1d / CC: ~2h)** — override layer (D2) — draft `overrides` schema;
-  `convertDraftToCharacterConfig` applies after measured passes; hitbox override = static,
-  clears keyframes (A4); measured passes skip overridden entries.
-  - Surfaced by: §3/§11. Files: `cms/export/convertDraftToCharacterConfig.js`, draft schema.
-  - Verify: override hurtbox → re-normalize → survives (unit test).
+- [x] **T10 (P1) — override layer (D2)** — DONE. `draft.overrides.{hurtboxes,hitboxes}`
+  applied in `convertDraftToCharacterConfig` *after* the measured passes (override wins);
+  hitbox override is a static box that clears `keyframes` (A4). **Overrides are stored
+  frame-px, anchor-relative** (same space as measured `hurtbox`/`attackBox`); convert
+  applies `× scale` — scale-robust, no unit conversion at the gym↔draft boundary. T11/T12
+  must author overrides in this space.
+  - Files: `cms/export/convertDraftToCharacterConfig.js`.
+  - Verified: `npm run cms:export:smoke` (§9 — hurtbox/hitbox override wins, keyframes
+    cleared, non-overridden states untouched, override survives a fresh frameData).
 - [ ] **T11 (P1, human: ~4h / CC: ~45min)** — collision inspector — per-state hurtbox +
   per-phase hitbox editing, MEASURED/OVERRIDDEN badges, reset-to-measured (unset via
   `save_gym_edits`). Handle multi-id/actor/synthesized-end/keyframe-by-age + `modify_hurtbox` (A8).

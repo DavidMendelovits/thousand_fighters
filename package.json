@@ -37,7 +37,8 @@
     "test:admin:playwright": "playwright test tests/admin-cms.spec.js",
     "assets:index": "node scripts/build_assets_index.mjs",
     "build": "node scripts/build_assets_index.mjs && tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cms:gym:smoke": "node scripts/smoke_cms_gym_save.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1048.0",

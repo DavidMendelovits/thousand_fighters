@@ -9,6 +9,29 @@
  */
 import { normalizeManifest } from '../pipeline/manifestSchema.js';
 
+/**
+ * Collision override layer (Character Gym, T10/D2).
+ *
+ * `draft.overrides` is a human/gym-authored correction layer that WINS over the
+ * measured-geometry passes (`generateDefaultHurtboxes`, `applyMeasuredHitboxGeometry`).
+ * The AI never emits it. Boxes are stored in **frame pixels, anchor-relative** —
+ * the same space as the extractor's measured `hurtbox`/`attackBox` — so convert
+ * applies `× scale` exactly like the measured path. That keeps overrides
+ * scale-robust (a re-extracted, resized sprite scales its boxes with it) and
+ * lets the gym persist what it draws with no unit conversion.
+ *
+ * Shape:
+ *   draft.overrides = {
+ *     hurtboxes: { <FighterState>: { x, y, width, height } },     // per-state
+ *     hitboxes:  { <moveId>: { <hitboxId>: { x, y, width, height } } }, // per move + id
+ *   }
+ *
+ * A hitbox override is a STATIC box: it replaces the measured geometry and
+ * clears the interpolated `keyframes` track (A4 — what you draw is what ships).
+ *
+ * @typedef {{ x: number, y: number, width: number, height: number }} BoxPx
+ */
+
 export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawManifest }) {
   if (!draft) throw new Error('convertDraftToCharacterConfig: draft is required');
 
@@ -18,6 +41,7 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
   const manifest = normalizeManifest(rawManifest, { id });
   const stats = draft.stats ?? {};
   const scale = deriveSpriteScale(draft.sprite ?? {}, frameData);
+  const overrides = (draft.overrides && typeof draft.overrides === 'object') ? draft.overrides : {};
 
   return {
     id,
@@ -32,7 +56,8 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
     maxHealth: stats.maxHealth ?? 1000,
     pivotOffsetY: 0,
     sprite: buildSpriteConfig({ draft, frameData, manifest, scale }),
-    hurtboxes: generateDefaultHurtboxes(frameData, scale),
+    // Measured hurtboxes first, then gym overrides win (D2).
+    hurtboxes: applyHurtboxOverrides(generateDefaultHurtboxes(frameData, scale), overrides.hurtboxes, scale),
     animations: {
       idle: 'idle',
       walk_forward: 'walk_forward',
@@ -47,8 +72,69 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
       getup: 'getup',
       dead: 'dead',
     },
-    moves: (draft.moves ?? []).map((draftMove) => convertMove(draftMove, { frameData, scale })),
+    moves: (draft.moves ?? []).map((draftMove) =>
+      convertMove(draftMove, { frameData, scale, hitboxOverrides: overrides.hitboxes?.[draftMove.id] })),
   };
+}
+
+// ---------------------------------------------------------------------------
+// Override helpers (frame-px, anchor-relative -> world units via scale)
+// ---------------------------------------------------------------------------
+
+/** True when `box` has numeric x/y/width/height. */
+function isBox(box) {
+  return Boolean(box)
+    && typeof box.x === 'number' && typeof box.y === 'number'
+    && typeof box.width === 'number' && typeof box.height === 'number';
+}
+
+/** Convert a frame-pixel (anchor-relative) box to world units. */
+function scaleBox(box, scale) {
+  return {
+    x: Math.round(box.x * scale),
+    y: Math.round(box.y * scale),
+    width: Math.max(1, Math.round(box.width * scale)),
+    height: Math.max(1, Math.round(box.height * scale)),
+  };
+}
+
+/**
+ * Apply per-state hurtbox overrides on top of the measured map. Override wins;
+ * an override for a state the measured pass didn't emit is added.
+ *
+ * @param {object} hurtboxes - measured/default hurtbox map (mutated + returned)
+ * @param {object|undefined} overrides - per-state BoxPx map (frame-px)
+ * @param {number} scale
+ */
+function applyHurtboxOverrides(hurtboxes, overrides, scale) {
+  if (!overrides || typeof overrides !== 'object') return hurtboxes;
+  for (const [state, box] of Object.entries(overrides)) {
+    if (isBox(box)) hurtboxes[state] = scaleBox(box, scale);
+  }
+  return hurtboxes;
+}
+
+/**
+ * Apply per-hitbox geometry overrides on a converted move, AFTER the measured
+ * pass. Matches by hitbox id (default 'default'); replaces geometry and clears
+ * the keyframe track so the override is a static box (A4).
+ *
+ * @param {object} move - runtime move (mutated)
+ * @param {object|undefined} overrides - { <hitboxId>: BoxPx } for this move (frame-px)
+ * @param {number} scale
+ */
+function applyHitboxOverrides(move, overrides, scale) {
+  if (!overrides || typeof overrides !== 'object') return;
+  for (const phase of move.phases ?? []) {
+    for (const entry of phase.events ?? []) {
+      const event = entry.event;
+      if (event?.type !== 'hitbox_active' || !event.hitbox) continue;
+      const box = overrides[event.id ?? 'default'];
+      if (!isBox(box)) continue;
+      Object.assign(event.hitbox, scaleBox(box, scale));
+      delete event.keyframes;
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -287,6 +373,8 @@ function convertMove(draftMove, context = {}) {
   }
 
   applyMeasuredHitboxGeometry(move, context.frameData?.frames?.[animation], context.scale ?? 1);
+  // Gym geometry overrides win over the measured pass (D2/A4).
+  applyHitboxOverrides(move, context.hitboxOverrides, context.scale ?? 1);
   return move;
 }
 
@@ -360,13 +448,6 @@ function applyMeasuredHitboxGeometry(move, rowFrames, scale) {
     activations.push({ ...activation, endTick: totalFrames });
   }
 
-  const toWorld = (box) => ({
-    x: Math.round(box.x * scale),
-    y: Math.round(box.y * scale),
-    width: Math.max(1, Math.round(box.width * scale)),
-    height: Math.max(1, Math.round(box.height * scale)),
-  });
-
   for (const { event, startTick, endTick } of activations) {
     const track = [];
     let lastSpriteFrame = -1;
@@ -375,7 +456,7 @@ function applyMeasuredHitboxGeometry(move, rowFrames, scale) {
       if (spriteFrame === lastSpriteFrame) continue;
       lastSpriteFrame = spriteFrame;
       const box = attackBoxNear(rowFrames, spriteFrame);
-      if (box) track.push({ atFrame: tick - startTick, ...toWorld(box) });
+      if (box) track.push({ atFrame: tick - startTick, ...scaleBox(box, scale) });
     }
     if (!track.length) continue;
 

@@ -169,34 +169,77 @@ export function createCmsTools({ pipeline, repository, registry }) {
     },
     {
       name: 'save_gym_edits',
-      description: 'Persist Character Gym edits. Phase 1 writes the full frameData.json (per-frame anchors + anchor-relative collision boxes). The gym applies the anchor-delta box recompute before sending; this tool stores the result. Phase 2 will extend it to write draft hurtbox/hitbox overrides.',
+      description: 'Persist Character Gym edits across two stores in one call (A2/A3). Half 1: the full frameData.json (per-frame anchors + the gym\'s anchor-relative collision boxes) to the asset store. Half 2: the draft `overrides` block (per-state hurtbox + per-move/per-id hitbox geometry, frame-px anchor-relative) and authored hitbox numbers to the draft. Set/unset semantics: `overrides` REPLACES draft.overrides wholesale, so a key removed by reset-to-measured is actually deleted (deepMerge cannot delete); `hitboxNumbers` patches matching hitbox_active events in place, so a single-field edit never re-sends or clobbers the moves array. Writes frameData first, then the draft, and returns a per-half result {frameData, draft} so a partial failure is reported honestly and the gym can stay dirty for the half that did not persist.',
       inputSchema: objectSchema({
         characterId: stringSchema('Character id.'),
         frameData: {
           type: 'object',
-          description: 'Full frameData object to write — replaces frameData.json wholesale.',
+          description: 'Full frameData object to write — replaces frameData.json wholesale. Omit to leave frames untouched.',
           additionalProperties: true,
         },
-      }, ['characterId', 'frameData']),
-      execute: async ({ characterId, frameData }) => {
-        const keys = await repository.listCharacterAssets(characterId);
-        const prefix = `characters/${repository.safeCharacterId(characterId)}/assets/`;
-        const key = keys.find((candidate) => candidate.endsWith('frameData.json'));
-        if (!key) throw new Error(`No frameData.json asset to update for ${characterId}`);
-        const relativePath = key.startsWith(prefix) ? key.slice(prefix.length) : key;
-        const json = `${JSON.stringify(frameData, null, 2)}\n`;
-        const asset = await writeCharacterAssetUpload({
-          repository,
-          storage: repository.storage,
-          characterId,
-          input: {
-            relativePath,
-            contentBase64: Buffer.from(json, 'utf8').toString('base64'),
-            contentType: 'application/json',
-          },
-          source: 'character-gym',
-        });
-        return { ok: true, key: asset.key, relativePath };
+        overrides: {
+          type: 'object',
+          description: 'Full resolved draft.overrides block ({ hurtboxes, hitboxes }) in frame-px anchor-relative space — REPLACES draft.overrides wholesale, so removing a key here unsets that override. Omit to leave overrides untouched.',
+          additionalProperties: true,
+        },
+        hitboxNumbers: {
+          type: 'array',
+          description: 'Targeted in-place patches to authored hitbox numbers (damage/hitstun/blockstun/knockbackX/knockbackY/level) on draft hitbox_active events. Each item: { moveId, hitboxId?, ...fields }. Matched by moveId + (event.id ?? "default").',
+          items: { type: 'object', additionalProperties: true },
+        },
+      }, ['characterId']),
+      execute: async ({ characterId, frameData, overrides, hitboxNumbers }) => {
+        const result = { ok: true };
+
+        // --- Half 1: frameData → asset store (written first, per save order A2/A3) ---
+        if (frameData !== undefined) {
+          try {
+            const keys = await repository.listCharacterAssets(characterId);
+            const prefix = `characters/${repository.safeCharacterId(characterId)}/assets/`;
+            const key = keys.find((candidate) => candidate.endsWith('frameData.json'));
+            if (!key) throw new Error(`No frameData.json asset to update for ${characterId}`);
+            const relativePath = key.startsWith(prefix) ? key.slice(prefix.length) : key;
+            const json = `${JSON.stringify(frameData, null, 2)}\n`;
+            const asset = await writeCharacterAssetUpload({
+              repository,
+              storage: repository.storage,
+              characterId,
+              input: {
+                relativePath,
+                contentBase64: Buffer.from(json, 'utf8').toString('base64'),
+                contentType: 'application/json',
+              },
+              source: 'character-gym',
+            });
+            result.frameData = { status: 'saved', key: asset.key, relativePath };
+          } catch (error) {
+            result.ok = false;
+            result.frameData = { status: 'error', error: error.message };
+          }
+        }
+
+        // --- Half 2: draft overrides + hitbox numbers → draft store ---
+        const hasNumberPatches = Array.isArray(hitboxNumbers) && hitboxNumbers.length > 0;
+        if (overrides !== undefined || hasNumberPatches) {
+          try {
+            const draft = await repository.getDraft(characterId);
+            if (!draft) throw new Error(`No draft to update for ${characterId}`);
+            if (overrides !== undefined) {
+              draft.overrides = sanitizeOverrides(overrides);
+            }
+            let patchedEvents = 0;
+            for (const patch of hitboxNumbers ?? []) {
+              patchedEvents += applyHitboxNumberPatch(draft, patch);
+            }
+            await repository.saveDraft(characterId, draft, { source: 'character-gym' });
+            result.draft = { status: 'saved', patchedEvents };
+          } catch (error) {
+            result.ok = false;
+            result.draft = { status: 'error', error: error.message };
+          }
+        }
+
+        return result;
       },
     },
     {
@@ -344,6 +387,62 @@ export function createCmsTools({ pipeline, repository, registry }) {
       return tool.execute(input);
     },
   };
+}
+
+/**
+ * Coerce a gym-supplied overrides block to the { hurtboxes, hitboxes } shape the
+ * convert pipeline reads. The gym sends the FULL resolved block each save, so
+ * this wholesale-replaces draft.overrides — a key the gym dropped (reset to
+ * measured) is simply absent here, which is how unset/delete works without
+ * deepMerge (deepMerge cannot delete keys).
+ */
+function sanitizeOverrides(overrides) {
+  if (!isPlainObject(overrides)) return { hurtboxes: {}, hitboxes: {} };
+  return {
+    hurtboxes: isPlainObject(overrides.hurtboxes) ? overrides.hurtboxes : {},
+    hitboxes: isPlainObject(overrides.hitboxes) ? overrides.hitboxes : {},
+  };
+}
+
+/**
+ * Patch authored hitbox numbers on the draft's hitbox_active events in place,
+ * matched by moveId + (event.id ?? 'default'). Patches only the provided fields
+ * and PRESERVES the draft's existing knockback shape (flat knockbackX/Y vs
+ * nested knockback:{x,y}) so convert doesn't see two competing representations.
+ *
+ * @returns {number} count of events patched
+ */
+function applyHitboxNumberPatch(draft, patch) {
+  if (!isPlainObject(patch) || !patch.moveId) return 0;
+  const move = (draft.moves ?? []).find((candidate) => candidate.id === patch.moveId);
+  if (!move) return 0;
+  const wantId = patch.hitboxId ?? 'default';
+  let count = 0;
+  for (const phase of move.phases ?? []) {
+    for (const entry of phase.events ?? []) {
+      const event = entry.event ?? entry;
+      if (!event || !event.hitbox) continue;
+      if (event.type !== 'hitbox_active' && event.type !== 'hitbox') continue;
+      if ((event.id ?? 'default') !== wantId) continue;
+      patchHitboxFields(event.hitbox, patch);
+      count += 1;
+    }
+  }
+  return count;
+}
+
+function patchHitboxFields(hitbox, patch) {
+  for (const field of ['damage', 'hitstun', 'blockstun', 'level']) {
+    if (patch[field] !== undefined) hitbox[field] = patch[field];
+  }
+  if (patch.knockbackX !== undefined) {
+    if (isPlainObject(hitbox.knockback)) hitbox.knockback.x = patch.knockbackX;
+    else hitbox.knockbackX = patch.knockbackX;
+  }
+  if (patch.knockbackY !== undefined) {
+    if (isPlainObject(hitbox.knockback)) hitbox.knockback.y = patch.knockbackY;
+    else hitbox.knockbackY = patch.knockbackY;
+  }
 }
 
 function deepMerge(target, patch) {

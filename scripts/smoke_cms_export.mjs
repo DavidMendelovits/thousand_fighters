@@ -512,6 +512,194 @@ try {
 }
 
 // ---------------------------------------------------------------------------
+// Section 9: collision overrides (T10 — gym override layer)
+// ---------------------------------------------------------------------------
+console.log('\n[9] Collision overrides');
+
+// scale resolves to sprite.scale (=1) since base frames carry no silhouetteHeight,
+// so frame-px overrides map 1:1 to world units and assertions stay exact.
+const OVERRIDE_FRAME_DATA = {
+  frames: {
+    base: [
+      { file: 'sprites/base/base_001.png', width: 200, height: 280, anchor: { x: 100, y: 270 }, hurtbox: { x: -30, y: -120, width: 60, height: 120 } },
+    ],
+    punch: [
+      { file: 'sprites/punch/punch_001.png', width: 200, height: 280, anchor: { x: 100, y: 270 }, attackBox: { x: 40, y: -90, width: 30, height: 20 } },
+      { file: 'sprites/punch/punch_002.png', width: 260, height: 280, anchor: { x: 100, y: 270 }, attackBox: { x: 80, y: -92, width: 70, height: 24 } },
+      { file: 'sprites/punch/punch_003.png', width: 200, height: 280, anchor: { x: 100, y: 270 }, attackBox: { x: 40, y: -90, width: 30, height: 20 } },
+    ],
+  },
+};
+
+const OVERRIDE_DRAFT = {
+  id: 'ovr_fighter',
+  sprite: { scale: 1, frameCounts: { base: 1, punch: 3 } },
+  overrides: {
+    hurtboxes: {
+      idle: { x: -10, y: -100, width: 20, height: 100 },
+      crouch: { x: -40, y: -60, width: 80, height: 60 },
+    },
+    hitboxes: {
+      chop: { default: { x: 5, y: -50, width: 12, height: 8 } },
+    },
+  },
+  moves: [
+    {
+      id: 'chop',
+      animation: 'punch',
+      phases: [
+        { name: 'startup', frames: 2, events: [] },
+        { name: 'active', frames: 4, events: [{ frame: 0, event: { type: 'hitbox_active', hitbox: { x: 0, y: 0, width: 1, height: 1, damage: 40, hitstun: 12 } } }] },
+        { name: 'recovery', frames: 2, events: [] },
+      ],
+    },
+  ],
+};
+
+function findHitbox(cfg, moveId) {
+  const move = cfg.moves.find((m) => m.id === moveId);
+  for (const phase of move?.phases ?? []) {
+    for (const e of phase.events) {
+      if (e.event.type === 'hitbox_active') return e.event;
+    }
+  }
+  return null;
+}
+
+const noOverride = convertDraftToCharacterConfig({
+  draft: { ...OVERRIDE_DRAFT, overrides: undefined },
+  frameData: OVERRIDE_FRAME_DATA,
+  manifest: null,
+});
+const withOverride = convertDraftToCharacterConfig({
+  draft: OVERRIDE_DRAFT,
+  frameData: OVERRIDE_FRAME_DATA,
+  manifest: null,
+});
+
+test('hurtbox override wins over measured (idle)', () => {
+  assert.deepEqual(withOverride.hurtboxes.idle, { x: -10, y: -100, width: 20, height: 100 });
+});
+
+test('overridden idle differs from the measured value', () => {
+  assert.notDeepEqual(withOverride.hurtboxes.idle, noOverride.hurtboxes.idle);
+});
+
+test('non-overridden hurtbox state stays measured', () => {
+  assert.deepEqual(withOverride.hurtboxes.walk_forward, noOverride.hurtboxes.walk_forward);
+});
+
+test('hurtbox override can add a state', () => {
+  assert.deepEqual(withOverride.hurtboxes.crouch, { x: -40, y: -60, width: 80, height: 60 });
+});
+
+test('measured pass produces keyframes without override (precondition)', () => {
+  assert.ok(Array.isArray(findHitbox(noOverride, 'chop').keyframes), 'expected a measured keyframe track');
+});
+
+test('hitbox geometry override replaces measured geometry', () => {
+  const ev = findHitbox(withOverride, 'chop');
+  assert.deepEqual(
+    { x: ev.hitbox.x, y: ev.hitbox.y, width: ev.hitbox.width, height: ev.hitbox.height },
+    { x: 5, y: -50, width: 12, height: 8 },
+  );
+});
+
+test('hitbox override clears keyframes (static box, A4)', () => {
+  assert.equal(findHitbox(withOverride, 'chop').keyframes, undefined);
+});
+
+test('hitbox numbers preserved under geometry override', () => {
+  const ev = findHitbox(withOverride, 'chop');
+  assert.equal(ev.hitbox.damage, 40);
+  assert.equal(ev.hitbox.hitstun, 12);
+});
+
+test('no overrides leaves measured geometry intact (regression)', () => {
+  assert.ok(findHitbox(noOverride, 'chop').hitbox.width > 1, 'measured geometry should replace the 1x1 draft stub');
+});
+
+test('override survives a fresh frameData (re-extraction is draft-independent)', () => {
+  // Overrides live in the draft, not frameData — a re-extracted frameData with
+  // different measured boxes does not touch them.
+  const freshFrameData = JSON.parse(JSON.stringify(OVERRIDE_FRAME_DATA));
+  freshFrameData.frames.base[0].hurtbox = { x: -99, y: -99, width: 99, height: 99 };
+  const reconv = convertDraftToCharacterConfig({ draft: OVERRIDE_DRAFT, frameData: freshFrameData, manifest: null });
+  assert.deepEqual(reconv.hurtboxes.idle, { x: -10, y: -100, width: 20, height: 100 });
+});
+
+// ---------------------------------------------------------------------------
+// Section 10: publish/ship path carries gym anchors + overrides (T13/T14, A5)
+// ---------------------------------------------------------------------------
+//
+// The runtime ship path is exportCharacterToRuntime (run by `cms:export` and by
+// the admin Publish action via the export_character_config tool). It must carry
+// BOTH halves of a gym edit into public/fighters/<id>/:
+//   - tuned anchors in the copied frameData.json (Phase 1), and
+//   - the draft `overrides` folded into config.json by convert (Phase 2).
+// No separate A1 box-recompute runs here: the gym bakes the Δanchor box shift
+// into frameData at save time, and re-extraction re-measures boxes at the
+// preserved anchor — so the stored frameData is already consistent at ship.
+console.log('\n[10] Ship path carries gym anchors + overrides (A5)');
+
+{
+  let shipRoot;
+  try {
+     shipRoot = await mkdtemp(path.join(os.tmpdir(), 'smoke-cms-ship-'));
+    const storage = new FileCmsStorage({ rootDir: path.join( shipRoot, 'cms-data') });
+    const repository = new CharacterContentRepository(storage, {
+      clock: () => new Date('2026-06-14T12:00:00.000Z'),
+    });
+
+    // A gym-tuned draft: overrides authored, and a frameData with a hand-tuned,
+    // anchorEdited base anchor (scale resolves to 1, no silhouetteHeight).
+    const shipDraft = {
+      ...OVERRIDE_DRAFT,
+      id: 'ship_fighter',
+      sprite: { scale: 1, frameCounts: { base: 1, punch: 3 } },
+    };
+    const shipFrameData = JSON.parse(JSON.stringify(OVERRIDE_FRAME_DATA));
+    shipFrameData.frames.base[0].anchor = { x: 96, y: 261 };
+    shipFrameData.frames.base[0].anchorEdited = true;
+
+    await repository.saveDraft('ship_fighter', shipDraft);
+    // The exporter reads the pack frameData at characters/<id>/assets/fighter-pack/.
+    await storage.putJson('characters/ship_fighter/assets/fighter-pack/frameData.json', shipFrameData, {
+      contentType: 'application/json',
+    });
+
+    const outputDir = path.join(shipRoot, 'public', 'fighters');
+    const result = await exportCharacterToRuntime({
+      runtime: { repository, storage },
+      characterId: 'ship_fighter',
+      outputDir,
+    });
+
+    test('shipped config.json folds the hurtbox override (Phase 2)', () => {
+      assert.deepEqual(result.config.hurtboxes.idle, { x: -10, y: -100, width: 20, height: 100 });
+    });
+
+    test('shipped config.json folds the hitbox geometry override (static, A4)', () => {
+      const ev = findHitbox(result.config, 'chop');
+      assert.deepEqual(
+        { x: ev.hitbox.x, y: ev.hitbox.y, width: ev.hitbox.width, height: ev.hitbox.height },
+        { x: 5, y: -50, width: 12, height: 8 },
+      );
+      assert.equal(ev.keyframes, undefined);
+    });
+
+    test('copied frameData.json carries the tuned, anchorEdited anchor (Phase 1)', async () => {
+      const raw = await readFile(path.join(outputDir, 'ship_fighter', 'frameData.json'), 'utf8');
+      const parsed = JSON.parse(raw);
+      assert.deepEqual(parsed.frames.base[0].anchor, { x: 96, y: 261 });
+      assert.equal(parsed.frames.base[0].anchorEdited, true);
+    });
+  } finally {
+    if (shipRoot) await rm(shipRoot, { force: true, recursive: true });
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Summary
 // ---------------------------------------------------------------------------
 console.log('');
