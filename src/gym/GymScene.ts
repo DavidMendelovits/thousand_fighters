@@ -62,12 +62,24 @@ export class GymScene extends Phaser.Scene {
   private speed = 1;
   private accumulatorMs = 0;
 
+  private gizmo: 'move' | 'scale' = 'move';
+  /**
+   * Editable collision box for hurtbox/hitbox modes, in frame-px anchor-relative
+   * space (the override space). The page owns the data and supplies it; the scene
+   * renders it and, when `collisionEditable`, lets the gizmo drag/resize it.
+   */
+  private collisionBox: Box | null = null;
+  private collisionEditable = false;
+  private collisionColor = 0x79a8ff;
+
   private sprite!: Phaser.GameObjects.Image;
   private onionSprites: Phaser.GameObjects.Image[] = [];
   private overlay!: Phaser.GameObjects.Graphics;
   private ready = false;
   /** Active anchor-drag gesture (scene-space pointer + anchor at gesture start). */
   private drag: { px: number; py: number; ax: number; ay: number } | null = null;
+  /** Active collision-box drag (scene-space pointer + box at gesture start). */
+  private boxDrag: { px: number; py: number; box: Box } | null = null;
 
   /** Fired whenever the active frame's anchor changes (drag or programmatic). */
   onAnchorChange?: (sheet: SpriteSheetId, frame: number, anchor: { x: number; y: number }) => void;
@@ -75,6 +87,8 @@ export class GymScene extends Phaser.Scene {
   onAnchorCommit?: (sheet: SpriteSheetId, frame: number, before: { x: number; y: number }, after: { x: number; y: number }) => void;
   /** Fired when the active frame index changes (scrub/play/reorder). */
   onFrameChange?: (sheet: SpriteSheetId, frame: number) => void;
+  /** Fired while the editable collision box is dragged/resized (frame-px). */
+  onCollisionBoxChange?: (box: Box) => void;
 
   constructor(payload: Payload) {
     super('Gym');
@@ -153,7 +167,24 @@ export class GymScene extends Phaser.Scene {
 
   setMode(mode: BoundsMode): void {
     this.mode = mode;
-    if (mode !== 'anchor') this.drag = null;
+    this.drag = null;
+    this.boxDrag = null;
+    this.drawOverlay();
+  }
+
+  setGizmo(gizmo: 'move' | 'scale'): void {
+    this.gizmo = gizmo;
+  }
+
+  /**
+   * Supply the collision box to render in hurtbox/hitbox mode (frame-px,
+   * anchor-relative). `editable` enables the drag gizmo; pass null to clear.
+   */
+  setCollisionBox(box: Box | null, opts: { editable: boolean; color: number }): void {
+    this.collisionBox = box ? { ...box } : null;
+    this.collisionEditable = opts.editable;
+    this.collisionColor = opts.color;
+    if (!box) this.boxDrag = null;
     this.drawOverlay();
   }
 
@@ -263,30 +294,52 @@ export class GymScene extends Phaser.Scene {
   }
 
   private beginDrag(p: Phaser.Input.Pointer): void {
-    if (this.mode !== 'anchor') return;
-    const meta = this.activeFrameMeta();
-    if (!meta) return;
-    this.drag = { px: p.x, py: p.y, ax: meta.anchor.x, ay: meta.anchor.y };
+    if (this.mode === 'anchor') {
+      const meta = this.activeFrameMeta();
+      if (!meta) return;
+      this.drag = { px: p.x, py: p.y, ax: meta.anchor.x, ay: meta.anchor.y };
+      return;
+    }
+    // Hurtbox/Hitbox: drag the supplied editable box (Move translates, Scale resizes).
+    if ((this.mode === 'hurtbox' || this.mode === 'hitbox') && this.collisionEditable && this.collisionBox) {
+      this.boxDrag = { px: p.x, py: p.y, box: { ...this.collisionBox } };
+    }
   }
 
   private moveDrag(p: Phaser.Input.Pointer): void {
-    if (!this.drag) return;
-    // Drag the sprite so its feet land on the fixed floor crosshair. Moving the
-    // sprite right (dx>0) means a frame pixel further left now sits on the pivot,
-    // so the anchor decreases by the drag distance (converted to frame px).
-    const dx = (p.x - this.drag.px) / this.payload.scale;
-    const dy = (p.y - this.drag.py) / this.payload.scale;
-    this.setAnchor(this.drag.ax - dx, this.drag.ay - dy);
+    if (this.drag) {
+      // Drag the sprite so its feet land on the fixed floor crosshair. Moving the
+      // sprite right (dx>0) means a frame pixel further left now sits on the pivot,
+      // so the anchor decreases by the drag distance (converted to frame px).
+      const dx = (p.x - this.drag.px) / this.payload.scale;
+      const dy = (p.y - this.drag.py) / this.payload.scale;
+      this.setAnchor(this.drag.ax - dx, this.drag.ay - dy);
+      return;
+    }
+    if (this.boxDrag && this.collisionBox) {
+      const dx = Math.round((p.x - this.boxDrag.px) / this.payload.scale);
+      const dy = Math.round((p.y - this.boxDrag.py) / this.payload.scale);
+      const start = this.boxDrag.box;
+      if (this.gizmo === 'move') {
+        this.collisionBox = { ...start, x: start.x + dx, y: start.y + dy };
+      } else {
+        this.collisionBox = { ...start, width: Math.max(1, start.width + dx), height: Math.max(1, start.height + dy) };
+      }
+      this.onCollisionBoxChange?.({ ...this.collisionBox });
+      this.drawOverlay();
+    }
   }
 
   private endDrag(): void {
-    if (!this.drag) return;
-    const meta = this.activeFrameMeta();
-    const before = { x: this.drag.ax, y: this.drag.ay };
-    this.drag = null;
-    if (meta && (meta.anchor.x !== before.x || meta.anchor.y !== before.y)) {
-      this.onAnchorCommit?.(this.sheet, this.frame, before, { ...meta.anchor });
+    if (this.drag) {
+      const meta = this.activeFrameMeta();
+      const before = { x: this.drag.ax, y: this.drag.ay };
+      this.drag = null;
+      if (meta && (meta.anchor.x !== before.x || meta.anchor.y !== before.y)) {
+        this.onAnchorCommit?.(this.sheet, this.frame, before, { ...meta.anchor });
+      }
     }
+    this.boxDrag = null;
   }
 
   private drawStage(): void {
@@ -308,14 +361,17 @@ export class GymScene extends Phaser.Scene {
     const meta = this.activeFrameMeta();
     const scale = this.payload.scale;
 
-    // Read-only collision overlays (Phase 1).
-    if (meta?.hurtbox && (this.mode === 'hurtbox' || this.mode === 'anchor')) {
-      this.drawBox(g, meta.hurtbox, scale, 0x79a8ff, 0.16);
-    }
-    if (meta?.attackBox && (this.mode === 'hitbox' || this.mode === 'anchor')) {
-      this.drawBox(g, meta.attackBox, scale, 0xff6b6b, 0.18);
-    }
-    if (meta && this.mode === 'visual') {
+    if (this.mode === 'anchor') {
+      // Anchor mode shows both measured collision boxes read-only for context.
+      if (meta?.hurtbox) this.drawBox(g, meta.hurtbox, scale, 0x79a8ff, 0.16);
+      if (meta?.attackBox) this.drawBox(g, meta.attackBox, scale, 0xff6b6b, 0.18);
+    } else if (this.mode === 'hurtbox' || this.mode === 'hitbox') {
+      // Collision-edit modes: the page supplies the box (measured OR override).
+      if (this.collisionBox) {
+        this.drawBox(g, this.collisionBox, scale, this.collisionColor, this.collisionEditable ? 0.2 : 0.1);
+        if (this.collisionEditable) this.drawHandles(g, this.collisionBox, scale, this.collisionColor);
+      }
+    } else if (meta && this.mode === 'visual') {
       // Visual bounds = the full frame rectangle around the anchor.
       const vb: Box = { x: -meta.anchor.x, y: -meta.anchor.y, width: meta.width, height: meta.height };
       this.drawBox(g, vb, scale, 0x5bd6e6, 0.0);
@@ -325,6 +381,18 @@ export class GymScene extends Phaser.Scene {
     g.lineStyle(1.5, 0xf0b35b, 0.95);
     g.lineBetween(PIVOT_X - 10, FLOOR_Y, PIVOT_X + 10, FLOOR_Y);
     g.lineBetween(PIVOT_X, FLOOR_Y - 10, PIVOT_X, FLOOR_Y + 10);
+  }
+
+  /** Corner squares on an editable box: top-left (move origin) + bottom-right (scale). */
+  private drawHandles(g: Phaser.GameObjects.Graphics, box: Box, scale: number, color: number): void {
+    const x = PIVOT_X + box.x * scale;
+    const y = FLOOR_Y + box.y * scale;
+    const w = box.width * scale;
+    const h = box.height * scale;
+    const s = 6;
+    g.fillStyle(color, 0.95);
+    g.fillRect(x - s / 2, y - s / 2, s, s);
+    g.fillRect(x + w - s / 2, y + h - s / 2, s, s);
   }
 
   private drawBox(g: Phaser.GameObjects.Graphics, box: Box, scale: number, color: number, fillAlpha: number): void {

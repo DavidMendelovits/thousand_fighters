@@ -39,8 +39,31 @@ export type FrameData = {
 
 type AssetRecord = { key: string; relativePath: string; apiUrl: string };
 
+/** A box in frame-px, anchor-relative space — the override/measured space (§3, T10). */
+export type OverrideBox = { x: number; y: number; width: number; height: number };
+
+/** The gym-authored collision override layer carried on the draft (D2/T10). */
+export type DraftOverrides = {
+  hurtboxes?: Record<string, OverrideBox>;
+  hitboxes?: Record<string, Record<string, OverrideBox>>;
+};
+
+/** Minimal shape of a draft hitbox_active event the gym reads numbers from. */
+export type DraftHitbox = {
+  x?: number; y?: number; width?: number; height?: number;
+  damage?: number; hitstun?: number; stun?: number; blockstun?: number;
+  knockbackX?: number; knockbackY?: number; knockback?: { x?: number; y?: number };
+  level?: string;
+};
+export type DraftEvent = { type?: string; id?: string; hitbox?: DraftHitbox | null };
+export type DraftPhase = { name?: string; frames?: number; events?: { frame?: number; onFrame?: number; event?: DraftEvent }[] };
+export type DraftMove = { id: string; displayName?: string; animation?: SpriteSheetId; phases?: DraftPhase[] };
+export type GymDraft = { id?: string; overrides?: DraftOverrides; moves?: DraftMove[] } & Record<string, unknown>;
+
 export type GymData = {
   config: CharacterConfig;
+  /** Raw, unconverted draft — source of truth for overrides + hitbox numbers (Phase 2). */
+  draft: GymDraft | null;
   frameData: FrameData | null;
   /** Frame image URLs keyed by sheet, frame-indexed (0-based) — for Phaser textures. */
   frameUrls: Partial<Record<SpriteSheetId, string[]>>;
@@ -61,12 +84,17 @@ export async function loadGymData(characterId: string): Promise<GymData> {
   const warnings: string[] = [];
   const id = encodeURIComponent(characterId);
 
-  const [{ config }, { assets }] = await Promise.all([
+  const [{ config }, { assets }, draftResult] = await Promise.all([
     getJson<{ config: CharacterConfig }>(`/api/characters/${id}/runtime-config`),
     getJson<{ assets: AssetRecord[] }>(`/api/characters/${id}/assets`),
+    // The draft carries the editable overrides + hitbox numbers (Phase 2). It is
+    // advisory for the gym's render (runtime-config already folds it in), so a
+    // failure here is non-fatal — collision editing just stays unavailable.
+    getJson<{ draft: GymDraft | null }>(`/api/characters/${id}/draft`).catch(() => ({ draft: null })),
   ]);
 
   if (!config) throw new Error(`runtime-config for "${characterId}" returned no config`);
+  const draft = draftResult?.draft ?? null;
 
   const byRelativePath = new Map<string, AssetRecord>();
   for (const asset of assets ?? []) byRelativePath.set(asset.relativePath, asset);
@@ -124,7 +152,7 @@ export async function loadGymData(characterId: string): Promise<GymData> {
     frameUrls[sheet] = urls;
   }
 
-  return { config, frameData, frameUrls, frameDataKey: frameDataAsset?.key ?? null, warnings, frameWarnings };
+  return { config, draft, frameData, frameUrls, frameDataKey: frameDataAsset?.key ?? null, warnings, frameWarnings };
 }
 
 function findFrameAsset(
