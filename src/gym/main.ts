@@ -156,7 +156,13 @@ function buildNavigator(): void {
   const list = $('move-list');
   list.innerHTML = '';
   for (const group of SHEET_GROUPS) {
-    const present = group.sheets.filter((s) => (data.frameData?.frames?.[s]?.length ?? data.frameUrls[s]?.length ?? 0) >= 0);
+    // Only render rows the loaded fighter actually owns. The registry now lists
+    // all 12 rows (T21), but a fighter owns a subset — show "what exists" so the
+    // navigator isn't cluttered with frameless jump/crouch/grab/... rows and
+    // empty Movement/Defense/Grapple groups. (Predicate was `>= 0` — always
+    // true — which silently rendered every registry row once the registry grew
+    // past the canonical 5.)
+    const present = group.sheets.filter((s) => (data.frameData?.frames?.[s]?.length ?? data.frameUrls[s]?.length ?? 0) > 0);
     if (present.length === 0) continue;
     const groupEl = document.createElement('div');
     groupEl.className = 'nav-group';
@@ -164,7 +170,7 @@ function buildNavigator(): void {
     label.className = 'nav-group-label';
     label.textContent = group.label;
     groupEl.appendChild(label);
-    for (const sheet of group.sheets) {
+    for (const sheet of present) {
       const count = data.frameData?.frames?.[sheet]?.length ?? data.frameUrls[sheet]?.length ?? 0;
       const row = document.createElement('div');
       row.className = 'nav-move';
