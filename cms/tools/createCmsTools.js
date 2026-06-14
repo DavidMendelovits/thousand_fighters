@@ -1,7 +1,7 @@
 import { assetApiUrl, writeCharacterAssetUpload } from '../assets/uploadCharacterAsset.js';
 import { exportCharacterToRuntime } from '../export/exportCharacterToRuntime.js';
 import { SHEET_IDS } from '../../shared/animationRows.js';
-import { validateCombos } from '../export/convertDraftToCharacterConfig.js';
+import { validateCombos, validateProjectiles } from '../export/convertDraftToCharacterConfig.js';
 
 // Row ids an agent can generate, sourced from the registry so the tool schema
 // can't drift from the engine's row set (T20/T21).
@@ -157,6 +157,59 @@ export function createCmsTools({ pipeline, repository, registry }) {
           context: context ?? {},
         });
         return { segments: result.segments.map((segment) => withAssetApiUrl(segment)) };
+      },
+    },
+    {
+      name: 'generate_projectile',
+      description: 'Generate a projectile sprite for a fighter AND register it as a first-class projectile entity on the draft (draft.projectiles). The entity carries the runtime numbers (geometry, velocity, lifetime, hitbox) so it can be tuned like a move and referenced by spawn_projectile events via projectileId. Re-generating an existing id swaps the sprite but preserves authored numbers.',
+      inputSchema: objectSchema({
+        characterId: stringSchema('Character id.'),
+        projectileId: stringSchema('Projectile id (stable key; referenced by spawn_projectile events).'),
+        prompt: stringSchema('Projectile sprite prompt (what the projectile looks like).'),
+        referenceAssetKeys: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Optional reference image keys. Defaults to the base sheet + concept art for on-theme consistency.',
+        },
+      }, ['characterId', 'projectileId', 'prompt']),
+      execute: async ({ characterId, projectileId, prompt, referenceAssetKeys, context }) => {
+        const result = await pipeline.generateProjectile({
+          characterId,
+          projectileId,
+          prompt,
+          referenceAssetKeys: referenceAssetKeys ?? [],
+          context: context ?? {},
+        });
+        return withAssetApiUrl(result);
+      },
+    },
+    {
+      name: 'define_projectile',
+      description: 'Define (or replace) a projectile entity\'s numbers on the draft without generating a sprite — geometry, velocity, lifetime, and hitbox. Use to tune an existing projectile or author one whose sprite already exists. Validates ids and positive dimensions.',
+      inputSchema: objectSchema({
+        characterId: stringSchema('Character id.'),
+        projectile: {
+          type: 'object',
+          description: 'Projectile entity: { id, animation, width, height, speed, velocity:{x,y,relativeToFacing}, gravity?, lifetime, hitbox:{x,y,width,height,damage,hitstun,blockstun,knockback:{x,y},level}, pierces?, clashesWithProjectiles? }.',
+          additionalProperties: true,
+        },
+      }, ['characterId', 'projectile']),
+      execute: async ({ characterId, projectile }) => {
+        if (!projectile || typeof projectile !== 'object' || !projectile.id) {
+          throw new Error('define_projectile: projectile.id is required');
+        }
+        const current = await repository.getDraft(characterId);
+        const others = (current.projectiles ?? []).filter((entity) => entity.id !== projectile.id);
+        const projectiles = [...others, projectile];
+        const errors = validateProjectiles(projectiles);
+        if (errors.length) {
+          throw new Error(`define_projectile rejected: ${errors.join('; ')}`);
+        }
+        await repository.saveDraft(characterId, { ...current, projectiles }, {
+          provider: 'cms-tool',
+          adapterId: 'define-projectile',
+        });
+        return { projectileId: projectile.id, projectiles };
       },
     },
     {

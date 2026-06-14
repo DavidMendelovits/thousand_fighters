@@ -223,6 +223,101 @@ export class CharacterCreationPipeline {
     return { segments: results };
   }
 
+  /**
+   * Generate a projectile sprite AND upsert its first-class entity on the draft
+   * (T23). The generated image is stored as the projectile's source asset; the
+   * draft.projectiles entity carries the runtime numbers (geometry, velocity,
+   * lifetime, hitbox) so it can be edited like a move in the gym, and convert
+   * resolves spawn_projectile references against it.
+   *
+   * Re-generating an existing projectile id replaces the SPRITE but PRESERVES
+   * authored numbers (only the sprite changes), so gym tuning isn't clobbered.
+   *
+   * @param {object} args
+   * @param {string} args.characterId
+   * @param {string} args.projectileId
+   * @param {string} args.prompt
+   * @param {string[]} [args.referenceAssetKeys]
+   * @param {object} [args.context]
+   * @returns {Promise<{ asset: object, projectile: object }>}
+   */
+  async generateProjectile({ characterId, projectileId, prompt, referenceAssetKeys = [], context = {} }) {
+    if (!projectileId) throw new Error('generateProjectile: projectileId is required');
+    const imageGenerator = this.registry.resolve(PipelinePort.IMAGE_GENERATOR);
+    const repository = this.registry.resolve(PipelinePort.CHARACTER_REPOSITORY);
+    const storage = this.registry.resolve(PipelinePort.ASSET_STORAGE);
+
+    // Identity references keep the projectile on-theme with the fighter.
+    let referenceKeys = referenceAssetKeys;
+    if (!referenceKeys.length) {
+      referenceKeys = [
+        `characters/${characterId}/assets/source/${characterId}_base_sheet.png`,
+        `characters/${characterId}/assets/concept/concept_art.png`,
+      ];
+    }
+    const referenceImages = [];
+    for (const key of referenceKeys) {
+      try {
+        if (!(await storage.exists(key))) continue;
+        const bytes = await storage.getBytes(key);
+        const metadata = await storage.getMetadata?.(key).catch(() => null);
+        referenceImages.push({
+          base64: Buffer.from(bytes).toString('base64'),
+          contentType: metadata?.contentType ?? 'image/png',
+          sourceKey: key,
+        });
+      } catch {
+        // missing/unreadable reference — generate without it
+      }
+    }
+
+    const result = await imageGenerator.generateImage({
+      task: 'projectile-sprite',
+      prompt,
+      moveId: projectileId,
+      projectileId,
+      referenceAssetKeys: referenceKeys,
+      referenceImages,
+      context,
+      onProgress: context.onProgress,
+    });
+
+    const contentType = result.contentType ?? 'image/png';
+    const key = `source/${characterId}_${projectileId}_projectile${extensionForContentType(contentType)}`;
+    const asset = await repository.writeAsset(characterId, key, bytesFromImageResult(result), {
+      contentType,
+      provider: result.provider ?? imageGenerator.provider ?? 'unknown',
+      adapterId: imageGenerator.id ?? 'imageGenerator',
+      model: result.model ?? null,
+      prompt,
+    });
+
+    // Upsert the entity. Animation is the runtime texture key the engine renders.
+    const animation = `${characterId}_${projectileId}`;
+    const draft = await repository.getDraft(characterId);
+    const existing = (draft.projectiles ?? []).find((entity) => entity.id === projectileId);
+    const projectile = existing
+      ? { ...existing, animation, sourceKey: asset.key }
+      : {
+          id: projectileId,
+          animation,
+          sourceKey: asset.key,
+          width: 48,
+          height: 32,
+          speed: 7,
+          velocity: { x: 7, y: 0, relativeToFacing: true },
+          lifetime: 110,
+          hitbox: { x: -24, y: -16, width: 48, height: 32, damage: 60, hitstun: 18, blockstun: 12, knockback: { x: 4, y: 0 }, level: 'mid' },
+        };
+    const projectiles = [...(draft.projectiles ?? []).filter((entity) => entity.id !== projectileId), projectile];
+    await repository.saveDraft(characterId, { ...draft, projectiles }, {
+      provider: 'cms-tool',
+      adapterId: 'generate-projectile',
+    });
+
+    return { asset, projectile };
+  }
+
   async extractRowFrames({ characterId, sourceAssetKey, moveId, spriteProfile, targetHeight, context = {} }) {
     const storage = this.registry.resolve(PipelinePort.ASSET_STORAGE);
     const packRoot = `characters/${characterId}/assets/fighter-pack`;

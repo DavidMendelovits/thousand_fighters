@@ -14,7 +14,7 @@ export class CodexImageGeneratorAdapter {
     this.timeoutMs = options.timeoutMs ?? Number(process.env.CODEX_IMAGE_TIMEOUT_MS ?? DEFAULT_TIMEOUT_MS);
     this.id = 'codex-image-generator';
     this.provider = 'codex';
-    this.capabilities = ['fighter-1x6-row', 'fighter-2x3-grid', 'arena-background', 'character-concept', 'codex-image-gen', 'vision-describe'];
+    this.capabilities = ['fighter-1x6-row', 'fighter-2x3-grid', 'projectile-sprite', 'arena-background', 'character-concept', 'codex-image-gen', 'vision-describe'];
   }
 
   async healthCheck() {
@@ -163,6 +163,10 @@ function buildCodexPrompt(task, userPrompt, context, moveId, referenceCount = 0)
   if (task === 'fighter-2x3-grid') {
     const resolvedMoveId = moveId ?? context?.moveId ?? 'base';
     return `Generate an image: a fighting game sprite sheet with exactly 2 rows and 3 columns (6 frames, left-to-right then top-to-bottom) for the "${resolvedMoveId}" move — a long-reach extending-limb attack. Wide cells; the extended limb stays connected to the body as one continuous silhouette. Frames must never overlap: leave a wide band of pure magenta between neighbors — not a single pixel of one frame may cross into another frame's cell. Frame roles: 1-2 startup, 3 extending, 4 full extension at maximum reach, 5 retraction, 6 recovery. Magenta #ff00ff background, full body visible, generous gutters, consistent scale and floor line. Character: ${userPrompt ?? 'a fighter'}${referenceNote}`;
+  }
+
+  if (task === 'projectile-sprite') {
+    return `Generate an image: a SINGLE fighting-game projectile sprite, centered, on a solid magenta #ff00ff background. One object only — no character, no frame strip, no grid, no text. Generous magenta margin on all sides so nothing touches the edge; the projectile points to the RIGHT (travel direction). Crisp readable silhouette. Projectile: ${userPrompt ?? 'an energy projectile'}${referenceNote}`;
   }
 
   if (task === 'arena-background') {
