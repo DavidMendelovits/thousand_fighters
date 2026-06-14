@@ -493,14 +493,40 @@ row-generation work.
   `cms:projectile:gen:smoke` (6), `cms:gym:smoke` (+2 → 17). Deferred polish: live projectile
   preview on the gym canvas, projectile-sprite transparency extraction (analogous to row frame
   extraction). Legacy inline-projectile events still convert (back-compat).
-- [ ] **T24 (P1) — module tests + `/codex` review.** Full smoke coverage for T20–T23; run
-  `/codex review` and fold findings.
+- [x] **T24 (P1) — module tests + `/codex` review. DONE.** `npm run phase4:smoke` runs the
+  full Phase 4 module coverage in one command (rows contract + engine-rows 12 + combo 15 +
+  combo-gen 8 + projectile 16 + projectile-gen 6 + gym 18). Ran `/codex review` (codex-cli
+  0.133.0, `high`) scoped to the Phase 4 diff `ee93928..HEAD`: GATE FAIL, 2 P1 + 2 P2.
+  **Folded** (`6de6259`): [P1] silent drop of dangling `projectileId` spawn refs →
+  `validateProjectileReferences` surfaced via `save_gym_edits` warnings; [P2] free-form row
+  ids in generate/extract tools → `assertRowId` rejects non-registry ids.
+  **Accepted + documented** (conscious, not silently downgraded): [P1] generated projectile
+  texture not loaded at runtime under its `animation` key — a separate render-wiring task
+  (existing fighters hardcode `load.image` in FightScene; T23's goal was generate+edit), see
+  Deferred below; [P2] convert defaults a missing projectile `animation` to `special_2` — kept
+  to allow numbers-first authoring.
 
 Sequencing: T20 first (unblocks all), then T21/T23 in parallel, T22 after T21, T24 last.
 
 ### Deferred (P3)
 - [ ] **T15 (P3)** — re-segmentation from the gym (adjust grid, re-run extractor).
 - [ ] **T16 — SUPERSEDED by T20** (lifting `SpriteSheetId` is now Phase 4's first task).
+
+### Phase 4 follow-ups (out of T20–T24 scope; surfaced by reviews)
+- [ ] **Runtime projectile texture loading (codex P1).** Generated projectile sprites are
+  stored + entity-registered, but no runtime/gym/testbed loader loads the asset under the
+  entity's `animation` texture key (existing fighters hardcode `load.image` in
+  `FightScene.ts`). Until wired, generated projectiles convert correctly but render as a
+  missing texture. Mirror the testbed's frame-URL resolution for projectile assets.
+- [ ] **Dash playback (T21 gap).** `dash_forward`/`dash_back` rows are generatable/authorable
+  but have no `FighterState`; they cannot play until the movement system adds dash states
+  (input + physics).
+- [ ] **Combo cancel windows (T22 gap).** `applyComboChaining` wires `cancelInto`, but a combo
+  only *fires* when a phase is `cancellable` — authoring concern, not convert's.
+- [ ] **State-row pacing (T21 polish).** `STATE_ROW_TICKS=6` one-shot-hold may not reach the
+  held frame for short states (e.g. brief `blockstun`); tune when real rows land.
+- [ ] **Projectile-sprite transparency extraction.** Generated projectile is a magenta-bg
+  sprite; needs the row extractor's transparency pass (single-sprite profile) for clean art.
 
 ---
 
