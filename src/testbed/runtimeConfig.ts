@@ -1,3 +1,4 @@
+import { SHEET_IDS } from '../../shared/animationRows.js';
 import type { CharacterConfig, SpriteSheetId } from '../schema/types';
 
 /**
@@ -13,8 +14,6 @@ import type { CharacterConfig, SpriteSheetId } from '../schema/types';
  * /api/assets/...), not under /public/fighters, so config.sprite.basePath is
  * not directly fetchable — we map each frame to its asset apiUrl instead.
  */
-
-const SHEET_IDS: SpriteSheetId[] = ['base', 'punch', 'kick', 'special_1', 'special_2'];
 
 type AssetRecord = {
   key: string;

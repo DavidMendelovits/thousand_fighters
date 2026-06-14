@@ -17,6 +17,7 @@ import type {
   SpriteFrameMeta,
   SpriteSheetId,
 } from '../schema/types';
+import { MOVE_SHEET_IDS } from '../../shared/animationRows.js';
 import { boxToWorld, type AABB } from '../util/aabb';
 import { interpolateHitboxGeometry } from './hitboxGeometry';
 
@@ -25,7 +26,7 @@ const STAGE_RIGHT = 704;
 const FLOOR_Y = 390;
 const FIGHTER_WIDTH = 60;
 const FIGHTER_HEIGHT = 120;
-const MOVE_SHEETS = new Set<SpriteSheetId>(['punch', 'kick', 'special_1', 'special_2']);
+const MOVE_SHEETS = new Set<SpriteSheetId>(MOVE_SHEET_IDS);
 
 type ActiveHitbox = {
   actorId?: FighterActorId;

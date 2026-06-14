@@ -1,3 +1,4 @@
+import { SHEET_IDS } from '../../shared/animationRows.js';
 import type { CharacterConfig, SpriteSheetId } from '../schema/types';
 
 /**
@@ -15,7 +16,7 @@ import type { CharacterConfig, SpriteSheetId } from '../schema/types';
  * `frameDataKey` is the storage key the save path (T4) writes back to.
  */
 
-export const SHEET_IDS: SpriteSheetId[] = ['base', 'punch', 'kick', 'special_1', 'special_2'];
+export { SHEET_IDS };
 
 export type Box = { x: number; y: number; width: number; height: number };
 

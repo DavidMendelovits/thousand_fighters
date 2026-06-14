@@ -433,13 +433,27 @@ sheet/animation set **data-driven** (a registry), not a fixed union. This is the
 Phase 4, and it is a cross-cutting engine change — do it on its own, behind tests, before any
 row-generation work.
 
-- [ ] **T20 (P1) — animation-row registry (lifts T16).** Replace the `SpriteSheetId` union
-  with a data-driven row registry (id, group, frameCount, default stateFrames, role). Migrate
-  all hardcoded references; keep the 5 canonical rows as the default registry so existing
-  fighters are unchanged. Unit-test the migration (convert + normalizer + runtime-config).
+- [x] **T20 (P1) — animation-row registry (lifts T16). DONE.** Replaced the `SpriteSheetId`
+  union with a data-driven row registry in `shared/animationRows.js` (id, label, group,
+  frameCount, role, moveAnimation) + a `.d.ts` sidecar so the Vite/TS engine, Node CMS, and
+  scripts all read ONE copy with no build step. `SpriteSheetId` kept as `type = string` so the
+  ~40 `as SpriteSheetId` casts go inert (minimal diff). Derived from the registry: `SHEET_IDS`
+  (runtimeConfig, loadGymData), `MOVE_SHEETS` (Fighter), gym `SHEET_GROUPS`/`SHEET_LABELS`.
+  `stamptownFighters.uniformFrameMeta` keeps its literal 5 (it's the fixture's actual row data,
+  not the contract). `admin/app.js` is a browser file behind a static server (can't import the
+  module) — keeps its `MOVE_IDS`/`MOVE_ORDER` literals guarded by `scripts/smoke_animation_rows.mjs`
+  (`npm run rows:smoke`); wired to a registry endpoint in T21. Verified: rows:smoke, `tsc`,
+  `npm run build`, cms:pipeline:smoke, engine:guard:smoke (18/18), cms:row:smoke, cms:gym:smoke
+  (15/15) — all green, no behavioral delta to existing fighters.
 - [ ] **T21 (P1) — new row gen items.** Add `jump`/`crouch`/`dash_forward`/`dash_back`/
   `block`/`grab`/`throw` to the registry + the row-generation prompts (`cms:row:smoke`),
   with canonical-frame role pinning (mirror commit 2294ef8). Navigator groups them.
+  **Admin wiring (T20 carry-over):** `admin/app.js` keeps literal 5-set references the T20
+  contract smoke does NOT cover — wire these to a registry endpoint or they silently drop new
+  rows: `:841` source-sheet detect regex `_(base|punch|kick|special_1|special_2)_sheet`,
+  `:1712` source-sheet match regex (same set), `:1899` `special_1` projectile fallback. The
+  `rows:smoke` admin guard only checks `MOVE_IDS`/`MOVE_ORDER`. Engine prereqs confirmed: the
+  `blockstun`/`grabbed` `FighterState`s and `grab_check`/`grab_end` events already exist.
 - [ ] **T22 (P1) — sequential combo generation.** A combo descriptor (ordered move ids); the
   generator produces each segment conditioned on the previous segment's end frame so poses
   overlap. Persist combo metadata on the draft; convert chains them. Unit-test the chaining +

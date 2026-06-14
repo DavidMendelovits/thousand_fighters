@@ -184,7 +184,11 @@ export type ProjectileConfig = {
   };
 };
 
-export type SpriteSheetId = 'base' | 'punch' | 'kick' | 'special_1' | 'special_2';
+// A sprite-sheet / animation-row id. Formerly a fixed 5-member union; now a
+// string keyed by the data-driven registry in shared/animationRows.js (T20).
+// The canonical row ids live there; this stays `string` so the ~40 existing
+// `as SpriteSheetId` cast sites go inert without churn.
+export type SpriteSheetId = string;
 
 export type SpriteFrameMeta = {
   file: string;

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { SHEET_LABELS, sheetGroups } from '../../shared/animationRows.js';
 import type { SpriteSheetId } from '../schema/types';
 import {
   loadGymData,
@@ -42,20 +43,10 @@ function hideStatus(): void {
   $('status').classList.remove('on');
 }
 
-// Move navigator grouping. Today the engine has exactly 5 sheets (A7); the
-// navigator is built to scale but groups what exists.
-const SHEET_GROUPS: { label: string; sheets: SpriteSheetId[] }[] = [
-  { label: 'Base', sheets: ['base'] },
-  { label: 'Normals', sheets: ['punch', 'kick'] },
-  { label: 'Specials', sheets: ['special_1', 'special_2'] },
-];
-const SHEET_LABELS: Record<SpriteSheetId, string> = {
-  base: 'Idle / base',
-  punch: 'Punch',
-  kick: 'Kick',
-  special_1: 'Special 1',
-  special_2: 'Special 2',
-};
+// Move navigator grouping, derived from the data-driven row registry
+// (shared/animationRows.js). Groups + labels scale automatically as rows are
+// added (T21); SHEET_LABELS is imported alongside sheetGroups().
+const SHEET_GROUPS: { label: string; sheets: SpriteSheetId[] }[] = sheetGroups();
 
 let scene: GymScene;
 let data: GymData;
