@@ -395,22 +395,67 @@ and a **collision/ground box** that our model lacks. Our engine fakes high/low b
 `hitbox.level` + crouch state (`HitResolver.isBlocking`, `HitResolver.ts:117-119`); there is
 no authored guard geometry and no character pushbox.
 
-- [ ] **T17 (P2) — guard box.** New per-state guard bounds (with height) so high/low guard
-  resolves by geometry, not just the `level` enum. Spans `types.ts` (Hurtbox/`FighterState`
-  sibling), `HitResolver.isBlocking`, `convertDraftToCharacterConfig` (measured + override),
-  the `overrides.guardboxes` block, and a Guard BOUNDS mode in the gym. Tests in
-  `cms:export:smoke` + `cms:gym:smoke`.
-- [ ] **T18 (P2) — pushbox / ground-collision box.** Per-state body box for character-vs-
-  character collision + honest ground planting (today only the feet anchor + floor line).
-  Engine collision pass + schema + convert + gym mode. (May be descoped if char-vs-char
-  overlap is acceptable — confirm before building.)
-- [ ] **T19 (P3) — hit `level` visualization.** Show a hitbox's `high|mid|low` as a band in
-  the gym Hitbox mode (cheap half of T17; the `level` field already exists and is authored).
+- [x] **T17 (P2) — guard box** — DONE. Per-state guard bounds resolve high/low guard by
+  geometry. OVERRIDE-ONLY (no measured/default pass), so existing fighters with no guardbox
+  keep byte-for-byte legacy blocking. `guardboxes?` on `CharacterConfig` (`types.ts`);
+  `applyGuardboxOverrides` in convert (frame-px → `× scale`); `HitResolver.isBlocking` enters
+  the guard branch only when `defender.getGuardboxWorld()` is non-null and requires the
+  attacker hitbox world AABB to overlap (pure `guardCovers` helper); a Guard BOUNDS mode in
+  the gym (`overrides.guardboxes`, NONE/OVERRIDDEN badge). Verified: `engine:guard:smoke` (18,
+  real `guardCovers`/`isBlocking` via tsx incl. backward-compat), `cms:export:smoke`,
+  `cms:gym:smoke`.
+- [x] **T18 — pushbox / ground-collision box — SKIPPED (user decision 2026-06-14).** The
+  reference gym's "collision/ground box" is ground planting, already handled by the feet
+  anchor + floor line. A true char-vs-char pushbox is a separate combat-feel change the video
+  doesn't describe; deferred until explicitly wanted. No fighters collide today.
+- [x] **T19 (P3) — hit `level` visualization** — DONE. `GymScene.setHitLevel` draws a faint
+  high/mid/low band in Hitbox mode, driven from the activation's `level`.
+
+### Phase 4 — Animation-row generation module (NEW, requested 2026-06-14)
+
+Goal (user): a **full-featured generation module** that adds move rows / gen items beyond the
+5 sheets, with unit tests and a `/codex` review. Scope:
+
+1. **New animation rows / gen items:** `jump`, `crouch`, `dash_forward`, `dash_back`,
+   `block`, `grab`, `throw` — each generated as its own sheet/row like the existing 5.
+2. **Combos as sequential animations:** a combo of N moves is generated **sequentially** so
+   move K+1's start pose overlaps move K's end pose (pose continuity across the chain).
+3. **Projectile specials generate the projectile too:** a special with a projectile generates
+   the projectile sprite/entity and exposes it for editing **like any other move** (lifts the
+   §12 "projectile authoring out of scope" cut).
+4. **Block/grab/throw rows** wired to the existing engine states (`blockstun`, grab/throw
+   events already exist in `convertEvent`).
+
+**HARD PREREQUISITE — T16 (lift the 5-sheet `SpriteSheetId` contract).** `SpriteSheetId` is a
+5-member union hardcoded in `src/schema/types.ts`, `src/testbed/runtimeConfig.ts`,
+`admin/app.js`, the normalizers, and the engine (A7). Every new row depends on making the
+sheet/animation set **data-driven** (a registry), not a fixed union. This is the first task of
+Phase 4, and it is a cross-cutting engine change — do it on its own, behind tests, before any
+row-generation work.
+
+- [ ] **T20 (P1) — animation-row registry (lifts T16).** Replace the `SpriteSheetId` union
+  with a data-driven row registry (id, group, frameCount, default stateFrames, role). Migrate
+  all hardcoded references; keep the 5 canonical rows as the default registry so existing
+  fighters are unchanged. Unit-test the migration (convert + normalizer + runtime-config).
+- [ ] **T21 (P1) — new row gen items.** Add `jump`/`crouch`/`dash_forward`/`dash_back`/
+  `block`/`grab`/`throw` to the registry + the row-generation prompts (`cms:row:smoke`),
+  with canonical-frame role pinning (mirror commit 2294ef8). Navigator groups them.
+- [ ] **T22 (P1) — sequential combo generation.** A combo descriptor (ordered move ids); the
+  generator produces each segment conditioned on the previous segment's end frame so poses
+  overlap. Persist combo metadata on the draft; convert chains them. Unit-test the chaining +
+  pose-continuity contract.
+- [ ] **T23 (P1) — projectile generation + editor.** Projectile specials generate the
+  projectile sprite + a projectile entity on the draft; a projectile editor in the gym edits
+  it like a move (geometry, lifetime, velocity, hitbox numbers). Convert already emits
+  `spawn_projectile`; extend it to consume authored projectile entities. Unit-test.
+- [ ] **T24 (P1) — module tests + `/codex` review.** Full smoke coverage for T20–T23; run
+  `/codex review` and fold findings.
+
+Sequencing: T20 first (unblocks all), then T21/T23 in parallel, T22 after T21, T24 last.
 
 ### Deferred (P3)
 - [ ] **T15 (P3)** — re-segmentation from the gym (adjust grid, re-run extractor).
-- [ ] **T16 (P3)** — lift `SpriteSheetId` from a 5-member union (engine workstream that
-  makes the navigator's "many moves" real — A7).
+- [ ] **T16 — SUPERSEDED by T20** (lifting `SpriteSheetId` is now Phase 4's first task).
 
 ---
 
