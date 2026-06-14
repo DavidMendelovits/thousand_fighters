@@ -445,15 +445,25 @@ row-generation work.
   (`npm run rows:smoke`); wired to a registry endpoint in T21. Verified: rows:smoke, `tsc`,
   `npm run build`, cms:pipeline:smoke, engine:guard:smoke (18/18), cms:row:smoke, cms:gym:smoke
   (15/15) — all green, no behavioral delta to existing fighters.
-- [ ] **T21 (P1) — new row gen items.** Add `jump`/`crouch`/`dash_forward`/`dash_back`/
-  `block`/`grab`/`throw` to the registry + the row-generation prompts (`cms:row:smoke`),
-  with canonical-frame role pinning (mirror commit 2294ef8). Navigator groups them.
-  **Admin wiring (T20 carry-over):** `admin/app.js` keeps literal 5-set references the T20
-  contract smoke does NOT cover — wire these to a registry endpoint or they silently drop new
-  rows: `:841` source-sheet detect regex `_(base|punch|kick|special_1|special_2)_sheet`,
-  `:1712` source-sheet match regex (same set), `:1899` `special_1` projectile fallback. The
-  `rows:smoke` admin guard only checks `MOVE_IDS`/`MOVE_ORDER`. Engine prereqs confirmed: the
-  `blockstun`/`grabbed` `FighterState`s and `grab_check`/`grab_end` events already exist.
+- [x] **T21 (P1) — new row gen items + engine playback. DONE** (user chose to include engine
+  playback). Added `jump`/`crouch`/`dash_forward`/`dash_back`/`block`/`grab`/`throw` to the
+  registry (Movement/Defense/Grapple groups — navigator auto-groups via `sheetGroups()`).
+  **Engine playback** (`src/core/animationRowPlayback.ts`, pure/Phaser-free): `STATE_ROW_MAP`
+  plays jump (airborne/jump_startup), crouch (crouch/crouch_transition), block (blockstun) —
+  but ONLY when the fighter owns the row (`frameCounts[row]>0`), else falls back to base
+  byte-for-byte. `stateRowFrame` is one-shot-hold-last. grab/throw are `moveAnimation:true`
+  (in `MOVE_SHEETS`, latent until a move references them). **dash_forward/dash_back have no
+  `FighterState` and cannot play yet — generatable/authorable only (gap: needs a
+  movement-system change with input + physics; future task).** **Prompt profiles**
+  (`cms/pipeline/rowPromptProfiles.js`): per-row description + frame roles read by both image
+  adapters; frame roles agree with the engine's hold-last convention (state rows end on the
+  held pose). CMS tool descriptions + admin source-sheet regexes (`:846`/`:1716`) now derive
+  from the registry; `:1899` projectile fallback left for T23. Tests: `engine:rows:smoke`
+  (12, pins the fallback invariant), `rows:smoke` (profile drift guard + grab/throw-in-MOVE_SHEETS),
+  `cms:row:smoke` (generates+extracts a `block` row end-to-end). Visual-polish follow-ups
+  (jump arc, crouch-squash interaction with the 0.58 body scale) deferred — no test gates
+  whether a row *looks* good. Pre-existing unrelated failure noted: `cms:openai:image:smoke`
+  (`fighter-5x6-sheet` branch absent from the adapter; fails identically without T21 edits).
 - [ ] **T22 (P1) — sequential combo generation.** A combo descriptor (ordered move ids); the
   generator produces each segment conditioned on the previous segment's end frame so poses
   overlap. Persist combo metadata on the draft; convert chains them. Unit-test the chaining +
