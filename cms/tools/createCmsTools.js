@@ -176,6 +176,42 @@ export function createCmsTools({ pipeline, repository, registry }) {
       },
     },
     {
+      name: 'author_combo',
+      description: 'Author a combo from intent: each segment either references an EXISTING move id or DESCRIBES a new move to create. New moves are authored by the text model (phases, hitbox numbers, a distinct chainable input); the server assigns each a sprite row (preferring rows no existing move uses — it never regenerates a row an existing move depends on); the combo descriptor stitches them so the chain fires; and the new rows\' sprites are generated in-flow (best effort). There are only 6 move-animation rows, so combos with many new moves will share rows — surfaced in warnings. Returns the created moves (with assigned inputs) and any warnings.',
+      inputSchema: objectSchema({
+        characterId: stringSchema('Character id.'),
+        comboId: stringSchema('Combo id (stable key; re-authoring the same id replaces the descriptor).'),
+        comboDisplayName: stringSchema('Optional human-readable combo name.'),
+        segments: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              moveId: { type: 'string', description: 'Reference an existing draft move by id.' },
+              description: { type: 'string', description: 'Describe a NEW move to create for this segment (e.g. "roundhouse kick").' },
+              displayName: { type: 'string', description: 'Optional name for a created move.' },
+            },
+          },
+          description: 'Ordered combo segments (>= 2). Each is either { moveId } (existing) or { description } (create new).',
+        },
+        generateSprites: { type: 'boolean', description: 'Generate sprites for created moves in-flow (default true).' },
+      }, ['characterId', 'comboId', 'segments']),
+      execute: async ({ characterId, comboId, comboDisplayName, segments, generateSprites, context }) => {
+        const result = await pipeline.authorCombo({
+          characterId,
+          comboId,
+          comboDisplayName: comboDisplayName || undefined,
+          segments: segments ?? [],
+          generateSprites: generateSprites !== false,
+          context: context ?? {},
+        });
+        return {
+          ...result,
+          spriteResults: (result.spriteResults ?? []).map((segment) => withAssetApiUrl(segment)),
+        };
+      },
+    },
+    {
       name: 'generate_projectile',
       description: 'Generate a projectile sprite for a fighter AND register it as a first-class projectile entity on the draft (draft.projectiles). The entity carries the runtime numbers (geometry, velocity, lifetime, hitbox) so it can be tuned like a move and referenced by spawn_projectile events via projectileId. Re-generating an existing id swaps the sprite but preserves authored numbers.',
       inputSchema: objectSchema({

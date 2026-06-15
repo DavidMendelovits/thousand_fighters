@@ -1,5 +1,22 @@
 # Move Kit Generation + Admin Authoring — Implementation Plan
 
+## Follow-on: author_combo (create moves from intent, then stitch)
+
+`author_combo` (pipeline `authorCombo` + CMS tool + admin "Author from intent" form):
+a combo segment is either `{ moveId }` (existing) or `{ description }` (create). New
+segments are AI-authored (phases/hitbox/inputs; mock = template, keyless), the SERVER
+assigns each a sprite row (prefers rows no kept move uses; NEVER regenerates an owned
+row — overflow shares; 6-row ceiling surfaced in warnings), the combo descriptor
+stitches them (existing cancel-graph derivation), and sprites generate in-flow
+best-effort (one write first, then sprites; failure warns, never rolls back). Inputs
+validated (non-empty/canonical/distinct, warn). Created moves are normal draft moves →
+editable in admin/gym/chat; the stitch re-derives at convert. Test:
+scripts/smoke_cms_author_combo.mjs (10). Design hardened by advisor (row-clobber rule).
+
+---
+
+
+
 Status: IMPLEMENTED + tested. Reviewed by /codex (consult), verified against the runtime.
 
 ## Implementation summary (what shipped)

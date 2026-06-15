@@ -3,7 +3,12 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 
-import { characterContentDraftSchema, characterContentDraftGuidance } from './characterContentDraftSchema.js';
+import {
+  characterContentDraftSchema,
+  characterContentDraftGuidance,
+  comboAuthoringSchema,
+  comboAuthoringGuidance,
+} from './characterContentDraftSchema.js';
 
 const DEFAULT_CODEX_BIN = 'codex';
 const DEFAULT_TIMEOUT_MS = 180_000;
@@ -113,6 +118,18 @@ function buildStructuredPrompt(request) {
       '',
       `Character ID: ${input.characterId ?? 'new_fighter'}`,
       `Brief: ${input.brief ?? 'A fighting game character.'}`,
+    ].join('\n');
+  }
+
+  if (task === 'combo-authoring') {
+    return [
+      ...comboAuthoringGuidance(),
+      '',
+      'Return ONLY valid JSON matching this schema (no markdown, no explanation):',
+      JSON.stringify(comboAuthoringSchema(), null, 2),
+      '',
+      'Combo authoring input (segments to create, with their assigned animation row, plus existing-move inputs to avoid):',
+      JSON.stringify(input, null, 2),
     ].join('\n');
   }
 

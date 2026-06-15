@@ -7,6 +7,33 @@ export function createMockTextModel(overrides = {}) {
       return { status: 'ok', message: 'Mock text model is available.' };
     },
     async completeStructured(request) {
+      // Combo authoring: return a template move per requested NEW segment so the
+      // keyless path produces a playable (if generic) combo. The real adapters
+      // author these richly; the server still assigns the animation row.
+      if (request.task === 'combo-authoring') {
+        const segments = request.input?.segments ?? [];
+        const inputCycle = [['lp'], ['forward', 'lp'], ['down', 'lp'], ['mp'], ['forward', 'mp'], ['down', 'mp'], ['hp'], ['forward', 'hp']];
+        const slug = (text) => String(text ?? 'move').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 32) || 'move';
+        const moves = segments.map((seg, index) => ({
+          id: slug(seg.displayName ?? seg.description ?? `combo_move_${index + 1}`),
+          displayName: seg.displayName ?? String(seg.description ?? `Combo Move ${index + 1}`),
+          description: String(seg.description ?? ''),
+          trigger: { sequence: inputCycle[index % inputCycle.length] },
+          phases: [
+            { name: 'startup', frames: 4, events: [] },
+            {
+              name: 'active',
+              frames: 3,
+              events: [
+                { frame: 0, event: { type: 'hitbox_active', hitbox: { x: 32, y: -100, width: 60, height: 40, damage: 40 + index * 15, hitstun: 14 + index * 2, blockstun: 8, knockback: { x: 3 + index, y: index >= 2 ? -4 : 0 } } } },
+                { frame: 2, event: { type: 'hitbox_end' } },
+              ],
+            },
+            { name: 'recovery', frames: 8 + index * 2, events: [] },
+          ],
+        }));
+        return { provider: 'mock', promptRef: `mock://${request.task}`, value: { moves } };
+      }
       return {
         provider: 'mock',
         promptRef: `mock://${request.task}`,

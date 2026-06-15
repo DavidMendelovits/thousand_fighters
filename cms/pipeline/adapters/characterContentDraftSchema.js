@@ -206,6 +206,59 @@ export function characterContentDraftGuidance() {
   ];
 }
 
+// Combo authoring (author_combo): the model designs the NEW moves of a combo
+// from per-segment descriptions. It does NOT pick `animation` — the server
+// assigns each move a sprite row (collision-aware, so generating sprites never
+// clobbers an existing move's row), then authors the move for that row.
+function comboMoveSchema() {
+  return {
+    type: 'object',
+    additionalProperties: false,
+    required: ['id', 'displayName', 'description', 'trigger', 'phases'],
+    properties: {
+      id: { type: 'string' },
+      displayName: { type: 'string' },
+      description: { type: 'string' },
+      trigger: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['sequence'],
+        properties: {
+          sequence: { type: 'array', minItems: 1, items: { type: 'string' } },
+        },
+      },
+      phases: {
+        type: 'array',
+        minItems: 3,
+        items: phaseSchema(),
+      },
+    },
+  };
+}
+
+export function comboAuthoringSchema() {
+  return {
+    type: 'object',
+    additionalProperties: false,
+    required: ['moves'],
+    properties: {
+      moves: { type: 'array', items: comboMoveSchema() },
+    },
+  };
+}
+
+export function comboAuthoringGuidance() {
+  return [
+    'You design the NEW moves of a fighting-game COMBO from the requested segments.',
+    'Return one move per requested NEW segment, in the SAME order. Each segment carries the sprite row it has already been assigned (the `animation` field) plus a description — author a move that reads as that description on that row.',
+    'Do NOT set `animation` yourself; the row is fixed for you. Use the assigned row only to judge what kind of move fits.',
+    'Every move needs phases named startup, active, then recovery (in that order). Put hitbox_active then hitbox_end in the active phase. The recovery phase is REQUIRED — it is what lets the move be cancelled into the next link of the combo.',
+    'Tune hitbox numbers to the description and ESCALATE across the combo (later links hit harder / launch). A headbutt is short-range high-stun; a roundhouse is wide; a launcher knocks up.',
+    'trigger.sequence: assign a SHORT (1-2 token) input using ONLY canonical tokens — lp, mp, hp, lk, mk, hk, up, down, forward, back. Make each combo move\'s input DISTINCT from its siblings in this combo AND from the existing-move inputs you are given, so the player can chain the links cleanly.',
+    'Do not include markdown. Return only JSON matching the supplied schema.',
+  ];
+}
+
 export function characterContentDraftSchema() {
   return {
     type: 'object',

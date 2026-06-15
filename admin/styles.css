@@ -2065,3 +2065,12 @@ details[open] .dev-tools-summary {
 .kit-field span { font-size: 10px; color: #8595ab; text-transform: uppercase; letter-spacing: 0.03em; }
 .kit-field input { width: 100%; padding: 4px 6px; background: #0f141c; border: 1px solid #2d3746; border-radius: 4px; color: #e6edf6; font-size: 12px; }
 .kit-save { align-self: flex-start; }
+
+/* Kit — author combo from intent */
+.kit-author { flex-direction: column; align-items: stretch; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #2d3746; }
+.kit-author textarea {
+  width: 100%; box-sizing: border-box; padding: 6px 8px; background: #0f141c;
+  border: 1px solid #2d3746; border-radius: 5px; color: #e6edf6; font-size: 12px; font-family: inherit; resize: vertical;
+}
+.kit-check { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #9fb3cc; }
+.kit-check input { flex: 0 0 auto; }

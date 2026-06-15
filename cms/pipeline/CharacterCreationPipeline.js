@@ -12,7 +12,18 @@ import {
   validateCombos,
   validateProjectiles,
   validateProjectileReferences,
+  normalizeInputToken,
 } from '../export/convertDraftToCharacterConfig.js';
+import { MOVE_SHEET_IDS } from '../../shared/animationRows.js';
+
+// Canonical inputs the engine's InputBuffer can actually match. A combo move
+// authored with anything else (a motion shorthand like "qcf", or an empty
+// sequence) gets cancel wiring but never fires — we warn, not crash.
+const CANONICAL_INPUT_TOKENS = new Set([
+  'up', 'down', 'forward', 'back',
+  'down-forward', 'down-back', 'up-forward', 'up-back',
+  'lp', 'mp', 'hp', 'lk', 'mk', 'hk', 'neutral',
+]);
 
 const execFileAsync = promisify(execFile);
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -241,6 +252,192 @@ export class CharacterCreationPipeline {
       priorSheetKey = result.asset.key;
     }
     return { segments: results };
+  }
+
+  /**
+   * Author a combo from intent: each segment is either an EXISTING move id or a
+   * NEW move described in words. New segments are authored by the text model
+   * (phases, hitbox numbers, a chainable input), the server assigns each a sprite
+   * row, the combo descriptor stitches them (convert derives the cancel graph),
+   * and — best effort — the new rows' sprites are generated in-flow.
+   *
+   * Row budget is the hard constraint: there are only 6 move-animation rows, and
+   * generating onto a row OVERWRITES whatever animates there. So the server (not
+   * the model) assigns rows, preferring rows no kept move uses, and NEVER
+   * regenerates a row an existing move depends on — overflow shares an
+   * already-generated row instead. The 6-row ceiling is surfaced in warnings.
+   *
+   * The draft (new moves + combo descriptor) is persisted in ONE write, then
+   * sprites are generated as a follow-on that warns on failure but never rolls
+   * back the authored combo.
+   *
+   * @param {object} args
+   * @param {string} args.characterId
+   * @param {string} args.comboId
+   * @param {string} [args.comboDisplayName]
+   * @param {Array<{ moveId?: string, description?: string, displayName?: string }>} args.segments
+   *   Ordered. `moveId` references an existing move; otherwise `description` creates one.
+   * @param {boolean} [args.generateSprites=true]
+   * @param {object} [args.context]
+   */
+  async authorCombo({ characterId, comboId, comboDisplayName, segments, generateSprites = true, context = {} }) {
+    if (!comboId) throw new Error('authorCombo: comboId is required');
+    if (!Array.isArray(segments) || segments.length < 2) {
+      throw new Error('authorCombo: a combo needs at least 2 segments');
+    }
+    const textModel = this.registry.resolve(PipelinePort.TEXT_MODEL);
+    const repository = this.registry.resolve(PipelinePort.CHARACTER_REPOSITORY);
+    const draft = await repository.getDraft(characterId);
+    if (!draft) throw new Error(`authorCombo: no draft found for "${characterId}"`);
+
+    const warnings = [];
+    const existingMoves = draft.moves ?? [];
+    const existingIds = new Set(existingMoves.map((move) => move.id));
+
+    // Validate existing-id segments up front.
+    for (const seg of segments) {
+      if (seg.moveId && !existingIds.has(seg.moveId)) {
+        throw new Error(`authorCombo: segment references unknown move "${seg.moveId}"`);
+      }
+    }
+
+    // --- Row assignment (server-side, collision-aware) -----------------------
+    // Rows any KEPT move animates on are off-limits for regeneration.
+    const keptRows = new Set(existingMoves.map((move) => move.animation).filter(Boolean));
+    const freeRows = MOVE_SHEET_IDS.filter((row) => !keptRows.has(row));
+    const createSegs = segments
+      .map((seg, index) => ({ seg, index }))
+      .filter(({ seg }) => !seg.moveId);
+
+    let freeCursor = 0;
+    let lastFreeRow = null;
+    const assignments = createSegs.map(({ seg, index }) => {
+      let animation;
+      let willGenerate;
+      if (freeCursor < freeRows.length) {
+        animation = freeRows[freeCursor++];
+        lastFreeRow = animation;
+        willGenerate = true;
+      } else if (lastFreeRow) {
+        // Out of distinct free rows: share an already-claimed free row (its sprite
+        // is generated once by the first claimant). Don't regenerate.
+        animation = lastFreeRow;
+        willGenerate = false;
+        warnings.push(`combo "${comboId}" has more new moves than free animation rows — "${seg.description ?? `segment ${index + 1}`}" shares row "${animation}" (no distinct sprite). Only 6 move rows exist.`);
+      } else {
+        // No free rows at all: reuse an owned row WITHOUT regenerating, so we
+        // never clobber an existing move's sprites. It will look like that move.
+        animation = MOVE_SHEET_IDS[0];
+        willGenerate = false;
+        warnings.push(`combo "${comboId}": no free animation rows — "${seg.description ?? `segment ${index + 1}`}" reuses "${animation}" and will look like the existing move on that row.`);
+      }
+      return { seg, index, animation, willGenerate };
+    });
+
+    // --- Author the new moves via the text model -----------------------------
+    let authoredMoves = [];
+    if (assignments.length) {
+      const authoring = await textModel.completeStructured({
+        task: 'combo-authoring',
+        schemaName: 'ComboMoves',
+        schemaVersion: 1,
+        input: {
+          comboId,
+          characterId,
+          segments: assignments.map((a) => ({
+            description: a.seg.description ?? '',
+            displayName: a.seg.displayName,
+            animation: a.animation,
+          })),
+          existingMoves: existingMoves.map((move) => ({ id: move.id, sequence: move.trigger?.sequence ?? [] })),
+        },
+        onProgress: context.onProgress,
+      });
+      authoredMoves = authoring.value?.moves ?? [];
+    }
+
+    // Map authored moves onto assignments; the server owns `animation`. Guarantee
+    // unique ids (don't silently replace an existing move) and fall back to a
+    // minimal move if the model returned too few.
+    const usedIds = new Set(existingIds);
+    const createdMoves = assignments.map((a, idx) => {
+      const authored = authoredMoves[idx] ?? {};
+      const baseId = authored.id || slugifyMoveId(a.seg.displayName ?? a.seg.description ?? `${comboId}_${idx + 1}`);
+      const id = uniqueId(baseId, usedIds);
+      usedIds.add(id);
+      const move = {
+        id,
+        displayName: authored.displayName ?? a.seg.displayName ?? id,
+        description: authored.description ?? a.seg.description ?? '',
+        animation: a.animation,
+        trigger: { sequence: Array.isArray(authored.trigger?.sequence) ? authored.trigger.sequence : ['lp'] },
+        phases: Array.isArray(authored.phases) && authored.phases.length ? authored.phases : defaultComboPhases(idx),
+      };
+      a.createdId = id;
+      return move;
+    });
+
+    // Validate inputs: non-empty, canonical, distinct among created siblings.
+    const seenSequences = new Set();
+    for (const move of createdMoves) {
+      const normalized = (move.trigger.sequence ?? []).map((token) => normalizeInputToken(token));
+      if (!normalized.length) {
+        warnings.push(`move "${move.id}" has an empty input — it can't be triggered/chained.`);
+      }
+      const nonCanonical = normalized.filter((token) => !CANONICAL_INPUT_TOKENS.has(token));
+      if (nonCanonical.length) {
+        warnings.push(`move "${move.id}" uses non-canonical input(s) [${nonCanonical.join(', ')}] that won't match — use lp/mp/hp/lk/mk/hk + directions.`);
+      }
+      const key = normalized.join('+');
+      if (seenSequences.has(key)) {
+        warnings.push(`move "${move.id}" shares input "${key}" with another combo move — they may be ambiguous to chain.`);
+      }
+      seenSequences.add(key);
+    }
+
+    // --- Single draft write: merge moves + combo descriptor ------------------
+    const createdIdByIndex = new Map(assignments.map((a) => [a.index, a.createdId]));
+    const orderedIds = segments.map((seg, i) => (seg.moveId ? seg.moveId : createdIdByIndex.get(i)));
+    const createdIds = new Set(createdMoves.map((move) => move.id));
+    const mergedMoves = [...existingMoves.filter((move) => !createdIds.has(move.id)), ...createdMoves];
+    const combo = { id: comboId, segments: orderedIds, ...(comboDisplayName ? { displayName: comboDisplayName } : {}) };
+    const combos = [...(draft.combos ?? []).filter((existing) => existing.id !== comboId), combo];
+    const comboErrors = validateCombos(combos, mergedMoves.map((move) => move.id));
+    if (comboErrors.length) throw new Error(`authorCombo rejected: ${comboErrors.join('; ')}`);
+
+    await repository.saveDraft(characterId, { ...draft, moves: mergedMoves, combos }, {
+      provider: 'cms-tool',
+      adapterId: 'author-combo',
+    });
+
+    // --- Best-effort sprite generation (warns, never rolls back) -------------
+    let spriteResults = [];
+    if (generateSprites) {
+      // One generation per distinct free row, in order, prompted by its description.
+      const genByRow = new Map();
+      for (const a of assignments) {
+        if (a.willGenerate && !genByRow.has(a.animation)) {
+          genByRow.set(a.animation, a.seg.description ?? '');
+        }
+      }
+      const genSegments = [...genByRow.entries()].map(([row, description]) => ({
+        moveId: row,
+        prompt: [draft.description ?? '', description, 'Side-view fighting-game sprite row, magenta background, full body, generous gutters.'].filter(Boolean).join(' '),
+      }));
+      try {
+        if (genSegments.length >= 2) {
+          const result = await this.generateComboSequence({ characterId, segments: genSegments, context });
+          spriteResults = result.segments;
+        } else if (genSegments.length === 1) {
+          const single = await this.generateSpriteSheet({ characterId, prompt: genSegments[0].prompt, moveId: genSegments[0].moveId, context });
+          spriteResults = [{ moveId: genSegments[0].moveId, ...single }];
+        }
+      } catch (error) {
+        warnings.push(`combo saved, but sprite generation failed: ${error.message}`);
+      }
+    }
+
+    return { comboId, combo, createdMoves, spriteResults, warnings };
   }
 
   /**
@@ -709,6 +906,36 @@ function healGeneratedKit({ characterId, moves, combos, projectiles }) {
   }
 
   return { combos: validCombos, projectiles: validProjectiles, warnings };
+}
+
+function slugifyMoveId(text) {
+  const slug = String(text ?? 'move').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40);
+  return slug || 'move';
+}
+
+function uniqueId(baseId, used) {
+  if (!used.has(baseId)) return baseId;
+  let n = 2;
+  while (used.has(`${baseId}_${n}`)) n += 1;
+  return `${baseId}_${n}`;
+}
+
+// Minimal startup/active(hitbox)/recovery fallback for a combo move when the
+// model returns too few moves. Escalates lightly by position. The recovery phase
+// is what makes the move cancellable into the next combo link.
+function defaultComboPhases(index = 0) {
+  return [
+    { name: 'startup', frames: 4, events: [] },
+    {
+      name: 'active',
+      frames: 3,
+      events: [
+        { frame: 0, event: { type: 'hitbox_active', hitbox: { x: 32, y: -100, width: 60, height: 40, damage: 40 + index * 15, hitstun: 14 + index * 2, blockstun: 8, knockback: { x: 3 + index, y: index >= 2 ? -4 : 0 } } } },
+        { frame: 2, event: { type: 'hitbox_end' } },
+      ],
+    },
+    { name: 'recovery', frames: 8 + index * 2, events: [] },
+  ];
 }
 
 function bytesFromImageResult(result) {

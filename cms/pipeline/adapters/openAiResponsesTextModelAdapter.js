@@ -1,4 +1,9 @@
-import { characterContentDraftSchema, characterContentDraftGuidance } from './characterContentDraftSchema.js';
+import {
+  characterContentDraftSchema,
+  characterContentDraftGuidance,
+  comboAuthoringSchema,
+  comboAuthoringGuidance,
+} from './characterContentDraftSchema.js';
 
 const DEFAULT_MODEL = 'gpt-5.5';
 const DEFAULT_BASE_URL = 'https://api.openai.com/v1';
@@ -150,6 +155,9 @@ function instructionsFor(request) {
   if (request.task === 'character-content-draft') {
     return characterContentDraftGuidance().join('\n');
   }
+  if (request.task === 'combo-authoring') {
+    return comboAuthoringGuidance().join('\n');
+  }
 
   return 'Return strict JSON matching the supplied schema. Do not include markdown.';
 }
@@ -170,6 +178,7 @@ function inputFor(request) {
 
 function schemaFor(schemaName) {
   if (!schemaName || schemaName === 'CharacterContentDraft') return characterContentDraftSchema();
+  if (schemaName === 'ComboMoves') return comboAuthoringSchema();
   return {
     type: 'object',
     additionalProperties: true,

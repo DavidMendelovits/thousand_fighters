@@ -225,6 +225,7 @@ function handleWorkbenchClick(event) {
   }
 
   if (event.target.closest('[data-combo-add]')) { addComboFromForm(); return; }
+  if (event.target.closest('[data-author-combo]')) { authorComboFromForm(); return; }
   const comboDelete = event.target.closest('[data-combo-delete]');
   if (comboDelete) { deleteCombo(comboDelete.dataset.comboDelete); return; }
   if (event.target.closest('[data-projectile-generate]')) { generateProjectileFromForm(); return; }
@@ -715,6 +716,27 @@ async function addComboFromForm() {
   if (segments.length < 2) { showError(new Error('A combo needs at least 2 move ids.')); return; }
   try {
     await invokeTool('define_combo', { characterId, comboId, segments });
+    await selectCharacter(characterId, { silent: true });
+  } catch { /* surfaced by invokeTool */ }
+}
+
+async function authorComboFromForm() {
+  const characterId = currentCharacterId();
+  if (!characterId) return;
+  const col = kitCol('combos');
+  const comboId = col?.querySelector('[data-author-combo-id]')?.value.trim();
+  const raw = col?.querySelector('[data-author-combo-segments]')?.value ?? '';
+  const generateSprites = col?.querySelector('[data-author-combo-sprites]')?.checked ?? true;
+  if (!comboId) { showError(new Error('Combo id is required.')); return; }
+  // Each non-empty line is a segment: an existing move id (reference) or a
+  // description (create). Match against current move ids to decide.
+  const moveIds = new Set((state.currentDraftData?.moves ?? []).map((m) => m.id));
+  const segments = raw.split('\n').map((line) => line.trim()).filter(Boolean)
+    .map((line) => (moveIds.has(line) ? { moveId: line } : { description: line }));
+  if (segments.length < 2) { showError(new Error('A combo needs at least 2 segments (one per line).')); return; }
+  try {
+    const result = await invokeTool('author_combo', { characterId, comboId, segments, generateSprites });
+    for (const w of result?.warnings ?? []) log(`author_combo: ${w}`, 'error');
     await selectCharacter(characterId, { silent: true });
   } catch { /* surfaced by invokeTool */ }
 }
@@ -1406,10 +1428,17 @@ function renderKitSection(draft) {
           <ul class="kit-list">${comboItems}</ul>
           <div class="kit-form">
             <input type="text" data-combo-id placeholder="combo id (e.g. jab_cross)" />
-            <input type="text" data-combo-segments placeholder="move ids in order: jab, cross" />
-            <button type="button" data-combo-add>Add combo</button>
+            <input type="text" data-combo-segments placeholder="existing move ids in order: jab, cross" />
+            <button type="button" data-combo-add>Link existing</button>
           </div>
-          <p class="move-note">Segments must be existing move ids. Available: ${escapeHtml(moveIdHint)}. Convert wires the cancel graph so the chain fires.</p>
+          <p class="move-note">Link existing move ids. Available: ${escapeHtml(moveIdHint)}.</p>
+          <div class="kit-form kit-author">
+            <input type="text" data-author-combo-id placeholder="combo id (e.g. kick_string)" />
+            <textarea data-author-combo-segments rows="3" placeholder="one segment per line — an existing move id (e.g. jab) or a description to CREATE (e.g. roundhouse kick)"></textarea>
+            <label class="kit-check"><input type="checkbox" data-author-combo-sprites checked /> generate sprites</label>
+            <button type="button" data-author-combo>Author combo (create + stitch)</button>
+          </div>
+          <p class="move-note">Author from intent: lines matching an existing move id are linked; other lines become NEW AI-authored moves with assigned rows + inputs. Only 6 move rows exist, so extra new moves share rows.</p>
         </div>
         <div class="kit-col" data-kit="projectiles">
           <h4>Projectiles</h4>
