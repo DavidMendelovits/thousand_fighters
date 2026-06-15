@@ -108,6 +108,18 @@ try {
       assert.ok(byId.get(b).trigger.cancelFrom.includes(a), 'b cancelFrom a');
       assert.ok(byId.get(b).trigger.allowedStates.includes('attack'), 'b reachable mid-attack');
     });
+    test('follow-ups are CANCEL-ONLY; the existing starter stays neutral-accessible', () => {
+      const config = convertDraftToCharacterConfig({ draft: saved, frameData: null, manifest: null });
+      const byId = new Map(config.moves.map((m) => [m.id, m]));
+      const [a, b, c] = (saved.combos.find((x) => x.id === 'kick_string')).segments;
+      // starter (existing jab) remains doable from neutral
+      assert.ok(byId.get(a).trigger.allowedStates.includes('idle'), 'starter accessible from neutral');
+      // created follow-ups are NOT accessible from neutral — only via the combo
+      for (const id of [b, c]) {
+        assert.ok(!byId.get(id).trigger.allowedStates.includes('idle'), `${id} must not be doable from neutral`);
+        assert.deepEqual(byId.get(id).trigger.allowedStates, ['attack'], `${id} is cancel-only`);
+      }
+    });
     test('sprites generated in-flow for the new rows (mock image gen)', () => {
       assert.ok(result.spriteResults.length >= 1, 'at least one row sprite generated');
     });

@@ -1877,7 +1877,11 @@ function buildMoveGroups(draft, assets) {
     return groups.get(id);
   };
 
-  ensureGroup('base');
+  // Seed a card for EVERY registry row so state/movement rows (walk_forward,
+  // walk_back, jump, crouch, dash_forward, dash_back, block, grab, throw) are
+  // generatable even before any sprite exists — otherwise there's no card to
+  // generate from (chicken-and-egg) and they stay invisible in the admin.
+  for (const id of MOVE_IDS) ensureGroup(id);
   for (const move of draft.moves ?? []) {
     const animation = move.animation ?? inferAnimationId(move.id);
     ensureGroup(animation).moves.push(move);
@@ -1928,7 +1932,9 @@ function buildMoveGroups(draft, assets) {
   }
 
   return [...groups.values()]
-    .filter((group) => group.moves.length > 0 || group.variants.length > 0 || group.projectiles.length > 0 || group.id === 'base')
+    // Keep every registry row (so each is generatable) + the projectiles group
+    // when it has assets. Drop only stray empty non-registry groups.
+    .filter((group) => MOVE_IDS.includes(group.id) || group.id === 'base' || group.moves.length > 0 || group.variants.length > 0 || group.projectiles.length > 0)
     .sort((left, right) => moveSortKey(left.id).localeCompare(moveSortKey(right.id)));
 }
 

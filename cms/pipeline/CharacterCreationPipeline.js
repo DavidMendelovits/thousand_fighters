@@ -365,12 +365,20 @@ export class CharacterCreationPipeline {
       const baseId = authored.id || slugifyMoveId(a.seg.displayName ?? a.seg.description ?? `${comboId}_${idx + 1}`);
       const id = uniqueId(baseId, usedIds);
       usedIds.add(id);
+      // Follow-ups (any segment after the first) are CANCEL-ONLY: allowedStates
+      // is just 'attack', so they can't be done from neutral — they're reachable
+      // only through the combo. That keeps the dynamism (a hidden follow-up, not
+      // another move on the button). The first segment stays neutral-accessible
+      // so the combo has a real starter. (existing-move segments are untouched.)
+      const isFollowUp = a.index > 0;
+      const trigger = { sequence: Array.isArray(authored.trigger?.sequence) ? authored.trigger.sequence : ['lp'] };
+      if (isFollowUp) trigger.allowedStates = ['attack'];
       const move = {
         id,
         displayName: authored.displayName ?? a.seg.displayName ?? id,
         description: authored.description ?? a.seg.description ?? '',
         animation: a.animation,
-        trigger: { sequence: Array.isArray(authored.trigger?.sequence) ? authored.trigger.sequence : ['lp'] },
+        trigger,
         phases: Array.isArray(authored.phases) && authored.phases.length ? authored.phases : defaultComboPhases(idx),
       };
       a.createdId = id;
