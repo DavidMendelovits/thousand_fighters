@@ -206,6 +206,25 @@
       }
       #status.error { color: var(--danger); }
       #status.on { display: flex; }
+
+      /* Right-click context menu */
+      .ctx-menu {
+        position: fixed; z-index: 200; min-width: 184px;
+        background: #1b2430; border: 1px solid var(--line); border-radius: 8px;
+        padding: 4px; box-shadow: 0 10px 28px rgba(0,0,0,0.55);
+        display: flex; flex-direction: column; gap: 2px;
+      }
+      .ctx-menu button {
+        text-align: left; padding: 7px 10px; font-size: 12px;
+        background: transparent; border: none; border-radius: 5px;
+        color: var(--text); cursor: pointer;
+      }
+      .ctx-menu button:hover { background: #26323f; }
+      .ctx-menu button.danger { color: #ff8f8f; }
+      .ctx-menu button.danger:hover { background: #3a1f24; }
+
+      /* Filmstrip: frame whose hit is deleted for the current activation */
+      .frame-tile.hit-disabled { box-shadow: inset 0 0 0 2px #ff6b6b; filter: grayscale(0.45) brightness(0.72); }
     </style>
   </head>
   <body>
@@ -267,7 +286,7 @@
             <button data-gizmo="move" class="active" title="Move (Q)">Move</button>
             <button data-gizmo="scale" title="Scale (W)">Scale</button>
           </div>
-          <div class="ro-note">Drag the box on the canvas, or type below. Boxes are frame-px, anchor-relative (× sprite scale at runtime).</div>
+          <div class="ro-note">Drag a corner handle to resize, or drag the box body to move — or type below. Boxes are frame-px, anchor-relative (× sprite scale at runtime).</div>
         </section>
 
         <section class="panel" id="hurtbox-panel" hidden>
@@ -327,6 +346,9 @@
             <label for="hit-y">Y</label><input class="mono" id="hit-y" type="number" step="1" disabled />
             <label for="hit-w">W</label><input class="mono" id="hit-w" type="number" step="1" disabled />
             <label for="hit-h">H</label><input class="mono" id="hit-h" type="number" step="1" disabled />
+          </div>
+          <div class="badge-row">
+            <button id="hit-disable-frame" title="Carve this frame out of the hitbox's active window so the move does not hit here (X)">Delete hit on frame</button>
           </div>
           <h3 class="subhead">Numbers (authored)</h3>
           <div class="num-grid">
@@ -402,6 +424,7 @@
     </div>
 
     <div id="status"></div>
+    <div id="ctx-menu" class="ctx-menu" hidden></div>
 
     <script type="module" src="/src/gym/main.ts"></script>
   </body>

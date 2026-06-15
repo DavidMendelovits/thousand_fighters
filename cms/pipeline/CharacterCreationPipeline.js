@@ -8,6 +8,11 @@ import { promisify } from 'node:util';
 import { PipelinePort } from './ports.js';
 import { normalizeManifest } from './manifestSchema.js';
 import { mergePreservedAnchorFrames } from './preserveTunedAnchors.js';
+import {
+  validateCombos,
+  validateProjectiles,
+  validateProjectileReferences,
+} from '../export/convertDraftToCharacterConfig.js';
 
 const execFileAsync = promisify(execFile);
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -34,6 +39,18 @@ export class CharacterCreationPipeline {
       onProgress: context.onProgress,
     });
 
+    const moves = result.value?.moves ?? [];
+    // Combos + projectiles are generated alongside moves (T-move-kit). They were
+    // dropped here before — copy them through, but self-heal first so a model
+    // slip (an unknown combo segment, a malformed projectile, a spawn event
+    // pointing at a projectile it forgot to define) can't poison the draft.
+    const { combos, projectiles, warnings } = healGeneratedKit({
+      characterId,
+      moves,
+      combos: result.value?.combos ?? [],
+      projectiles: result.value?.projectiles ?? [],
+    });
+
     const content = {
       schemaVersion,
       id: characterId,
@@ -41,12 +58,15 @@ export class CharacterCreationPipeline {
       description: result.value?.description ?? brief,
       stats: result.value?.stats ?? {},
       sprite: result.value?.sprite ?? {},
-      moves: result.value?.moves ?? [],
+      moves,
+      combos,
+      projectiles,
       generation: {
         provider: result.provider ?? textModel.provider ?? 'unknown',
         adapterId: textModel.id ?? 'textModel',
         createdAt: this.clock().toISOString(),
         promptRef: result.promptRef ?? null,
+        warnings,
       },
     };
 
@@ -615,6 +635,80 @@ export class CharacterCreationPipeline {
       promptRef: result.promptRef ?? null,
     };
   }
+}
+
+/**
+ * Self-heal the combos + projectiles a text model generates alongside moves
+ * (T-move-kit), reusing the canonical convert-layer validators so "valid" has a
+ * single definition. Derives each projectile's runtime texture key (`animation`
+ * = `<characterId>_<id>` — the model never authors it; `sourceKey` is attached
+ * later when the sprite is generated), drops malformed/duplicate entities and
+ * combos that reference unknown moves, and WARNS (without dropping) on spawn
+ * events pointing at a projectile that doesn't exist.
+ *
+ * @returns {{ combos: object[], projectiles: object[], warnings: string[] }}
+ */
+function healGeneratedKit({ characterId, moves, combos, projectiles }) {
+  const warnings = [];
+  const moveIds = (moves ?? []).map((move) => move?.id).filter(Boolean);
+
+  const seenProjectileIds = new Set();
+  const validProjectiles = [];
+  for (const entity of projectiles ?? []) {
+    if (!entity || typeof entity.id !== 'string') {
+      warnings.push('dropped a projectile entity with no id');
+      continue;
+    }
+    if (seenProjectileIds.has(entity.id)) {
+      warnings.push(`dropped duplicate projectile "${entity.id}"`);
+      continue;
+    }
+    const healed = { ...entity, animation: entity.animation ?? `${characterId}_${entity.id}` };
+    const errors = validateProjectiles([healed]);
+    if (errors.length) {
+      warnings.push(`dropped projectile "${entity.id}": ${errors.join('; ')}`);
+      continue;
+    }
+    seenProjectileIds.add(entity.id);
+    validProjectiles.push(healed);
+  }
+
+  const seenComboIds = new Set();
+  const validCombos = [];
+  for (const combo of combos ?? []) {
+    if (combo?.id && seenComboIds.has(combo.id)) {
+      warnings.push(`dropped duplicate combo "${combo.id}"`);
+      continue;
+    }
+    const errors = validateCombos([combo], moveIds);
+    if (errors.length) {
+      warnings.push(`dropped combo "${combo?.id ?? '(unnamed)'}": ${errors.join('; ')}`);
+      continue;
+    }
+    if (combo?.id) seenComboIds.add(combo.id);
+    validCombos.push(combo);
+  }
+
+  for (const warning of validateProjectileReferences({ moves, projectiles: validProjectiles })) {
+    warnings.push(warning);
+  }
+
+  // A combo follow-up needs a non-empty input sequence to cancel into — an empty
+  // sequence never matches the input buffer, so the combo is wired but dead.
+  const movesById = new Map((moves ?? []).map((move) => [move?.id, move]));
+  const flaggedEmpty = new Set();
+  for (const combo of validCombos) {
+    for (const segmentId of combo.segments ?? []) {
+      const move = movesById.get(segmentId);
+      const sequence = move?.trigger?.sequence;
+      if (move && (!Array.isArray(sequence) || sequence.length === 0) && !flaggedEmpty.has(segmentId)) {
+        flaggedEmpty.add(segmentId);
+        warnings.push(`move "${segmentId}" (in combo "${combo.id}") has an empty input sequence — the combo is wired but won't fire until it has a trigger`);
+      }
+    }
+  }
+
+  return { combos: validCombos, projectiles: validProjectiles, warnings };
 }
 
 function bytesFromImageResult(result) {

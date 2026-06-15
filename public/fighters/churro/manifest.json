@@ -1,0 +1,61 @@
+{
+  "id": "churro",
+  "artSource": "image-gen",
+  "frameData": "frameData.json",
+  "sheets": {
+    "base": "sheets/base.png",
+    "punch": "sheets/punch.png",
+    "kick": "sheets/kick.png",
+    "special_1": "sheets/special_1.png",
+    "special_2": "sheets/special_2.png"
+  },
+  "sprites": {
+    "base": [
+      "sprites/base/base_001.png",
+      "sprites/base/base_002.png",
+      "sprites/base/base_003.png",
+      "sprites/base/base_004.png",
+      "sprites/base/base_005.png",
+      "sprites/base/base_006.png"
+    ],
+    "punch": [
+      "sprites/punch/punch_001.png",
+      "sprites/punch/punch_002.png",
+      "sprites/punch/punch_003.png",
+      "sprites/punch/punch_004.png",
+      "sprites/punch/punch_005.png",
+      "sprites/punch/punch_006.png"
+    ],
+    "kick": [
+      "sprites/kick/kick_001.png",
+      "sprites/kick/kick_002.png",
+      "sprites/kick/kick_003.png",
+      "sprites/kick/kick_004.png",
+      "sprites/kick/kick_005.png",
+      "sprites/kick/kick_006.png"
+    ],
+    "special_1": [
+      "sprites/special_1/special_1_001.png",
+      "sprites/special_1/special_1_002.png",
+      "sprites/special_1/special_1_003.png",
+      "sprites/special_1/special_1_004.png",
+      "sprites/special_1/special_1_005.png",
+      "sprites/special_1/special_1_006.png"
+    ],
+    "special_2": [
+      "sprites/special_2/special_2_001.png",
+      "sprites/special_2/special_2_002.png",
+      "sprites/special_2/special_2_003.png",
+      "sprites/special_2/special_2_004.png",
+      "sprites/special_2/special_2_005.png",
+      "sprites/special_2/special_2_006.png"
+    ]
+  },
+  "frameCounts": {
+    "base": 6,
+    "punch": 6,
+    "kick": 6,
+    "special_1": 6,
+    "special_2": 6
+  }
+}

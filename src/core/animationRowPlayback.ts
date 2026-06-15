@@ -28,7 +28,21 @@ export const STATE_ROW_MAP: Partial<Record<FighterState, string>> = {
   crouch: 'crouch',
   crouch_transition: 'crouch',
   blockstun: 'block',
+  walk_forward: 'walk_forward',
+  walk_back: 'walk_back',
 };
+
+/**
+ * Rows that LOOP rather than play-once-and-hold. Walk cycles repeat for as long
+ * as the fighter holds the direction; jump/crouch/block settle on a held pose.
+ * `stateRowFrame` reads this to pick modulo vs. clamp-and-hold.
+ */
+const LOOPING_STATE_ROWS = new Set<string>(['walk_forward', 'walk_back']);
+
+/** True when the row's state playback should loop (walk) vs. hold its last frame. */
+export function isLoopingStateRow(rowId: string): boolean {
+  return LOOPING_STATE_ROWS.has(rowId);
+}
 
 /**
  * The sheet to render for a state-driven (non-move) frame. Returns the mapped
@@ -47,13 +61,14 @@ export function resolveStateSheet(
 export const STATE_ROW_TICKS = 6;
 
 /**
- * Frame index within a state row: a one-shot advance that holds the last frame.
- * Rows are authored so the final frame is the settled/held pose (crouch held,
- * guard held, jump apex/descent), so plain clamp-and-hold reads correctly with
- * no per-row mode flags. `elapsed` is the (visual-delay-adjusted) state frame.
+ * Frame index within a state row. Hold rows (jump/crouch/block) advance once and
+ * clamp on the last frame — they are authored so the final frame is the settled
+ * pose (crouch held, guard held, jump descent). Loop rows (walk) wrap with
+ * modulo so the cycle repeats while the state persists. `elapsed` is the
+ * (visual-delay-adjusted) state frame; `loop` defaults to false (hold).
  */
-export function stateRowFrame(elapsed: number, frameCount: number): number {
+export function stateRowFrame(elapsed: number, frameCount: number, loop = false): number {
   if (frameCount <= 1) return 0;
   const advanced = Math.floor(Math.max(0, elapsed) / STATE_ROW_TICKS);
-  return Math.min(advanced, frameCount - 1);
+  return loop ? advanced % frameCount : Math.min(advanced, frameCount - 1);
 }

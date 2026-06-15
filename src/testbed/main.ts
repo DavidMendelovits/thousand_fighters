@@ -40,14 +40,14 @@ async function main(): Promise<void> {
     return;
   }
 
-  const { config, frameUrls, warnings } = loaded;
+  const { config, frameUrls, projectileUrls, warnings } = loaded;
   hideStatus();
 
   $('char-name').textContent = config.displayName;
   $('char-id').textContent = config.id;
   document.title = `Testbed · ${config.displayName}`;
 
-  const scene = new TestbedScene({ config, frameUrls });
+  const scene = new TestbedScene({ config, frameUrls, projectileUrls });
   new Phaser.Game({
     type: Phaser.AUTO,
     parent: 'game',

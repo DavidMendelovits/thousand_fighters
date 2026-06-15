@@ -91,22 +91,38 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
 // Combo chaining (T22)
 // ---------------------------------------------------------------------------
 
+/** Cancel-input window (frames) given to combo members so the player can land
+ *  the next input during the cancellable recovery. convert otherwise pins
+ *  trigger.window to 6, which is too tight to chain. */
+const COMBO_CANCEL_WINDOW = 14;
+
 /**
- * Wire combo chaining onto converted moves. For each combo's adjacent segment
- * pair (a → b), union b into a's `cancelInto` (deduped); the terminal segment
- * is left untouched. This is pure translation of an explicit, ordered descriptor
- * — `draft.combos: [{ id, segments: [moveId, ...] }]`.
+ * Derive the full runtime CANCEL GRAPH onto converted moves from the combo
+ * descriptor — `draft.combos: [{ id, segments: [moveId, ...] }]`. For each
+ * adjacent pair a → b this wires every gate `Fighter`/`MoveExecutor` check on
+ * the cancel path, so a generated combo actually FIRES with no manual tuning:
  *
- * Deliberately does NOT touch phase `cancellable`. A cancel WINDOW is authoring
- * data: `MoveExecutor.tryCancel` fires only when the current phase is
- * `cancellable` AND `cancelInto` lists the next move. So a combo wired here but
- * with no authored cancellable window links correctly but won't fire — by
- * design, not a bug (fabricating `cancellable` here would silently change the
- * move's behavior in non-combo contexts too).
+ *   - `a.cancelInto += b`            — MoveExecutor.tryCancel requires it.
+ *   - `b.trigger.cancelFrom += a`    — LOAD-BEARING. findTriggeredMove's
+ *       cancelFrom check is `forCancel`-guarded, so on the normal path (from
+ *       idle/walk) b is unaffected and still triggers standalone; on the cancel
+ *       path b is admitted ONLY out of a, not out of every attack. Adding
+ *       `allowedStates:'attack'` WITHOUT this is the footgun (b becomes
+ *       cancellable from anything).
+ *   - `b.trigger.allowedStates += 'attack'` — during a move the fighter is in
+ *       state 'attack'; findTriggeredMove rejects b unless its allowedStates
+ *       includes it (convert defaults to idle/walk only).
+ *   - `b.trigger.window = max(window, COMBO_CANCEL_WINDOW)` — room to land it.
+ *
+ * Phase `cancellable` is NOT fabricated here — it comes free from the
+ * recovery-phase default in convertPhase. This stays principled inside the
+ * combo step because it is the same cancel graph derived from the same ordered
+ * descriptor as `cancelInto`, and it is re-derived (not persisted) so editing a
+ * combo re-wires cleanly.
  *
  * Lenient by design: a segment referencing a move that doesn't exist is skipped
- * (never emits a dangling `cancelInto`). Strict validation belongs at combo
- * DEFINITION time — see `validateCombos`, used by the CMS tool.
+ * (never emits a dangling edge). Strict validation belongs at combo DEFINITION
+ * time — see `validateCombos`, used by the CMS tool.
  *
  * @param {object[]} moves   Converted runtime Move objects (mutated in place).
  * @param {object[]} [combos]
@@ -115,17 +131,26 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
 export function applyComboChaining(moves, combos) {
   if (!Array.isArray(combos) || combos.length === 0) return moves;
   const byId = new Map(moves.map((move) => [move.id, move]));
+  const addUnique = (arr, value) => {
+    const list = Array.isArray(arr) ? arr : [];
+    return list.includes(value) ? list : [...list, value];
+  };
   for (const combo of combos) {
     const segments = Array.isArray(combo?.segments) ? combo.segments : [];
     for (let i = 0; i < segments.length - 1; i += 1) {
       const move = byId.get(segments[i]);
-      const next = segments[i + 1];
+      const next = byId.get(segments[i + 1]);
       // Lenient: only wire when both endpoints exist, so we never emit a
-      // dangling cancelInto for a half-authored combo (keeps live convert from
+      // dangling edge for a half-authored combo (keeps live convert from
       // throwing on the testbed/runtime-config path).
-      if (!move || !byId.has(next)) continue;
-      const existing = Array.isArray(move.cancelInto) ? move.cancelInto : [];
-      if (!existing.includes(next)) move.cancelInto = [...existing, next];
+      if (!move || !next) continue;
+
+      move.cancelInto = addUnique(move.cancelInto, next.id);
+
+      next.trigger = next.trigger ?? {};
+      next.trigger.cancelFrom = addUnique(next.trigger.cancelFrom, move.id);
+      next.trigger.allowedStates = addUnique(next.trigger.allowedStates, 'attack');
+      next.trigger.window = Math.max(next.trigger.window ?? 6, COMBO_CANCEL_WINDOW);
     }
   }
   return moves;
@@ -268,6 +293,11 @@ export function validateProjectiles(projectiles) {
       if (seenIds.has(entity.id)) errors.push(`duplicate projectile id "${entity.id}"`);
       seenIds.add(entity.id);
     }
+    // NOTE: validateProjectiles is intentionally lenient on velocity/hitbox/
+    // damage — convert's projectileConfigFromEntity defaults those, and this
+    // same validator gates incremental flows (define_projectile tuning, gym
+    // saves) where a partial entity is legitimate. Creation-time completeness is
+    // enforced upstream by the strict characterContentDraftSchema instead.
     for (const field of ['width', 'height', 'lifetime']) {
       if (entity?.[field] !== undefined && (typeof entity[field] !== 'number' || entity[field] <= 0)) {
         errors.push(`projectile "${pid}": ${field} must be a positive number`);
@@ -437,16 +467,27 @@ function buildSpriteConfig({ draft, frameData, manifest, scale }) {
     special_2: 'sheets/special_2.png',
   };
 
+  // Frame counts: start from the draft's declared counts (the canonical 5 the AI
+  // sets at creation), then OVERLAY the fighter-pack manifest's counts. The
+  // manifest is the ground truth for what has actually been extracted, so any
+  // row generated later in the admin (walk_forward/walk_back/jump/crouch/block/
+  // dash/grab/throw) renders once its frames exist — without it, a draft that
+  // declares frameCounts would mask every generated row (they only ever land in
+  // the manifest). Rows that are neither declared nor extracted stay absent, so
+  // the engine falls back to base instead of a missing texture.
+  const declaredFrameCounts = sprite.frameCounts ?? {
+    base: 6,
+    punch: 6,
+    kick: 6,
+    special_1: 6,
+    special_2: 6,
+  };
+  const frameCounts = { ...declaredFrameCounts, ...(manifest?.frameCounts ?? {}) };
+
   return {
     basePath: `/fighters/${id}`,
     scale: scale ?? deriveSpriteScale(sprite, frameData),
-    frameCounts: sprite.frameCounts ?? manifest?.frameCounts ?? {
-      base: 6,
-      punch: 6,
-      kick: 6,
-      special_1: 6,
-      special_2: 6,
-    },
+    frameCounts,
     sheets,
     frames: frameData?.frames ?? undefined,
     stateFrames: {
@@ -621,6 +662,9 @@ function convertMove(draftMove, context = {}) {
     move.visualTimeline = draftMove.visualTimeline;
   }
 
+  // Carve disabled frames out of active windows BEFORE measuring geometry, so each
+  // surviving sub-window gets its own geometry track.
+  applyDisabledHitboxFrames(move, context.frameData?.frames?.[animation]);
   applyMeasuredHitboxGeometry(move, context.frameData?.frames?.[animation], context.scale ?? 1);
   // Gym geometry overrides win over the measured pass (D2/A4).
   applyHitboxOverrides(move, context.hitboxOverrides, context.scale ?? 1);
@@ -716,6 +760,117 @@ function applyMeasuredHitboxGeometry(move, rowFrames, scale) {
     } else {
       delete event.keyframes;
     }
+  }
+}
+
+/** Deep-clone a hitbox_active event for a split sub-window (drop transient/derived fields). */
+function cloneHitboxEvent(event) {
+  const clone = JSON.parse(JSON.stringify(event));
+  delete clone.disabledFrames;
+  delete clone.keyframes; // recomputed per sub-window by applyMeasuredHitboxGeometry
+  return clone;
+}
+
+/**
+ * Carve disabled sprite-frames out of a hitbox's active window so the move does
+ * NOT hit on those frames (gym "Delete hit on frame"). The active window comes
+ * from the move's hitbox_active/hitbox_end events; `event.disabledFrames` lists
+ * sprite-frame indices to drop. For each activation we:
+ *   1. walk its [startTick, endTick) window, mapping every tick to a sprite frame
+ *      (same mapping the runtime uses), and split it into the contiguous runs of
+ *      NON-disabled ticks;
+ *   2. replace the single active/end pair with one pair per surviving run.
+ * All sub-windows keep the same hitbox id, so hit-dedup still allows only one hit
+ * per move (the standard fighting-game default). Runs before the measured-geometry
+ * pass so each sub-window gets its own geometry track. Requires frame data to map
+ * ticks→frames; without it the disable is a no-op (and the field is stripped).
+ */
+function applyDisabledHitboxFrames(move, rowFrames) {
+  const phases = move.phases ?? [];
+  const frameCount = Array.isArray(rowFrames) ? rowFrames.length : 0;
+
+  // Phase tick boundaries: phase i covers ticks [start, start+frames).
+  const bounds = [];
+  let cum = 0;
+  for (let i = 0; i < phases.length; i++) {
+    const frames = phases[i].frames ?? 1;
+    bounds.push({ index: i, start: cum, frames });
+    cum += frames;
+  }
+  const totalFrames = cum;
+  const tickToLocation = (tick) => {
+    for (const b of bounds) {
+      if (tick >= b.start && tick < b.start + b.frames) return { phaseIndex: b.index, onFrame: tick - b.start };
+    }
+    const last = bounds[bounds.length - 1]; // tick === totalFrames: end-of-move (non-firing; move-end clears).
+    return { phaseIndex: last.index, onFrame: last.frames };
+  };
+
+  // Pair each hitbox_active with its hitbox_end, capturing both event refs + locations.
+  const open = new Map();
+  const activations = [];
+  for (const b of bounds) {
+    for (const entry of phases[b.index].events ?? []) {
+      const tick = b.start + (entry.onFrame ?? 0);
+      const ev = entry.event;
+      if (ev?.type === 'hitbox_active' && ev.hitbox) {
+        open.set(ev.id ?? 'default', { id: ev.id ?? 'default', event: ev, activeEntry: entry, activePhase: b.index, startTick: tick });
+      } else if (ev?.type === 'hitbox_end') {
+        const a = open.get(ev.id ?? 'default');
+        if (a) { activations.push({ ...a, endEntry: entry, endPhase: b.index, endTick: tick }); open.delete(ev.id ?? 'default'); }
+      }
+    }
+  }
+  for (const a of open.values()) activations.push({ ...a, endEntry: null, endPhase: null, endTick: totalFrames });
+
+  const removals = new Set();
+  const additions = []; // { phaseIndex, onFrame, event }
+
+  for (const act of activations) {
+    const disabled = act.event.disabledFrames;
+    delete act.event.disabledFrames; // strip transient field whether or not we carve
+    if (!Array.isArray(disabled) || !disabled.length || !frameCount) continue;
+    const disabledSet = new Set(disabled);
+
+    // Contiguous runs of non-disabled ticks within the window.
+    const ranges = [];
+    let runStart = null;
+    for (let tick = act.startTick; tick < act.endTick; tick++) {
+      const sf = spriteFrameAt(tick, totalFrames, frameCount, move.visualTimeline);
+      if (!disabledSet.has(sf)) { if (runStart === null) runStart = tick; }
+      else if (runStart !== null) { ranges.push([runStart, tick]); runStart = null; }
+    }
+    if (runStart !== null) ranges.push([runStart, act.endTick]);
+
+    // Nothing actually disabled inside the window → leave the events untouched.
+    if (ranges.length === 1 && ranges[0][0] === act.startTick && ranges[0][1] === act.endTick) continue;
+
+    removals.add(act.activeEntry);
+    if (act.endEntry) removals.add(act.endEntry);
+
+    for (const [s, e] of ranges) {
+      const activeLoc = s === act.startTick
+        ? { phaseIndex: act.activePhase, onFrame: act.activeEntry.onFrame ?? 0 }
+        : tickToLocation(s);
+      additions.push({ ...activeLoc, event: cloneHitboxEvent(act.event) });
+
+      let endLoc;
+      if (e === act.endTick && act.endEntry) endLoc = { phaseIndex: act.endPhase, onFrame: act.endEntry.onFrame ?? 0 };
+      else if (e >= totalFrames) endLoc = null; // ends at move end — clears implicitly
+      else endLoc = tickToLocation(e);
+      if (endLoc) additions.push({ ...endLoc, event: { type: 'hitbox_end', id: act.id } });
+    }
+  }
+
+  if (!removals.size && !additions.length) return;
+
+  for (let i = 0; i < phases.length; i++) {
+    const events = (phases[i].events ?? []).filter((entry) => !removals.has(entry));
+    for (const add of additions) {
+      if (add.phaseIndex === i) events.push({ onFrame: add.onFrame, event: add.event });
+    }
+    events.sort((a, b) => (a.onFrame ?? 0) - (b.onFrame ?? 0));
+    phases[i].events = events;
   }
 }
 
@@ -839,6 +994,12 @@ function convertEvent(draftEvent, moveId, phaseIndex, eventIndex) {
         .filter((kf) => kf && typeof kf.atFrame === 'number')
         .map((kf) => ({ atFrame: kf.atFrame, x: kf.x, y: kf.y, width: kf.width, height: kf.height }));
     }
+    // Carry per-frame disabling onto the converted event as transient metadata.
+    // applyDisabledHitboxFrames reads it to split the active window, then strips
+    // it so it never reaches the runtime config.
+    if (Array.isArray(hb.disabledFrames) && hb.disabledFrames.length) {
+      converted.disabledFrames = hb.disabledFrames.filter((n) => Number.isInteger(n) && n >= 0);
+    }
     return converted;
   }
 
@@ -854,10 +1015,19 @@ function convertEvent(draftEvent, moveId, phaseIndex, eventIndex) {
   // offset fields); resolveProjectileEntities fills in the resolved config in a
   // post-pass that has access to draft.projectiles.
   if (draftEvent.projectileId && !draftEvent.projectile) {
-    const ref = { type: draftEvent.type ?? 'spawn_projectile', projectileId: draftEvent.projectileId };
-    // Preserve whichever offset fields the spawn variant uses.
-    for (const field of ['offsetX', 'offsetY', 'targetOffsetX', 'spawnOffsetY']) {
-      if (typeof draftEvent[field] === 'number') ref[field] = draftEvent[field];
+    const type = draftEvent.type ?? 'spawn_projectile';
+    const ref = { type, projectileId: draftEvent.projectileId };
+    // Default the spawn variant's offset fields so the runtime never receives
+    // `undefined` offsets (MoveExecutor.spawn would mis-position the shot). The
+    // inline-projectile path below already defaults offsetX/offsetY; mirror that
+    // here for the entity-reference path, per variant.
+    const num = (value, fallback) => (typeof value === 'number' ? value : fallback);
+    if (type === 'spawn_projectile_from_sky') {
+      ref.targetOffsetX = num(draftEvent.targetOffsetX, 0);
+      ref.spawnOffsetY = num(draftEvent.spawnOffsetY, -360);
+    } else {
+      ref.offsetX = num(draftEvent.offsetX, 40);
+      ref.offsetY = num(draftEvent.offsetY, -60);
     }
     return ref;
   }
@@ -896,6 +1066,16 @@ function convertEvent(draftEvent, moveId, phaseIndex, eventIndex) {
     };
   }
 
+  // A spawn event that reached here has NEITHER an inline projectile NOR a
+  // projectileId (both branches above bailed). Emitting a bare
+  // `{ type: 'spawn_projectile' }` would make MoveExecutor.spawn pass
+  // `undefined` to ProjectilePool, which dereferences config.spawnPolicy and
+  // crashes (codex P1). The schema makes projectileId required-but-nullable, so
+  // a model can produce exactly this. Neutralize it to a no-op hitbox_end.
+  if (typeof draftEvent.type === 'string' && draftEvent.type.startsWith('spawn_projectile')) {
+    return { type: 'hitbox_end' };
+  }
+
   // Pass through known non-hitbox event types
   if (draftEvent.type === 'set_velocity' || draftEvent.type === 'teleport' ||
       draftEvent.type === 'invulnerable' || draftEvent.type === 'armor' ||
@@ -919,12 +1099,14 @@ export function normalizeInputToken(token) {
   const map = {
     light_punch: 'lp',
     lp: 'lp',
+    punch: 'lp', // bare "punch" shorthand -> light punch (F / J)
     medium_punch: 'mp',
     mp: 'mp',
     heavy_punch: 'hp',
     hp: 'hp',
     light_kick: 'lk',
     lk: 'lk',
+    kick: 'lk', // bare "kick" shorthand -> light kick (G / K)
     medium_kick: 'mk',
     mk: 'mk',
     heavy_kick: 'hk',

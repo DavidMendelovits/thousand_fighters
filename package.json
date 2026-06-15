@@ -46,7 +46,9 @@
     "cms:combo:gen:smoke": "node scripts/smoke_cms_combo_generation.mjs",
     "cms:projectile:smoke": "node scripts/smoke_cms_projectile.mjs",
     "cms:projectile:gen:smoke": "node scripts/smoke_cms_projectile_generation.mjs",
-    "phase4:smoke": "npm run rows:smoke && npm run engine:rows:smoke && npm run cms:combo:smoke && npm run cms:combo:gen:smoke && npm run cms:projectile:smoke && npm run cms:projectile:gen:smoke && npm run cms:gym:smoke"
+    "cms:disabled:smoke": "node scripts/smoke_cms_disabled_frames.mjs",
+    "cms:creation:kit:smoke": "node scripts/smoke_cms_creation_kit.mjs",
+    "phase4:smoke": "npm run rows:smoke && npm run engine:rows:smoke && npm run cms:combo:smoke && npm run cms:combo:gen:smoke && npm run cms:projectile:smoke && npm run cms:projectile:gen:smoke && npm run cms:gym:smoke && npm run cms:disabled:smoke && npm run cms:creation:kit:smoke"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1048.0",

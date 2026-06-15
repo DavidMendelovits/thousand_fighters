@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { roster } from '../characters/roster';
+import { collectProjectileAnimations } from '../core/projectileAssets';
 import { ComputerPlayer } from '../core/ComputerPlayer';
 import { Fighter } from '../core/Fighter';
 import { GameLoop } from '../core/GameLoop';
@@ -55,8 +56,12 @@ export class FightScene extends Phaser.Scene {
   readonly computerPlayer = new ComputerPlayer();
   singlePlayer = true;
   isPaused = false;
-  selectedP1Id = roster[0].id;
-  selectedP2Id = roster[2].id;
+  // Defaults; init() may override from scene data. Optional access tolerates a
+  // 1–2 char CMS roster (P2 falls back to P1 for a mirror match).
+  // ponytail: a 0-char roster (fully wiped CMS) has no fighters to select — out
+  // of scope; add an empty-state screen if that becomes a real workflow.
+  selectedP1Id = roster[0]?.id ?? '';
+  selectedP2Id = roster[2]?.id ?? roster[1]?.id ?? roster[0]?.id ?? '';
   p1Rounds = 0;
   p2Rounds = 0;
   roundNumber = 1;
@@ -82,8 +87,8 @@ export class FightScene extends Phaser.Scene {
 
   init(data: FightSceneData = {}): void {
     this.hasSceneData = Object.keys(data).length > 0;
-    this.selectedP1Id = data.p1Id ?? roster[0].id;
-    this.selectedP2Id = data.p2Id ?? roster[2].id;
+    this.selectedP1Id = data.p1Id ?? roster[0]?.id ?? '';
+    this.selectedP2Id = data.p2Id ?? roster[2]?.id ?? roster[1]?.id ?? roster[0]?.id ?? '';
     this.singlePlayer = prefersTouchControls() ? true : (data.cpu ?? true);
     this.p1Rounds = data.p1Rounds ?? 0;
     this.p2Rounds = data.p2Rounds ?? 0;
@@ -122,6 +127,27 @@ export class FightScene extends Phaser.Scene {
     this.load.image('demi_laser', this.assetUrl('/fighters/demi/projectiles/remote_laser.png'));
     this.load.image('remote_spark', this.assetUrl('/fighters/demi/projectiles/remote_spark.png'));
     this.load.image('morph_flash', this.assetUrl('/fighters/demi/projectiles/morph_flash.png'));
+
+    // The keys above are hand-authored fighters whose projectile filename can
+    // differ from the texture key (e.g. martin_firebolt → firebolt.png), so they
+    // stay explicit. CMS-generated fighters follow the convention
+    // `/fighters/<id>/projectiles/<animation>.png` (written by the exporter), so
+    // load those dynamically by walking each character's move spawn events. The
+    // guard set skips anything already queued above so we never request a wrong
+    // path for the hand-authored fighters.
+    const queuedProjectileKeys = new Set<string>([
+      'cardbross_cross', 'hi_vis_vest', 'bucket_wave', 'apple_shards',
+      'martin_firebolt', 'martin_ink_spark', 'martin_ground_rune', 'martin_lightning_from_sky',
+      'purple_note_wave', 'foam_wave', 'juggling_balls', 'squeak_storm',
+      'rubber_bat', 'red_note_wave', 'demi_laser', 'remote_spark', 'morph_flash',
+    ]);
+    for (const character of roster) {
+      for (const animation of collectProjectileAnimations(character)) {
+        if (queuedProjectileKeys.has(animation)) continue;
+        queuedProjectileKeys.add(animation);
+        this.load.image(animation, this.assetUrl(`/fighters/${character.id}/projectiles/${animation}.png`));
+      }
+    }
 
     const preloadSpriteConfig = (sprite: CharacterSpriteConfig, keyPrefix: string): void => {
       for (const [sheet, frameCount] of Object.entries(sprite.frameCounts)) {

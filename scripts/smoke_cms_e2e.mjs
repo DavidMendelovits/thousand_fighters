@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { createCmsServer } from '../cms/server/createCmsServer.js';
 import { createLocalCmsRuntime } from '../cms/runtime/createLocalCmsRuntime.js';
 
 const rootDir = await mkdtemp(path.join(os.tmpdir(), 'thousand-fighters-e2e-'));
+// Keep the publish->runtime bridge from writing the repo's real public/ dir.
+process.env.CMS_RUNTIME_PUBLIC_DIR = path.join(rootDir, 'public');
 const runtime = createLocalCmsRuntime({
   storageOptions: {
     provider: 'file',
@@ -106,6 +108,21 @@ try {
     releaseId: 'e2e-release',
   });
   assert.equal(published.result.published.status, 'published');
+
+  // The publish tool must bridge to the static artifacts the game roster reads:
+  // public/fighters/<id>/config.json + an assets-index entry flagging it.
+  assert.ok(published.result.exported?.configPath, 'publish must export a runtime config');
+  // Export must consume the release bundle (source of truth), not the live draft.
+  assert.ok(published.result.published.bundleKey, 'publish must write a release bundle');
+  const bundle = await runtime.storage.getJson(published.result.published.bundleKey);
+  assert.ok(bundle?.content?.id === 'e2e_fighter', 'release bundle must hold the published content');
+  const index = JSON.parse(await readFile(path.join(rootDir, 'public', 'assets-index.json'), 'utf8'));
+  assert.equal(index.fighters?.e2e_fighter?.config, 'config.json', 'published fighter must be roster-discoverable');
+  // Exported config must carry real content from the published version, not a
+  // silent empty fall-through.
+  const exportedConfig = JSON.parse(await readFile(path.join(rootDir, 'public', 'fighters', 'e2e_fighter', 'config.json'), 'utf8'));
+  assert.equal(exportedConfig.id, 'e2e_fighter', 'exported config must come from the published version');
+  assert.ok(Array.isArray(exportedConfig.moves) && exportedConfig.moves.length > 0, 'exported config must have moves');
 
   const characters = await getJson(`${baseUrl}/api/characters`);
   assert.deepEqual(characters.characters.map((character) => character.id), ['e2e_fighter']);

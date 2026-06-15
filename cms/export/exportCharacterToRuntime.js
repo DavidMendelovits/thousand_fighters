@@ -22,6 +22,7 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
  *   characterId: string,
  *   outputDir?: string,
  *   copyAssets?: boolean,
+ *   content?: object,
  * }} params
  * @returns {Promise<{
  *   characterId: string,
@@ -30,13 +31,15 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
  *   config: object,
  * }>}
  */
-export async function exportCharacterToRuntime({ runtime, characterId, outputDir, copyAssets = true }) {
+export async function exportCharacterToRuntime({ runtime, characterId, outputDir, copyAssets = true, content }) {
   const { repository, storage } = runtime;
   const resolvedOutputDir = path.resolve(outputDir ?? path.join(REPO_ROOT, 'public', 'fighters'));
   const characterOutputDir = path.join(resolvedOutputDir, characterId);
 
-  // Read draft from CMS
-  const draft = await repository.getDraft(characterId);
+  // Source of truth: a pinned published version (draft-shaped content) when the
+  // caller supplies one, else the live draft. Lets publish export the immutable
+  // release rather than whatever the draft happens to be at export time.
+  const draft = content ?? (await repository.getDraft(characterId));
   if (!draft) {
     throw new Error(`exportCharacterToRuntime: No draft found for character "${characterId}"`);
   }
@@ -92,6 +95,19 @@ export async function exportCharacterToRuntime({ runtime, characterId, outputDir
       filesCopied.push(...copied);
     }
 
+    // Generated projectile sprites live at `source/<animation>_projectile.png`
+    // (outside the fighter pack), but the runtime loads them by the convention
+    // `/fighters/<id>/projectiles/<animation>.png` keyed by `projectile.animation`
+    // (see ProjectilePool + FightScene/testbed preload). Copy each draft
+    // projectile entity's sprite into place so it renders instead of a fallback
+    // rectangle.
+    const projectilesCopied = await copyGeneratedProjectiles({
+      storage,
+      projectiles: draft.projectiles,
+      destDir: path.join(characterOutputDir, 'projectiles'),
+    });
+    filesCopied.push(...projectilesCopied);
+
     // Generated SFX live outside the fighter pack, at characters/{id}/assets/sounds/
     const soundsCopied = await copyStorageAssets({
       storage,
@@ -107,6 +123,40 @@ export async function exportCharacterToRuntime({ runtime, characterId, outputDir
     filesCopied,
     config,
   };
+}
+
+/**
+ * Copy generated projectile sprites into the runtime convention path
+ * `<destDir>/<animation>.png`. Each draft.projectiles entity carries a
+ * `sourceKey` (full storage key of the generated sprite, e.g.
+ * `characters/<id>/assets/source/<animation>_projectile.png`) and the runtime
+ * `animation` texture key. Skips entities without a readable source sprite.
+ *
+ * @param {{ storage: object, projectiles: object[]|undefined, destDir: string }} params
+ * @returns {Promise<string[]>} Paths of copied files
+ */
+async function copyGeneratedProjectiles({ storage, projectiles, destDir }) {
+  const copied = [];
+  const entities = Array.isArray(projectiles) ? projectiles : [];
+  const renderable = entities.filter((entity) => entity?.sourceKey && entity?.animation);
+  if (!renderable.length) return copied;
+
+  await mkdir(destDir, { recursive: true });
+  for (const entity of renderable) {
+    const destPath = path.join(destDir, `${entity.animation}.png`);
+    try {
+      if (typeof storage.absolutePath === 'function') {
+        await copyFile(storage.absolutePath(entity.sourceKey), destPath);
+      } else {
+        await writeFile(destPath, await storage.getBytes(entity.sourceKey));
+      }
+      copied.push(destPath);
+    } catch {
+      // Source sprite missing/unreadable (entity defined but never generated) —
+      // the runtime falls back to a rectangle; skip rather than fail the export.
+    }
+  }
+  return copied;
 }
 
 /**

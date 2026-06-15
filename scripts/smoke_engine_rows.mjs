@@ -13,7 +13,7 @@
  */
 
 import assert from 'node:assert/strict';
-import { resolveStateSheet, STATE_ROW_MAP, stateRowFrame, STATE_ROW_TICKS } from '../src/core/animationRowPlayback.ts';
+import { resolveStateSheet, STATE_ROW_MAP, stateRowFrame, STATE_ROW_TICKS, isLoopingStateRow } from '../src/core/animationRowPlayback.ts';
 
 let passed = 0;
 let failed = 0;
@@ -55,14 +55,21 @@ test('owning only crouch does NOT redirect blockstun (per-row gate, not all-or-n
 });
 
 console.log('\n[B] resolveStateSheet — unmapped states always render base');
-test('idle / walk / hitstun / landing / dead have no row mapping (stay base even if owned)', () => {
+test('idle / hitstun / landing / dead have no row mapping (stay base even if owned)', () => {
   const ownsEverything = () => true;
-  for (const state of ['idle', 'walk_forward', 'walk_back', 'hitstun', 'landing', 'getup', 'knockdown', 'dead', 'attack', 'juggle', 'grabbed']) {
+  for (const state of ['idle', 'hitstun', 'landing', 'getup', 'knockdown', 'dead', 'attack', 'juggle', 'grabbed']) {
     assert.equal(resolveStateSheet(state, ownsEverything), 'base', `${state} must render base`);
   }
 });
-test('STATE_ROW_MAP covers exactly the three state-driven rows', () => {
-  assert.deepEqual([...new Set(Object.values(STATE_ROW_MAP))].sort(), ['block', 'crouch', 'jump']);
+test('walk states render their own row when owned, else base', () => {
+  assert.equal(resolveStateSheet('walk_forward', ownsRows('walk_forward')), 'walk_forward');
+  assert.equal(resolveStateSheet('walk_back', ownsRows('walk_back')), 'walk_back');
+  // Fallback safety: a fighter without walk rows keeps the base-frame shuffle.
+  assert.equal(resolveStateSheet('walk_forward', ownsNothing), 'base');
+  assert.equal(resolveStateSheet('walk_back', ownsNothing), 'base');
+});
+test('STATE_ROW_MAP covers exactly the five state-driven rows', () => {
+  assert.deepEqual([...new Set(Object.values(STATE_ROW_MAP))].sort(), ['block', 'crouch', 'jump', 'walk_back', 'walk_forward']);
   // dash/grab/throw must NOT be state-mapped.
   for (const row of ['dash_forward', 'dash_back', 'grab', 'throw']) {
     assert.ok(!Object.values(STATE_ROW_MAP).includes(row), `${row} must not be state-mapped`);
@@ -86,6 +93,20 @@ test('single-frame and empty rows clamp to 0', () => {
 });
 test('negative elapsed clamps to frame 0 (visual-delay safety)', () => {
   assert.equal(stateRowFrame(-50, 6), 0);
+});
+
+console.log('\n[D] stateRowFrame — loop mode (walk cycles wrap)');
+test('loop=true wraps with modulo instead of holding', () => {
+  assert.equal(stateRowFrame(0, 6, true), 0);
+  assert.equal(stateRowFrame(STATE_ROW_TICKS * 6, 6, true), 0, 'wraps back to frame 0 after a full cycle');
+  assert.equal(stateRowFrame(STATE_ROW_TICKS * 7, 6, true), 1, 'continues into the next cycle');
+});
+test('isLoopingStateRow: walk rows loop; jump/crouch/block hold', () => {
+  assert.ok(isLoopingStateRow('walk_forward'));
+  assert.ok(isLoopingStateRow('walk_back'));
+  for (const row of ['jump', 'crouch', 'block', 'base', 'grab']) {
+    assert.ok(!isLoopingStateRow(row), `${row} must not loop`);
+  }
 });
 
 console.log(`\nEngine row-playback smoke test: ${passed} passed, ${failed} failed`);

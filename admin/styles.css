@@ -2002,3 +2002,66 @@ details[open] .dev-tools-summary {
   outline: none;
   border-color: var(--focus, #79a8ff);
 }
+
+/* Kit authoring — combos & projectiles (T-move-kit) */
+.kit-board {
+  margin-top: 16px;
+  border: 1px solid #2d3746;
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: #161c26;
+}
+.kit-warnings {
+  margin: 4px 0 12px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #2a2113;
+  border: 1px solid #6b5418;
+  color: #f2c14e;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.kit-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 900px) { .kit-cols { grid-template-columns: 1fr; } }
+.kit-col h4 { margin: 0 0 8px; font-size: 13px; color: #cdd6e4; }
+.kit-list { list-style: none; margin: 0 0 10px; padding: 0; display: grid; gap: 6px; }
+.kit-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid #2d3746;
+  border-radius: 6px;
+  background: #1b2230;
+}
+.kit-row-main { display: flex; align-items: center; gap: 8px; }
+.kit-row-main strong { font-size: 13px; }
+.kit-chain { color: #9fb3cc; font-size: 12px; }
+.kit-sub { color: #7d8aa0; font-size: 11px; }
+.kit-del {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid #4a3030;
+  color: #e88;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 2px 8px;
+}
+.kit-del:hover { background: #3a2020; }
+.kit-form { display: flex; flex-wrap: wrap; gap: 6px; }
+.kit-form input { flex: 1 1 120px; min-width: 0; padding: 6px 8px; background: #0f141c; border: 1px solid #2d3746; border-radius: 5px; color: #e6edf6; font-size: 12px; }
+.kit-form button, .kit-save {
+  padding: 6px 12px; border-radius: 5px; border: 1px solid #2f5fb0;
+  background: #1d3b6e; color: #dbe7ff; cursor: pointer; font-size: 12px;
+}
+.kit-form button:hover, .kit-save:hover { background: #244a8a; }
+.kit-fields { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+@media (max-width: 1200px) { .kit-fields { grid-template-columns: repeat(4, 1fr); } }
+.kit-field { display: flex; flex-direction: column; gap: 2px; }
+.kit-field span { font-size: 10px; color: #8595ab; text-transform: uppercase; letter-spacing: 0.03em; }
+.kit-field input { width: 100%; padding: 4px 6px; background: #0f141c; border: 1px solid #2d3746; border-radius: 4px; color: #e6edf6; font-size: 12px; }
+.kit-save { align-self: flex-start; }

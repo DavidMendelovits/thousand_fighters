@@ -53,6 +53,7 @@ export type TestbedSnapshot = {
 type Payload = {
   config: CharacterConfig;
   frameUrls: Partial<Record<SpriteSheetId, string[]>>;
+  projectileUrls?: Record<string, string>;
 };
 
 export class TestbedScene extends Phaser.Scene {
@@ -87,12 +88,17 @@ export class TestbedScene extends Phaser.Scene {
   }
 
   preload(): void {
-    const { config, frameUrls } = this.payload;
+    const { config, frameUrls, projectileUrls } = this.payload;
     for (const sheet of Object.keys(frameUrls) as SpriteSheetId[]) {
       const urls = frameUrls[sheet] ?? [];
       urls.forEach((url, index) => {
         if (url) this.load.image(`${config.id}:${sheet}:${index}`, url);
       });
+    }
+    // Load projectile textures keyed by `projectile.animation` so ProjectilePool
+    // renders the generated sprite instead of a fallback rectangle.
+    for (const [animation, url] of Object.entries(projectileUrls ?? {})) {
+      if (url) this.load.image(animation, url);
     }
   }
 

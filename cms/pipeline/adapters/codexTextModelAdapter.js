@@ -3,6 +3,8 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 
+import { characterContentDraftSchema, characterContentDraftGuidance } from './characterContentDraftSchema.js';
+
 const DEFAULT_CODEX_BIN = 'codex';
 const DEFAULT_TIMEOUT_MS = 180_000;
 
@@ -104,11 +106,7 @@ function buildStructuredPrompt(request) {
 
   if (task === 'character-content-draft') {
     return [
-      'You draft game-ready Thousand Fighters character content as strict JSON.',
-      'Create a playable fighting-game character from the brief.',
-      'Keep animation ids aligned with these move rows: punch, kick, special_1, special_2.',
-      'Use six-frame generated fighter assumptions unless context explicitly says otherwise.',
-      'Moves should be mechanically readable and usable by the runtime config.',
+      ...characterContentDraftGuidance(),
       '',
       'Return ONLY valid JSON matching this schema (no markdown, no explanation):',
       JSON.stringify(characterContentDraftSchema(), null, 2),
@@ -173,104 +171,6 @@ function extractContent(codexOutput) {
     })
     .join('\n')
     .trim();
-}
-
-function characterContentDraftSchema() {
-  return {
-    type: 'object',
-    required: ['displayName', 'description', 'stats', 'sprite', 'moves'],
-    properties: {
-      displayName: { type: 'string' },
-      description: { type: 'string' },
-      stats: {
-        type: 'object',
-        required: ['walkForwardSpeed', 'walkBackSpeed', 'jumpVelocity', 'jumpForwardVelocity', 'jumpBackVelocity', 'gravity', 'maxFallSpeed', 'maxHealth'],
-        properties: {
-          walkForwardSpeed: { type: 'number' },
-          walkBackSpeed: { type: 'number' },
-          jumpVelocity: { type: 'number' },
-          jumpForwardVelocity: { type: 'number' },
-          jumpBackVelocity: { type: 'number' },
-          gravity: { type: 'number' },
-          maxFallSpeed: { type: 'number' },
-          maxHealth: { type: 'integer' },
-        },
-      },
-      sprite: {
-        type: 'object',
-        required: ['basePath', 'scale', 'relativeHeight', 'frameCounts'],
-        properties: {
-          basePath: { type: 'string' },
-          scale: { type: 'number' },
-          relativeHeight: {
-            type: 'number',
-            description: 'On-screen height relative to a standard fighter. 1.0 = standard, up to 1.6 for giants, down to 0.5 for tiny fighters.',
-          },
-          frameCounts: {
-            type: 'object',
-            required: ['base', 'punch', 'kick', 'special_1', 'special_2'],
-            properties: {
-              base: { type: 'integer' },
-              punch: { type: 'integer' },
-              kick: { type: 'integer' },
-              special_1: { type: 'integer' },
-              special_2: { type: 'integer' },
-            },
-          },
-        },
-      },
-      moves: {
-        type: 'array',
-        minItems: 4,
-        items: {
-          type: 'object',
-          required: ['id', 'displayName', 'description', 'animation', 'trigger', 'phases'],
-          properties: {
-            id: { type: 'string' },
-            displayName: { type: 'string' },
-            description: { type: 'string' },
-            animation: { type: 'string', enum: ['punch', 'kick', 'special_1', 'special_2'] },
-            trigger: {
-              type: 'object',
-              required: ['sequence'],
-              properties: { sequence: { type: 'array', items: { type: 'string' } } },
-            },
-            phases: {
-              type: 'array',
-              minItems: 3,
-              items: {
-                type: 'object',
-                required: ['name', 'frames', 'events'],
-                properties: {
-                  name: { type: 'string' },
-                  frames: { type: 'integer' },
-                  events: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      required: ['frame', 'event'],
-                      properties: {
-                        frame: { type: 'integer' },
-                        event: {
-                          type: 'object',
-                          required: ['type'],
-                          properties: {
-                            type: { type: 'string' },
-                            hitbox: {},
-                            projectile: {},
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  };
 }
 
 function spawnWithStdin(command, args, stdinText, options = {}) {

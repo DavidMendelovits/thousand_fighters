@@ -1,3 +1,5 @@
+import { characterContentDraftSchema, characterContentDraftGuidance } from './characterContentDraftSchema.js';
+
 const DEFAULT_MODEL = 'gpt-5.5';
 const DEFAULT_BASE_URL = 'https://api.openai.com/v1';
 
@@ -146,15 +148,7 @@ export class OpenAiResponsesTextModelAdapter {
 
 function instructionsFor(request) {
   if (request.task === 'character-content-draft') {
-    return [
-      'You draft game-ready Thousand Fighters character content as strict JSON.',
-      'Create a playable fighting-game character from the brief.',
-      'Keep animation ids aligned with these move rows: punch, kick, special_1, special_2.',
-      'Use six-frame generated fighter assumptions unless context explicitly says otherwise.',
-      'Set sprite.relativeHeight from the brief: 1.0 for a standard fighter, up to 1.6 for giants, down to 0.5 for tiny fighters. This is how intended character height reaches the game.',
-      'Moves should be mechanically readable and usable by the runtime config.',
-      'Do not include markdown. Return only JSON matching the supplied schema.',
-    ].join('\n');
+    return characterContentDraftGuidance().join('\n');
   }
 
   return 'Return strict JSON matching the supplied schema. Do not include markdown.';
@@ -180,185 +174,6 @@ function schemaFor(schemaName) {
     type: 'object',
     additionalProperties: true,
     properties: {},
-  };
-}
-
-function characterContentDraftSchema() {
-  return {
-    type: 'object',
-    additionalProperties: false,
-    required: ['displayName', 'description', 'stats', 'sprite', 'moves'],
-    properties: {
-      displayName: { type: 'string' },
-      description: { type: 'string' },
-      stats: {
-        type: 'object',
-        additionalProperties: false,
-        required: [
-          'walkForwardSpeed',
-          'walkBackSpeed',
-          'jumpVelocity',
-          'jumpForwardVelocity',
-          'jumpBackVelocity',
-          'gravity',
-          'maxFallSpeed',
-          'maxHealth',
-        ],
-        properties: {
-          walkForwardSpeed: { type: 'number' },
-          walkBackSpeed: { type: 'number' },
-          jumpVelocity: { type: 'number' },
-          jumpForwardVelocity: { type: 'number' },
-          jumpBackVelocity: { type: 'number' },
-          gravity: { type: 'number' },
-          maxFallSpeed: { type: 'number' },
-          maxHealth: { type: 'integer' },
-        },
-      },
-      sprite: {
-        type: 'object',
-        additionalProperties: false,
-        required: ['basePath', 'scale', 'relativeHeight', 'frameCounts'],
-        properties: {
-          basePath: { type: 'string' },
-          scale: { type: 'number' },
-          relativeHeight: {
-            type: 'number',
-            description: 'On-screen height relative to a standard fighter. 1.0 = standard. Giants/towering characters up to 1.6, small/childlike characters down to 0.5. Render scale is derived from the art; this is the only place intended height lives.',
-          },
-          frameCounts: {
-            type: 'object',
-            additionalProperties: false,
-            required: ['base', 'punch', 'kick', 'special_1', 'special_2'],
-            properties: {
-              base: { type: 'integer' },
-              punch: { type: 'integer' },
-              kick: { type: 'integer' },
-              special_1: { type: 'integer' },
-              special_2: { type: 'integer' },
-            },
-          },
-        },
-      },
-      moves: {
-        type: 'array',
-        minItems: 4,
-        items: moveSchema(),
-      },
-    },
-  };
-}
-
-function moveSchema() {
-  return {
-    type: 'object',
-    additionalProperties: false,
-    required: ['id', 'displayName', 'description', 'animation', 'trigger', 'phases'],
-    properties: {
-      id: { type: 'string' },
-      displayName: { type: 'string' },
-      description: { type: 'string' },
-      animation: {
-        type: 'string',
-        enum: ['punch', 'kick', 'special_1', 'special_2'],
-      },
-      trigger: {
-        type: 'object',
-        additionalProperties: false,
-        required: ['sequence'],
-        properties: {
-          sequence: {
-            type: 'array',
-            items: { type: 'string' },
-          },
-        },
-      },
-      phases: {
-        type: 'array',
-        minItems: 3,
-        items: phaseSchema(),
-      },
-    },
-  };
-}
-
-function phaseSchema() {
-  return {
-    type: 'object',
-    additionalProperties: false,
-    required: ['name', 'frames', 'events'],
-    properties: {
-      name: { type: 'string' },
-      frames: { type: 'integer' },
-      events: {
-        type: 'array',
-        items: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['frame', 'event'],
-          properties: {
-            frame: { type: 'integer' },
-            event: eventSchema(),
-          },
-        },
-      },
-    },
-  };
-}
-
-function eventSchema() {
-  return {
-    type: 'object',
-    additionalProperties: false,
-    required: ['type', 'hitbox', 'projectile'],
-    properties: {
-      type: { type: 'string' },
-      hitbox: {
-        anyOf: [
-          hitboxSchema(),
-          { type: 'null' },
-        ],
-      },
-      projectile: {
-        anyOf: [
-          projectileSchema(),
-          { type: 'null' },
-        ],
-      },
-    },
-  };
-}
-
-function hitboxSchema() {
-  return {
-    type: 'object',
-    additionalProperties: false,
-    required: ['x', 'y', 'width', 'height', 'damage', 'knockbackX', 'knockbackY', 'hitstun'],
-    properties: {
-      x: { type: 'number' },
-      y: { type: 'number' },
-      width: { type: 'number' },
-      height: { type: 'number' },
-      damage: { type: 'integer' },
-      knockbackX: { type: 'number' },
-      knockbackY: { type: 'number' },
-      hitstun: { type: 'integer' },
-    },
-  };
-}
-
-function projectileSchema() {
-  return {
-    type: 'object',
-    additionalProperties: false,
-    required: ['id', 'assetPath', 'speedX', 'speedY', 'damage'],
-    properties: {
-      id: { type: 'string' },
-      assetPath: { type: 'string' },
-      speedX: { type: 'number' },
-      speedY: { type: 'number' },
-      damage: { type: 'integer' },
-    },
   };
 }
 

@@ -47,6 +47,12 @@ export const ANIMATION_ROWS = [
   { id: 'block', label: 'Block', group: 'Defense', frameCount: 6, role: 'defense', moveAnimation: false },
   { id: 'grab', label: 'Grab', group: 'Grapple', frameCount: 6, role: 'grab', moveAnimation: true },
   { id: 'throw', label: 'Throw', group: 'Grapple', frameCount: 6, role: 'grab', moveAnimation: true },
+  // walk_forward/walk_back are state-driven like jump/crouch/block, but they
+  // LOOP (a walk cycle) rather than play-once-and-hold. The engine plays them
+  // via the state→row map when a fighter owns the row, falling back to the
+  // base-frame walk shuffle otherwise — so existing fighters are unchanged.
+  { id: 'walk_forward', label: 'Walk Forward', group: 'Movement', frameCount: 6, role: 'movement', moveAnimation: false },
+  { id: 'walk_back', label: 'Walk Back', group: 'Movement', frameCount: 6, role: 'movement', moveAnimation: false },
 ];
 
 /** Ordered list of every row id. */

@@ -190,6 +190,22 @@ test('a draft spawn_projectile referencing an entity converts to a full config',
   assert.ok(!('projectileId' in spawn.event));
 });
 
+test('a spawn event with neither projectile nor projectileId is neutralized, not crash-prone (codex P1)', () => {
+  // The strict schema makes projectileId required-but-nullable, so a model can
+  // emit a payload-less spawn. convert must NOT pass it through as a bare
+  // spawn_projectile (MoveExecutor would hand undefined to ProjectilePool and
+  // crash on config.spawnPolicy). It becomes a no-op hitbox_end instead.
+  const draft = {
+    id: 'p',
+    moves: [{ id: 'm', animation: 'special_1', trigger: { sequence: ['lp'] },
+      phases: [{ frames: 4, events: [{ onFrame: 0, event: { type: 'spawn_projectile', projectileId: null, projectile: null, offsetX: 10, offsetY: -10 } }] }] }],
+    projectiles: [],
+  };
+  const config = convertDraftToCharacterConfig({ draft, frameData: null, manifest: null });
+  const types = config.moves[0].phases.flatMap((p) => p.events).map((e) => e.event.type);
+  assert.ok(!types.includes('spawn_projectile'), 'no bare spawn_projectile reaches the runtime');
+});
+
 // ---------------------------------------------------------------------------
 console.log('\n[D] draft.projectiles persistence round-trip');
 

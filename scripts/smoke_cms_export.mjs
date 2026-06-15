@@ -203,6 +203,9 @@ test('lp stays lp', () => assert.equal(normalizeInputToken('lp'), 'lp'));
 test('heavy_punch -> hp', () => assert.equal(normalizeInputToken('heavy_punch'), 'hp'));
 test('light_kick -> lk', () => assert.equal(normalizeInputToken('light_kick'), 'lk'));
 test('medium_kick -> mk', () => assert.equal(normalizeInputToken('medium_kick'), 'mk'));
+test('bare punch -> lp (else moves never bind to input)', () => assert.equal(normalizeInputToken('punch'), 'lp'));
+test('bare kick -> lk', () => assert.equal(normalizeInputToken('kick'), 'lk'));
+test('PUNCH (uppercase) -> lp', () => assert.equal(normalizeInputToken('PUNCH'), 'lp'));
 test('forward stays forward', () => assert.equal(normalizeInputToken('forward'), 'forward'));
 test('down-forward stays down-forward', () => assert.equal(normalizeInputToken('down-forward'), 'down-forward'));
 test('unknown passthrough', () => assert.equal(normalizeInputToken('UNKNOWN_TOKEN'), 'UNKNOWN_TOKEN'));
@@ -278,6 +281,20 @@ test('sprite config generated', () => {
   assert.ok(config.sprite.frameCounts);
   assert.ok(config.sprite.sheets);
   assert.ok(config.sprite.stateFrames);
+});
+
+test('frameCounts overlay manifest so generated rows (walk/grab/etc) render', () => {
+  // Draft declares only the canonical 5; a row generated later lands in the
+  // manifest. convert must surface it (else the row never renders), while
+  // keeping draft-declared counts the manifest doesn't mention.
+  const overlaid = convertDraftToCharacterConfig({
+    draft: { id: 'fc', sprite: { frameCounts: { base: 6, punch: 6 } } },
+    frameData: null,
+    manifest: { id: 'fc', frameCounts: { base: 6, walk_forward: 6, grab: 5 } },
+  });
+  assert.equal(overlaid.sprite.frameCounts.walk_forward, 6, 'extracted walk row surfaced from manifest');
+  assert.equal(overlaid.sprite.frameCounts.grab, 5, 'extracted grab row surfaced from manifest');
+  assert.equal(overlaid.sprite.frameCounts.punch, 6, 'draft-declared row kept when manifest omits it');
 });
 
 test('animations map generated', () => {
@@ -506,6 +523,36 @@ try {
       'sounds/hit.wav should be in filesCopied',
     );
     assert.equal(await readFile(soundPath, 'utf8'), 'fake wav');
+  });
+
+  // Generated projectile sprites live at source/<animation>_projectile.png and
+  // must be copied to projectiles/<animation>.png so the runtime loads them
+  // (else ProjectilePool renders a fallback rectangle) — T-move-kit P3.
+  const projAnimation = 'smoke_fighter_fireball';
+  const projSourceKey = `characters/smoke_fighter/assets/source/${projAnimation}_projectile.png`;
+  await storage.putBytes(projSourceKey, Buffer.from('fake projectile png'), { contentType: 'image/png' });
+  await repository.saveDraft('smoke_fighter', {
+    ...FIXTURE_DRAFT,
+    projectiles: [{
+      id: 'fireball',
+      animation: projAnimation,
+      sourceKey: projSourceKey,
+      width: 48, height: 24, speed: 8,
+      velocity: { x: 8, y: 0, relativeToFacing: true },
+      lifetime: 90,
+      hitbox: { x: -24, y: -12, width: 48, height: 24, damage: 70, hitstun: 20, blockstun: 14, knockback: { x: 5, y: 0 }, level: 'mid' },
+    }],
+  });
+  const resultWithProjectile = await exportCharacterToRuntime({
+    runtime: { repository, storage }, characterId: 'smoke_fighter', outputDir, copyAssets: true,
+  });
+  test('export copies generated projectile sprite to projectiles/<animation>.png', async () => {
+    const projPath = path.join(outputDir, 'smoke_fighter', 'projectiles', `${projAnimation}.png`);
+    assert.ok(
+      resultWithProjectile.filesCopied.includes(projPath),
+      'projectile sprite should be in filesCopied',
+    );
+    assert.equal(await readFile(projPath, 'utf8'), 'fake projectile png');
   });
 } finally {
   if (rootDir) await rm(rootDir, { force: true, recursive: true });

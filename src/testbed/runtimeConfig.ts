@@ -1,5 +1,6 @@
 import { SHEET_IDS } from '../../shared/animationRows.js';
 import type { CharacterConfig, SpriteSheetId } from '../schema/types';
+import { collectProjectileAnimations } from '../core/projectileAssets';
 
 /**
  * Loads a CMS character as a runtime CharacterConfig for the testbed.
@@ -25,6 +26,8 @@ export type TestbedConfig = {
   config: CharacterConfig;
   /** Frame image URLs keyed by sheet, frame-indexed (0-based). */
   frameUrls: Partial<Record<SpriteSheetId, string[]>>;
+  /** Projectile texture URLs keyed by `projectile.animation`. */
+  projectileUrls: Record<string, string>;
   warnings: string[];
 };
 
@@ -47,6 +50,18 @@ export async function loadTestbedConfig(characterId: string): Promise<TestbedCon
 
   const byRelativePath = new Map<string, AssetRecord>();
   for (const asset of assets ?? []) byRelativePath.set(asset.relativePath, asset);
+
+  // Projectile sprites: convert inlines `projectile.animation` into spawn events.
+  // A generated projectile's sprite is stored at `source/<animation>_projectile.png`
+  // — map each animation to that asset's apiUrl so the testbed can load the
+  // texture (else ProjectilePool renders a fallback rectangle). Resolved up front
+  // so it survives the no-frames early-return below.
+  const projectileUrls: Record<string, string> = {};
+  for (const animation of collectProjectileAnimations(config)) {
+    const asset = findProjectileAsset(byRelativePath, animation);
+    if (asset) projectileUrls[animation] = asset.apiUrl;
+    else warnings.push(`projectile "${animation}": sprite not found in assets (renders as a box until generated).`);
+  }
 
   const frameUrls: Partial<Record<SpriteSheetId, string[]>> = {};
   const frameCounts = config.sprite.frameCounts ?? {};
@@ -76,13 +91,13 @@ export async function loadTestbedConfig(characterId: string): Promise<TestbedCon
     config.sprite = undefined;
     warnings.length = 0;
     warnings.push('No extracted sprite frames — rendering a placeholder box. Run frame extraction to see sprites.');
-    return { config, frameUrls: {}, warnings };
+    return { config, frameUrls: {}, projectileUrls, warnings };
   }
 
   if (config.moves.length === 0) warnings.push('Draft has no moves defined.');
   warnings.push('Hurtboxes are engine-default boxes derived from frame data (drafts do not author hurtboxes yet).');
 
-  return { config, frameUrls, warnings };
+  return { config, frameUrls, projectileUrls, warnings };
 }
 
 /**
@@ -104,6 +119,21 @@ function findFrameAsset(
   const suffix = `sprites/${sheet}/${sheet}_${String(index + 1).padStart(3, '0')}.png`;
   for (const [relativePath, asset] of byRelativePath) {
     if (relativePath.endsWith(suffix)) return asset;
+  }
+  return undefined;
+}
+
+/**
+ * Map a projectile animation key to its source sprite asset. generate_projectile
+ * stores it at `source/<animation>_projectile.png`; match on that suffix.
+ */
+function findProjectileAsset(
+  byRelativePath: Map<string, AssetRecord>,
+  animation: string,
+): AssetRecord | undefined {
+  const suffix = `${animation}_projectile.png`;
+  for (const [relativePath, asset] of byRelativePath) {
+    if (relativePath === `source/${suffix}` || relativePath.endsWith(`/${suffix}`)) return asset;
   }
   return undefined;
 }

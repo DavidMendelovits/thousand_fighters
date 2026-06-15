@@ -84,6 +84,21 @@ export const ROW_PROMPT_PROFILES = {
       'frames 1-2 = wind-up with the held opponent, frame 3 = lifting/spinning, frame 4 = release at peak force, frame 5 = follow-through, frame 6 = recovery toward neutral',
     shortRoles: 'Frame roles: 1-2 wind-up, 3 lift, 4 release, 5 follow-through, 6 recovery.',
   },
+
+  // Walk rows LOOP (the engine wraps with modulo), so frame 6 must flow back
+  // into frame 1 — a continuous step cycle, not a settle-to-neutral arc.
+  walk_forward: {
+    description: 'walk forward — a seamless looping forward walk cycle, facing right, advancing',
+    frameRoles:
+      'a 6-frame forward walk LOOP: frame 1 = contact (lead foot plants forward), frames 2-3 = weight shifts onto the lead foot and the body passes over it, frame 4 = the rear foot swings through (opposite contact), frames 5-6 = transition so frame 6 leads cleanly back into frame 1. Feet advance, silhouette translates forward, loop closes seamlessly.',
+    shortRoles: 'This is a LOOPING walk cycle: frame 6 must flow back into frame 1. Frame roles: 1 lead-foot contact, 2-3 pass-over, 4 opposite contact, 5-6 cycle back to 1.',
+  },
+  walk_back: {
+    description: 'walk backward — a seamless looping backward/retreating walk cycle, facing right, stepping back',
+    frameRoles:
+      'a 6-frame backward walk LOOP: frame 1 = rear foot plants behind, frames 2-3 = weight shifts back, frame 4 = opposite foot steps back (opposite contact), frames 5-6 = transition so frame 6 leads cleanly back into frame 1. The fighter still FACES right but retreats leftward; loop closes seamlessly.',
+    shortRoles: 'This is a LOOPING backpedal cycle: frame 6 must flow back into frame 1, still facing right. Frame roles: 1 rear-foot plant, 2-3 weight back, 4 opposite step, 5-6 cycle back to 1.',
+  },
 };
 
 /**

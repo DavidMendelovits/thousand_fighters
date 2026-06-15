@@ -1,0 +1,687 @@
+{
+  "id": "robot",
+  "displayName": "Chef's Kiss Chimp",
+  "walkForwardSpeed": 3.35,
+  "walkBackSpeed": 2.25,
+  "jumpVelocity": 11.2,
+  "jumpForwardVelocity": 4.15,
+  "jumpBackVelocity": 3.35,
+  "gravity": 0.58,
+  "maxFallSpeed": 12.5,
+  "maxHealth": 960,
+  "pivotOffsetY": 0,
+  "sprite": {
+    "basePath": "/fighters/robot",
+    "scale": 0.52,
+    "frameCounts": {
+      "base": 6,
+      "punch": 6,
+      "kick": 6,
+      "special_1": 6,
+      "special_2": 6
+    },
+    "sheets": {
+      "base": "sheets/base.png",
+      "punch": "sheets/punch.png",
+      "kick": "sheets/kick.png",
+      "special_1": "sheets/special_1.png",
+      "special_2": "sheets/special_2.png"
+    },
+    "frames": {
+      "base": [
+        {
+          "file": "sprites/base/base_001.png",
+          "width": 226,
+          "height": 295,
+          "anchor": {
+            "x": 113,
+            "y": 257
+          }
+        },
+        {
+          "file": "sprites/base/base_002.png",
+          "width": 266,
+          "height": 286,
+          "anchor": {
+            "x": 133,
+            "y": 248
+          }
+        },
+        {
+          "file": "sprites/base/base_003.png",
+          "width": 329,
+          "height": 286,
+          "anchor": {
+            "x": 164,
+            "y": 248
+          }
+        },
+        {
+          "file": "sprites/base/base_004.png",
+          "width": 274,
+          "height": 291,
+          "anchor": {
+            "x": 137,
+            "y": 253
+          }
+        },
+        {
+          "file": "sprites/base/base_005.png",
+          "width": 308,
+          "height": 286,
+          "anchor": {
+            "x": 154,
+            "y": 248
+          }
+        },
+        {
+          "file": "sprites/base/base_006.png",
+          "width": 278,
+          "height": 286,
+          "anchor": {
+            "x": 139,
+            "y": 248
+          }
+        }
+      ],
+      "punch": [
+        {
+          "file": "sprites/punch/punch_001.png",
+          "width": 267,
+          "height": 286,
+          "anchor": {
+            "x": 133,
+            "y": 248
+          }
+        },
+        {
+          "file": "sprites/punch/punch_002.png",
+          "width": 316,
+          "height": 286,
+          "anchor": {
+            "x": 158,
+            "y": 248
+          }
+        },
+        {
+          "file": "sprites/punch/punch_003.png",
+          "width": 350,
+          "height": 286,
+          "anchor": {
+            "x": 175,
+            "y": 248
+          }
+        },
+        {
+          "file": "sprites/punch/punch_004.png",
+          "width": 273,
+          "height": 286,
+          "anchor": {
+            "x": 136,
+            "y": 248
+          }
+        },
+        {
+          "file": "sprites/punch/punch_005.png",
+          "width": 244,
+          "height": 286,
+          "anchor": {
+            "x": 122,
+            "y": 248
+          }
+        },
+        {
+          "file": "sprites/punch/punch_006.png",
+          "width": 224,
+          "height": 286,
+          "anchor": {
+            "x": 112,
+            "y": 248
+          }
+        }
+      ],
+      "kick": [
+        {
+          "file": "sprites/kick/kick_001.png",
+          "width": 220,
+          "height": 286,
+          "anchor": {
+            "x": 110,
+            "y": 248
+          }
+        },
+        {
+          "file": "sprites/kick/kick_002.png",
+          "width": 301,
+          "height": 286,
+          "anchor": {
+            "x": 150,
+            "y": 248
+          }
+        },
+        {
+          "file": "sprites/kick/kick_003.png",
+          "width": 325,
+          "height": 286,
+          "anchor": {
+            "x": 162,
+            "y": 248
+          }
+        },
+        {
+          "file": "sprites/kick/kick_004.png",
+          "width": 274,
+          "height": 286,
+          "anchor": {
+            "x": 137,
+            "y": 248
+          }
+        },
+        {
+          "file": "sprites/kick/kick_005.png",
+          "width": 278,
+          "height": 286,
+          "anchor": {
+            "x": 139,
+            "y": 248
+          }
+        },
+        {
+          "file": "sprites/kick/kick_006.png",
+          "width": 231,
+          "height": 286,
+          "anchor": {
+            "x": 115,
+            "y": 248
+          }
+        }
+      ],
+      "special_1": [
+        {
+          "file": "sprites/special_1/special_1_001.png",
+          "width": 286,
+          "height": 286,
+          "anchor": {
+            "x": 143,
+            "y": 248
+          }
+        },
+        {
+          "file": "sprites/special_1/special_1_002.png",
+          "width": 313,
+          "height": 286,
+          "anchor": {
+            "x": 156,
+            "y": 248
+          }
+        },
+        {
+          "file": "sprites/special_1/special_1_003.png",
+          "width": 311,
+          "height": 287,
+          "anchor": {
+            "x": 155,
+            "y": 249
+          }
+        },
+        {
+          "file": "sprites/special_1/special_1_004.png",
+          "width": 381,
+          "height": 286,
+          "anchor": {
+            "x": 190,
+            "y": 248
+          }
+        },
+        {
+          "file": "sprites/special_1/special_1_005.png",
+          "width": 263,
+          "height": 286,
+          "anchor": {
+            "x": 131,
+            "y": 248
+          }
+        },
+        {
+          "file": "sprites/special_1/special_1_006.png",
+          "width": 344,
+          "height": 286,
+          "anchor": {
+            "x": 172,
+            "y": 248
+          }
+        }
+      ],
+      "special_2": [
+        {
+          "file": "sprites/special_2/special_2_001.png",
+          "width": 233,
+          "height": 286,
+          "anchor": {
+            "x": 116,
+            "y": 248
+          }
+        },
+        {
+          "file": "sprites/special_2/special_2_002.png",
+          "width": 346,
+          "height": 286,
+          "anchor": {
+            "x": 173,
+            "y": 248
+          }
+        },
+        {
+          "file": "sprites/special_2/special_2_003.png",
+          "width": 240,
+          "height": 286,
+          "anchor": {
+            "x": 120,
+            "y": 248
+          }
+        },
+        {
+          "file": "sprites/special_2/special_2_004.png",
+          "width": 252,
+          "height": 286,
+          "anchor": {
+            "x": 126,
+            "y": 248
+          }
+        },
+        {
+          "file": "sprites/special_2/special_2_005.png",
+          "width": 252,
+          "height": 286,
+          "anchor": {
+            "x": 126,
+            "y": 248
+          }
+        },
+        {
+          "file": "sprites/special_2/special_2_006.png",
+          "width": 252,
+          "height": 286,
+          "anchor": {
+            "x": 126,
+            "y": 248
+          }
+        }
+      ]
+    },
+    "stateFrames": {
+      "idle": [
+        0,
+        1
+      ],
+      "walk_forward": [
+        1,
+        0
+      ],
+      "walk_back": [
+        1,
+        0
+      ],
+      "crouch": 2,
+      "airborne": 3,
+      "landing": 2,
+      "blockstun": 1,
+      "hitstun": 4,
+      "juggle": 3,
+      "knockdown": 4,
+      "getup": 2,
+      "dead": 4
+    }
+  },
+  "hurtboxes": {
+    "idle": {
+      "x": -24,
+      "y": -114,
+      "width": 48,
+      "height": 114
+    },
+    "walk_forward": {
+      "x": -24,
+      "y": -114,
+      "width": 48,
+      "height": 114
+    },
+    "walk_back": {
+      "x": -24,
+      "y": -114,
+      "width": 48,
+      "height": 114
+    },
+    "crouch": {
+      "x": -28,
+      "y": -74,
+      "width": 56,
+      "height": 74
+    },
+    "attack": {
+      "x": -26,
+      "y": -116,
+      "width": 52,
+      "height": 116
+    },
+    "airborne": {
+      "x": -24,
+      "y": -105,
+      "width": 48,
+      "height": 105
+    },
+    "hitstun": {
+      "x": -24,
+      "y": -109,
+      "width": 48,
+      "height": 109
+    },
+    "blockstun": {
+      "x": -24,
+      "y": -109,
+      "width": 48,
+      "height": 109
+    },
+    "juggle": {
+      "x": -24,
+      "y": -105,
+      "width": 48,
+      "height": 105
+    }
+  },
+  "guardboxes": {},
+  "animations": {
+    "idle": "idle",
+    "walk_forward": "walk_forward",
+    "walk_back": "walk_back",
+    "crouch": "crouch",
+    "airborne": "airborne",
+    "landing": "landing",
+    "attack": "attack",
+    "hitstun": "hitstun",
+    "blockstun": "blockstun",
+    "knockdown": "knockdown",
+    "getup": "getup",
+    "dead": "dead"
+  },
+  "moves": [
+    {
+      "id": "mise_en_place_jab",
+      "displayName": "Mise Jab",
+      "animation": "punch",
+      "trigger": {
+        "allowedStates": [
+          "idle",
+          "walk_forward",
+          "walk_back"
+        ],
+        "sequence": [
+          "lp"
+        ],
+        "window": 6
+      },
+      "phases": [
+        {
+          "name": "startup",
+          "frames": 3,
+          "cancellable": false,
+          "events": []
+        },
+        {
+          "name": "active",
+          "frames": 3,
+          "cancellable": false,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "hitbox_active",
+                "id": "default",
+                "hitbox": {
+                  "x": 18,
+                  "y": -88,
+                  "width": 46,
+                  "height": 30,
+                  "damage": 34,
+                  "hitstun": 12,
+                  "blockstun": 7,
+                  "knockback": {
+                    "x": 3.2,
+                    "y": 0
+                  },
+                  "level": "mid"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "recovery",
+          "frames": 8,
+          "cancellable": true,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "hitbox_end"
+              }
+            }
+          ]
+        }
+      ],
+      "cancelInto": []
+    },
+    {
+      "id": "stove_step_kick",
+      "displayName": "Stove Step Kick",
+      "animation": "kick",
+      "trigger": {
+        "allowedStates": [
+          "idle",
+          "walk_forward",
+          "walk_back"
+        ],
+        "sequence": [
+          "down",
+          "lk"
+        ],
+        "window": 6
+      },
+      "phases": [
+        {
+          "name": "startup",
+          "frames": 4,
+          "cancellable": false,
+          "events": []
+        },
+        {
+          "name": "active",
+          "frames": 4,
+          "cancellable": false,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "hitbox_active",
+                "id": "default",
+                "hitbox": {
+                  "x": 16,
+                  "y": -34,
+                  "width": 64,
+                  "height": 22,
+                  "damage": 40,
+                  "hitstun": 14,
+                  "blockstun": 8,
+                  "knockback": {
+                    "x": 3.6,
+                    "y": 0
+                  },
+                  "level": "mid"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "recovery",
+          "frames": 10,
+          "cancellable": true,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "hitbox_end"
+              }
+            }
+          ]
+        }
+      ],
+      "cancelInto": []
+    },
+    {
+      "id": "chefs_kiss_puff",
+      "displayName": "Chef's Kiss Puff",
+      "animation": "special_1",
+      "trigger": {
+        "allowedStates": [
+          "idle",
+          "walk_forward",
+          "walk_back"
+        ],
+        "sequence": [
+          "down",
+          "down-forward",
+          "forward",
+          "hp"
+        ],
+        "window": 6
+      },
+      "phases": [
+        {
+          "name": "startup",
+          "frames": 10,
+          "cancellable": false,
+          "events": []
+        },
+        {
+          "name": "release",
+          "frames": 4,
+          "cancellable": false,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "spawn_projectile",
+                "offsetX": 40,
+                "offsetY": -60,
+                "projectile": {
+                  "id": "chefs_kiss_puff",
+                  "animation": "special_2",
+                  "width": 32,
+                  "height": 32,
+                  "speed": 5.6,
+                  "velocity": {
+                    "x": 5.6,
+                    "y": -0.15,
+                    "relativeToFacing": true
+                  },
+                  "lifetime": 120,
+                  "hitbox": {
+                    "x": -16,
+                    "y": -16,
+                    "width": 32,
+                    "height": 32,
+                    "damage": 58,
+                    "hitstun": 18,
+                    "blockstun": 12,
+                    "knockback": {
+                      "x": 3,
+                      "y": 0
+                    },
+                    "level": "mid"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "recovery",
+          "frames": 20,
+          "cancellable": true,
+          "events": []
+        }
+      ],
+      "cancelInto": []
+    },
+    {
+      "id": "toque_pop_uppercut",
+      "displayName": "Toque Pop Uppercut",
+      "animation": "special_2",
+      "trigger": {
+        "allowedStates": [
+          "idle",
+          "walk_forward",
+          "walk_back"
+        ],
+        "sequence": [
+          "forward",
+          "down",
+          "down-forward",
+          "hp"
+        ],
+        "window": 6
+      },
+      "phases": [
+        {
+          "name": "startup",
+          "frames": 5,
+          "cancellable": false,
+          "events": []
+        },
+        {
+          "name": "active",
+          "frames": 8,
+          "cancellable": false,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "hitbox_active",
+                "id": "default",
+                "hitbox": {
+                  "x": 8,
+                  "y": -128,
+                  "width": 52,
+                  "height": 82,
+                  "damage": 86,
+                  "hitstun": 32,
+                  "blockstun": 19,
+                  "knockback": {
+                    "x": 2.8,
+                    "y": -8.4
+                  },
+                  "level": "mid"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "recovery",
+          "frames": 24,
+          "cancellable": true,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "hitbox_end"
+              }
+            }
+          ]
+        }
+      ],
+      "cancelInto": []
+    }
+  ]
+}

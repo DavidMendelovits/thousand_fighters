@@ -18,7 +18,7 @@ import type {
   SpriteSheetId,
 } from '../schema/types';
 import { MOVE_SHEET_IDS } from '../../shared/animationRows.js';
-import { resolveStateSheet, stateRowFrame } from './animationRowPlayback';
+import { resolveStateSheet, stateRowFrame, isLoopingStateRow } from './animationRowPlayback';
 import { boxToWorld, type AABB } from '../util/aabb';
 import { interpolateHitboxGeometry } from './hitboxGeometry';
 
@@ -520,7 +520,7 @@ export class Fighter {
       const elapsed = Math.max(0, this.stateFrame - visualDelay);
       return {
         sheet: stateSheet,
-        frame: stateRowFrame(elapsed, sprite?.frameCounts?.[stateSheet] ?? 1),
+        frame: stateRowFrame(elapsed, sprite?.frameCounts?.[stateSheet] ?? 1, isLoopingStateRow(stateSheet)),
       };
     }
 

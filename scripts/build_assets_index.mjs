@@ -5,11 +5,12 @@ import { join, resolve } from 'node:path';
 
 const ROOT = resolve(import.meta.dirname, '..');
 // ASSETS_PUBLIC_DIR lets tests index a temporary tree instead of public/.
-const PUBLIC = process.env.ASSETS_PUBLIC_DIR ? resolve(process.env.ASSETS_PUBLIC_DIR) : join(ROOT, 'public');
-const FIGHTERS_DIR = join(PUBLIC, 'fighters');
-const ARENAS_DIR = join(PUBLIC, 'arenas');
-const AUDIO_DIR = join(PUBLIC, 'audio');
-const OUTPUT = join(PUBLIC, 'assets-index.json');
+// build(publicDir) can also override these per-call (used by the publish bridge).
+let PUBLIC = process.env.ASSETS_PUBLIC_DIR ? resolve(process.env.ASSETS_PUBLIC_DIR) : join(ROOT, 'public');
+let FIGHTERS_DIR = join(PUBLIC, 'fighters');
+let ARENAS_DIR = join(PUBLIC, 'arenas');
+let AUDIO_DIR = join(PUBLIC, 'audio');
+let OUTPUT = join(PUBLIC, 'assets-index.json');
 
 async function exists(path) {
   try { await stat(path); return true; } catch { return false; }
@@ -167,7 +168,16 @@ async function indexSounds() {
   return sounds;
 }
 
-async function build() {
+export async function build(publicDir) {
+  // ponytail: reassigns module-level dirs; fine for sequential single-user
+  // publishes. If publishes ever run concurrently, resolve into locals instead.
+  if (publicDir) {
+    PUBLIC = resolve(publicDir);
+    FIGHTERS_DIR = join(PUBLIC, 'fighters');
+    ARENAS_DIR = join(PUBLIC, 'arenas');
+    AUDIO_DIR = join(PUBLIC, 'audio');
+    OUTPUT = join(PUBLIC, 'assets-index.json');
+  }
   const fighterIds = await listDir(FIGHTERS_DIR);
   const fighters = {};
 
@@ -201,7 +211,10 @@ async function build() {
   }
 }
 
-build().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// Run as a script (npm run assets:index); stay importable from the publish bridge.
+if (process.argv[1] === import.meta.filename) {
+  build().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}

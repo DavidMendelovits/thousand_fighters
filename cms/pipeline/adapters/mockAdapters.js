@@ -19,6 +19,8 @@ export function createMockTextModel(overrides = {}) {
             maxHealth: 1000,
           },
           sprite: {
+            // Canonical 5 declared at creation; walk/grab/throw counts flow in
+            // from the manifest once those rows are generated (see buildSpriteConfig).
             frameCounts: {
               base: 6,
               punch: 6,
@@ -100,6 +102,90 @@ export function createMockTextModel(overrides = {}) {
                 },
                 { name: 'recovery', frames: 12, events: [] },
               ],
+            },
+            {
+              id: 'fireball',
+              displayName: 'Fireball',
+              animation: 'special_1',
+              description: 'Throws a fireball projectile.',
+              trigger: { allowedStates: ['idle'], sequence: ['down', 'forward', 'lp'] },
+              phases: [
+                { name: 'startup', frames: 8, events: [] },
+                {
+                  name: 'active',
+                  frames: 4,
+                  events: [
+                    {
+                      onFrame: 0,
+                      event: { type: 'spawn_projectile', hitbox: null, projectile: null, projectileId: 'fireball_proj', offsetX: 50, offsetY: -90 },
+                    },
+                  ],
+                },
+                { name: 'recovery', frames: 14, events: [] },
+              ],
+            },
+            {
+              id: 'command_grab',
+              displayName: 'Command Grab',
+              animation: 'grab',
+              description: 'Grab the opponent up close.',
+              trigger: { allowedStates: ['idle'], sequence: ['lp', 'lk'] },
+              phases: [
+                { name: 'startup', frames: 5, events: [] },
+                {
+                  name: 'active',
+                  frames: 3,
+                  events: [
+                    {
+                      onFrame: 0,
+                      event: {
+                        type: 'hitbox_active',
+                        hitbox: { x: 24, y: -96, width: 40, height: 80, damage: 40, hitstun: 30, blockstun: 0, knockback: { x: 0, y: 0 } },
+                      },
+                    },
+                  ],
+                },
+                { name: 'recovery', frames: 10, events: [] },
+              ],
+            },
+            {
+              id: 'suplex',
+              displayName: 'Suplex',
+              animation: 'throw',
+              description: 'Throw follow-up after a grab.',
+              trigger: { allowedStates: ['idle'], sequence: ['hp'] },
+              phases: [
+                { name: 'startup', frames: 4, events: [] },
+                {
+                  name: 'active',
+                  frames: 4,
+                  events: [
+                    {
+                      onFrame: 0,
+                      event: {
+                        type: 'hitbox_active',
+                        hitbox: { x: 20, y: -100, width: 60, height: 60, damage: 110, hitstun: 24, blockstun: 0, knockback: { x: 6, y: -4 }, knockdown: true },
+                      },
+                    },
+                  ],
+                },
+                { name: 'recovery', frames: 16, events: [] },
+              ],
+            },
+          ],
+          combos: [
+            { id: 'jab_cross', displayName: 'Jab → Cross', segments: ['jab', 'cross'] },
+            { id: 'grab_suplex', displayName: 'Command Grab → Suplex', segments: ['command_grab', 'suplex'] },
+          ],
+          projectiles: [
+            {
+              id: 'fireball_proj',
+              width: 48,
+              height: 24,
+              speed: 8,
+              velocity: { x: 8, y: 0, relativeToFacing: true },
+              lifetime: 90,
+              hitbox: { x: -24, y: -12, width: 48, height: 24, damage: 70, hitstun: 20, blockstun: 14, knockback: { x: 5, y: -2 }, level: 'mid' },
             },
           ],
         },

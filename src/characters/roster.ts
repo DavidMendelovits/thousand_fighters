@@ -1,12 +1,12 @@
 import type { CharacterConfig } from '../schema/types';
-import { playableCharacters, mergeRoster } from './stamptownFighters';
 
 /**
- * The live roster: built-in fighters plus any CMS-exported fighters
- * discovered at boot. Mutated in place by loadCmsRoster() so every
- * importer sees the merged list.
+ * The live roster: CMS-exported fighters discovered at boot. Starts empty
+ * and is mutated in place by loadCmsRoster() so every importer sees the
+ * merged list. Built-in stamptown fighters are intentionally excluded —
+ * character select reflects only what the CMS has published.
  */
-export const roster: CharacterConfig[] = [...playableCharacters];
+export const roster: CharacterConfig[] = [];
 
 type AssetsIndex = {
   fighters?: Record<string, { config?: string | boolean } | undefined>;
@@ -55,9 +55,10 @@ export async function loadCmsRoster(): Promise<CharacterConfig[]> {
       }),
     );
 
-    const merged = mergeRoster(configs.filter((c): c is CharacterConfig => c !== null));
-    for (const config of merged) {
-      if (!roster.some((existing) => existing.id === config.id)) {
+    // Only CMS-discovered fighters enter the roster — no built-in merge. (Use
+    // mergeRoster from stamptownFighters if you ever want the built-ins back.)
+    for (const config of configs) {
+      if (config && !roster.some((existing) => existing.id === config.id)) {
         roster.push(config);
       }
     }

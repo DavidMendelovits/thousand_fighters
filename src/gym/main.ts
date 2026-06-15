@@ -62,6 +62,14 @@ let originalAnchors: Record<string, { x: number; y: number }[]> = {};
 let overrides: DraftOverrides = { hurtboxes: {}, hitboxes: {}, guardboxes: {} };
 /** Authored hitbox-number edits, keyed `${moveId}::${hitboxId}` → patch fields. */
 const numberEdits = new Map<string, Record<string, number | string>>();
+/**
+ * Per-activation set of DISABLED sprite-frame indices, keyed `${moveId}::${hitboxId}`.
+ * A frame in this set means the move does not hit on that frame: convert carves
+ * it out of the hitbox's active window. Seeded from the draft on load.
+ */
+const disabledFrames = new Map<string, Set<number>>();
+/** Activation keys whose disabledFrames were touched this session (send even when emptied). */
+const disabledFramesDirty = new Set<string>();
 let currentHurtState = 'idle';
 let currentGuardState = 'idle';
 /** Flat list of draft hitbox activations (one per move + hitbox id). */
@@ -146,6 +154,7 @@ async function main(): Promise<void> {
   buildGuardStates();
   buildHitActivations();
   wireCollisionInspector();
+  wireContextMenu();
   buildProjectileEditor();
   wireTransport();
   setPlayButton(false);
@@ -372,6 +381,9 @@ function applyModeUI(mode: BoundsMode): void {
   } else {
     scene.setCollisionBox(null, { editable: false, color: 0 });
   }
+  if (mode !== 'hitbox') scene.setDeletedHint(null);
+  syncFilmstripDisabled();
+  hideContextMenu();
 }
 
 function wireAnchorInputs(): void {
@@ -440,6 +452,9 @@ function wireKeyboard(): void {
       case ',': scene.setPlaying(false); setPlayButton(false); scene.step(-1); break;
       case 'q': case 'Q': setGizmoMode('move'); break;
       case 'w': case 'W': setGizmoMode('scale'); break;
+      case 'x': case 'X':
+        if (currentMode === 'hitbox' && currentActivation) { e.preventDefault(); toggleFrameDisabled(); }
+        break;
       case 'ArrowLeft': arrow(-step, 0); break;
       case 'ArrowRight': arrow(step, 0); break;
       case 'ArrowUp': arrow(0, -step); break;
@@ -598,14 +613,25 @@ function wireSave(): void {
   });
 }
 
-/** Build the targeted hitbox-number patch list from the touched-edits map (T12). */
-function buildHitboxNumberPatches(): Record<string, number | string>[] {
-  const patches: Record<string, number | string>[] = [];
+/**
+ * Build the targeted hitbox patch list (T12) — authored numbers AND per-frame
+ * disabled-frame sets. Both patch matching hitbox_active events in place, keyed
+ * by (moveId, hitboxId), so neither re-sends nor clobbers the moves array.
+ */
+function buildHitboxNumberPatches(): Record<string, unknown>[] {
+  const byKey = new Map<string, Record<string, unknown>>();
   for (const [key, fields] of numberEdits) {
     const [moveId, hitboxId] = key.split('::');
-    patches.push({ moveId, hitboxId, ...fields });
+    byKey.set(key, { moveId, hitboxId, ...fields });
   }
-  return patches;
+  // Disabled-frame edits (including a frame set emptied back to none → []).
+  for (const key of disabledFramesDirty) {
+    const [moveId, hitboxId] = key.split('::');
+    const patch = byKey.get(key) ?? { moveId, hitboxId };
+    patch.disabledFrames = [...(disabledFrames.get(key) ?? [])].sort((a, b) => a - b);
+    byKey.set(key, patch);
+  }
+  return [...byKey.values()];
 }
 
 async function save(): Promise<void> {
@@ -992,6 +1018,11 @@ function buildHitActivations(): void {
         seen.add(key);
         const suffix = hitboxId !== 'default' ? ` · ${hitboxId}` : '';
         activations.push({ moveId: move.id, hitboxId, animation, label: `${move.displayName ?? move.id}${suffix}` });
+        // Seed disabled frames authored on the draft so the gym reflects them.
+        const seeded = (ev.hitbox as { disabledFrames?: number[] }).disabledFrames;
+        if (Array.isArray(seeded) && seeded.length) {
+          disabledFrames.set(key, new Set(seeded.filter((n) => Number.isInteger(n))));
+        }
       }
     }
   }
@@ -1020,21 +1051,48 @@ function renderHitboxInspector(): void {
     show('hit-reset', false);
     $('hit-note').textContent = 'This draft has no hitbox activations to edit.';
     scene.setCollisionBox(null, { editable: false, color: COLOR_HIT });
+    scene.setDeletedHint(null);
+    syncDisableButton(null);
+    syncFilmstripDisabled();
     setNumberInputs(null);
     return;
   }
   const override = overrides.hitboxes?.[act.moveId]?.[act.hitboxId] ?? null;
   const box = override ?? hitMeasuredPx();
   const has = Boolean(override);
-  setBoxInputs('hit', box, has);
+  const editable = Boolean(box);
+  const disabledFrame = isFrameDisabled(act, scene.getSnapshot().frame);
+  setBoxInputs('hit', box, editable && !disabledFrame);
   setBadge('hit-badge', has);
   show('hit-override', !has);
   show('hit-reset', has);
-  $('hit-note').textContent = has
-    ? 'Static override — drag the box or type. It clears the measured keyframe track (A4).'
-    : 'Measured per-frame from the sprite — scrub the timeline to inspect. Click Override for a static box.';
-  scene.setCollisionBox(box, { editable: has, color: COLOR_HIT });
+  $('hit-note').textContent = disabledFrame
+    ? 'Hitbox DISABLED on this frame — the move will not hit here. Re-enable to edit its box.'
+    : has
+      ? 'Static override — drag the corner handles or type. It clears the measured keyframe track (A4).'
+      : 'Measured for this frame — drag the corner handles or type to tune this frame’s box. Click Override for one static box across the whole activation.';
+  // A deleted frame hides the box entirely (the hit is off here); a faint banner
+  // explains why the canvas is empty and the filmstrip marks the frame.
+  const frameIdx = scene.getSnapshot().frame;
+  if (disabledFrame) {
+    scene.setCollisionBox(null, { editable: false, color: COLOR_HIT });
+    scene.setDeletedHint(`✕ hit deleted — frame ${frameIdx + 1}`);
+  } else {
+    scene.setCollisionBox(box, { editable, color: COLOR_HIT });
+    scene.setDeletedHint(null);
+  }
+  syncDisableButton(act);
+  syncFilmstripDisabled();
   setNumberInputs(act);
+}
+
+/** Mark filmstrip tiles whose frame is deleted for the current hitbox activation. */
+function syncFilmstripDisabled(): void {
+  const act = currentMode === 'hitbox' ? currentActivation : null;
+  $('filmstrip').querySelectorAll<HTMLElement>('.frame-tile').forEach((tile) => {
+    const idx = Number(tile.dataset.index);
+    tile.classList.toggle('hit-disabled', isFrameDisabled(act, idx));
+  });
 }
 
 function setHitOverride(box: OverrideBox): void {
@@ -1052,11 +1110,154 @@ function deleteHitOverride(): void {
   if (Object.keys(overrides.hitboxes[act.moveId]).length === 0) delete overrides.hitboxes[act.moveId];
 }
 
-function onHitBoxDragged(box: OverrideBox): void {
-  if (!currentActivation) return;
-  setHitOverride(box);
+/**
+ * Apply an edited hitbox geometry. With a static override active, it writes the
+ * per-activation override (draft). Without one, it tunes the CURRENT frame's
+ * measured attackBox in frameData — per-frame, exactly what the canvas shows.
+ */
+function applyHitGeometry(box: OverrideBox): void {
+  const act = currentActivation;
+  if (!act) return;
+  const hasOverride = Boolean(overrides.hitboxes?.[act.moveId]?.[act.hitboxId]);
+  if (hasOverride) {
+    setHitOverride(box);
+    markDraftDirty();
+  } else {
+    writeMeasuredAttackBox(box);
+    markFrameDirty();
+  }
   setBoxInputs('hit', roundBox(box), true);
+}
+
+/** Write the active frame's measured attackBox in frameData (anchor-relative frame-px). */
+function writeMeasuredAttackBox(box: OverrideBox): void {
+  const snap = scene.getSnapshot();
+  const frame = data.frameData?.frames?.[snap.sheet]?.[snap.frame];
+  if (!frame) return;
+  frame.attackBox = roundBox(box);
+}
+
+function onHitBoxDragged(box: OverrideBox): void {
+  applyHitGeometry(box);
+}
+
+// ---- Per-frame disable (delete the hit on a given frame) ----
+
+function disableKey(act: Activation): string {
+  return `${act.moveId}::${act.hitboxId}`;
+}
+
+function isFrameDisabled(act: Activation | null, frame: number): boolean {
+  if (!act) return false;
+  return disabledFrames.get(disableKey(act))?.has(frame) ?? false;
+}
+
+/** Toggle the current activation's hit on the current frame (the Delete/Restore action). */
+function toggleFrameDisabled(): void {
+  const act = currentActivation;
+  if (!act) return;
+  const key = disableKey(act);
+  const frame = scene.getSnapshot().frame;
+  const set = disabledFrames.get(key) ?? new Set<number>();
+  if (set.has(frame)) set.delete(frame);
+  else set.add(frame);
+  if (set.size) disabledFrames.set(key, set);
+  else disabledFrames.delete(key);
+  disabledFramesDirty.add(key);
   markDraftDirty();
+  renderHitboxInspector();
+}
+
+// ---- Right-click context menu (acts on the current selection, not hit-testing) ----
+
+type ContextItem = { label: string; fn: () => void; danger?: boolean };
+
+/** Items for the current bounds mode + selection. Empty → no menu opens. */
+function buildContextItems(): ContextItem[] {
+  if (currentMode === 'hitbox') {
+    const act = currentActivation;
+    if (!act) return [];
+    const frame = scene.getSnapshot().frame;
+    if (isFrameDisabled(act, frame)) {
+      return [{ label: `Restore hit — frame ${frame + 1}`, fn: toggleFrameDisabled }];
+    }
+    const hasOverride = Boolean(overrides.hitboxes?.[act.moveId]?.[act.hitboxId]);
+    return [
+      { label: `Delete hit on frame ${frame + 1}`, fn: toggleFrameDisabled, danger: true },
+      hasOverride
+        ? { label: 'Reset to measured', fn: () => ($('hit-reset') as HTMLButtonElement).click() }
+        : { label: 'Make static override', fn: () => ($('hit-override') as HTMLButtonElement).click() },
+    ];
+  }
+  if (currentMode === 'hurtbox') {
+    const has = Boolean(overrides.hurtboxes?.[currentHurtState]);
+    return [has
+      ? { label: 'Reset to measured', fn: () => ($('hurt-reset') as HTMLButtonElement).click() }
+      : { label: 'Override (author box)', fn: () => ($('hurt-override') as HTMLButtonElement).click() }];
+  }
+  if (currentMode === 'guard') {
+    const has = Boolean(overrides.guardboxes?.[currentGuardState]);
+    return [has
+      ? { label: 'Delete guard box', fn: () => ($('guard-reset') as HTMLButtonElement).click(), danger: true }
+      : { label: 'Override (author box)', fn: () => ($('guard-override') as HTMLButtonElement).click() }];
+  }
+  return [];
+}
+
+function showContextMenu(clientX: number, clientY: number): void {
+  const items = buildContextItems();
+  const menu = $('ctx-menu');
+  if (!items.length) { hideContextMenu(); return; }
+  menu.innerHTML = '';
+  for (const item of items) {
+    const btn = document.createElement('button');
+    btn.textContent = item.label;
+    if (item.danger) btn.classList.add('danger');
+    btn.addEventListener('click', () => { hideContextMenu(); item.fn(); });
+    menu.appendChild(btn);
+  }
+  // Show off-screen first to measure, then clamp into the viewport.
+  menu.hidden = false;
+  menu.style.left = '0px';
+  menu.style.top = '0px';
+  const rect = menu.getBoundingClientRect();
+  const x = Math.min(clientX, window.innerWidth - rect.width - 6);
+  const y = Math.min(clientY, window.innerHeight - rect.height - 6);
+  menu.style.left = `${Math.max(6, x)}px`;
+  menu.style.top = `${Math.max(6, y)}px`;
+}
+
+function hideContextMenu(): void {
+  const menu = document.getElementById('ctx-menu');
+  if (menu) menu.hidden = true;
+}
+
+function wireContextMenu(): void {
+  $('game').addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    showContextMenu(e.clientX, e.clientY);
+  });
+  document.addEventListener('mousedown', (e) => {
+    if (!$('ctx-menu').contains(e.target as Node)) hideContextMenu();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideContextMenu(); });
+  window.addEventListener('blur', () => hideContextMenu());
+}
+
+/** Keep the Disable/Restore button label + state in sync with the active frame. */
+function syncDisableButton(act: Activation | null): void {
+  const btn = $('hit-disable-frame') as HTMLButtonElement;
+  if (!act) {
+    btn.disabled = true;
+    btn.textContent = 'Disable on frame';
+    return;
+  }
+  btn.disabled = false;
+  const frame = scene.getSnapshot().frame;
+  const disabled = isFrameDisabled(act, frame);
+  // Labels are 1-based to match the filmstrip + readout; disabledFrames data stays 0-based.
+  btn.textContent = disabled ? `Restore hit on frame ${frame + 1}` : `Delete hit on frame ${frame + 1}`;
+  btn.classList.toggle('active', disabled);
 }
 
 // ---- Hitbox authored numbers (live in the draft, patched in place on save) ----
@@ -1195,14 +1396,14 @@ function wireCollisionInspector(): void {
     markDraftDirty();
     renderHitboxInspector();
   });
+  $('hit-disable-frame').addEventListener('click', () => toggleFrameDisabled());
   for (const suffix of ['x', 'y', 'w', 'h']) {
     $(`hit-${suffix}`).addEventListener('change', () => {
-      if (!currentActivation || !overrides.hitboxes?.[currentActivation.moveId]?.[currentActivation.hitboxId]) return;
+      if (!currentActivation) return;
       const box = readBoxInputs('hit');
       if (!box) return;
-      setHitOverride(box);
+      applyHitGeometry(box);
       scene.setCollisionBox(box, { editable: true, color: COLOR_HIT });
-      markDraftDirty();
     });
   }
   for (const [id, field] of NUMBER_FIELDS) {

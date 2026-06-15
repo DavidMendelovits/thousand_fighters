@@ -99,13 +99,27 @@ test('no combos / empty combos is a no-op', () => {
   assert.ok(m1.every((m) => m.cancelInto.length === 0));
 });
 
-test('does NOT touch phase cancellable (combo links, window stays authoring data)', () => {
+test('does NOT touch phase cancellable (that comes from the recovery default)', () => {
   const moves = [
     { id: 'a', cancelInto: [], phases: [{ cancellable: false }] },
     { id: 'b', cancelInto: [] },
   ];
   applyComboChaining(moves, [{ id: 'c1', segments: ['a', 'b'] }]);
   assert.equal(moves[0].phases[0].cancellable, false, 'cancellable must be untouched');
+});
+
+test('derives the full cancel graph on the follow-up move (cancelFrom + attack state + window)', () => {
+  const moves = [
+    { id: 'a', cancelInto: [], trigger: { sequence: ['lp'], allowedStates: ['idle', 'walk_forward', 'walk_back'], window: 6 } },
+    { id: 'b', cancelInto: [], trigger: { sequence: ['mp'], allowedStates: ['idle', 'walk_forward', 'walk_back'], window: 6 } },
+  ];
+  applyComboChaining(moves, [{ id: 'c1', segments: ['a', 'b'] }]);
+  assert.deepEqual(moves[0].cancelInto, ['b'], 'a cancels into b');
+  assert.ok(moves[1].trigger.cancelFrom.includes('a'), 'b cancelFrom a (so it only cancels out of a, not any attack)');
+  assert.ok(moves[1].trigger.allowedStates.includes('attack'), "b is reachable from the 'attack' state");
+  assert.ok(moves[1].trigger.window >= 14, 'b gets a wide enough cancel window to land');
+  // The lead move keeps its neutral-only trigger — standalone behavior preserved.
+  assert.ok(!moves[0].trigger.allowedStates.includes('attack'), 'lead move trigger untouched');
 });
 
 // ---------------------------------------------------------------------------

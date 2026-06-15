@@ -1,5 +1,6 @@
 import { assetApiUrl, writeCharacterAssetUpload } from '../assets/uploadCharacterAsset.js';
 import { exportCharacterToRuntime } from '../export/exportCharacterToRuntime.js';
+import { build as buildAssetsIndex } from '../../scripts/build_assets_index.mjs';
 import { SHEET_IDS } from '../../shared/animationRows.js';
 import { validateCombos, validateProjectiles, validateProjectileReferences } from '../export/convertDraftToCharacterConfig.js';
 
@@ -111,7 +112,7 @@ export function createCmsTools({ pipeline, repository, registry }) {
     },
     {
       name: 'define_combo',
-      description: 'Define (or replace) a combo on the draft: an ordered list of existing move ids that chain. Convert wires each move to cancelInto the next, so the chain is playable once the moves have cancellable phases (author the cancel windows separately). Validates that every segment is an existing move and the combo has >= 2 segments — fails loudly on a bad reference.',
+      description: 'Define (or replace) a combo on the draft: an ordered list of existing move ids that chain. Convert derives the whole cancel graph from this descriptor — it wires each move to cancelInto the next AND sets the next move\'s cancelFrom + allowedStates + a cancel window — so the chain fires at runtime with no extra authoring, as long as each non-final move has a recovery phase (the default cancellable window). Validates that every segment is an existing move and the combo has >= 2 segments — fails loudly on a bad reference.',
       inputSchema: objectSchema({
         characterId: stringSchema('Character id.'),
         comboId: stringSchema('Combo id (stable key; re-defining the same id replaces it).'),
@@ -160,6 +161,11 @@ export function createCmsTools({ pipeline, repository, registry }) {
         },
       }, ['characterId', 'segments']),
       execute: async ({ characterId, basePrompt, segments, context }) => {
+        // Each segment.moveId is a sprite-ROW id (passed straight to
+        // generateSpriteSheet), NOT a combo move id. Reject unknown rows so a
+        // caller can't generate orphan sheets the runtime registry never loads
+        // (codex P1) — admin maps a combo's move.animation values to rows.
+        for (const segment of segments ?? []) assertRowId(segment?.moveId);
         const result = await pipeline.generateComboSequence({
           characterId,
           segments: segments ?? [],
@@ -210,7 +216,17 @@ export function createCmsTools({ pipeline, repository, registry }) {
         }
         const current = await repository.getDraft(characterId);
         const others = (current.projectiles ?? []).filter((entity) => entity.id !== projectile.id);
-        const projectiles = [...others, projectile];
+        // Preserve the existing render identity (animation/sourceKey from
+        // generate_projectile) when this tool only tunes numbers, and derive a
+        // texture key for a fresh entity so it isn't left non-renderable
+        // (convert would otherwise default animation to 'special_2'). codex P2.
+        const prior = (current.projectiles ?? []).find((entity) => entity.id === projectile.id);
+        const resolved = {
+          ...projectile,
+          animation: projectile.animation ?? prior?.animation ?? `${characterId}_${projectile.id}`,
+          ...(prior?.sourceKey && !projectile.sourceKey ? { sourceKey: prior.sourceKey } : {}),
+        };
+        const projectiles = [...others, resolved];
         const errors = validateProjectiles(projectiles);
         if (errors.length) {
           throw new Error(`define_projectile rejected: ${errors.join('; ')}`);
@@ -314,7 +330,7 @@ export function createCmsTools({ pipeline, repository, registry }) {
         },
         hitboxNumbers: {
           type: 'array',
-          description: 'Targeted in-place patches to authored hitbox numbers (damage/hitstun/blockstun/knockbackX/knockbackY/level) on draft hitbox_active events. Each item: { moveId, hitboxId?, ...fields }. Matched by moveId + (event.id ?? "default").',
+          description: 'Targeted in-place patches to authored hitbox numbers (damage/hitstun/blockstun/knockbackX/knockbackY/level) AND per-frame disabling (disabledFrames: number[] of sprite-frame indices the move should NOT hit on) on draft hitbox_active events. Each item: { moveId, hitboxId?, ...fields }. disabledFrames REPLACES the event\'s set wholesale ([] clears it). Matched by moveId + (event.id ?? "default").',
           items: { type: 'object', additionalProperties: true },
         },
         projectiles: {
@@ -403,7 +419,38 @@ export function createCmsTools({ pipeline, repository, registry }) {
         characterId: stringSchema('Character id.'),
         releaseId: stringSchema('Release id.'),
       }, ['characterId', 'releaseId']),
-      execute: async (input) => ({ published: await pipeline.publishCharacter(input) }),
+      execute: async (input) => {
+        const published = await pipeline.publishCharacter(input);
+        // Bridge publish -> the static artifacts the game roster reads
+        // (public/fighters/<id>/config.json + assets-index.json). Best-effort:
+        // a read-only/serverless filesystem just means the game picks the
+        // fighter up on the next local build instead. Never fail the publish.
+        // ponytail: dev-time convenience; prod is a static build, not a live write.
+        let exported = null;
+        try {
+          // CMS_RUNTIME_PUBLIC_DIR redirects the write (smoke tests point it at a
+          // temp tree); unset means the repo's real public/ in dev.
+          const publicDir = process.env.CMS_RUNTIME_PUBLIC_DIR;
+          // Export from the release bundle, not the live draft, so the game
+          // plays exactly what was published (release = source of truth) and the
+          // releases/ store gains a real consumer.
+          const bundle = published?.bundleKey
+            ? await repository.storage.getJson(published.bundleKey)
+            : null;
+          const content = bundle?.content ?? undefined;
+          const result = await exportCharacterToRuntime({
+            runtime: { repository, storage: repository.storage },
+            characterId: input.characterId,
+            outputDir: publicDir ? `${publicDir}/fighters` : undefined,
+            content,
+          });
+          await buildAssetsIndex(publicDir);
+          exported = { configPath: result.configPath, filesCopied: result.filesCopied.length };
+        } catch (err) {
+          exported = { error: err instanceof Error ? err.message : String(err) };
+        }
+        return { published, exported };
+      },
     },
     {
       name: 'generate_character_sfx',
@@ -580,6 +627,15 @@ function applyHitboxNumberPatch(draft, patch) {
 function patchHitboxFields(hitbox, patch) {
   for (const field of ['damage', 'hitstun', 'blockstun', 'level']) {
     if (patch[field] !== undefined) hitbox[field] = patch[field];
+  }
+  // Per-frame disabling: wholesale-replace the sprite-frame index set. An empty
+  // array clears it (re-enabling the hit on every frame). Convert carves these
+  // frames out of the hitbox's active window so the move stops hitting there.
+  if (Array.isArray(patch.disabledFrames)) {
+    const frames = [...new Set(patch.disabledFrames.filter((n) => Number.isInteger(n) && n >= 0))]
+      .sort((a, b) => a - b);
+    if (frames.length) hitbox.disabledFrames = frames;
+    else delete hitbox.disabledFrames;
   }
   // Write a single knockback representation per axis. If only the nested
   // `knockback:{x,y}` shape exists, patch it; otherwise write the flat field

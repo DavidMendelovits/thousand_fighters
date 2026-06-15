@@ -31,6 +31,9 @@ const PIVOT_X = 400;
 
 export type BoundsMode = 'visual' | 'anchor' | 'hurtbox' | 'hitbox' | 'guard';
 
+/** Which part of an editable box a pointer grabbed: a corner (resize) or the body (move). */
+type BoxHandle = 'nw' | 'ne' | 'sw' | 'se' | 'body';
+
 export type GymSnapshot = {
   ready: boolean;
   sheet: SpriteSheetId;
@@ -77,11 +80,13 @@ export class GymScene extends Phaser.Scene {
   private sprite!: Phaser.GameObjects.Image;
   private onionSprites: Phaser.GameObjects.Image[] = [];
   private overlay!: Phaser.GameObjects.Graphics;
+  /** Centered banner shown when the active frame's hit is deleted (box hidden). */
+  private deletedText!: Phaser.GameObjects.Text;
   private ready = false;
   /** Active anchor-drag gesture (scene-space pointer + anchor at gesture start). */
   private drag: { px: number; py: number; ax: number; ay: number } | null = null;
-  /** Active collision-box drag (scene-space pointer + box at gesture start). */
-  private boxDrag: { px: number; py: number; box: Box } | null = null;
+  /** Active collision-box drag (scene-space pointer + box + grabbed handle at gesture start). */
+  private boxDrag: { px: number; py: number; box: Box; handle: BoxHandle } | null = null;
 
   /** Fired whenever the active frame's anchor changes (drag or programmatic). */
   onAnchorChange?: (sheet: SpriteSheetId, frame: number, anchor: { x: number; y: number }) => void;
@@ -111,6 +116,11 @@ export class GymScene extends Phaser.Scene {
     this.onionSprites = [];
     this.sprite = this.add.image(PIVOT_X, FLOOR_Y, '__MISSING').setDepth(10);
     this.overlay = this.add.graphics().setDepth(60);
+    this.deletedText = this.add
+      .text(PIVOT_X, FLOOR_Y - 150, '', { fontFamily: 'monospace', fontSize: '14px', color: '#ff8f8f' })
+      .setOrigin(0.5)
+      .setDepth(70)
+      .setVisible(false);
 
     // Scene-level pointer dragging. Pointer coords are already in game space
     // (the FIT scale manager maps canvas → game for us), so this works
@@ -198,6 +208,12 @@ export class GymScene extends Phaser.Scene {
   setHitLevel(level: 'high' | 'mid' | 'low' | null): void {
     this.hitLevel = level;
     this.drawOverlay();
+  }
+
+  /** Show/clear the “hit deleted” banner (the box itself is hidden by the page). */
+  setDeletedHint(text: string | null): void {
+    if (!this.deletedText) return;
+    this.deletedText.setText(text ?? '').setVisible(Boolean(text));
   }
 
   setPlaying(playing: boolean): void {
@@ -306,16 +322,44 @@ export class GymScene extends Phaser.Scene {
   }
 
   private beginDrag(p: Phaser.Input.Pointer): void {
+    // Right-click opens the context menu (page-level); never start a drag with it,
+    // or the menu gesture would also nudge the box.
+    if (p.rightButtonDown()) return;
     if (this.mode === 'anchor') {
       const meta = this.activeFrameMeta();
       if (!meta) return;
       this.drag = { px: p.x, py: p.y, ax: meta.anchor.x, ay: meta.anchor.y };
       return;
     }
-    // Hurtbox/Hitbox/Guard: drag the supplied editable box (Move translates, Scale resizes).
+    // Hurtbox/Hitbox/Guard: grab the supplied editable box. A corner resizes
+    // (anchoring the opposite corner); the body moves. Clicking outside the box
+    // starts no drag, so an empty-canvas click never nudges the box.
     if ((this.mode === 'hurtbox' || this.mode === 'hitbox' || this.mode === 'guard') && this.collisionEditable && this.collisionBox) {
-      this.boxDrag = { px: p.x, py: p.y, box: { ...this.collisionBox } };
+      const handle = this.hitTestHandle(p, this.collisionBox);
+      if (handle) this.boxDrag = { px: p.x, py: p.y, box: { ...this.collisionBox }, handle };
     }
+  }
+
+  /**
+   * Classify where a pointer landed on an editable box (scene-space): one of the
+   * four corners if within HANDLE_PX, else the body if inside (with a small
+   * margin), else null (outside — no drag). Corners win over the body so a
+   * corner click always resizes.
+   */
+  private hitTestHandle(p: Phaser.Input.Pointer, box: Box): BoxHandle | null {
+    const scale = this.payload.scale;
+    const x0 = PIVOT_X + box.x * scale;
+    const y0 = FLOOR_Y + box.y * scale;
+    const x1 = x0 + box.width * scale;
+    const y1 = y0 + box.height * scale;
+    const T = 10; // grab radius in screen px
+    const near = (a: number, b: number) => Math.abs(a - b) <= T;
+    if (near(p.x, x0) && near(p.y, y0)) return 'nw';
+    if (near(p.x, x1) && near(p.y, y0)) return 'ne';
+    if (near(p.x, x0) && near(p.y, y1)) return 'sw';
+    if (near(p.x, x1) && near(p.y, y1)) return 'se';
+    if (p.x >= x0 - T && p.x <= x1 + T && p.y >= y0 - T && p.y <= y1 + T) return 'body';
+    return null;
   }
 
   private moveDrag(p: Phaser.Input.Pointer): void {
@@ -332,10 +376,27 @@ export class GymScene extends Phaser.Scene {
       const dx = Math.round((p.x - this.boxDrag.px) / this.payload.scale);
       const dy = Math.round((p.y - this.boxDrag.py) / this.payload.scale);
       const start = this.boxDrag.box;
-      if (this.gizmo === 'move') {
-        this.collisionBox = { ...start, x: start.x + dx, y: start.y + dy };
+      const handle = this.boxDrag.handle;
+      if (handle === 'body') {
+        // Body drag translates; the Move/Scale toggle keeps its legacy meaning
+        // (Scale = resize from the bottom-right) for users who relied on it.
+        this.collisionBox = this.gizmo === 'scale'
+          ? { ...start, width: Math.max(1, start.width + dx), height: Math.max(1, start.height + dy) }
+          : { ...start, x: start.x + dx, y: start.y + dy };
       } else {
-        this.collisionBox = { ...start, width: Math.max(1, start.width + dx), height: Math.max(1, start.height + dy) };
+        // Corner drag: move the grabbed corner, hold the opposite corner fixed,
+        // clamping so the box never collapses past 1px in either axis.
+        const right = start.x + start.width;
+        const bottom = start.y + start.height;
+        let left = start.x;
+        let top = start.y;
+        let r = right;
+        let b = bottom;
+        if (handle === 'nw' || handle === 'sw') left = Math.min(start.x + dx, right - 1);
+        if (handle === 'ne' || handle === 'se') r = Math.max(right + dx, start.x + 1);
+        if (handle === 'nw' || handle === 'ne') top = Math.min(start.y + dy, bottom - 1);
+        if (handle === 'sw' || handle === 'se') b = Math.max(bottom + dy, start.y + 1);
+        this.collisionBox = { x: left, y: top, width: r - left, height: b - top };
       }
       this.onCollisionBoxChange?.({ ...this.collisionBox });
       this.drawOverlay();
@@ -423,16 +484,17 @@ export class GymScene extends Phaser.Scene {
     g.lineStyle(1, color, 0.22).lineBetween(0, bottom, CANVAS_W, bottom);
   }
 
-  /** Corner squares on an editable box: top-left (move origin) + bottom-right (scale). */
+  /** Square grab handles on all four corners of an editable box — each resizes. */
   private drawHandles(g: Phaser.GameObjects.Graphics, box: Box, scale: number, color: number): void {
-    const x = PIVOT_X + box.x * scale;
-    const y = FLOOR_Y + box.y * scale;
-    const w = box.width * scale;
-    const h = box.height * scale;
-    const s = 6;
+    const x0 = PIVOT_X + box.x * scale;
+    const y0 = FLOOR_Y + box.y * scale;
+    const x1 = x0 + box.width * scale;
+    const y1 = y0 + box.height * scale;
+    const s = 7;
     g.fillStyle(color, 0.95);
-    g.fillRect(x - s / 2, y - s / 2, s, s);
-    g.fillRect(x + w - s / 2, y + h - s / 2, s, s);
+    for (const [hx, hy] of [[x0, y0], [x1, y0], [x0, y1], [x1, y1]] as const) {
+      g.fillRect(hx - s / 2, hy - s / 2, s, s);
+    }
   }
 
   private drawBox(g: Phaser.GameObjects.Graphics, box: Box, scale: number, color: number, fillAlpha: number): void {

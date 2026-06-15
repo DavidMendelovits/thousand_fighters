@@ -1,0 +1,320 @@
+{
+  "source": "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-extract-bJ1ve4/source.png",
+  "moveId": "kick",
+  "sourceSize": [
+    2172,
+    724
+  ],
+  "grid": [
+    1,
+    6
+  ],
+  "frameCount": 6,
+  "segmentation": "connected-components",
+  "medianSilhouetteHeight": 434,
+  "scaleApplied": 1.2188940092165899,
+  "warnings": [
+    "frame 4: content bleeds 30% past its cell boundary — kept with this frame",
+    "frame 5: content bleeds 9% past its cell boundary — kept with this frame",
+    "row rescaled by 1.219 to match target silhouette height 529px (was 434px)",
+    "frame 4: 0.7% of opaque pixels remain near-magenta after despill"
+  ],
+  "frames": [
+    {
+      "file": "kick_001.png",
+      "frameIndex": 1,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -169,
+        "y": -525,
+        "width": 307,
+        "height": 525
+      },
+      "attackBox": {
+        "x": 165,
+        "y": -178,
+        "width": 12,
+        "height": 26
+      },
+      "empty": false,
+      "width": 371,
+      "height": 556,
+      "anchor": {
+        "x": 190,
+        "y": 550
+      },
+      "reachX": 176,
+      "silhouetteHeight": 546
+    },
+    {
+      "file": "kick_002.png",
+      "frameIndex": 2,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -77,
+        "y": -510,
+        "width": 284,
+        "height": 510
+      },
+      "attackBox": {
+        "x": 165,
+        "y": -371,
+        "width": 60,
+        "height": 231
+      },
+      "empty": false,
+      "width": 326,
+      "height": 539,
+      "anchor": {
+        "x": 97,
+        "y": 533
+      },
+      "reachX": 224,
+      "silhouetteHeight": 529
+    },
+    {
+      "file": "kick_003.png",
+      "frameIndex": 3,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -89,
+        "y": -489,
+        "width": 389,
+        "height": 489
+      },
+      "attackBox": {
+        "x": 165,
+        "y": -338,
+        "width": 152,
+        "height": 184
+      },
+      "empty": false,
+      "width": 436,
+      "height": 518,
+      "anchor": {
+        "x": 115,
+        "y": 512
+      },
+      "reachX": 316,
+      "silhouetteHeight": 508
+    },
+    {
+      "file": "kick_004.png",
+      "frameIndex": 4,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -86,
+        "y": -488,
+        "width": 403,
+        "height": 488
+      },
+      "attackBox": {
+        "x": 165,
+        "y": -393,
+        "width": 179,
+        "height": 231
+      },
+      "empty": false,
+      "width": 460,
+      "height": 518,
+      "anchor": {
+        "x": 112,
+        "y": 512
+      },
+      "reachX": 343,
+      "silhouetteHeight": 508
+    },
+    {
+      "file": "kick_005.png",
+      "frameIndex": 5,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -121,
+        "y": -501,
+        "width": 308,
+        "height": 501
+      },
+      "attackBox": {
+        "x": 165,
+        "y": -147,
+        "width": 48,
+        "height": 49
+      },
+      "empty": false,
+      "width": 411,
+      "height": 529,
+      "anchor": {
+        "x": 194,
+        "y": 523
+      },
+      "reachX": 212,
+      "silhouetteHeight": 519
+    },
+    {
+      "file": "kick_006.png",
+      "frameIndex": 6,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -160,
+        "y": -524,
+        "width": 297,
+        "height": 524
+      },
+      "attackBox": {
+        "x": 165,
+        "y": -176,
+        "width": 7,
+        "height": 23
+      },
+      "empty": false,
+      "width": 357,
+      "height": 556,
+      "anchor": {
+        "x": 181,
+        "y": 550
+      },
+      "reachX": 171,
+      "silhouetteHeight": 546
+    }
+  ],
+  "frameData": [
+    {
+      "file": "sprites/kick/kick_001.png",
+      "width": 371,
+      "height": 556,
+      "anchor": {
+        "x": 190,
+        "y": 550
+      },
+      "reachX": 176,
+      "silhouetteHeight": 546,
+      "hurtbox": {
+        "x": -169,
+        "y": -525,
+        "width": 307,
+        "height": 525
+      },
+      "attackBox": {
+        "x": 165,
+        "y": -178,
+        "width": 12,
+        "height": 26
+      }
+    },
+    {
+      "file": "sprites/kick/kick_002.png",
+      "width": 326,
+      "height": 539,
+      "anchor": {
+        "x": 97,
+        "y": 533
+      },
+      "reachX": 224,
+      "silhouetteHeight": 529,
+      "hurtbox": {
+        "x": -77,
+        "y": -510,
+        "width": 284,
+        "height": 510
+      },
+      "attackBox": {
+        "x": 165,
+        "y": -371,
+        "width": 60,
+        "height": 231
+      }
+    },
+    {
+      "file": "sprites/kick/kick_003.png",
+      "width": 436,
+      "height": 518,
+      "anchor": {
+        "x": 115,
+        "y": 512
+      },
+      "reachX": 316,
+      "silhouetteHeight": 508,
+      "hurtbox": {
+        "x": -89,
+        "y": -489,
+        "width": 389,
+        "height": 489
+      },
+      "attackBox": {
+        "x": 165,
+        "y": -338,
+        "width": 152,
+        "height": 184
+      }
+    },
+    {
+      "file": "sprites/kick/kick_004.png",
+      "width": 460,
+      "height": 518,
+      "anchor": {
+        "x": 112,
+        "y": 512
+      },
+      "reachX": 343,
+      "silhouetteHeight": 508,
+      "hurtbox": {
+        "x": -86,
+        "y": -488,
+        "width": 403,
+        "height": 488
+      },
+      "attackBox": {
+        "x": 165,
+        "y": -393,
+        "width": 179,
+        "height": 231
+      }
+    },
+    {
+      "file": "sprites/kick/kick_005.png",
+      "width": 411,
+      "height": 529,
+      "anchor": {
+        "x": 194,
+        "y": 523
+      },
+      "reachX": 212,
+      "silhouetteHeight": 519,
+      "hurtbox": {
+        "x": -121,
+        "y": -501,
+        "width": 308,
+        "height": 501
+      },
+      "attackBox": {
+        "x": 165,
+        "y": -147,
+        "width": 48,
+        "height": 49
+      }
+    },
+    {
+      "file": "sprites/kick/kick_006.png",
+      "width": 357,
+      "height": 556,
+      "anchor": {
+        "x": 181,
+        "y": 550
+      },
+      "reachX": 171,
+      "silhouetteHeight": 546,
+      "hurtbox": {
+        "x": -160,
+        "y": -524,
+        "width": 297,
+        "height": 524
+      },
+      "attackBox": {
+        "x": 165,
+        "y": -176,
+        "width": 7,
+        "height": 23
+      }
+    }
+  ]
+}

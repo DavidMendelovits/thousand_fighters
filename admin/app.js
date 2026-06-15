@@ -2,7 +2,7 @@
 // guarded by scripts/smoke_animation_rows.mjs — this browser file is served
 // behind a static server and can't import the Node module, so it keeps a
 // literal copy. 'projectiles' is a virtual tab (not a sprite row).
-const MOVE_ORDER = ['base', 'punch', 'kick', 'special_1', 'special_2', 'jump', 'crouch', 'dash_forward', 'dash_back', 'block', 'grab', 'throw', 'projectiles'];
+const MOVE_ORDER = ['base', 'punch', 'kick', 'special_1', 'special_2', 'jump', 'crouch', 'dash_forward', 'dash_back', 'block', 'grab', 'throw', 'walk_forward', 'walk_back', 'projectiles'];
 
 // Where the Vite-served game (and the single-player testbed) lives. The testbed
 // reads this character's draft + assets back through the admin API via a Vite
@@ -224,6 +224,15 @@ function handleWorkbenchClick(event) {
     return;
   }
 
+  if (event.target.closest('[data-combo-add]')) { addComboFromForm(); return; }
+  const comboDelete = event.target.closest('[data-combo-delete]');
+  if (comboDelete) { deleteCombo(comboDelete.dataset.comboDelete); return; }
+  if (event.target.closest('[data-projectile-generate]')) { generateProjectileFromForm(); return; }
+  const projSave = event.target.closest('[data-projectile-save]');
+  if (projSave) { saveProjectileNumbers(projSave.dataset.projectileSave); return; }
+  const projDelete = event.target.closest('[data-projectile-delete]');
+  if (projDelete) { deleteProjectile(projDelete.dataset.projectileDelete); return; }
+
   const tabButton = event.target.closest('[data-move-tab]');
   if (tabButton) {
     const card = tabButton.closest('.move-card');
@@ -402,7 +411,7 @@ async function createDraft() {
 }
 
 // Sprite-row ids (the registry rows, no 'projectiles'). See MOVE_ORDER above.
-const MOVE_IDS = ['base', 'punch', 'kick', 'special_1', 'special_2', 'jump', 'crouch', 'dash_forward', 'dash_back', 'block', 'grab', 'throw'];
+const MOVE_IDS = ['base', 'punch', 'kick', 'special_1', 'special_2', 'jump', 'crouch', 'dash_forward', 'dash_back', 'block', 'grab', 'throw', 'walk_forward', 'walk_back'];
 
 // Source-sheet filename detection (`..._<rowId>_sheet.png`) built from MOVE_IDS,
 // longest-first so multi-token ids (special_1, dash_forward) win over any
@@ -686,6 +695,113 @@ async function publishCharacter() {
   await Promise.all([loadCharacters(), loadPipeline()]);
   await selectCharacter(characterId, { silent: true });
   return result;
+}
+
+// --- Kit authoring handlers (combos + projectiles) ---------------------------
+
+function kitCol(name) {
+  return elements.characterWorkbench.querySelector(`[data-kit="${name}"]`);
+}
+
+async function addComboFromForm() {
+  const characterId = currentCharacterId();
+  if (!characterId) return;
+  const col = kitCol('combos');
+  const comboId = col?.querySelector('[data-combo-id]')?.value.trim();
+  const raw = col?.querySelector('[data-combo-segments]')?.value ?? '';
+  // Accept comma-, arrow-, or '>'-separated move ids.
+  const segments = raw.split(/[,→>]+/).map((s) => s.trim()).filter(Boolean);
+  if (!comboId) { showError(new Error('Combo id is required.')); return; }
+  if (segments.length < 2) { showError(new Error('A combo needs at least 2 move ids.')); return; }
+  try {
+    await invokeTool('define_combo', { characterId, comboId, segments });
+    await selectCharacter(characterId, { silent: true });
+  } catch { /* surfaced by invokeTool */ }
+}
+
+async function deleteCombo(comboId) {
+  const characterId = currentCharacterId();
+  if (!characterId) return;
+  const combos = (state.currentDraftData?.combos ?? []).filter((c) => c.id !== comboId);
+  try {
+    await invokeTool('update_character_draft', { characterId, patch: { combos }, note: `delete combo ${comboId}` });
+    await selectCharacter(characterId, { silent: true });
+  } catch { /* surfaced by invokeTool */ }
+}
+
+async function generateProjectileFromForm() {
+  const characterId = currentCharacterId();
+  if (!characterId) return;
+  const col = kitCol('projectiles');
+  const projectileId = col?.querySelector('[data-projectile-new-id]')?.value.trim();
+  const prompt = col?.querySelector('[data-projectile-new-prompt]')?.value.trim();
+  if (!projectileId) { showError(new Error('Projectile id is required.')); return; }
+  if (!prompt) { showError(new Error('A sprite prompt is required.')); return; }
+  try {
+    await invokeTool('generate_projectile', { characterId, projectileId, prompt });
+    await selectCharacter(characterId, { silent: true });
+  } catch { /* surfaced by invokeTool */ }
+}
+
+async function saveProjectileNumbers(projectileId) {
+  const characterId = currentCharacterId();
+  if (!characterId) return;
+  const rows = elements.characterWorkbench.querySelectorAll('.kit-projectile');
+  const row = [...rows].find((r) => r.dataset.projectileId === projectileId);
+  if (!row) return;
+  const existing = (state.currentDraftData?.projectiles ?? []).find((p) => p.id === projectileId) ?? { id: projectileId };
+  const val = (key) => {
+    const el = row.querySelector(`[data-pf="${key}"]`);
+    const n = el && el.value !== '' ? Number(el.value) : NaN;
+    return Number.isFinite(n) ? n : undefined;
+  };
+  const pick = (next, prev) => (next === undefined ? prev : next);
+  const projectile = {
+    ...existing,
+    width: pick(val('width'), existing.width),
+    height: pick(val('height'), existing.height),
+    speed: pick(val('speed'), existing.speed),
+    velocity: {
+      ...(existing.velocity ?? {}),
+      x: pick(val('vx'), existing.velocity?.x),
+      y: pick(val('vy'), existing.velocity?.y),
+      relativeToFacing: existing.velocity?.relativeToFacing ?? true,
+    },
+    lifetime: pick(val('lifetime'), existing.lifetime),
+    hitbox: {
+      ...(existing.hitbox ?? {}),
+      damage: pick(val('damage'), existing.hitbox?.damage),
+      hitstun: pick(val('hitstun'), existing.hitbox?.hitstun),
+      knockback: {
+        ...(existing.hitbox?.knockback ?? {}),
+        x: pick(val('kbx'), existing.hitbox?.knockback?.x),
+        y: pick(val('kby'), existing.hitbox?.knockback?.y),
+      },
+    },
+  };
+  try {
+    await invokeTool('define_projectile', { characterId, projectile });
+    await selectCharacter(characterId, { silent: true });
+  } catch { /* surfaced by invokeTool */ }
+}
+
+async function deleteProjectile(projectileId) {
+  const characterId = currentCharacterId();
+  if (!characterId) return;
+  // Warn before orphaning spawn events: convert silently drops a spawn whose
+  // projectile no longer exists, so a move would lose its shot with no trace.
+  const referencing = (state.currentDraftData?.moves ?? []).filter((move) =>
+    (move.phases ?? []).some((phase) => (phase.events ?? []).some((entry) =>
+      (entry.event ?? entry)?.projectileId === projectileId)));
+  if (referencing.length
+    && !confirm(`${referencing.map((m) => m.id).join(', ')} spawn "${projectileId}". Deleting it makes those moves stop spawning anything. Delete anyway?`)) {
+    return;
+  }
+  const projectiles = (state.currentDraftData?.projectiles ?? []).filter((p) => p.id !== projectileId);
+  try {
+    await invokeTool('update_character_draft', { characterId, patch: { projectiles }, note: `delete projectile ${projectileId}` });
+    await selectCharacter(characterId, { silent: true });
+  } catch { /* surfaced by invokeTool */ }
 }
 
 async function sendChatMessage(event) {
@@ -1194,6 +1310,7 @@ function renderCharacterWorkbench(draft, assets) {
     <section class="move-board">
       ${moveGroups.map(renderMoveGroup).join('')}
     </section>
+    ${renderKitSection(draft)}
     ${renderQaSection(qaReport)}
   `;
 
@@ -1246,6 +1363,96 @@ function renderAnimationBindings(animations = {}) {
         `).join('')}
       </div>
     </section>
+  `;
+}
+
+// Kit authoring — combos + projectile entities. Creation now generates these
+// (T-move-kit), but they also need first-class create/edit/delete surfaces in
+// the admin (previously combos/projectiles were chat/tool-only). All wiring
+// posts to the existing CMS tools via the delegated workbench click handler.
+function renderKitSection(draft) {
+  const moves = draft.moves ?? [];
+  const combos = draft.combos ?? [];
+  const projectiles = draft.projectiles ?? [];
+  const warnings = draft.generation?.warnings ?? [];
+  const moveIdHint = moves.map((m) => m.id).filter(Boolean).join(', ') || 'none yet';
+
+  const warningsHtml = warnings.length
+    ? `<div class="kit-warnings">⚠ ${warnings.map((w) => escapeHtml(w)).join('<br>')}</div>`
+    : '';
+
+  const comboItems = combos.length
+    ? combos.map((combo) => `
+        <li class="kit-row">
+          <span class="kit-row-main">
+            <strong>${escapeHtml(combo.id)}</strong>
+            <span class="kit-chain">${(combo.segments ?? []).map((s) => escapeHtml(s)).join(' → ')}</span>
+          </span>
+          <button type="button" class="kit-del" data-combo-delete="${escapeHtml(combo.id)}" title="Delete combo">✕</button>
+        </li>`).join('')
+    : '<li class="empty-inline">No combos yet.</li>';
+
+  const projectileItems = projectiles.length
+    ? projectiles.map(renderProjectileEntity).join('')
+    : '<li class="empty-inline">No projectiles yet.</li>';
+
+  return `
+    <section class="kit-board">
+      <div class="panel-heading"><h3>Kit — combos &amp; projectiles</h3></div>
+      ${warningsHtml}
+      <div class="kit-cols">
+        <div class="kit-col" data-kit="combos">
+          <h4>Combos</h4>
+          <ul class="kit-list">${comboItems}</ul>
+          <div class="kit-form">
+            <input type="text" data-combo-id placeholder="combo id (e.g. jab_cross)" />
+            <input type="text" data-combo-segments placeholder="move ids in order: jab, cross" />
+            <button type="button" data-combo-add>Add combo</button>
+          </div>
+          <p class="move-note">Segments must be existing move ids. Available: ${escapeHtml(moveIdHint)}. Convert wires the cancel graph so the chain fires.</p>
+        </div>
+        <div class="kit-col" data-kit="projectiles">
+          <h4>Projectiles</h4>
+          <ul class="kit-list">${projectileItems}</ul>
+          <div class="kit-form">
+            <input type="text" data-projectile-new-id placeholder="projectile id (e.g. fireball)" />
+            <input type="text" data-projectile-new-prompt placeholder="sprite prompt (what it looks like)" />
+            <button type="button" data-projectile-generate>Generate projectile</button>
+          </div>
+          <p class="move-note">Generate creates the sprite + entity. Tune numbers below or in the Gym; spawn it from a move via its projectile id.</p>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderProjectileEntity(entity) {
+  const hb = entity.hitbox ?? {};
+  const v = entity.velocity ?? {};
+  const num = (value, fallback = 0) => escapeHtml(String(value ?? fallback));
+  const field = (label, key, value) =>
+    `<label class="kit-field"><span>${label}</span><input type="number" data-pf="${key}" value="${num(value)}" /></label>`;
+  return `
+    <li class="kit-row kit-projectile" data-projectile-id="${escapeHtml(entity.id)}">
+      <div class="kit-row-main">
+        <strong>${escapeHtml(entity.id)}</strong>
+        <span class="kit-sub">${escapeHtml(entity.animation ?? '')}</span>
+        <button type="button" class="kit-del" data-projectile-delete="${escapeHtml(entity.id)}" title="Delete projectile">✕</button>
+      </div>
+      <div class="kit-fields">
+        ${field('W', 'width', entity.width)}
+        ${field('H', 'height', entity.height)}
+        ${field('Speed', 'speed', entity.speed)}
+        ${field('Vx', 'vx', v.x)}
+        ${field('Vy', 'vy', v.y)}
+        ${field('Life', 'lifetime', entity.lifetime)}
+        ${field('Dmg', 'damage', hb.damage)}
+        ${field('Hitstun', 'hitstun', hb.hitstun)}
+        ${field('KbX', 'kbx', hb.knockback?.x)}
+        ${field('KbY', 'kby', hb.knockback?.y)}
+      </div>
+      <button type="button" class="kit-save" data-projectile-save="${escapeHtml(entity.id)}">Save numbers</button>
+    </li>
   `;
 }
 
