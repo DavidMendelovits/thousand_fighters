@@ -15,7 +15,8 @@ export type InputToken =
   | 'lk'
   | 'mk'
   | 'hk'
-  | 'neutral';
+  | 'neutral'
+  | 'grab';
 
 export type RawInput = {
   left: boolean;
@@ -232,6 +233,7 @@ export type FighterState =
   | 'landing'
   | 'attack'
   | 'hitstun'
+  | 'block'
   | 'blockstun'
   | 'grabbed'
   | 'knockdown'

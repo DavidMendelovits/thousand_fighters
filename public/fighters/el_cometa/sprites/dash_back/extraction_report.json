@@ -1,0 +1,297 @@
+{
+  "source": "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-extract-Rxf45u/source.png",
+  "moveId": "dash_back",
+  "sourceSize": [
+    2172,
+    724
+  ],
+  "grid": [
+    1,
+    6
+  ],
+  "frameCount": 6,
+  "segmentation": "connected-components",
+  "medianSilhouetteHeight": 335,
+  "scaleApplied": 1.3761194029850747,
+  "warnings": [
+    "frames equalized to silhouette height 461px per frame (base median was 335px)"
+  ],
+  "frames": [
+    {
+      "file": "dash_back_001.png",
+      "frameIndex": 1,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -277,
+        "y": -445,
+        "width": 374,
+        "height": 445
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -73,
+        "width": 3,
+        "height": 20
+      },
+      "empty": false,
+      "width": 433,
+      "height": 471,
+      "anchor": {
+        "x": 299,
+        "y": 465
+      },
+      "reachX": 129,
+      "silhouetteHeight": 461
+    },
+    {
+      "file": "dash_back_002.png",
+      "frameIndex": 2,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -323,
+        "y": -445,
+        "width": 411,
+        "height": 445
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 453,
+      "height": 471,
+      "anchor": {
+        "x": 336,
+        "y": 465
+      },
+      "reachX": 112,
+      "silhouetteHeight": 461
+    },
+    {
+      "file": "dash_back_003.png",
+      "frameIndex": 3,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -295,
+        "y": -434,
+        "width": 539,
+        "height": 434
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -454,
+        "width": 141,
+        "height": 372
+      },
+      "empty": false,
+      "width": 590,
+      "height": 471,
+      "anchor": {
+        "x": 318,
+        "y": 465
+      },
+      "reachX": 267,
+      "silhouetteHeight": 461
+    },
+    {
+      "file": "dash_back_004.png",
+      "frameIndex": 4,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -226,
+        "y": -442,
+        "width": 402,
+        "height": 442
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -442,
+        "width": 65,
+        "height": 425
+      },
+      "empty": false,
+      "width": 438,
+      "height": 471,
+      "anchor": {
+        "x": 242,
+        "y": 465
+      },
+      "reachX": 191,
+      "silhouetteHeight": 461
+    },
+    {
+      "file": "dash_back_005.png",
+      "frameIndex": 5,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -151,
+        "y": -446,
+        "width": 285,
+        "height": 446
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -353,
+        "width": 21,
+        "height": 225
+      },
+      "empty": false,
+      "width": 317,
+      "height": 471,
+      "anchor": {
+        "x": 165,
+        "y": 465
+      },
+      "reachX": 147,
+      "silhouetteHeight": 461
+    },
+    {
+      "file": "dash_back_006.png",
+      "frameIndex": 6,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -152,
+        "y": -446,
+        "width": 267,
+        "height": 446
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 294,
+      "height": 471,
+      "anchor": {
+        "x": 165,
+        "y": 465
+      },
+      "reachX": 124,
+      "silhouetteHeight": 461
+    }
+  ],
+  "frameData": [
+    {
+      "file": "sprites/dash_back/dash_back_001.png",
+      "width": 433,
+      "height": 471,
+      "anchor": {
+        "x": 299,
+        "y": 465
+      },
+      "reachX": 129,
+      "silhouetteHeight": 461,
+      "hurtbox": {
+        "x": -277,
+        "y": -445,
+        "width": 374,
+        "height": 445
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -73,
+        "width": 3,
+        "height": 20
+      }
+    },
+    {
+      "file": "sprites/dash_back/dash_back_002.png",
+      "width": 453,
+      "height": 471,
+      "anchor": {
+        "x": 336,
+        "y": 465
+      },
+      "reachX": 112,
+      "silhouetteHeight": 461,
+      "hurtbox": {
+        "x": -323,
+        "y": -445,
+        "width": 411,
+        "height": 445
+      },
+      "attackBox": null
+    },
+    {
+      "file": "sprites/dash_back/dash_back_003.png",
+      "width": 590,
+      "height": 471,
+      "anchor": {
+        "x": 318,
+        "y": 465
+      },
+      "reachX": 267,
+      "silhouetteHeight": 461,
+      "hurtbox": {
+        "x": -295,
+        "y": -434,
+        "width": 539,
+        "height": 434
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -454,
+        "width": 141,
+        "height": 372
+      }
+    },
+    {
+      "file": "sprites/dash_back/dash_back_004.png",
+      "width": 438,
+      "height": 471,
+      "anchor": {
+        "x": 242,
+        "y": 465
+      },
+      "reachX": 191,
+      "silhouetteHeight": 461,
+      "hurtbox": {
+        "x": -226,
+        "y": -442,
+        "width": 402,
+        "height": 442
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -442,
+        "width": 65,
+        "height": 425
+      }
+    },
+    {
+      "file": "sprites/dash_back/dash_back_005.png",
+      "width": 317,
+      "height": 471,
+      "anchor": {
+        "x": 165,
+        "y": 465
+      },
+      "reachX": 147,
+      "silhouetteHeight": 461,
+      "hurtbox": {
+        "x": -151,
+        "y": -446,
+        "width": 285,
+        "height": 446
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -353,
+        "width": 21,
+        "height": 225
+      }
+    },
+    {
+      "file": "sprites/dash_back/dash_back_006.png",
+      "width": 294,
+      "height": 471,
+      "anchor": {
+        "x": 165,
+        "y": 465
+      },
+      "reachX": 124,
+      "silhouetteHeight": 461,
+      "hurtbox": {
+        "x": -152,
+        "y": -446,
+        "width": 267,
+        "height": 446
+      },
+      "attackBox": null
+    }
+  ]
+}

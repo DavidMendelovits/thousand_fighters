@@ -1,0 +1,420 @@
+{
+  "workflow": "row-normalizer",
+  "moves": {
+    "base": {
+      "generatedAt": "2026-06-17T14:26:04.265Z",
+      "sourceAssetKey": "characters/kitsune_stride/assets/source/kitsune_stride_base_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 502,
+      "scaleApplied": 1,
+      "targetHeight": null,
+      "warnings": [
+        "frames equalized to silhouette height 502px per frame (row median was 502px)",
+        "frame 1: 1.8% of opaque pixels remain near-magenta after despill",
+        "frame 2: 1.8% of opaque pixels remain near-magenta after despill",
+        "frame 3: 0.9% of opaque pixels remain near-magenta after despill",
+        "frame 4: 1.5% of opaque pixels remain near-magenta after despill",
+        "frame 5: 1.6% of opaque pixels remain near-magenta after despill",
+        "frame 6: 0.8% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "punch": {
+      "generatedAt": "2026-06-17T14:26:05.219Z",
+      "sourceAssetKey": "characters/kitsune_stride/assets/source/kitsune_stride_punch_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 387,
+      "scaleApplied": 1.297157622739018,
+      "targetHeight": 502,
+      "warnings": [
+        "frame 3: content bleeds 5% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 502px per frame (base median was 387px)",
+        "frame 1: 1.7% of opaque pixels remain near-magenta after despill",
+        "frame 2: 1.2% of opaque pixels remain near-magenta after despill",
+        "frame 3: 1.5% of opaque pixels remain near-magenta after despill",
+        "frame 4: 2.2% of opaque pixels remain near-magenta after despill",
+        "frame 5: 1.1% of opaque pixels remain near-magenta after despill",
+        "frame 6: 1.8% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "kick": {
+      "generatedAt": "2026-06-17T14:26:06.187Z",
+      "sourceAssetKey": "characters/kitsune_stride/assets/source/kitsune_stride_kick_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 403,
+      "scaleApplied": 1.2456575682382134,
+      "targetHeight": 502,
+      "warnings": [
+        "frames equalized to silhouette height 502px per frame (base median was 403px)",
+        "frame 1: 2.7% of opaque pixels remain near-magenta after despill",
+        "frame 2: 2.3% of opaque pixels remain near-magenta after despill",
+        "frame 3: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 4: 2.4% of opaque pixels remain near-magenta after despill",
+        "frame 5: 2.5% of opaque pixels remain near-magenta after despill",
+        "frame 6: 1.8% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "special_1": {
+      "generatedAt": "2026-06-17T14:26:07.360Z",
+      "sourceAssetKey": "characters/kitsune_stride/assets/source/kitsune_stride_special_1_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 302,
+      "scaleApplied": 1.6622516556291391,
+      "targetHeight": 502,
+      "warnings": [
+        "frame 4: content bleeds 14% past its cell boundary — kept with this frame",
+        "frame 3: content bleeds 4% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 502px per frame (base median was 302px)",
+        "frame 1: 1.4% of opaque pixels remain near-magenta after despill",
+        "frame 2: 6.4% of opaque pixels remain near-magenta after despill",
+        "frame 3: 8.6% of opaque pixels remain near-magenta after despill",
+        "frame 4: 1.7% of opaque pixels remain near-magenta after despill",
+        "frame 5: 2.4% of opaque pixels remain near-magenta after despill",
+        "frame 6: 1.4% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "special_2": {
+      "generatedAt": "2026-06-17T14:26:08.330Z",
+      "sourceAssetKey": "characters/kitsune_stride/assets/source/kitsune_stride_special_2_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 380,
+      "scaleApplied": 1.3210526315789475,
+      "targetHeight": 502,
+      "warnings": [
+        "frame 4: content bleeds 3% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 502px per frame (base median was 380px)",
+        "frame 1: 1.8% of opaque pixels remain near-magenta after despill",
+        "frame 2: 2.2% of opaque pixels remain near-magenta after despill",
+        "frame 3: 1.7% of opaque pixels remain near-magenta after despill",
+        "frame 4: 2.7% of opaque pixels remain near-magenta after despill",
+        "frame 5: 1.6% of opaque pixels remain near-magenta after despill",
+        "frame 6: 1.7% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "jump": {
+      "generatedAt": "2026-06-17T14:26:09.296Z",
+      "sourceAssetKey": "characters/kitsune_stride/assets/source/kitsune_stride_jump_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 431,
+      "scaleApplied": 1.1647331786542923,
+      "targetHeight": 502,
+      "warnings": [
+        "row rescaled by 1.165 to match target silhouette height 502px (was 431px)",
+        "frame 1: 1.8% of opaque pixels remain near-magenta after despill",
+        "frame 2: 1.0% of opaque pixels remain near-magenta after despill",
+        "frame 3: 1.8% of opaque pixels remain near-magenta after despill",
+        "frame 4: 1.0% of opaque pixels remain near-magenta after despill",
+        "frame 5: 1.0% of opaque pixels remain near-magenta after despill",
+        "frame 6: 1.0% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "crouch": {
+      "generatedAt": "2026-06-17T14:26:10.351Z",
+      "sourceAssetKey": "characters/kitsune_stride/assets/source/kitsune_stride_crouch_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 340,
+      "scaleApplied": 1.4764705882352942,
+      "targetHeight": 502,
+      "warnings": [
+        "row rescaled by 1.476 to match target silhouette height 502px (was 340px)",
+        "frame 1: 1.7% of opaque pixels remain near-magenta after despill",
+        "frame 2: 1.9% of opaque pixels remain near-magenta after despill",
+        "frame 3: 1.5% of opaque pixels remain near-magenta after despill",
+        "frame 4: 2.1% of opaque pixels remain near-magenta after despill",
+        "frame 5: 2.3% of opaque pixels remain near-magenta after despill",
+        "frame 6: 1.3% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "dash_forward": {
+      "generatedAt": "2026-06-17T14:26:11.382Z",
+      "sourceAssetKey": "characters/kitsune_stride/assets/source/kitsune_stride_dash_forward_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 387,
+      "scaleApplied": 1.297157622739018,
+      "targetHeight": 502,
+      "warnings": [
+        "frame 4: content bleeds 13% past its cell boundary — kept with this frame",
+        "frame 3: content bleeds 13% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 502px per frame (base median was 387px)",
+        "frame 1: 0.8% of opaque pixels remain near-magenta after despill",
+        "frame 2: 0.6% of opaque pixels remain near-magenta after despill",
+        "frame 3: 5.3% of opaque pixels remain near-magenta after despill",
+        "frame 4: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 5: 0.8% of opaque pixels remain near-magenta after despill",
+        "frame 6: 0.8% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "dash_back": {
+      "generatedAt": "2026-06-17T14:26:12.455Z",
+      "sourceAssetKey": "characters/kitsune_stride/assets/source/kitsune_stride_dash_back_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 357,
+      "scaleApplied": 1.4061624649859943,
+      "targetHeight": 502,
+      "warnings": [
+        "frame 4: content bleeds 5% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 502px per frame (base median was 357px)",
+        "frame 1: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 2: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 3: 8.1% of opaque pixels remain near-magenta after despill",
+        "frame 4: 2.6% of opaque pixels remain near-magenta after despill",
+        "frame 5: 1.1% of opaque pixels remain near-magenta after despill",
+        "frame 6: 1.8% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "block": {
+      "generatedAt": "2026-06-17T14:26:13.467Z",
+      "sourceAssetKey": "characters/kitsune_stride/assets/source/kitsune_stride_block_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 438,
+      "scaleApplied": 1.1461187214611872,
+      "targetHeight": 502,
+      "warnings": [
+        "frames equalized to silhouette height 502px per frame (base median was 438px)",
+        "frame 1: 2.2% of opaque pixels remain near-magenta after despill",
+        "frame 2: 1.9% of opaque pixels remain near-magenta after despill",
+        "frame 3: 2.1% of opaque pixels remain near-magenta after despill",
+        "frame 4: 1.9% of opaque pixels remain near-magenta after despill",
+        "frame 5: 2.5% of opaque pixels remain near-magenta after despill",
+        "frame 6: 2.2% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "grab": {
+      "generatedAt": "2026-06-17T14:28:24.440Z",
+      "sourceAssetKey": "characters/kitsune_stride/assets/source/kitsune_stride_grab_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 348,
+      "scaleApplied": 1.4425287356321839,
+      "targetHeight": 502,
+      "warnings": [
+        "frames equalized to silhouette height 502px per frame (base median was 348px)",
+        "frame 1: 1.1% of opaque pixels remain near-magenta after despill",
+        "frame 2: 1.0% of opaque pixels remain near-magenta after despill",
+        "frame 3: 1.0% of opaque pixels remain near-magenta after despill",
+        "frame 4: 1.0% of opaque pixels remain near-magenta after despill",
+        "frame 5: 1.2% of opaque pixels remain near-magenta after despill",
+        "frame 6: 1.1% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "throw": {
+      "generatedAt": "2026-06-17T14:30:31.876Z",
+      "sourceAssetKey": "characters/kitsune_stride/assets/source/kitsune_stride_throw_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 391,
+      "scaleApplied": 1.2838874680306904,
+      "targetHeight": 502,
+      "warnings": [
+        "frames equalized to silhouette height 502px per frame (base median was 391px)",
+        "frame 1: 0.9% of opaque pixels remain near-magenta after despill",
+        "frame 2: 1.2% of opaque pixels remain near-magenta after despill",
+        "frame 3: 1.6% of opaque pixels remain near-magenta after despill",
+        "frame 4: 0.8% of opaque pixels remain near-magenta after despill",
+        "frame 5: 0.9% of opaque pixels remain near-magenta after despill",
+        "frame 6: 0.9% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "walk_forward": {
+      "generatedAt": "2026-06-17T14:30:32.830Z",
+      "sourceAssetKey": "characters/kitsune_stride/assets/source/kitsune_stride_walk_forward_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 421,
+      "scaleApplied": 1.1923990498812351,
+      "targetHeight": 502,
+      "warnings": [
+        "frames equalized to silhouette height 502px per frame (base median was 421px)",
+        "frame 1: 1.1% of opaque pixels remain near-magenta after despill",
+        "frame 2: 1.5% of opaque pixels remain near-magenta after despill",
+        "frame 3: 1.2% of opaque pixels remain near-magenta after despill",
+        "frame 4: 1.4% of opaque pixels remain near-magenta after despill",
+        "frame 5: 1.2% of opaque pixels remain near-magenta after despill",
+        "frame 6: 1.3% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "walk_back": {
+      "generatedAt": "2026-06-17T14:30:33.809Z",
+      "sourceAssetKey": "characters/kitsune_stride/assets/source/kitsune_stride_walk_back_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 440,
+      "scaleApplied": 1.1409090909090909,
+      "targetHeight": 502,
+      "warnings": [
+        "frames equalized to silhouette height 502px per frame (base median was 440px)",
+        "frame 1: 2.9% of opaque pixels remain near-magenta after despill",
+        "frame 2: 2.2% of opaque pixels remain near-magenta after despill",
+        "frame 3: 2.7% of opaque pixels remain near-magenta after despill",
+        "frame 4: 2.8% of opaque pixels remain near-magenta after despill",
+        "frame 5: 2.3% of opaque pixels remain near-magenta after despill",
+        "frame 6: 2.1% of opaque pixels remain near-magenta after despill"
+      ]
+    }
+  },
+  "warnings": [
+    "base: frames equalized to silhouette height 502px per frame (row median was 502px)",
+    "base: frame 1: 1.8% of opaque pixels remain near-magenta after despill",
+    "base: frame 2: 1.8% of opaque pixels remain near-magenta after despill",
+    "base: frame 3: 0.9% of opaque pixels remain near-magenta after despill",
+    "base: frame 4: 1.5% of opaque pixels remain near-magenta after despill",
+    "base: frame 5: 1.6% of opaque pixels remain near-magenta after despill",
+    "base: frame 6: 0.8% of opaque pixels remain near-magenta after despill",
+    "punch: frame 3: content bleeds 5% past its cell boundary — kept with this frame",
+    "punch: frames equalized to silhouette height 502px per frame (base median was 387px)",
+    "punch: frame 1: 1.7% of opaque pixels remain near-magenta after despill",
+    "punch: frame 2: 1.2% of opaque pixels remain near-magenta after despill",
+    "punch: frame 3: 1.5% of opaque pixels remain near-magenta after despill",
+    "punch: frame 4: 2.2% of opaque pixels remain near-magenta after despill",
+    "punch: frame 5: 1.1% of opaque pixels remain near-magenta after despill",
+    "punch: frame 6: 1.8% of opaque pixels remain near-magenta after despill",
+    "kick: frames equalized to silhouette height 502px per frame (base median was 403px)",
+    "kick: frame 1: 2.7% of opaque pixels remain near-magenta after despill",
+    "kick: frame 2: 2.3% of opaque pixels remain near-magenta after despill",
+    "kick: frame 3: 1.3% of opaque pixels remain near-magenta after despill",
+    "kick: frame 4: 2.4% of opaque pixels remain near-magenta after despill",
+    "kick: frame 5: 2.5% of opaque pixels remain near-magenta after despill",
+    "kick: frame 6: 1.8% of opaque pixels remain near-magenta after despill",
+    "special_1: frame 4: content bleeds 14% past its cell boundary — kept with this frame",
+    "special_1: frame 3: content bleeds 4% past its cell boundary — kept with this frame",
+    "special_1: frames equalized to silhouette height 502px per frame (base median was 302px)",
+    "special_1: frame 1: 1.4% of opaque pixels remain near-magenta after despill",
+    "special_1: frame 2: 6.4% of opaque pixels remain near-magenta after despill",
+    "special_1: frame 3: 8.6% of opaque pixels remain near-magenta after despill",
+    "special_1: frame 4: 1.7% of opaque pixels remain near-magenta after despill",
+    "special_1: frame 5: 2.4% of opaque pixels remain near-magenta after despill",
+    "special_1: frame 6: 1.4% of opaque pixels remain near-magenta after despill",
+    "special_2: frame 4: content bleeds 3% past its cell boundary — kept with this frame",
+    "special_2: frames equalized to silhouette height 502px per frame (base median was 380px)",
+    "special_2: frame 1: 1.8% of opaque pixels remain near-magenta after despill",
+    "special_2: frame 2: 2.2% of opaque pixels remain near-magenta after despill",
+    "special_2: frame 3: 1.7% of opaque pixels remain near-magenta after despill",
+    "special_2: frame 4: 2.7% of opaque pixels remain near-magenta after despill",
+    "special_2: frame 5: 1.6% of opaque pixels remain near-magenta after despill",
+    "special_2: frame 6: 1.7% of opaque pixels remain near-magenta after despill",
+    "jump: row rescaled by 1.165 to match target silhouette height 502px (was 431px)",
+    "jump: frame 1: 1.8% of opaque pixels remain near-magenta after despill",
+    "jump: frame 2: 1.0% of opaque pixels remain near-magenta after despill",
+    "jump: frame 3: 1.8% of opaque pixels remain near-magenta after despill",
+    "jump: frame 4: 1.0% of opaque pixels remain near-magenta after despill",
+    "jump: frame 5: 1.0% of opaque pixels remain near-magenta after despill",
+    "jump: frame 6: 1.0% of opaque pixels remain near-magenta after despill",
+    "crouch: row rescaled by 1.476 to match target silhouette height 502px (was 340px)",
+    "crouch: frame 1: 1.7% of opaque pixels remain near-magenta after despill",
+    "crouch: frame 2: 1.9% of opaque pixels remain near-magenta after despill",
+    "crouch: frame 3: 1.5% of opaque pixels remain near-magenta after despill",
+    "crouch: frame 4: 2.1% of opaque pixels remain near-magenta after despill",
+    "crouch: frame 5: 2.3% of opaque pixels remain near-magenta after despill",
+    "crouch: frame 6: 1.3% of opaque pixels remain near-magenta after despill",
+    "dash_forward: frame 4: content bleeds 13% past its cell boundary — kept with this frame",
+    "dash_forward: frame 3: content bleeds 13% past its cell boundary — kept with this frame",
+    "dash_forward: frames equalized to silhouette height 502px per frame (base median was 387px)",
+    "dash_forward: frame 1: 0.8% of opaque pixels remain near-magenta after despill",
+    "dash_forward: frame 2: 0.6% of opaque pixels remain near-magenta after despill",
+    "dash_forward: frame 3: 5.3% of opaque pixels remain near-magenta after despill",
+    "dash_forward: frame 4: 1.3% of opaque pixels remain near-magenta after despill",
+    "dash_forward: frame 5: 0.8% of opaque pixels remain near-magenta after despill",
+    "dash_forward: frame 6: 0.8% of opaque pixels remain near-magenta after despill",
+    "dash_back: frame 4: content bleeds 5% past its cell boundary — kept with this frame",
+    "dash_back: frames equalized to silhouette height 502px per frame (base median was 357px)",
+    "dash_back: frame 1: 1.3% of opaque pixels remain near-magenta after despill",
+    "dash_back: frame 2: 1.3% of opaque pixels remain near-magenta after despill",
+    "dash_back: frame 3: 8.1% of opaque pixels remain near-magenta after despill",
+    "dash_back: frame 4: 2.6% of opaque pixels remain near-magenta after despill",
+    "dash_back: frame 5: 1.1% of opaque pixels remain near-magenta after despill",
+    "dash_back: frame 6: 1.8% of opaque pixels remain near-magenta after despill",
+    "block: frames equalized to silhouette height 502px per frame (base median was 438px)",
+    "block: frame 1: 2.2% of opaque pixels remain near-magenta after despill",
+    "block: frame 2: 1.9% of opaque pixels remain near-magenta after despill",
+    "block: frame 3: 2.1% of opaque pixels remain near-magenta after despill",
+    "block: frame 4: 1.9% of opaque pixels remain near-magenta after despill",
+    "block: frame 5: 2.5% of opaque pixels remain near-magenta after despill",
+    "block: frame 6: 2.2% of opaque pixels remain near-magenta after despill",
+    "grab: frames equalized to silhouette height 502px per frame (base median was 348px)",
+    "grab: frame 1: 1.1% of opaque pixels remain near-magenta after despill",
+    "grab: frame 2: 1.0% of opaque pixels remain near-magenta after despill",
+    "grab: frame 3: 1.0% of opaque pixels remain near-magenta after despill",
+    "grab: frame 4: 1.0% of opaque pixels remain near-magenta after despill",
+    "grab: frame 5: 1.2% of opaque pixels remain near-magenta after despill",
+    "grab: frame 6: 1.1% of opaque pixels remain near-magenta after despill",
+    "throw: frames equalized to silhouette height 502px per frame (base median was 391px)",
+    "throw: frame 1: 0.9% of opaque pixels remain near-magenta after despill",
+    "throw: frame 2: 1.2% of opaque pixels remain near-magenta after despill",
+    "throw: frame 3: 1.6% of opaque pixels remain near-magenta after despill",
+    "throw: frame 4: 0.8% of opaque pixels remain near-magenta after despill",
+    "throw: frame 5: 0.9% of opaque pixels remain near-magenta after despill",
+    "throw: frame 6: 0.9% of opaque pixels remain near-magenta after despill",
+    "walk_forward: frames equalized to silhouette height 502px per frame (base median was 421px)",
+    "walk_forward: frame 1: 1.1% of opaque pixels remain near-magenta after despill",
+    "walk_forward: frame 2: 1.5% of opaque pixels remain near-magenta after despill",
+    "walk_forward: frame 3: 1.2% of opaque pixels remain near-magenta after despill",
+    "walk_forward: frame 4: 1.4% of opaque pixels remain near-magenta after despill",
+    "walk_forward: frame 5: 1.2% of opaque pixels remain near-magenta after despill",
+    "walk_forward: frame 6: 1.3% of opaque pixels remain near-magenta after despill",
+    "walk_back: frames equalized to silhouette height 502px per frame (base median was 440px)",
+    "walk_back: frame 1: 2.9% of opaque pixels remain near-magenta after despill",
+    "walk_back: frame 2: 2.2% of opaque pixels remain near-magenta after despill",
+    "walk_back: frame 3: 2.7% of opaque pixels remain near-magenta after despill",
+    "walk_back: frame 4: 2.8% of opaque pixels remain near-magenta after despill",
+    "walk_back: frame 5: 2.3% of opaque pixels remain near-magenta after despill",
+    "walk_back: frame 6: 2.1% of opaque pixels remain near-magenta after despill"
+  ],
+  "fixtureFill": {
+    "fixtureFighterId": "janitor",
+    "generatedAt": "2026-06-17T14:30:33.816Z",
+    "filledSheets": [],
+    "preservedSheets": [
+      "base",
+      "punch",
+      "kick",
+      "special_1",
+      "special_2",
+      "jump",
+      "crouch",
+      "dash_forward",
+      "dash_back",
+      "block",
+      "grab",
+      "throw",
+      "walk_forward",
+      "walk_back"
+    ]
+  }
+}

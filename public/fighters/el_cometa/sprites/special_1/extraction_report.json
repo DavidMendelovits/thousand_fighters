@@ -1,0 +1,309 @@
+{
+  "source": "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-extract-cpU7G7/source.png",
+  "moveId": "special_1",
+  "sourceSize": [
+    2172,
+    724
+  ],
+  "grid": [
+    1,
+    6
+  ],
+  "frameCount": 6,
+  "segmentation": "connected-components",
+  "medianSilhouetteHeight": 310,
+  "scaleApplied": 1.4870967741935484,
+  "warnings": [
+    "frame 4: content bleeds 11% past its cell boundary — kept with this frame",
+    "frame 3: content bleeds 15% past its cell boundary — kept with this frame",
+    "frames equalized to silhouette height 461px per frame (base median was 310px)"
+  ],
+  "frames": [
+    {
+      "file": "special_1_001.png",
+      "frameIndex": 1,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -201,
+        "y": -443,
+        "width": 337,
+        "height": 443
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -350,
+        "width": 21,
+        "height": 342
+      },
+      "empty": false,
+      "width": 372,
+      "height": 471,
+      "anchor": {
+        "x": 220,
+        "y": 465
+      },
+      "reachX": 147,
+      "silhouetteHeight": 461
+    },
+    {
+      "file": "special_1_002.png",
+      "frameIndex": 2,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -74,
+        "y": -450,
+        "width": 263,
+        "height": 450
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -412,
+        "width": 73,
+        "height": 255
+      },
+      "empty": false,
+      "width": 291,
+      "height": 471,
+      "anchor": {
+        "x": 87,
+        "y": 465
+      },
+      "reachX": 199,
+      "silhouetteHeight": 461
+    },
+    {
+      "file": "special_1_003.png",
+      "frameIndex": 3,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -72,
+        "y": -447,
+        "width": 1004,
+        "height": 447
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -461,
+        "width": 833,
+        "height": 410
+      },
+      "empty": false,
+      "width": 1065,
+      "height": 471,
+      "anchor": {
+        "x": 101,
+        "y": 465
+      },
+      "reachX": 959,
+      "silhouetteHeight": 461
+    },
+    {
+      "file": "special_1_004.png",
+      "frameIndex": 4,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -353,
+        "y": -442,
+        "width": 1049,
+        "height": 442
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -425,
+        "width": 586,
+        "height": 384
+      },
+      "empty": false,
+      "width": 1130,
+      "height": 471,
+      "anchor": {
+        "x": 413,
+        "y": 465
+      },
+      "reachX": 712,
+      "silhouetteHeight": 461
+    },
+    {
+      "file": "special_1_005.png",
+      "frameIndex": 5,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -332,
+        "y": -450,
+        "width": 399,
+        "height": 450
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 448,
+      "height": 471,
+      "anchor": {
+        "x": 347,
+        "y": 465
+      },
+      "reachX": 96,
+      "silhouetteHeight": 461
+    },
+    {
+      "file": "special_1_006.png",
+      "frameIndex": 6,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -219,
+        "y": -437,
+        "width": 364,
+        "height": 437
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -363,
+        "width": 36,
+        "height": 352
+      },
+      "empty": false,
+      "width": 405,
+      "height": 471,
+      "anchor": {
+        "x": 238,
+        "y": 465
+      },
+      "reachX": 162,
+      "silhouetteHeight": 461
+    }
+  ],
+  "frameData": [
+    {
+      "file": "sprites/special_1/special_1_001.png",
+      "width": 372,
+      "height": 471,
+      "anchor": {
+        "x": 220,
+        "y": 465
+      },
+      "reachX": 147,
+      "silhouetteHeight": 461,
+      "hurtbox": {
+        "x": -201,
+        "y": -443,
+        "width": 337,
+        "height": 443
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -350,
+        "width": 21,
+        "height": 342
+      }
+    },
+    {
+      "file": "sprites/special_1/special_1_002.png",
+      "width": 291,
+      "height": 471,
+      "anchor": {
+        "x": 87,
+        "y": 465
+      },
+      "reachX": 199,
+      "silhouetteHeight": 461,
+      "hurtbox": {
+        "x": -74,
+        "y": -450,
+        "width": 263,
+        "height": 450
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -412,
+        "width": 73,
+        "height": 255
+      }
+    },
+    {
+      "file": "sprites/special_1/special_1_003.png",
+      "width": 1065,
+      "height": 471,
+      "anchor": {
+        "x": 101,
+        "y": 465
+      },
+      "reachX": 959,
+      "silhouetteHeight": 461,
+      "hurtbox": {
+        "x": -72,
+        "y": -447,
+        "width": 1004,
+        "height": 447
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -461,
+        "width": 833,
+        "height": 410
+      }
+    },
+    {
+      "file": "sprites/special_1/special_1_004.png",
+      "width": 1130,
+      "height": 471,
+      "anchor": {
+        "x": 413,
+        "y": 465
+      },
+      "reachX": 712,
+      "silhouetteHeight": 461,
+      "hurtbox": {
+        "x": -353,
+        "y": -442,
+        "width": 1049,
+        "height": 442
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -425,
+        "width": 586,
+        "height": 384
+      }
+    },
+    {
+      "file": "sprites/special_1/special_1_005.png",
+      "width": 448,
+      "height": 471,
+      "anchor": {
+        "x": 347,
+        "y": 465
+      },
+      "reachX": 96,
+      "silhouetteHeight": 461,
+      "hurtbox": {
+        "x": -332,
+        "y": -450,
+        "width": 399,
+        "height": 450
+      },
+      "attackBox": null
+    },
+    {
+      "file": "sprites/special_1/special_1_006.png",
+      "width": 405,
+      "height": 471,
+      "anchor": {
+        "x": 238,
+        "y": 465
+      },
+      "reachX": 162,
+      "silhouetteHeight": 461,
+      "hurtbox": {
+        "x": -219,
+        "y": -437,
+        "width": 364,
+        "height": 437
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -363,
+        "width": 36,
+        "height": 352
+      }
+    }
+  ]
+}

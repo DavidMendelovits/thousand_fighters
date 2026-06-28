@@ -224,6 +224,18 @@ function handleWorkbenchClick(event) {
     return;
   }
 
+  const promptReset = event.target.closest('[data-move-prompt-reset]');
+  if (promptReset) {
+    const moveId = promptReset.dataset.movePromptReset;
+    const suggested = buildRowPrompt(moveId);
+    // Override the stored/generated prompt so an already-generated row can adopt
+    // the distinct per-move default (this is what de-pollutes existing fighters).
+    state.movePrompts[`${state.currentCharacterId}:${moveId}`] = suggested;
+    const textarea = elements.characterWorkbench.querySelector(`[data-move-prompt="${moveId}"]`);
+    if (textarea) textarea.value = suggested;
+    return;
+  }
+
   if (event.target.closest('[data-combo-add]')) { addComboFromForm(); return; }
   if (event.target.closest('[data-author-combo]')) { authorComboFromForm(); return; }
   const comboDelete = event.target.closest('[data-combo-delete]');
@@ -233,6 +245,8 @@ function handleWorkbenchClick(event) {
   if (projSave) { saveProjectileNumbers(projSave.dataset.projectileSave); return; }
   const projDelete = event.target.closest('[data-projectile-delete]');
   if (projDelete) { deleteProjectile(projDelete.dataset.projectileDelete); return; }
+  const projRegen = event.target.closest('[data-projectile-regenerate]');
+  if (projRegen) { regenerateProjectile(projRegen.dataset.projectileRegenerate); return; }
 
   const tabButton = event.target.closest('[data-move-tab]');
   if (tabButton) {
@@ -435,6 +449,13 @@ function logMoveActivity(moveId, message, level = '') {
   refreshMoveActivityPanel(moveId);
 }
 
+// Prominent "this row is generating" veil drawn over the card body. Kept as a
+// shared string so the full re-render (renderMoveGroup) and the instant toggle
+// (setMoveCardLoading) inject identical markup — re-renders during a parallel
+// generate-all must not drop the overlay from rows still in flight.
+const MOVE_CARD_OVERLAY_HTML =
+  '<div class="move-card-overlay"><span class="move-spinner" aria-hidden="true"></span><span>Generating sprite row…</span></div>';
+
 function setMoveCardLoading(moveId, loading) {
   const card = elements.characterWorkbench.querySelector(`[data-move-card="${moveId}"]`);
   if (!card) return;
@@ -442,7 +463,32 @@ function setMoveCardLoading(moveId, loading) {
   const btn = card.querySelector('[data-gen-move]');
   if (btn) {
     btn.disabled = loading;
-    btn.textContent = loading ? 'Generating…' : 'Regen';
+    btn.textContent = loading ? 'Generating…' : (card.dataset.hasFrames === 'true' ? 'Regen' : 'Generate');
+  }
+
+  // Spinner veil over the card body — the at-a-glance signal the row is working.
+  // Injected here (not just on the next full re-render) so it appears the instant
+  // the user hits Generate. The activity button/log stays the detailed view.
+  const body = card.querySelector('.move-card-body');
+  if (body) {
+    const overlay = body.querySelector('.move-card-overlay');
+    if (loading && !overlay) body.insertAdjacentHTML('beforeend', MOVE_CARD_OVERLAY_HTML);
+    else if (!loading && overlay) overlay.remove();
+  }
+
+  // Mirror the eyebrow "generating" badge immediately (it's otherwise only added
+  // by the full re-render, which may be seconds away).
+  const eyebrow = card.querySelector('.move-card-header .eyebrow');
+  if (eyebrow) {
+    const badge = eyebrow.querySelector('.move-loading-badge');
+    if (loading && !badge) {
+      const el = document.createElement('span');
+      el.className = 'move-loading-badge';
+      el.textContent = 'generating';
+      eyebrow.append(' ', el);
+    } else if (!loading && badge) {
+      badge.remove();
+    }
   }
 }
 
@@ -450,9 +496,38 @@ function spriteBrief() {
   return (state.currentDraftData?.description ?? elements.characterBrief.value ?? '').trim();
 }
 
-function buildRowPrompt() {
+// Per-row move identity — the "what this move is" line that makes each row's
+// DEFAULT prompt distinct (a grab prompt must not read like a kick prompt). This
+// is a literal copy of ROW_PROMPT_PROFILES[id].description in
+// cms/pipeline/rowPromptProfiles.js — this browser file is served behind a static
+// server and can't import the Node module, so it mirrors the descriptions and is
+// guarded by scripts/smoke_animation_rows.mjs.
+const ROW_PROMPT_DESCRIPTIONS = {
+  base: 'base idle stance — subtle breathing/sway animation loop, facing right, neutral pose',
+  punch: 'punch attack — wind-up, extension, contact, follow-through, recovery frames',
+  kick: 'kick attack — chamber, extension, contact, follow-through, recovery frames',
+  special_1: 'special move 1 — dramatic startup, active frames with effect/projectile, recovery',
+  special_2: 'special move 2 — dramatic startup, active frames with effect/projectile, recovery',
+  jump: 'jump — the airborne arc: crouch-load, push-off, rising, apex, then descent',
+  crouch: 'crouch — lowering from standing into a fully settled, held crouch',
+  dash_forward: 'dash forward — an explosive forward burst that recovers to neutral',
+  dash_back: 'dash back — an explosive backward hop/retreat that recovers to neutral',
+  block: 'block — raising into a fully settled, held defensive guard',
+  grab: 'grab — reach out, grip the opponent, and hold',
+  throw: 'throw — wind up with the held opponent, release, and recover',
+  walk_forward: 'walk forward — a seamless looping forward walk cycle, facing right, advancing',
+  walk_back: 'walk backward — a seamless looping backward/retreating walk cycle, facing right, stepping back',
+};
+
+// The auto-built default prompt for a row. Carries the row's move identity so
+// each card seeds a DISTINCT prompt instead of the same character brief. The
+// server still applies the per-row frame arc (rowPromptProfiles.js) on top, so
+// frame roles are NOT duplicated here.
+function buildRowPrompt(moveId) {
+  const moveDescription = ROW_PROMPT_DESCRIPTIONS[moveId];
   return [
     spriteBrief(),
+    moveDescription ? `Move: ${moveDescription}.` : '',
     'Side-view fighting game sprite row. Magenta background, full body visible, generous gutters, no cropping.',
   ].filter(Boolean).join(' ');
 }
@@ -461,11 +536,15 @@ function buildRowPrompt() {
 // current sheet was actually generated with, then the auto-built default.
 function rowPromptFor(moveId) {
   const key = `${state.currentCharacterId}:${moveId}`;
-  if (typeof state.movePrompts[key] === 'string') return state.movePrompts[key];
+  // A non-empty unsent edit wins. (Empty falls through, so clearing the box
+  // resets to the default rather than sending an empty prompt — the "Suggested
+  // prompt" button is the explicit way to override an already-generated row.)
+  const edited = state.movePrompts[key];
+  if (typeof edited === 'string' && edited.trim()) return edited;
   const sheetAsset = state.currentAssets.find((asset) =>
     asset.relativePath === `source/${state.currentCharacterId}_${moveId}_sheet.png`);
   const generatedWith = sheetAsset?.metadata?.prompt;
-  return typeof generatedWith === 'string' && generatedWith.trim() ? generatedWith : buildRowPrompt();
+  return typeof generatedWith === 'string' && generatedWith.trim() ? generatedWith : buildRowPrompt(moveId);
 }
 
 function hasBaseSheet(characterId) {
@@ -759,6 +838,19 @@ async function generateProjectileFromForm() {
   const prompt = col?.querySelector('[data-projectile-new-prompt]')?.value.trim();
   if (!projectileId) { showError(new Error('Projectile id is required.')); return; }
   if (!prompt) { showError(new Error('A sprite prompt is required.')); return; }
+  try {
+    await invokeTool('generate_projectile', { characterId, projectileId, prompt });
+    await selectCharacter(characterId, { silent: true });
+  } catch { /* surfaced by invokeTool */ }
+}
+
+async function regenerateProjectile(projectileId) {
+  const characterId = currentCharacterId();
+  if (!characterId) return;
+  const row = [...elements.characterWorkbench.querySelectorAll('.kit-projectile')]
+    .find((r) => r.dataset.projectileId === projectileId);
+  const prompt = row?.querySelector(`[data-projectile-reprompt="${projectileId}"]`)?.value.trim();
+  if (!prompt) { showError(new Error('A sprite prompt is required for regeneration.')); return; }
   try {
     await invokeTool('generate_projectile', { characterId, projectileId, prompt });
     await selectCharacter(characterId, { silent: true });
@@ -1461,6 +1553,7 @@ function renderProjectileEntity(entity) {
   const num = (value, fallback = 0) => escapeHtml(String(value ?? fallback));
   const field = (label, key, value) =>
     `<label class="kit-field"><span>${label}</span><input type="number" data-pf="${key}" value="${num(value)}" /></label>`;
+  const repromptValue = escapeHtml(entity.prompt ?? '');
   return `
     <li class="kit-row kit-projectile" data-projectile-id="${escapeHtml(entity.id)}">
       <div class="kit-row-main">
@@ -1481,6 +1574,10 @@ function renderProjectileEntity(entity) {
         ${field('KbY', 'kby', hb.knockback?.y)}
       </div>
       <button type="button" class="kit-save" data-projectile-save="${escapeHtml(entity.id)}">Save numbers</button>
+      <div class="kit-reprompt">
+        <input type="text" class="kit-reprompt-input" data-projectile-reprompt="${escapeHtml(entity.id)}" value="${repromptValue}" placeholder="Sprite prompt for regeneration…" />
+        <button type="button" class="kit-reprompt-btn" data-projectile-regenerate="${escapeHtml(entity.id)}">Regenerate sprite</button>
+      </div>
     </li>
   `;
 }
@@ -1509,7 +1606,7 @@ function renderMoveGroup(group) {
   const loadingClass = isLoading ? ' move-card-loading' : '';
 
   return `
-    <article class="move-card${loadingClass}" data-move-card="${escapeHtml(group.id)}">
+    <article class="move-card${loadingClass}" data-move-card="${escapeHtml(group.id)}" data-has-frames="${hasFrames}">
       <header class="move-card-header">
         <div>
           <span class="eyebrow">${escapeHtml(group.id)}${isLoading ? ' <span class="move-loading-badge">generating</span>' : ''}</span>
@@ -1530,6 +1627,7 @@ function renderMoveGroup(group) {
         <div class="move-data-pane">
           ${renderMoveCardTabs(group)}
         </div>
+        ${isLoading ? MOVE_CARD_OVERLAY_HTML : ''}
       </div>
     </article>
   `;
@@ -1565,7 +1663,10 @@ function renderMoveCardTabs(group) {
     : '<span class="empty-inline">No source sheet generated for this move yet.</span>';
   const promptPane = `
     <textarea class="move-prompt-input" data-move-prompt="${escapeHtml(group.id)}" rows="4" spellcheck="false">${escapeHtml(rowPromptFor(group.id))}</textarea>
-    <p class="move-note">Sent to the image generator when you hit Generate/Regen on this row. Auto-built from the character brief; edit freely — your edit sticks until the page reloads, and the prompt actually used is saved with the sheet.</p>
+    <div class="move-prompt-actions">
+      <button type="button" class="move-prompt-reset" data-move-prompt-reset="${escapeHtml(group.id)}" title="Replace with the suggested per-move prompt (overrides the prompt the current sheet was generated with)">↺ Suggested prompt</button>
+    </div>
+    <p class="move-note">Sent to the image generator on Generate/Regen. Defaults to the prompt the current sheet was generated with; <b>Suggested prompt</b> swaps in a fresh per-move default so two rows don't share one prompt. Edits stick until reload; the prompt actually used is saved with the sheet.</p>
   `;
 
   return `

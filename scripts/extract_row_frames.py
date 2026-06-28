@@ -72,6 +72,19 @@ def parse_args() -> argparse.Namespace:
              "When set, each frame also gets an attackBox: the bbox of pixels "
              "protruding beyond this envelope in the facing (+x) direction.",
     )
+    equalize_group = parser.add_mutually_exclusive_group()
+    equalize_group.add_argument(
+        "--equalize-frames", dest="equalize_frames", action="store_true", default=True,
+        help="(default) Rescale each frame's silhouette individually so every frame "
+             "in the row has the same silhouette height, eliminating frame-to-frame "
+             "jitter. Scale target = --target-height if supplied, else the row's own "
+             "median silhouette height.",
+    )
+    equalize_group.add_argument(
+        "--no-equalize-frames", dest="equalize_frames", action="store_false",
+        help="Skip per-frame equalization. Use for height-dynamic rows (jump/crouch) "
+             "where the character legitimately changes height across frames.",
+    )
     return parser.parse_args()
 
 
@@ -444,6 +457,7 @@ def extract_frames(
     cols: int = FRAME_COUNT,
     target_height: int | None = None,
     body_half_width: int | None = None,
+    equalize_frames: bool = True,
 ) -> dict[str, object]:
     """Extract, key, despill, anchor, and (optionally) rescale frames from a sheet."""
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -488,11 +502,50 @@ def extract_frames(
             )
         silhouettes.append(despill_edges(keyed))
 
-    # Pass 2: optional uniform rescale so this row matches the fighter's scale.
+    # Pass 2: equalize every frame's silhouette to a common height so the
+    # character doesn't grow/shrink frame-to-frame ("jitter").
+    #
+    # equalize_frames=True (default): scale EACH frame individually about its
+    # bottom (foot) edge to row_target px, then bottom-align. This makes every
+    # frame's silhouetteHeight identical, which is what the engine needs.
+    #
+    # equalize_frames=False: keep current per-row median approach (for dynamic
+    # rows like jump/crouch where height legitimately changes).
     heights = [alpha_bbox(s)[3] - alpha_bbox(s)[1] for s in silhouettes if s is not None and alpha_bbox(s)]
     median_height = sorted(heights)[len(heights) // 2] if heights else 0
     scale_applied = 1.0
-    if target_height and median_height:
+    if equalize_frames and median_height:
+        # Target = explicit override if given, else the row's own median.
+        row_target = target_height if target_height else median_height
+        new_silhouettes = []
+        any_changed = False
+        for s in silhouettes:
+            if s is None:
+                new_silhouettes.append(None)
+                continue
+            bbox = alpha_bbox(s)
+            if not bbox:
+                new_silhouettes.append(s)
+                continue
+            sil_h = bbox[3] - bbox[1]
+            if sil_h == row_target:
+                new_silhouettes.append(s)
+                continue
+            # Scale so silhouette height == row_target exactly (no tolerance).
+            factor = row_target / sil_h
+            new_w = max(1, round(s.width * factor))
+            new_h = max(1, round(s.height * factor))
+            new_silhouettes.append(s.resize((new_w, new_h), Image.LANCZOS))
+            any_changed = True
+        silhouettes = new_silhouettes
+        if any_changed:
+            scale_applied = row_target / median_height if median_height else 1.0
+            warnings.append(
+                f"frames equalized to silhouette height {row_target}px per frame"
+                + (f" (base median was {median_height}px)" if target_height and target_height != median_height else f" (row median was {median_height}px)")
+            )
+    elif not equalize_frames and target_height and median_height:
+        # Legacy path: uniform row rescale without per-frame equalization.
         factor = target_height / median_height
         if abs(factor - 1.0) > RESCALE_TOLERANCE:
             scale_applied = factor
@@ -591,6 +644,7 @@ def main() -> int:
         cols=args.cols,
         target_height=args.target_height,
         body_half_width=args.body_half_width,
+        equalize_frames=args.equalize_frames,
     )
     print(json.dumps({
         "output": str(args.output_dir),

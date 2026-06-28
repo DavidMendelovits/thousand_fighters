@@ -1,0 +1,287 @@
+{
+  "source": "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-extract-YhE1Ay/source.png",
+  "moveId": "jump",
+  "sourceSize": [
+    2172,
+    724
+  ],
+  "grid": [
+    1,
+    6
+  ],
+  "frameCount": 6,
+  "segmentation": "connected-components",
+  "medianSilhouetteHeight": 370,
+  "scaleApplied": 1.2837837837837838,
+  "warnings": [
+    "row rescaled by 1.284 to match target silhouette height 475px (was 370px)"
+  ],
+  "frames": [
+    {
+      "file": "jump_001.png",
+      "frameIndex": 1,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -190,
+        "y": -359,
+        "width": 328,
+        "height": 359
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -185,
+        "width": 21,
+        "height": 55
+      },
+      "empty": false,
+      "width": 375,
+      "height": 381,
+      "anchor": {
+        "x": 213,
+        "y": 375
+      },
+      "reachX": 157,
+      "silhouetteHeight": 371
+    },
+    {
+      "file": "jump_002.png",
+      "frameIndex": 2,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -244,
+        "y": -479,
+        "width": 338,
+        "height": 479
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 384,
+      "height": 502,
+      "anchor": {
+        "x": 265,
+        "y": 496
+      },
+      "reachX": 114,
+      "silhouetteHeight": 492
+    },
+    {
+      "file": "jump_003.png",
+      "frameIndex": 3,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -140,
+        "y": -352,
+        "width": 276,
+        "height": 352
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -174,
+        "width": 20,
+        "height": 47
+      },
+      "empty": false,
+      "width": 325,
+      "height": 371,
+      "anchor": {
+        "x": 164,
+        "y": 365
+      },
+      "reachX": 156,
+      "silhouetteHeight": 361
+    },
+    {
+      "file": "jump_004.png",
+      "frameIndex": 4,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -170,
+        "y": -425,
+        "width": 282,
+        "height": 425
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 329,
+      "height": 446,
+      "anchor": {
+        "x": 192,
+        "y": 440
+      },
+      "reachX": 132,
+      "silhouetteHeight": 436
+    },
+    {
+      "file": "jump_005.png",
+      "frameIndex": 5,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -208,
+        "y": -464,
+        "width": 304,
+        "height": 464
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 355,
+      "height": 485,
+      "anchor": {
+        "x": 232,
+        "y": 479
+      },
+      "reachX": 118,
+      "silhouetteHeight": 475
+    },
+    {
+      "file": "jump_006.png",
+      "frameIndex": 6,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -181,
+        "y": -517,
+        "width": 317,
+        "height": 517
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -306,
+        "width": 23,
+        "height": 59
+      },
+      "empty": false,
+      "width": 375,
+      "height": 539,
+      "anchor": {
+        "x": 211,
+        "y": 533
+      },
+      "reachX": 159,
+      "silhouetteHeight": 529
+    }
+  ],
+  "frameData": [
+    {
+      "file": "sprites/jump/jump_001.png",
+      "width": 375,
+      "height": 381,
+      "anchor": {
+        "x": 213,
+        "y": 375
+      },
+      "reachX": 157,
+      "silhouetteHeight": 371,
+      "hurtbox": {
+        "x": -190,
+        "y": -359,
+        "width": 328,
+        "height": 359
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -185,
+        "width": 21,
+        "height": 55
+      }
+    },
+    {
+      "file": "sprites/jump/jump_002.png",
+      "width": 384,
+      "height": 502,
+      "anchor": {
+        "x": 265,
+        "y": 496
+      },
+      "reachX": 114,
+      "silhouetteHeight": 492,
+      "hurtbox": {
+        "x": -244,
+        "y": -479,
+        "width": 338,
+        "height": 479
+      },
+      "attackBox": null
+    },
+    {
+      "file": "sprites/jump/jump_003.png",
+      "width": 325,
+      "height": 371,
+      "anchor": {
+        "x": 164,
+        "y": 365
+      },
+      "reachX": 156,
+      "silhouetteHeight": 361,
+      "hurtbox": {
+        "x": -140,
+        "y": -352,
+        "width": 276,
+        "height": 352
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -174,
+        "width": 20,
+        "height": 47
+      }
+    },
+    {
+      "file": "sprites/jump/jump_004.png",
+      "width": 329,
+      "height": 446,
+      "anchor": {
+        "x": 192,
+        "y": 440
+      },
+      "reachX": 132,
+      "silhouetteHeight": 436,
+      "hurtbox": {
+        "x": -170,
+        "y": -425,
+        "width": 282,
+        "height": 425
+      },
+      "attackBox": null
+    },
+    {
+      "file": "sprites/jump/jump_005.png",
+      "width": 355,
+      "height": 485,
+      "anchor": {
+        "x": 232,
+        "y": 479
+      },
+      "reachX": 118,
+      "silhouetteHeight": 475,
+      "hurtbox": {
+        "x": -208,
+        "y": -464,
+        "width": 304,
+        "height": 464
+      },
+      "attackBox": null
+    },
+    {
+      "file": "sprites/jump/jump_006.png",
+      "width": 375,
+      "height": 539,
+      "anchor": {
+        "x": 211,
+        "y": 533
+      },
+      "reachX": 159,
+      "silhouetteHeight": 529,
+      "hurtbox": {
+        "x": -181,
+        "y": -517,
+        "width": 317,
+        "height": 517
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -306,
+        "width": 23,
+        "height": 59
+      }
+    }
+  ]
+}

@@ -1,0 +1,262 @@
+{
+  "workflow": "row-normalizer",
+  "moves": {
+    "base": {
+      "generatedAt": "2026-06-17T14:13:00.966Z",
+      "sourceAssetKey": "characters/el_cometa/assets/source/el_cometa_base_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 461,
+      "scaleApplied": 1,
+      "targetHeight": null,
+      "warnings": [
+        "frames equalized to silhouette height 461px per frame (row median was 461px)"
+      ]
+    },
+    "punch": {
+      "generatedAt": "2026-06-17T14:13:01.942Z",
+      "sourceAssetKey": "characters/el_cometa/assets/source/el_cometa_punch_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 342,
+      "scaleApplied": 1.347953216374269,
+      "targetHeight": 461,
+      "warnings": [
+        "frame 4: content bleeds 4% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 461px per frame (base median was 342px)"
+      ]
+    },
+    "kick": {
+      "generatedAt": "2026-06-17T14:13:03.043Z",
+      "sourceAssetKey": "characters/el_cometa/assets/source/el_cometa_kick_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 317,
+      "scaleApplied": 1.4542586750788644,
+      "targetHeight": 461,
+      "warnings": [
+        "frame 3: content bleeds 4% past its cell boundary — kept with this frame",
+        "frame 4: content bleeds 11% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 461px per frame (base median was 317px)"
+      ]
+    },
+    "special_1": {
+      "generatedAt": "2026-06-17T14:13:04.212Z",
+      "sourceAssetKey": "characters/el_cometa/assets/source/el_cometa_special_1_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 310,
+      "scaleApplied": 1.4870967741935484,
+      "targetHeight": 461,
+      "warnings": [
+        "frame 4: content bleeds 11% past its cell boundary — kept with this frame",
+        "frame 3: content bleeds 15% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 461px per frame (base median was 310px)"
+      ]
+    },
+    "special_2": {
+      "generatedAt": "2026-06-17T14:13:05.164Z",
+      "sourceAssetKey": "characters/el_cometa/assets/source/el_cometa_special_2_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 417,
+      "scaleApplied": 1.105515587529976,
+      "targetHeight": 461,
+      "warnings": [
+        "frames equalized to silhouette height 461px per frame (base median was 417px)",
+        "frame 3: 1.2% of opaque pixels remain near-magenta after despill",
+        "frame 4: 1.1% of opaque pixels remain near-magenta after despill",
+        "frame 5: 0.7% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "jump": {
+      "generatedAt": "2026-06-17T14:13:05.958Z",
+      "sourceAssetKey": "characters/el_cometa/assets/source/el_cometa_jump_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 372,
+      "scaleApplied": 1.239247311827957,
+      "targetHeight": 461,
+      "warnings": [
+        "row rescaled by 1.239 to match target silhouette height 461px (was 372px)"
+      ]
+    },
+    "crouch": {
+      "generatedAt": "2026-06-17T14:13:06.911Z",
+      "sourceAssetKey": "characters/el_cometa/assets/source/el_cometa_crouch_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 315,
+      "scaleApplied": 1.4634920634920634,
+      "targetHeight": 461,
+      "warnings": [
+        "row rescaled by 1.463 to match target silhouette height 461px (was 315px)"
+      ]
+    },
+    "dash_forward": {
+      "generatedAt": "2026-06-17T14:13:07.916Z",
+      "sourceAssetKey": "characters/el_cometa/assets/source/el_cometa_dash_forward_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 275,
+      "scaleApplied": 1.6763636363636363,
+      "targetHeight": 461,
+      "warnings": [
+        "frame 5: content bleeds 9% past its cell boundary — kept with this frame",
+        "frame 4: content bleeds 19% past its cell boundary — kept with this frame",
+        "frame 3: content bleeds 2% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 461px per frame (base median was 275px)"
+      ]
+    },
+    "dash_back": {
+      "generatedAt": "2026-06-17T14:13:08.872Z",
+      "sourceAssetKey": "characters/el_cometa/assets/source/el_cometa_dash_back_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 335,
+      "scaleApplied": 1.3761194029850747,
+      "targetHeight": 461,
+      "warnings": [
+        "frames equalized to silhouette height 461px per frame (base median was 335px)"
+      ]
+    },
+    "block": {
+      "generatedAt": "2026-06-17T14:13:09.872Z",
+      "sourceAssetKey": "characters/el_cometa/assets/source/el_cometa_block_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 407,
+      "scaleApplied": 1.1326781326781328,
+      "targetHeight": 461,
+      "warnings": [
+        "frames equalized to silhouette height 461px per frame (base median was 407px)"
+      ]
+    },
+    "grab": {
+      "generatedAt": "2026-06-17T14:14:50.634Z",
+      "sourceAssetKey": "characters/el_cometa/assets/source/el_cometa_grab_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 394,
+      "scaleApplied": 1.1700507614213198,
+      "targetHeight": 461,
+      "warnings": [
+        "frame 3: content bleeds 3% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 461px per frame (base median was 394px)"
+      ]
+    },
+    "throw": {
+      "generatedAt": "2026-06-17T14:16:53.687Z",
+      "sourceAssetKey": "characters/el_cometa/assets/source/el_cometa_throw_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 356,
+      "scaleApplied": 1.2949438202247192,
+      "targetHeight": 461,
+      "warnings": [
+        "frames equalized to silhouette height 461px per frame (base median was 356px)"
+      ]
+    },
+    "walk_forward": {
+      "generatedAt": "2026-06-17T14:16:54.628Z",
+      "sourceAssetKey": "characters/el_cometa/assets/source/el_cometa_walk_forward_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 420,
+      "scaleApplied": 1.0976190476190477,
+      "targetHeight": 461,
+      "warnings": [
+        "frames equalized to silhouette height 461px per frame (base median was 420px)"
+      ]
+    },
+    "walk_back": {
+      "generatedAt": "2026-06-17T14:16:55.572Z",
+      "sourceAssetKey": "characters/el_cometa/assets/source/el_cometa_walk_back_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 390,
+      "scaleApplied": 1.182051282051282,
+      "targetHeight": 461,
+      "warnings": [
+        "frames equalized to silhouette height 461px per frame (base median was 390px)"
+      ]
+    }
+  },
+  "warnings": [
+    "base: frames equalized to silhouette height 461px per frame (row median was 461px)",
+    "punch: frame 4: content bleeds 4% past its cell boundary — kept with this frame",
+    "punch: frames equalized to silhouette height 461px per frame (base median was 342px)",
+    "kick: frame 3: content bleeds 4% past its cell boundary — kept with this frame",
+    "kick: frame 4: content bleeds 11% past its cell boundary — kept with this frame",
+    "kick: frames equalized to silhouette height 461px per frame (base median was 317px)",
+    "special_1: frame 4: content bleeds 11% past its cell boundary — kept with this frame",
+    "special_1: frame 3: content bleeds 15% past its cell boundary — kept with this frame",
+    "special_1: frames equalized to silhouette height 461px per frame (base median was 310px)",
+    "special_2: frames equalized to silhouette height 461px per frame (base median was 417px)",
+    "special_2: frame 3: 1.2% of opaque pixels remain near-magenta after despill",
+    "special_2: frame 4: 1.1% of opaque pixels remain near-magenta after despill",
+    "special_2: frame 5: 0.7% of opaque pixels remain near-magenta after despill",
+    "jump: row rescaled by 1.239 to match target silhouette height 461px (was 372px)",
+    "crouch: row rescaled by 1.463 to match target silhouette height 461px (was 315px)",
+    "dash_forward: frame 5: content bleeds 9% past its cell boundary — kept with this frame",
+    "dash_forward: frame 4: content bleeds 19% past its cell boundary — kept with this frame",
+    "dash_forward: frame 3: content bleeds 2% past its cell boundary — kept with this frame",
+    "dash_forward: frames equalized to silhouette height 461px per frame (base median was 275px)",
+    "dash_back: frames equalized to silhouette height 461px per frame (base median was 335px)",
+    "block: frames equalized to silhouette height 461px per frame (base median was 407px)",
+    "grab: frame 3: content bleeds 3% past its cell boundary — kept with this frame",
+    "grab: frames equalized to silhouette height 461px per frame (base median was 394px)",
+    "throw: frames equalized to silhouette height 461px per frame (base median was 356px)",
+    "walk_forward: frames equalized to silhouette height 461px per frame (base median was 420px)",
+    "walk_back: frames equalized to silhouette height 461px per frame (base median was 390px)"
+  ],
+  "fixtureFill": {
+    "fixtureFighterId": "janitor",
+    "generatedAt": "2026-06-17T14:16:55.580Z",
+    "filledSheets": [],
+    "preservedSheets": [
+      "base",
+      "punch",
+      "kick",
+      "special_1",
+      "special_2",
+      "jump",
+      "crouch",
+      "dash_forward",
+      "dash_back",
+      "block",
+      "grab",
+      "throw",
+      "walk_forward",
+      "walk_back"
+    ]
+  }
+}

@@ -185,7 +185,13 @@ def crop_component(image: Image.Image, component: dict[str, object], padding: in
     return image.crop((left, top, right, bottom))
 
 
-def frame_from_component(image: Image.Image, component: dict[str, object]) -> tuple[Image.Image, tuple[int, int]]:
+def frame_from_component(image: Image.Image, component: dict[str, object]) -> tuple[Image.Image, tuple[int, int], int]:
+    """Return (frame_image, anchor, silhouette_height).
+
+    silhouette_height is the tight bounding-box height of the character content
+    BEFORE padding is added. The caller uses these values to equalize all frames
+    in a sheet to the same silhouette height before measuring final dimensions.
+    """
     crop = crop_component(image, component, padding=36)
     crop = isolate_largest_component(crop)
 
@@ -193,6 +199,10 @@ def frame_from_component(image: Image.Image, component: dict[str, object]) -> tu
     if bbox:
         left, top, right, bottom = bbox
         crop = crop.crop((max(0, left - 10), max(0, top - 10), min(crop.width, right + 10), min(crop.height, bottom + 10)))
+
+    # Tight silhouette height (before padding) — used for row equalization.
+    sil_bbox = crop.getchannel("A").getbbox()
+    silhouette_height = (sil_bbox[3] - sil_bbox[1]) if sil_bbox else crop.height
 
     min_width = 220
     min_height = 286
@@ -203,7 +213,56 @@ def frame_from_component(image: Image.Image, component: dict[str, object]) -> tu
     offset_x = (width - crop.width) // 2
     offset_y = max(0, height - crop.height - floor_padding)
     output.alpha_composite(crop, (offset_x, offset_y))
-    return output, (width // 2, height - floor_padding)
+    return output, (width // 2, height - floor_padding), silhouette_height
+
+
+def equalize_sheet_frames(
+    frames_and_meta: list[tuple[Image.Image | None, tuple[int, int], int]],
+) -> list[tuple[Image.Image | None, tuple[int, int], int]]:
+    """Scale each frame's silhouette to the row's median height (bottom-aligned).
+
+    Returns a new list of (frame, anchor, silhouette_height) tuples where every
+    non-empty frame has the same silhouette_height. Frames are rescaled about
+    their foot (bottom) edge so the floor line stays consistent.
+    """
+    sil_heights = [sil_h for _, _, sil_h in frames_and_meta if sil_h > 0]
+    if not sil_heights:
+        return frames_and_meta
+    median_h = sorted(sil_heights)[len(sil_heights) // 2]
+
+    result = []
+    floor_padding = 38
+    min_width = 220
+    min_height = 286
+    for frame, anchor, sil_h in frames_and_meta:
+        if frame is None or sil_h == 0 or sil_h == median_h:
+            result.append((frame, anchor, sil_h))
+            continue
+        # Scale the entire frame image so that silhouette height == median_h.
+        factor = median_h / sil_h
+        new_w = max(1, round(frame.width * factor))
+        new_h = max(1, round(frame.height * factor))
+        scaled = frame.resize((new_w, new_h), Image.LANCZOS)
+        # Recompute anchor: anchor was (width//2, height-floor_padding) before
+        # scaling; after scaling it's (new_w//2, new_h - round(floor_padding*factor)).
+        # But simpler: re-derive from the tight bbox of the resized frame.
+        sil_bbox = scaled.getchannel("A").getbbox()
+        if sil_bbox:
+            tight_crop = scaled.crop(sil_bbox)
+            tight_sil_h = sil_bbox[3] - sil_bbox[1]
+        else:
+            tight_crop = scaled
+            tight_sil_h = median_h
+
+        new_canvas_w = max(tight_crop.width + 80, min_width)
+        new_canvas_h = max(tight_crop.height + 58, min_height)
+        output = Image.new("RGBA", (new_canvas_w, new_canvas_h), (0, 0, 0, 0))
+        offset_x = (new_canvas_w - tight_crop.width) // 2
+        offset_y = max(0, new_canvas_h - tight_crop.height - floor_padding)
+        output.alpha_composite(tight_crop, (offset_x, offset_y))
+        new_anchor = (new_canvas_w // 2, new_canvas_h - floor_padding)
+        result.append((output, new_anchor, median_h))
+    return result
 
 
 def isolate_largest_component(image: Image.Image) -> Image.Image:
@@ -362,10 +421,30 @@ def main() -> int:
         frame_dir = sprites_dir / sheet_id
         frame_dir.mkdir()
 
-        for frame_number, source_index in enumerate(indices, start=1):
+        # Pass 1: extract all frames with their silhouette heights.
+        raw_frames: list[tuple[Image.Image | None, tuple[int, int], int]] = []
+        raw_selected_counts: list[tuple[int, int]] = []  # (sourceComponents, keptPixels)
+        raw_source_indices: list[int] = []
+        for source_index in indices:
             selected = components_in_slot(components, image.width, image.height, source_index, args.cols, args.rows)
             dominant = max(selected, key=lambda component: component["count"]) if selected else None
-            frame, anchor = frame_from_component(image, dominant) if dominant else (Image.new("RGBA", (220, 286), (0, 0, 0, 0)), (110, 248))
+            if dominant:
+                frame, anchor, sil_h = frame_from_component(image, dominant)
+            else:
+                frame = Image.new("RGBA", (220, 286), (0, 0, 0, 0))
+                anchor = (110, 248)
+                sil_h = 0
+            raw_frames.append((frame, anchor, sil_h))
+            raw_selected_counts.append((len(selected), dominant["count"] if dominant else 0))
+            raw_source_indices.append(source_index)
+
+        # Pass 2: equalize silhouette heights within the sheet so the character
+        # doesn't grow/shrink frame-to-frame. Each row equalizes to its own median.
+        equalized_frames = equalize_sheet_frames(raw_frames)
+
+        for frame_number, ((frame, anchor, sil_h), (n_selected, n_kept), source_index) in enumerate(
+            zip(equalized_frames, raw_selected_counts, raw_source_indices), start=1
+        ):
             relative_file = f"sprites/{sheet_id}/{sheet_id}_{frame_number:03d}.png"
             frame.save(output_dir / relative_file)
 
@@ -383,6 +462,7 @@ def main() -> int:
                 # Frames face right, so reachX is the forward extent — move
                 # tooling uses it to place hitbox keyframes at the limb tip.
                 "reachX": (frame_bbox[2] - 1 - anchor[0]) if frame_bbox else 0,
+                "silhouetteHeight": sil_h,
             }
             frame_data["frames"][sheet_id].append(meta)
             report["frames"][sheet_id].append(
@@ -390,8 +470,8 @@ def main() -> int:
                     **meta,
                     "edgeTouch": edge_touch,
                     "sourceIndex": source_index,
-                    "sourceComponents": len(selected),
-                    "keptComponentPixels": dominant["count"] if dominant else 0,
+                    "sourceComponents": n_selected,
+                    "keptComponentPixels": n_kept,
                 }
             )
 

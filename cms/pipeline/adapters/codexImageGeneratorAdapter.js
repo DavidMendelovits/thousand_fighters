@@ -156,8 +156,10 @@ function buildCodexPrompt(task, userPrompt, context, moveId, referenceCount = 0)
 
   if (task === 'fighter-1x6-row') {
     const resolvedMoveId = moveId ?? context?.moveId ?? 'base';
-    const motionNote = rowPromptProfile(resolvedMoveId).shortRoles;
-    return `Generate an image: a single-row fighting game sprite strip with exactly 6 frames for the "${resolvedMoveId}" move. Magenta #ff00ff background, full body visible, generous gutters, every limb visually connected to the body. Frames must never overlap: leave a wide band of pure magenta between neighbors — not a single pixel of one frame may cross into another frame's cell. ${motionNote} Character: ${userPrompt ?? 'a fighter'}${referenceNote}`;
+    const profile = rowPromptProfile(resolvedMoveId);
+    const motionNote = profile.shortRoles;
+    const scaleConstraint = profile.scaleNote ? ` ${profile.scaleNote}` : '';
+    return `Generate an image: a single-row fighting game sprite strip with exactly 6 frames for the "${resolvedMoveId}" move. Magenta #ff00ff background, full body visible, generous gutters, every limb visually connected to the body. Frames must never overlap: leave a wide band of pure magenta between neighbors — not a single pixel of one frame may cross into another frame's cell. Exactly one figure: only this single fighter appears in every frame — no second character, no opponent, no other body anywhere; the fighter mimes any contact action against empty magenta air.${scaleConstraint} ${motionNote} Character: ${userPrompt ?? 'a fighter'}${referenceNote}`;
   }
 
   if (task === 'fighter-2x3-grid') {

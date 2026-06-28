@@ -200,6 +200,7 @@ function imagePromptFor(request) {
           '- Show clear animation progression from frame 1 to frame 6 — this must read as a playable move, not random poses.',
           `- Frame roles are fixed: ${profile.frameRoles}.`,
         ];
+    const scaleLines = profile.scaleNote ? [`- ${profile.scaleNote}`] : [];
     return [
       'Draw a production-ready 2D fighting-game sprite row for Thousand Fighters.',
       '',
@@ -212,6 +213,8 @@ function imagePromptFor(request) {
       '- Keep every limb, appendage, weapon, and effect visually connected to the body — no detached floating parts.',
       '- Keep the entire character visible in every frame. Do not crop feet, head, hands, weapons, capes, or effects.',
       '- Keep the camera, character scale, silhouette size, and facing direction consistent across all 6 frames.',
+      '- EXACTLY ONE FIGURE: only this single fighter appears in any frame — no second character, no opponent, no other body anywhere. The fighter mimes any grab/throw/contact action against empty #ff00ff air.',
+      ...scaleLines,
       ...motionLines,
       '- Use a solid chroma-magenta background (#ff00ff), not transparency, scenery, gradients, shadows, labels, or text.',
       '',

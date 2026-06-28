@@ -1,0 +1,410 @@
+{
+  "workflow": "row-normalizer",
+  "moves": {
+    "base": {
+      "generatedAt": "2026-06-17T14:21:15.101Z",
+      "sourceAssetKey": "characters/velo_courier/assets/source/velo_courier_base_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 337,
+      "scaleApplied": 1,
+      "targetHeight": null,
+      "warnings": [
+        "frames equalized to silhouette height 337px per frame (row median was 337px)",
+        "frame 1: 1.2% of opaque pixels remain near-magenta after despill",
+        "frame 2: 0.9% of opaque pixels remain near-magenta after despill",
+        "frame 3: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 4: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 5: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 6: 1.3% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "punch": {
+      "generatedAt": "2026-06-17T14:21:15.970Z",
+      "sourceAssetKey": "characters/velo_courier/assets/source/velo_courier_punch_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 292,
+      "scaleApplied": 1.154109589041096,
+      "targetHeight": 337,
+      "warnings": [
+        "frames equalized to silhouette height 337px per frame (base median was 292px)",
+        "frame 1: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 2: 1.1% of opaque pixels remain near-magenta after despill",
+        "frame 3: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 4: 1.6% of opaque pixels remain near-magenta after despill",
+        "frame 5: 1.2% of opaque pixels remain near-magenta after despill",
+        "frame 6: 1.3% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "kick": {
+      "generatedAt": "2026-06-17T14:21:16.886Z",
+      "sourceAssetKey": "characters/velo_courier/assets/source/velo_courier_kick_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 269,
+      "scaleApplied": 1.2527881040892193,
+      "targetHeight": 337,
+      "warnings": [
+        "frame 3: content bleeds 5% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 337px per frame (base median was 269px)",
+        "frame 1: 1.4% of opaque pixels remain near-magenta after despill",
+        "frame 2: 1.2% of opaque pixels remain near-magenta after despill",
+        "frame 3: 1.6% of opaque pixels remain near-magenta after despill",
+        "frame 4: 2.3% of opaque pixels remain near-magenta after despill",
+        "frame 5: 1.6% of opaque pixels remain near-magenta after despill",
+        "frame 6: 1.4% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "special_1": {
+      "generatedAt": "2026-06-17T14:21:17.720Z",
+      "sourceAssetKey": "characters/velo_courier/assets/source/velo_courier_special_1_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 191,
+      "scaleApplied": 1.7643979057591623,
+      "targetHeight": 337,
+      "warnings": [
+        "frames equalized to silhouette height 337px per frame (base median was 191px)",
+        "frame 1: 1.0% of opaque pixels remain near-magenta after despill",
+        "frame 2: 1.4% of opaque pixels remain near-magenta after despill",
+        "frame 3: 3.4% of opaque pixels remain near-magenta after despill",
+        "frame 4: 3.5% of opaque pixels remain near-magenta after despill",
+        "frame 5: 2.2% of opaque pixels remain near-magenta after despill",
+        "frame 6: 0.9% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "special_2": {
+      "generatedAt": "2026-06-17T14:21:18.584Z",
+      "sourceAssetKey": "characters/velo_courier/assets/source/velo_courier_special_2_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 321,
+      "scaleApplied": 1.0498442367601246,
+      "targetHeight": 337,
+      "warnings": [
+        "frames equalized to silhouette height 337px per frame (base median was 321px)",
+        "frame 1: 1.4% of opaque pixels remain near-magenta after despill",
+        "frame 2: 1.6% of opaque pixels remain near-magenta after despill",
+        "frame 3: 1.4% of opaque pixels remain near-magenta after despill",
+        "frame 4: 3.0% of opaque pixels remain near-magenta after despill",
+        "frame 5: 2.4% of opaque pixels remain near-magenta after despill",
+        "frame 6: 1.4% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "jump": {
+      "generatedAt": "2026-06-17T14:21:19.359Z",
+      "sourceAssetKey": "characters/velo_courier/assets/source/velo_courier_jump_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 311,
+      "scaleApplied": 1.0836012861736335,
+      "targetHeight": 337,
+      "warnings": [
+        "row rescaled by 1.084 to match target silhouette height 337px (was 311px)",
+        "frame 1: 1.4% of opaque pixels remain near-magenta after despill",
+        "frame 2: 2.1% of opaque pixels remain near-magenta after despill",
+        "frame 3: 2.3% of opaque pixels remain near-magenta after despill",
+        "frame 4: 1.0% of opaque pixels remain near-magenta after despill",
+        "frame 5: 1.6% of opaque pixels remain near-magenta after despill",
+        "frame 6: 1.2% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "crouch": {
+      "generatedAt": "2026-06-17T14:21:20.277Z",
+      "sourceAssetKey": "characters/velo_courier/assets/source/velo_courier_crouch_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 285,
+      "scaleApplied": 1.182456140350877,
+      "targetHeight": 337,
+      "warnings": [
+        "row rescaled by 1.182 to match target silhouette height 337px (was 285px)",
+        "frame 1: 1.2% of opaque pixels remain near-magenta after despill",
+        "frame 2: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 3: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 4: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 5: 1.4% of opaque pixels remain near-magenta after despill",
+        "frame 6: 1.5% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "dash_forward": {
+      "generatedAt": "2026-06-17T14:21:21.185Z",
+      "sourceAssetKey": "characters/velo_courier/assets/source/velo_courier_dash_forward_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 260,
+      "scaleApplied": 1.2961538461538462,
+      "targetHeight": 337,
+      "warnings": [
+        "frames equalized to silhouette height 337px per frame (base median was 260px)",
+        "frame 1: 1.0% of opaque pixels remain near-magenta after despill",
+        "frame 2: 1.9% of opaque pixels remain near-magenta after despill",
+        "frame 3: 2.8% of opaque pixels remain near-magenta after despill",
+        "frame 4: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 5: 0.9% of opaque pixels remain near-magenta after despill",
+        "frame 6: 1.1% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "dash_back": {
+      "generatedAt": "2026-06-17T14:21:21.984Z",
+      "sourceAssetKey": "characters/velo_courier/assets/source/velo_courier_dash_back_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 241,
+      "scaleApplied": 1.3983402489626555,
+      "targetHeight": 337,
+      "warnings": [
+        "frame 3: content bleeds 3% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 337px per frame (base median was 241px)",
+        "frame 1: 1.5% of opaque pixels remain near-magenta after despill",
+        "frame 2: 1.4% of opaque pixels remain near-magenta after despill",
+        "frame 3: 2.3% of opaque pixels remain near-magenta after despill",
+        "frame 4: 2.3% of opaque pixels remain near-magenta after despill",
+        "frame 5: 1.9% of opaque pixels remain near-magenta after despill",
+        "frame 6: 1.5% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "block": {
+      "generatedAt": "2026-06-17T14:21:22.906Z",
+      "sourceAssetKey": "characters/velo_courier/assets/source/velo_courier_block_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 333,
+      "scaleApplied": 1.012012012012012,
+      "targetHeight": 337,
+      "warnings": [
+        "frames equalized to silhouette height 337px per frame (base median was 333px)",
+        "frame 1: 0.9% of opaque pixels remain near-magenta after despill",
+        "frame 2: 1.1% of opaque pixels remain near-magenta after despill",
+        "frame 3: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 4: 1.2% of opaque pixels remain near-magenta after despill",
+        "frame 5: 1.2% of opaque pixels remain near-magenta after despill",
+        "frame 6: 1.2% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "grab": {
+      "generatedAt": "2026-06-17T14:23:00.424Z",
+      "sourceAssetKey": "characters/velo_courier/assets/source/velo_courier_grab_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 278,
+      "scaleApplied": 1.2122302158273381,
+      "targetHeight": 337,
+      "warnings": [
+        "frames equalized to silhouette height 337px per frame (base median was 278px)",
+        "frame 1: 1.4% of opaque pixels remain near-magenta after despill",
+        "frame 2: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 3: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 4: 1.5% of opaque pixels remain near-magenta after despill",
+        "frame 5: 1.4% of opaque pixels remain near-magenta after despill",
+        "frame 6: 1.3% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "throw": {
+      "generatedAt": "2026-06-17T14:26:01.353Z",
+      "sourceAssetKey": "characters/velo_courier/assets/source/velo_courier_throw_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 292,
+      "scaleApplied": 1.154109589041096,
+      "targetHeight": 337,
+      "warnings": [
+        "frames equalized to silhouette height 337px per frame (base median was 292px)",
+        "frame 1: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 2: 1.2% of opaque pixels remain near-magenta after despill",
+        "frame 3: 1.5% of opaque pixels remain near-magenta after despill",
+        "frame 4: 2.1% of opaque pixels remain near-magenta after despill",
+        "frame 5: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 6: 1.5% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "walk_forward": {
+      "generatedAt": "2026-06-17T14:26:02.269Z",
+      "sourceAssetKey": "characters/velo_courier/assets/source/velo_courier_walk_forward_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 329,
+      "scaleApplied": 1.0243161094224924,
+      "targetHeight": 337,
+      "warnings": [
+        "frames equalized to silhouette height 337px per frame (base median was 329px)",
+        "frame 1: 1.4% of opaque pixels remain near-magenta after despill",
+        "frame 2: 1.5% of opaque pixels remain near-magenta after despill",
+        "frame 3: 1.4% of opaque pixels remain near-magenta after despill",
+        "frame 4: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 5: 1.4% of opaque pixels remain near-magenta after despill",
+        "frame 6: 1.3% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "walk_back": {
+      "generatedAt": "2026-06-17T14:26:03.098Z",
+      "sourceAssetKey": "characters/velo_courier/assets/source/velo_courier_walk_back_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 300,
+      "scaleApplied": 1.1233333333333333,
+      "targetHeight": 337,
+      "warnings": [
+        "frames equalized to silhouette height 337px per frame (base median was 300px)",
+        "frame 1: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 2: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 3: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 4: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 5: 1.3% of opaque pixels remain near-magenta after despill",
+        "frame 6: 1.3% of opaque pixels remain near-magenta after despill"
+      ]
+    }
+  },
+  "warnings": [
+    "base: frames equalized to silhouette height 337px per frame (row median was 337px)",
+    "base: frame 1: 1.2% of opaque pixels remain near-magenta after despill",
+    "base: frame 2: 0.9% of opaque pixels remain near-magenta after despill",
+    "base: frame 3: 1.3% of opaque pixels remain near-magenta after despill",
+    "base: frame 4: 1.3% of opaque pixels remain near-magenta after despill",
+    "base: frame 5: 1.3% of opaque pixels remain near-magenta after despill",
+    "base: frame 6: 1.3% of opaque pixels remain near-magenta after despill",
+    "punch: frames equalized to silhouette height 337px per frame (base median was 292px)",
+    "punch: frame 1: 1.3% of opaque pixels remain near-magenta after despill",
+    "punch: frame 2: 1.1% of opaque pixels remain near-magenta after despill",
+    "punch: frame 3: 1.3% of opaque pixels remain near-magenta after despill",
+    "punch: frame 4: 1.6% of opaque pixels remain near-magenta after despill",
+    "punch: frame 5: 1.2% of opaque pixels remain near-magenta after despill",
+    "punch: frame 6: 1.3% of opaque pixels remain near-magenta after despill",
+    "kick: frame 3: content bleeds 5% past its cell boundary — kept with this frame",
+    "kick: frames equalized to silhouette height 337px per frame (base median was 269px)",
+    "kick: frame 1: 1.4% of opaque pixels remain near-magenta after despill",
+    "kick: frame 2: 1.2% of opaque pixels remain near-magenta after despill",
+    "kick: frame 3: 1.6% of opaque pixels remain near-magenta after despill",
+    "kick: frame 4: 2.3% of opaque pixels remain near-magenta after despill",
+    "kick: frame 5: 1.6% of opaque pixels remain near-magenta after despill",
+    "kick: frame 6: 1.4% of opaque pixels remain near-magenta after despill",
+    "special_1: frames equalized to silhouette height 337px per frame (base median was 191px)",
+    "special_1: frame 1: 1.0% of opaque pixels remain near-magenta after despill",
+    "special_1: frame 2: 1.4% of opaque pixels remain near-magenta after despill",
+    "special_1: frame 3: 3.4% of opaque pixels remain near-magenta after despill",
+    "special_1: frame 4: 3.5% of opaque pixels remain near-magenta after despill",
+    "special_1: frame 5: 2.2% of opaque pixels remain near-magenta after despill",
+    "special_1: frame 6: 0.9% of opaque pixels remain near-magenta after despill",
+    "special_2: frames equalized to silhouette height 337px per frame (base median was 321px)",
+    "special_2: frame 1: 1.4% of opaque pixels remain near-magenta after despill",
+    "special_2: frame 2: 1.6% of opaque pixels remain near-magenta after despill",
+    "special_2: frame 3: 1.4% of opaque pixels remain near-magenta after despill",
+    "special_2: frame 4: 3.0% of opaque pixels remain near-magenta after despill",
+    "special_2: frame 5: 2.4% of opaque pixels remain near-magenta after despill",
+    "special_2: frame 6: 1.4% of opaque pixels remain near-magenta after despill",
+    "jump: row rescaled by 1.084 to match target silhouette height 337px (was 311px)",
+    "jump: frame 1: 1.4% of opaque pixels remain near-magenta after despill",
+    "jump: frame 2: 2.1% of opaque pixels remain near-magenta after despill",
+    "jump: frame 3: 2.3% of opaque pixels remain near-magenta after despill",
+    "jump: frame 4: 1.0% of opaque pixels remain near-magenta after despill",
+    "jump: frame 5: 1.6% of opaque pixels remain near-magenta after despill",
+    "jump: frame 6: 1.2% of opaque pixels remain near-magenta after despill",
+    "crouch: row rescaled by 1.182 to match target silhouette height 337px (was 285px)",
+    "crouch: frame 1: 1.2% of opaque pixels remain near-magenta after despill",
+    "crouch: frame 2: 1.3% of opaque pixels remain near-magenta after despill",
+    "crouch: frame 3: 1.3% of opaque pixels remain near-magenta after despill",
+    "crouch: frame 4: 1.3% of opaque pixels remain near-magenta after despill",
+    "crouch: frame 5: 1.4% of opaque pixels remain near-magenta after despill",
+    "crouch: frame 6: 1.5% of opaque pixels remain near-magenta after despill",
+    "dash_forward: frames equalized to silhouette height 337px per frame (base median was 260px)",
+    "dash_forward: frame 1: 1.0% of opaque pixels remain near-magenta after despill",
+    "dash_forward: frame 2: 1.9% of opaque pixels remain near-magenta after despill",
+    "dash_forward: frame 3: 2.8% of opaque pixels remain near-magenta after despill",
+    "dash_forward: frame 4: 1.3% of opaque pixels remain near-magenta after despill",
+    "dash_forward: frame 5: 0.9% of opaque pixels remain near-magenta after despill",
+    "dash_forward: frame 6: 1.1% of opaque pixels remain near-magenta after despill",
+    "dash_back: frame 3: content bleeds 3% past its cell boundary — kept with this frame",
+    "dash_back: frames equalized to silhouette height 337px per frame (base median was 241px)",
+    "dash_back: frame 1: 1.5% of opaque pixels remain near-magenta after despill",
+    "dash_back: frame 2: 1.4% of opaque pixels remain near-magenta after despill",
+    "dash_back: frame 3: 2.3% of opaque pixels remain near-magenta after despill",
+    "dash_back: frame 4: 2.3% of opaque pixels remain near-magenta after despill",
+    "dash_back: frame 5: 1.9% of opaque pixels remain near-magenta after despill",
+    "dash_back: frame 6: 1.5% of opaque pixels remain near-magenta after despill",
+    "block: frames equalized to silhouette height 337px per frame (base median was 333px)",
+    "block: frame 1: 0.9% of opaque pixels remain near-magenta after despill",
+    "block: frame 2: 1.1% of opaque pixels remain near-magenta after despill",
+    "block: frame 3: 1.3% of opaque pixels remain near-magenta after despill",
+    "block: frame 4: 1.2% of opaque pixels remain near-magenta after despill",
+    "block: frame 5: 1.2% of opaque pixels remain near-magenta after despill",
+    "block: frame 6: 1.2% of opaque pixels remain near-magenta after despill",
+    "grab: frames equalized to silhouette height 337px per frame (base median was 278px)",
+    "grab: frame 1: 1.4% of opaque pixels remain near-magenta after despill",
+    "grab: frame 2: 1.3% of opaque pixels remain near-magenta after despill",
+    "grab: frame 3: 1.3% of opaque pixels remain near-magenta after despill",
+    "grab: frame 4: 1.5% of opaque pixels remain near-magenta after despill",
+    "grab: frame 5: 1.4% of opaque pixels remain near-magenta after despill",
+    "grab: frame 6: 1.3% of opaque pixels remain near-magenta after despill",
+    "throw: frames equalized to silhouette height 337px per frame (base median was 292px)",
+    "throw: frame 1: 1.3% of opaque pixels remain near-magenta after despill",
+    "throw: frame 2: 1.2% of opaque pixels remain near-magenta after despill",
+    "throw: frame 3: 1.5% of opaque pixels remain near-magenta after despill",
+    "throw: frame 4: 2.1% of opaque pixels remain near-magenta after despill",
+    "throw: frame 5: 1.3% of opaque pixels remain near-magenta after despill",
+    "throw: frame 6: 1.5% of opaque pixels remain near-magenta after despill",
+    "walk_forward: frames equalized to silhouette height 337px per frame (base median was 329px)",
+    "walk_forward: frame 1: 1.4% of opaque pixels remain near-magenta after despill",
+    "walk_forward: frame 2: 1.5% of opaque pixels remain near-magenta after despill",
+    "walk_forward: frame 3: 1.4% of opaque pixels remain near-magenta after despill",
+    "walk_forward: frame 4: 1.3% of opaque pixels remain near-magenta after despill",
+    "walk_forward: frame 5: 1.4% of opaque pixels remain near-magenta after despill",
+    "walk_forward: frame 6: 1.3% of opaque pixels remain near-magenta after despill",
+    "walk_back: frames equalized to silhouette height 337px per frame (base median was 300px)",
+    "walk_back: frame 1: 1.3% of opaque pixels remain near-magenta after despill",
+    "walk_back: frame 2: 1.3% of opaque pixels remain near-magenta after despill",
+    "walk_back: frame 3: 1.3% of opaque pixels remain near-magenta after despill",
+    "walk_back: frame 4: 1.3% of opaque pixels remain near-magenta after despill",
+    "walk_back: frame 5: 1.3% of opaque pixels remain near-magenta after despill",
+    "walk_back: frame 6: 1.3% of opaque pixels remain near-magenta after despill"
+  ],
+  "fixtureFill": {
+    "fixtureFighterId": "janitor",
+    "generatedAt": "2026-06-17T14:26:03.108Z",
+    "filledSheets": [],
+    "preservedSheets": [
+      "base",
+      "punch",
+      "kick",
+      "special_1",
+      "special_2",
+      "jump",
+      "crouch",
+      "dash_forward",
+      "dash_back",
+      "block",
+      "grab",
+      "throw",
+      "walk_forward",
+      "walk_back"
+    ]
+  }
+}

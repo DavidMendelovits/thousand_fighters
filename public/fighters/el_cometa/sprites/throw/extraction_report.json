@@ -1,0 +1,307 @@
+{
+  "source": "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-extract-hPfzb0/source.png",
+  "moveId": "throw",
+  "sourceSize": [
+    2172,
+    724
+  ],
+  "grid": [
+    1,
+    6
+  ],
+  "frameCount": 6,
+  "segmentation": "connected-components",
+  "medianSilhouetteHeight": 356,
+  "scaleApplied": 1.2949438202247192,
+  "warnings": [
+    "frames equalized to silhouette height 461px per frame (base median was 356px)"
+  ],
+  "frames": [
+    {
+      "file": "throw_001.png",
+      "frameIndex": 1,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -178,
+        "y": -443,
+        "width": 417,
+        "height": 443
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -385,
+        "width": 133,
+        "height": 363
+      },
+      "empty": false,
+      "width": 457,
+      "height": 471,
+      "anchor": {
+        "x": 193,
+        "y": 465
+      },
+      "reachX": 259,
+      "silhouetteHeight": 461
+    },
+    {
+      "file": "throw_002.png",
+      "frameIndex": 2,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -198,
+        "y": -444,
+        "width": 410,
+        "height": 444
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -450,
+        "width": 107,
+        "height": 428
+      },
+      "empty": false,
+      "width": 454,
+      "height": 471,
+      "anchor": {
+        "x": 216,
+        "y": 465
+      },
+      "reachX": 233,
+      "silhouetteHeight": 461
+    },
+    {
+      "file": "throw_003.png",
+      "frameIndex": 3,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -166,
+        "y": -438,
+        "width": 286,
+        "height": 438
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -433,
+        "width": 7,
+        "height": 416
+      },
+      "empty": false,
+      "width": 318,
+      "height": 471,
+      "anchor": {
+        "x": 180,
+        "y": 465
+      },
+      "reachX": 133,
+      "silhouetteHeight": 461
+    },
+    {
+      "file": "throw_004.png",
+      "frameIndex": 4,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -200,
+        "y": -449,
+        "width": 479,
+        "height": 449
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -449,
+        "width": 181,
+        "height": 437
+      },
+      "empty": false,
+      "width": 530,
+      "height": 471,
+      "anchor": {
+        "x": 218,
+        "y": 465
+      },
+      "reachX": 307,
+      "silhouetteHeight": 461
+    },
+    {
+      "file": "throw_005.png",
+      "frameIndex": 5,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -198,
+        "y": -446,
+        "width": 448,
+        "height": 446
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -444,
+        "width": 151,
+        "height": 425
+      },
+      "empty": false,
+      "width": 495,
+      "height": 471,
+      "anchor": {
+        "x": 213,
+        "y": 465
+      },
+      "reachX": 277,
+      "silhouetteHeight": 461
+    },
+    {
+      "file": "throw_006.png",
+      "frameIndex": 6,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -162,
+        "y": -445,
+        "width": 273,
+        "height": 445
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 300,
+      "height": 471,
+      "anchor": {
+        "x": 176,
+        "y": 465
+      },
+      "reachX": 119,
+      "silhouetteHeight": 461
+    }
+  ],
+  "frameData": [
+    {
+      "file": "sprites/throw/throw_001.png",
+      "width": 457,
+      "height": 471,
+      "anchor": {
+        "x": 193,
+        "y": 465
+      },
+      "reachX": 259,
+      "silhouetteHeight": 461,
+      "hurtbox": {
+        "x": -178,
+        "y": -443,
+        "width": 417,
+        "height": 443
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -385,
+        "width": 133,
+        "height": 363
+      }
+    },
+    {
+      "file": "sprites/throw/throw_002.png",
+      "width": 454,
+      "height": 471,
+      "anchor": {
+        "x": 216,
+        "y": 465
+      },
+      "reachX": 233,
+      "silhouetteHeight": 461,
+      "hurtbox": {
+        "x": -198,
+        "y": -444,
+        "width": 410,
+        "height": 444
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -450,
+        "width": 107,
+        "height": 428
+      }
+    },
+    {
+      "file": "sprites/throw/throw_003.png",
+      "width": 318,
+      "height": 471,
+      "anchor": {
+        "x": 180,
+        "y": 465
+      },
+      "reachX": 133,
+      "silhouetteHeight": 461,
+      "hurtbox": {
+        "x": -166,
+        "y": -438,
+        "width": 286,
+        "height": 438
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -433,
+        "width": 7,
+        "height": 416
+      }
+    },
+    {
+      "file": "sprites/throw/throw_004.png",
+      "width": 530,
+      "height": 471,
+      "anchor": {
+        "x": 218,
+        "y": 465
+      },
+      "reachX": 307,
+      "silhouetteHeight": 461,
+      "hurtbox": {
+        "x": -200,
+        "y": -449,
+        "width": 479,
+        "height": 449
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -449,
+        "width": 181,
+        "height": 437
+      }
+    },
+    {
+      "file": "sprites/throw/throw_005.png",
+      "width": 495,
+      "height": 471,
+      "anchor": {
+        "x": 213,
+        "y": 465
+      },
+      "reachX": 277,
+      "silhouetteHeight": 461,
+      "hurtbox": {
+        "x": -198,
+        "y": -446,
+        "width": 448,
+        "height": 446
+      },
+      "attackBox": {
+        "x": 127,
+        "y": -444,
+        "width": 151,
+        "height": 425
+      }
+    },
+    {
+      "file": "sprites/throw/throw_006.png",
+      "width": 300,
+      "height": 471,
+      "anchor": {
+        "x": 176,
+        "y": 465
+      },
+      "reachX": 119,
+      "silhouetteHeight": 461,
+      "hurtbox": {
+        "x": -162,
+        "y": -445,
+        "width": 273,
+        "height": 445
+      },
+      "attackBox": null
+    }
+  ]
+}

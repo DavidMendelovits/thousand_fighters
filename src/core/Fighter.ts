@@ -21,6 +21,7 @@ import { MOVE_SHEET_IDS } from '../../shared/animationRows.js';
 import { resolveStateSheet, stateRowFrame, isLoopingStateRow } from './animationRowPlayback';
 import { boxToWorld, type AABB } from '../util/aabb';
 import { interpolateHitboxGeometry } from './hitboxGeometry';
+import { selectTriggeredMove } from './moveSelection';
 
 const STAGE_LEFT = 96;
 const STAGE_RIGHT = 704;
@@ -278,6 +279,20 @@ export class Fighter {
       return;
     }
 
+    // Maintain active block state while holding back; exit when released.
+    // HitResolver.isBlocking() reads raw input so it still works in blockstun
+    // (the reactive path) without any changes here.
+    if (this.state === 'block') {
+      const backHeld = this.facing === 1 ? input.left : input.right;
+      if (!this.grounded || !backHeld) {
+        this.changeState('idle');
+        // Fall through to normal state handling below.
+      } else {
+        this.vx = 0;
+        return;
+      }
+    }
+
     const move = this.findTriggeredMove(false);
     if (move) {
       MoveExecutor.start(this, move);
@@ -303,12 +318,15 @@ export class Fighter {
 
     const forwardHeld = this.facing === 1 ? input.right : input.left;
     const backHeld = this.facing === 1 ? input.left : input.right;
-    if (forwardHeld) {
+
+    // Hold-back guard: grounded + back held → enter visible block state.
+    // vx=0 (no backward movement while blocking).
+    if (backHeld && !forwardHeld && !input.down && !input.up) {
+      this.vx = 0;
+      this.changeState('block');
+    } else if (forwardHeld) {
       this.vx = this.config.walkForwardSpeed * this.facing;
       this.changeState('walk_forward');
-    } else if (backHeld) {
-      this.vx = -this.config.walkBackSpeed * this.facing;
-      this.changeState('walk_back');
     } else {
       this.vx = 0;
       this.changeState('idle');
@@ -316,16 +334,7 @@ export class Fighter {
   }
 
   private findTriggeredMove(forCancel: boolean): Move | null {
-    return (
-      this.config.moves.find((move) => {
-        const trigger = move.trigger;
-        if (!trigger.allowedStates.includes(this.state)) return false;
-        if (forCancel && trigger.cancelFrom && this.currentMove && !trigger.cancelFrom.includes(this.currentMove.id)) return false;
-        if (!this.grounded && move.airOk !== true) return false;
-        if (this.grounded && move.groundOk === false) return false;
-        return this.inputBuffer.matchSequence(trigger.sequence, trigger.window ?? 15);
-      }) ?? null
-    );
+    return selectTriggeredMove(this.config.moves, this.inputBuffer, this, forCancel);
   }
 
   private tickGrabbed(): void {
@@ -432,7 +441,7 @@ export class Fighter {
   }
 
   private autoFace(opponent: Fighter): void {
-    if (!this.grounded || this.state === 'attack' || this.state === 'hitstun' || this.state === 'blockstun') return;
+    if (!this.grounded || this.state === 'attack' || this.state === 'hitstun' || this.state === 'block' || this.state === 'blockstun') return;
     this.facing = this.x <= opponent.x ? 1 : -1;
   }
 
@@ -489,13 +498,13 @@ export class Fighter {
       actor.body.setScale(sprite.scale);
       actor.body.clearTint();
       if (this.state === 'hitstun' || this.state === 'juggle') actor.body.setTint(0xffffff);
-      if (this.state === 'blockstun') actor.body.setTint(0x9dffbd);
+      if (this.state === 'block' || this.state === 'blockstun') actor.body.setTint(0x9dffbd);
     } else if (actor.body instanceof Phaser.GameObjects.Rectangle) {
       actor.body.setScale(pose.facing, this.state === 'crouch' ? 0.58 : 1);
       actor.body.setFillStyle(this.playerNum === 1 ? 0xd44949 : 0x426edb);
       if (this.state === 'attack') actor.body.setFillStyle(0xf2b84b);
       if (this.state === 'hitstun' || this.state === 'juggle') actor.body.setFillStyle(0xffffff);
-      if (this.state === 'blockstun') actor.body.setFillStyle(0x62d980);
+      if (this.state === 'block' || this.state === 'blockstun') actor.body.setFillStyle(0x62d980);
     }
 
     actor.body.setAlpha(this.invulnerable ? 0.55 : 1);
@@ -543,6 +552,7 @@ export class Fighter {
       crouch: 4,
       airborne: 5,
       landing: 4,
+      block: 3,
       blockstun: 3,
       hitstun: 3,
       grabbed: 3,

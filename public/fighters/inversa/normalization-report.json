@@ -1,0 +1,310 @@
+{
+  "workflow": "row-normalizer",
+  "moves": {
+    "base": {
+      "generatedAt": "2026-06-17T14:16:56.574Z",
+      "sourceAssetKey": "characters/inversa/assets/source/inversa_base_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 453,
+      "scaleApplied": 1,
+      "targetHeight": null,
+      "warnings": [
+        "frames equalized to silhouette height 453px per frame (row median was 453px)",
+        "frame 4: 0.5% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "punch": {
+      "generatedAt": "2026-06-17T14:16:57.359Z",
+      "sourceAssetKey": "characters/inversa/assets/source/inversa_punch_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 370,
+      "scaleApplied": 1.2243243243243243,
+      "targetHeight": 453,
+      "warnings": [
+        "frame 5: content bleeds 3% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 453px per frame (base median was 370px)",
+        "frame 1: 0.6% of opaque pixels remain near-magenta after despill",
+        "frame 2: 0.6% of opaque pixels remain near-magenta after despill",
+        "frame 3: 0.7% of opaque pixels remain near-magenta after despill",
+        "frame 4: 0.6% of opaque pixels remain near-magenta after despill",
+        "frame 5: 0.6% of opaque pixels remain near-magenta after despill",
+        "frame 6: 0.6% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "kick": {
+      "generatedAt": "2026-06-17T14:16:58.143Z",
+      "sourceAssetKey": "characters/inversa/assets/source/inversa_kick_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 405,
+      "scaleApplied": 1.1185185185185185,
+      "targetHeight": 453,
+      "warnings": [
+        "frame 4: content bleeds 8% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 453px per frame (base median was 405px)",
+        "frame 4: 0.5% of opaque pixels remain near-magenta after despill",
+        "frame 6: 0.5% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "special_1": {
+      "generatedAt": "2026-06-17T14:16:58.983Z",
+      "sourceAssetKey": "characters/inversa/assets/source/inversa_special_1_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 388,
+      "scaleApplied": 1.1675257731958764,
+      "targetHeight": 453,
+      "warnings": [
+        "frames equalized to silhouette height 453px per frame (base median was 388px)"
+      ]
+    },
+    "special_2": {
+      "generatedAt": "2026-06-17T14:16:59.791Z",
+      "sourceAssetKey": "characters/inversa/assets/source/inversa_special_2_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 429,
+      "scaleApplied": 1.055944055944056,
+      "targetHeight": 453,
+      "warnings": [
+        "frames equalized to silhouette height 453px per frame (base median was 429px)",
+        "frame 2: 0.5% of opaque pixels remain near-magenta after despill",
+        "frame 3: 0.6% of opaque pixels remain near-magenta after despill",
+        "frame 4: 0.9% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "jump": {
+      "generatedAt": "2026-06-17T14:17:00.601Z",
+      "sourceAssetKey": "characters/inversa/assets/source/inversa_jump_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 297,
+      "scaleApplied": 1.5252525252525253,
+      "targetHeight": 453,
+      "warnings": [
+        "row rescaled by 1.525 to match target silhouette height 453px (was 297px)",
+        "frame 2: 0.6% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "crouch": {
+      "generatedAt": "2026-06-17T14:17:01.447Z",
+      "sourceAssetKey": "characters/inversa/assets/source/inversa_crouch_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 243,
+      "scaleApplied": 1.8641975308641976,
+      "targetHeight": 453,
+      "warnings": [
+        "row rescaled by 1.864 to match target silhouette height 453px (was 243px)"
+      ]
+    },
+    "dash_forward": {
+      "generatedAt": "2026-06-17T14:17:02.266Z",
+      "sourceAssetKey": "characters/inversa/assets/source/inversa_dash_forward_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 334,
+      "scaleApplied": 1.3562874251497006,
+      "targetHeight": 453,
+      "warnings": [
+        "frame 4: content bleeds 5% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 453px per frame (base median was 334px)",
+        "frame 1: 0.6% of opaque pixels remain near-magenta after despill",
+        "frame 2: 0.5% of opaque pixels remain near-magenta after despill",
+        "frame 3: 0.6% of opaque pixels remain near-magenta after despill",
+        "frame 6: 0.5% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "dash_back": {
+      "generatedAt": "2026-06-17T14:17:03.054Z",
+      "sourceAssetKey": "characters/inversa/assets/source/inversa_dash_back_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 388,
+      "scaleApplied": 1.1675257731958764,
+      "targetHeight": 453,
+      "warnings": [
+        "frame 4: content bleeds 7% past its cell boundary — kept with this frame",
+        "frame 3: content bleeds 10% past its cell boundary — kept with this frame",
+        "frame 5: content bleeds 4% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 453px per frame (base median was 388px)",
+        "frame 2: 0.5% of opaque pixels remain near-magenta after despill",
+        "frame 3: 0.5% of opaque pixels remain near-magenta after despill",
+        "frame 4: 0.5% of opaque pixels remain near-magenta after despill",
+        "frame 5: 0.6% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "block": {
+      "generatedAt": "2026-06-17T14:17:03.799Z",
+      "sourceAssetKey": "characters/inversa/assets/source/inversa_block_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 427,
+      "scaleApplied": 1.0608899297423888,
+      "targetHeight": 453,
+      "warnings": [
+        "frames equalized to silhouette height 453px per frame (base median was 427px)",
+        "frame 4: 0.5% of opaque pixels remain near-magenta after despill",
+        "frame 5: 0.5% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "grab": {
+      "generatedAt": "2026-06-17T14:19:05.223Z",
+      "sourceAssetKey": "characters/inversa/assets/source/inversa_grab_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 426,
+      "scaleApplied": 1.0633802816901408,
+      "targetHeight": 453,
+      "warnings": [
+        "frame 4: content bleeds 7% past its cell boundary — kept with this frame",
+        "frame 3: content bleeds 4% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 453px per frame (base median was 426px)"
+      ]
+    },
+    "throw": {
+      "generatedAt": "2026-06-17T14:21:12.443Z",
+      "sourceAssetKey": "characters/inversa/assets/source/inversa_throw_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 437,
+      "scaleApplied": 1.036613272311213,
+      "targetHeight": 453,
+      "warnings": [
+        "frame 5: content bleeds 4% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 453px per frame (base median was 437px)",
+        "frame 6: 0.6% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "walk_forward": {
+      "generatedAt": "2026-06-17T14:21:13.228Z",
+      "sourceAssetKey": "characters/inversa/assets/source/inversa_walk_forward_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 436,
+      "scaleApplied": 1.0389908256880733,
+      "targetHeight": 453,
+      "warnings": [
+        "frames equalized to silhouette height 453px per frame (base median was 436px)",
+        "frame 1: 0.5% of opaque pixels remain near-magenta after despill",
+        "frame 4: 0.5% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "walk_back": {
+      "generatedAt": "2026-06-17T14:21:14.027Z",
+      "sourceAssetKey": "characters/inversa/assets/source/inversa_walk_back_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 439,
+      "scaleApplied": 1.031890660592255,
+      "targetHeight": 453,
+      "warnings": [
+        "frame 6: silhouette touches the sheet border — content may be truncated",
+        "frames equalized to silhouette height 453px per frame (base median was 439px)"
+      ]
+    }
+  },
+  "warnings": [
+    "base: frames equalized to silhouette height 453px per frame (row median was 453px)",
+    "base: frame 4: 0.5% of opaque pixels remain near-magenta after despill",
+    "punch: frame 5: content bleeds 3% past its cell boundary — kept with this frame",
+    "punch: frames equalized to silhouette height 453px per frame (base median was 370px)",
+    "punch: frame 1: 0.6% of opaque pixels remain near-magenta after despill",
+    "punch: frame 2: 0.6% of opaque pixels remain near-magenta after despill",
+    "punch: frame 3: 0.7% of opaque pixels remain near-magenta after despill",
+    "punch: frame 4: 0.6% of opaque pixels remain near-magenta after despill",
+    "punch: frame 5: 0.6% of opaque pixels remain near-magenta after despill",
+    "punch: frame 6: 0.6% of opaque pixels remain near-magenta after despill",
+    "kick: frame 4: content bleeds 8% past its cell boundary — kept with this frame",
+    "kick: frames equalized to silhouette height 453px per frame (base median was 405px)",
+    "kick: frame 4: 0.5% of opaque pixels remain near-magenta after despill",
+    "kick: frame 6: 0.5% of opaque pixels remain near-magenta after despill",
+    "special_1: frames equalized to silhouette height 453px per frame (base median was 388px)",
+    "special_2: frames equalized to silhouette height 453px per frame (base median was 429px)",
+    "special_2: frame 2: 0.5% of opaque pixels remain near-magenta after despill",
+    "special_2: frame 3: 0.6% of opaque pixels remain near-magenta after despill",
+    "special_2: frame 4: 0.9% of opaque pixels remain near-magenta after despill",
+    "jump: row rescaled by 1.525 to match target silhouette height 453px (was 297px)",
+    "jump: frame 2: 0.6% of opaque pixels remain near-magenta after despill",
+    "crouch: row rescaled by 1.864 to match target silhouette height 453px (was 243px)",
+    "dash_forward: frame 4: content bleeds 5% past its cell boundary — kept with this frame",
+    "dash_forward: frames equalized to silhouette height 453px per frame (base median was 334px)",
+    "dash_forward: frame 1: 0.6% of opaque pixels remain near-magenta after despill",
+    "dash_forward: frame 2: 0.5% of opaque pixels remain near-magenta after despill",
+    "dash_forward: frame 3: 0.6% of opaque pixels remain near-magenta after despill",
+    "dash_forward: frame 6: 0.5% of opaque pixels remain near-magenta after despill",
+    "dash_back: frame 4: content bleeds 7% past its cell boundary — kept with this frame",
+    "dash_back: frame 3: content bleeds 10% past its cell boundary — kept with this frame",
+    "dash_back: frame 5: content bleeds 4% past its cell boundary — kept with this frame",
+    "dash_back: frames equalized to silhouette height 453px per frame (base median was 388px)",
+    "dash_back: frame 2: 0.5% of opaque pixels remain near-magenta after despill",
+    "dash_back: frame 3: 0.5% of opaque pixels remain near-magenta after despill",
+    "dash_back: frame 4: 0.5% of opaque pixels remain near-magenta after despill",
+    "dash_back: frame 5: 0.6% of opaque pixels remain near-magenta after despill",
+    "block: frames equalized to silhouette height 453px per frame (base median was 427px)",
+    "block: frame 4: 0.5% of opaque pixels remain near-magenta after despill",
+    "block: frame 5: 0.5% of opaque pixels remain near-magenta after despill",
+    "grab: frame 4: content bleeds 7% past its cell boundary — kept with this frame",
+    "grab: frame 3: content bleeds 4% past its cell boundary — kept with this frame",
+    "grab: frames equalized to silhouette height 453px per frame (base median was 426px)",
+    "throw: frame 5: content bleeds 4% past its cell boundary — kept with this frame",
+    "throw: frames equalized to silhouette height 453px per frame (base median was 437px)",
+    "throw: frame 6: 0.6% of opaque pixels remain near-magenta after despill",
+    "walk_forward: frames equalized to silhouette height 453px per frame (base median was 436px)",
+    "walk_forward: frame 1: 0.5% of opaque pixels remain near-magenta after despill",
+    "walk_forward: frame 4: 0.5% of opaque pixels remain near-magenta after despill",
+    "walk_back: frame 6: silhouette touches the sheet border — content may be truncated",
+    "walk_back: frames equalized to silhouette height 453px per frame (base median was 439px)"
+  ],
+  "fixtureFill": {
+    "fixtureFighterId": "janitor",
+    "generatedAt": "2026-06-17T14:21:14.036Z",
+    "filledSheets": [],
+    "preservedSheets": [
+      "base",
+      "punch",
+      "kick",
+      "special_1",
+      "special_2",
+      "jump",
+      "crouch",
+      "dash_forward",
+      "dash_back",
+      "block",
+      "grab",
+      "throw",
+      "walk_forward",
+      "walk_back"
+    ]
+  }
+}

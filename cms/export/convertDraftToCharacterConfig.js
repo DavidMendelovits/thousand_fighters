@@ -652,8 +652,8 @@ function convertMove(draftMove, context = {}) {
     animation,
     trigger: {
       allowedStates: draftMove.trigger?.allowedStates ?? ['idle', 'walk_forward', 'walk_back'],
-      sequence: (draftMove.trigger?.sequence ?? []).map(normalizeInputToken),
-      window: draftMove.trigger?.window ?? 6,
+      sequence: expandTriggerSequence(draftMove.trigger?.sequence ?? [], animation),
+      window: draftMove.trigger?.window ?? 14,
     },
     phases,
     cancelInto: draftMove.cancelInto ?? [],
@@ -1120,7 +1120,56 @@ export function normalizeInputToken(token) {
     'up-forward': 'up-forward',
     'up-back': 'up-back',
     neutral: 'neutral',
+    grab: 'grab',   // LP+LK simultaneous input — valid engine token
+    throw: 'throw', // placeholder; expandTriggerSequence rewrites this
   };
   const lower = String(token).toLowerCase();
   return map[lower] ?? token;
+}
+
+/**
+ * LOCKED control-scheme expansion (must match what InputBuffer emits):
+ *   special_1  → [down, forward, lp]
+ *   special_2  → [down, forward, lk]
+ *   grab       → [grab]
+ *   throw      → [forward, grab]   (command grab)
+ *
+ * The expansion is only applied when the raw token equals the move's own
+ * `animation` field — that's the CMS sentinel that means "use the default
+ * motion for this slot." Already-correct directional sequences (e.g. el_cometa's
+ * rising_star_uppercut → ['forward','down','forward','lp']) don't contain these
+ * literals, so they pass through normalizeInputToken unchanged.
+ *
+ * @param {string[]} rawSequence  Tokens as authored by the CMS agent
+ * @param {string} animation      The move's animation sheet id (e.g. 'special_1')
+ * @returns {string[]} Expanded, normalised sequence
+ */
+export function expandTriggerSequence(rawSequence, animation) {
+  /** Tokens that are CMS sentinels and must be rewritten 1→many. */
+  const LITERAL_EXPANSIONS = {
+    special_1: ['down', 'forward', 'lp'],
+    special_2: ['down', 'forward', 'lk'],
+    grab: ['grab'],
+    throw: ['forward', 'grab'],
+  };
+
+  // If the sequence is a single literal sentinel that matches the animation slot,
+  // replace it with the canonical motion. This is the common CMS output pattern
+  // (e.g. sequence: ['special_1'] for a move whose animation is 'special_1').
+  // Also handle cases where the literal appears anywhere in the sequence.
+  const expanded = rawSequence.flatMap((token) => {
+    const lower = String(token).toLowerCase();
+    const expansion = LITERAL_EXPANSIONS[lower];
+    if (expansion) return expansion;
+    return [normalizeInputToken(token)];
+  });
+
+  // If the sequence was empty AND the animation is a known literal, synthesise
+  // the default motion (CMS omitted the trigger entirely).
+  if (expanded.length === 0) {
+    const fallback = LITERAL_EXPANSIONS[animation];
+    if (fallback) return [...fallback];
+  }
+
+  return expanded;
 }

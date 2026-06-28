@@ -22,7 +22,7 @@ import {
   getRow,
   sheetGroups,
 } from '../shared/animationRows.js';
-import { rowsMissingProfiles } from '../cms/pipeline/rowPromptProfiles.js';
+import { rowsMissingProfiles, ROW_PROMPT_PROFILES } from '../cms/pipeline/rowPromptProfiles.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -117,5 +117,36 @@ assert.deepEqual(
   'admin/app.js MOVE_ORDER must be the registry rows followed by "projectiles"',
 );
 
+// 3. admin/app.js ROW_PROMPT_DESCRIPTIONS guard. The browser admin can't import
+//    rowPromptProfiles.js, so it mirrors each row's `description` to seed a
+//    DISTINCT per-row default prompt (a grab prompt must not read like a kick
+//    prompt). Assert the literal copy is exact and covers every row.
+function parseObjectLiteralValues(source, name) {
+  const block = source.match(new RegExp(`const\\s+${name}\\s*=\\s*\\{([\\s\\S]*?)\\n\\};`));
+  assert.ok(block, `admin/app.js: could not find "const ${name} = { ... }"`);
+  const entries = {};
+  const re = /(\w+)\s*:\s*'((?:[^'\\]|\\.)*)'/g;
+  let match;
+  while ((match = re.exec(block[1])) !== null) {
+    entries[match[1]] = match[2].replace(/\\'/g, "'");
+  }
+  return entries;
+}
+
+const adminRowDescriptions = parseObjectLiteralValues(adminSource, 'ROW_PROMPT_DESCRIPTIONS');
+assert.deepEqual(
+  Object.keys(adminRowDescriptions).sort(),
+  [...SHEET_IDS].sort(),
+  'admin/app.js ROW_PROMPT_DESCRIPTIONS must cover exactly the registry rows',
+);
+for (const id of SHEET_IDS) {
+  assert.equal(
+    adminRowDescriptions[id],
+    ROW_PROMPT_PROFILES[id].description,
+    `admin/app.js ROW_PROMPT_DESCRIPTIONS["${id}"] drifted from rowPromptProfiles.js — update the literal copy`,
+  );
+}
+
 console.log(`✓ animation-row registry contract OK (${SHEET_IDS.length} rows: ${SHEET_IDS.join(', ')})`);
 console.log(`✓ admin/app.js MOVE_IDS / MOVE_ORDER match the registry`);
+console.log(`✓ admin/app.js ROW_PROMPT_DESCRIPTIONS mirror rowPromptProfiles.js`);

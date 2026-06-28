@@ -15,6 +15,7 @@ import {
   normalizeInputToken,
 } from '../export/convertDraftToCharacterConfig.js';
 import { MOVE_SHEET_IDS } from '../../shared/animationRows.js';
+import { rowPromptProfile } from './rowPromptProfiles.js';
 
 // Canonical inputs the engine's InputBuffer can actually match. A combo move
 // authored with anything else (a motion shorthand like "qcf", or an empty
@@ -28,6 +29,7 @@ const CANONICAL_INPUT_TOKENS = new Set([
 const execFileAsync = promisify(execFile);
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const EXTRACT_SCRIPT_PATH = path.join(REPO_ROOT, 'scripts', 'extract_row_frames.py');
+const NORMALIZE_PROJECTILE_SCRIPT_PATH = path.join(REPO_ROOT, 'scripts', 'normalize_projectile.py');
 
 export class CharacterCreationPipeline {
   constructor(registry, options = {}) {
@@ -507,9 +509,33 @@ export class CharacterCreationPipeline {
       onProgress: context.onProgress,
     });
 
+    // Normalize the raw image: chroma-key magenta → transparent, despill edges,
+    // crop to content, downscale longest side to ≤ 256px. Raw bytes are always
+    // treated as PNG (the generator always returns PNG for sprites).
+    const rawBytes = bytesFromImageResult(result);
+    let normalizedBytes = rawBytes;
+    try {
+      const tmpDir = await mkdtemp(path.join(os.tmpdir(), 'tf-proj-norm-'));
+      try {
+        const rawPath = path.join(tmpDir, 'raw.png');
+        const normPath = path.join(tmpDir, 'norm.png');
+        await writeFile(rawPath, rawBytes);
+        await execFileAsync('python3', [NORMALIZE_PROJECTILE_SCRIPT_PATH, rawPath, normPath], {
+          timeout: 30_000,
+          maxBuffer: 10 * 1024 * 1024,
+        });
+        normalizedBytes = await readFile(normPath);
+      } finally {
+        await rm(tmpDir, { recursive: true, force: true });
+      }
+    } catch (normError) {
+      // Non-fatal: fall back to raw bytes if normalization fails.
+      context.onProgress?.({ type: 'warning', message: `Projectile normalization failed (using raw): ${normError.message}` });
+    }
+
     const contentType = result.contentType ?? 'image/png';
     const key = `source/${characterId}_${projectileId}_projectile${extensionForContentType(contentType)}`;
-    const asset = await repository.writeAsset(characterId, key, bytesFromImageResult(result), {
+    const asset = await repository.writeAsset(characterId, key, normalizedBytes, {
       contentType,
       provider: result.provider ?? imageGenerator.provider ?? 'unknown',
       adapterId: imageGenerator.id ?? 'imageGenerator',
@@ -518,15 +544,17 @@ export class CharacterCreationPipeline {
     });
 
     // Upsert the entity. Animation is the runtime texture key the engine renders.
+    // Persist the prompt so the admin UI can pre-fill it for re-generation.
     const animation = `${characterId}_${projectileId}`;
     const draft = await repository.getDraft(characterId);
     const existing = (draft.projectiles ?? []).find((entity) => entity.id === projectileId);
     const projectile = existing
-      ? { ...existing, animation, sourceKey: asset.key }
+      ? { ...existing, animation, sourceKey: asset.key, prompt }
       : {
           id: projectileId,
           animation,
           sourceKey: asset.key,
+          prompt,
           width: 48,
           height: 32,
           speed: 7,
@@ -585,6 +613,14 @@ export class CharacterCreationPipeline {
       if (spriteProfile === 'wide') args.push('--rows', '2', '--cols', '3');
       if (resolvedTargetHeight) args.push('--target-height', String(Math.round(resolvedTargetHeight)));
       if (bodyHalfWidth) args.push('--body-half-width', String(Math.round(bodyHalfWidth)));
+      // Height-dynamic rows (jump/crouch) legitimately change height — skip per-frame
+      // equalization so the squat/rise animation reads correctly.
+      const profile = rowPromptProfile(moveId);
+      if (profile.heightDynamic) {
+        args.push('--no-equalize-frames');
+      } else {
+        args.push('--equalize-frames');
+      }
       try {
         await execFileAsync('python3', args, {
           timeout: 60_000,

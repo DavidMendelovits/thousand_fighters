@@ -27,6 +27,7 @@ export const STATE_ROW_MAP: Partial<Record<FighterState, string>> = {
   airborne: 'jump',
   crouch: 'crouch',
   crouch_transition: 'crouch',
+  block: 'block',
   blockstun: 'block',
   walk_forward: 'walk_forward',
   walk_back: 'walk_back',

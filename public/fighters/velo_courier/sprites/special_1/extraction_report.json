@@ -1,0 +1,263 @@
+{
+  "source": "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-extract-THIK5T/source.png",
+  "moveId": "special_1",
+  "sourceSize": [
+    2172,
+    724
+  ],
+  "grid": [
+    1,
+    6
+  ],
+  "frameCount": 6,
+  "segmentation": "connected-components",
+  "medianSilhouetteHeight": 191,
+  "scaleApplied": 1.7643979057591623,
+  "warnings": [
+    "frames equalized to silhouette height 337px per frame (base median was 191px)",
+    "frame 1: 1.0% of opaque pixels remain near-magenta after despill",
+    "frame 2: 1.4% of opaque pixels remain near-magenta after despill",
+    "frame 3: 3.4% of opaque pixels remain near-magenta after despill",
+    "frame 4: 3.5% of opaque pixels remain near-magenta after despill",
+    "frame 5: 2.2% of opaque pixels remain near-magenta after despill",
+    "frame 6: 0.9% of opaque pixels remain near-magenta after despill"
+  ],
+  "frames": [
+    {
+      "file": "special_1_001.png",
+      "frameIndex": 1,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -310,
+        "y": -318,
+        "width": 413,
+        "height": 318
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 460,
+      "height": 347,
+      "anchor": {
+        "x": 341,
+        "y": 341
+      },
+      "reachX": 114,
+      "silhouetteHeight": 337
+    },
+    {
+      "file": "special_1_002.png",
+      "frameIndex": 2,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -348,
+        "y": -321,
+        "width": 450,
+        "height": 321
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 509,
+      "height": 347,
+      "anchor": {
+        "x": 391,
+        "y": 341
+      },
+      "reachX": 113,
+      "silhouetteHeight": 337
+    },
+    {
+      "file": "special_1_003.png",
+      "frameIndex": 3,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -336,
+        "y": -318,
+        "width": 481,
+        "height": 318
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 549,
+      "height": 347,
+      "anchor": {
+        "x": 387,
+        "y": 341
+      },
+      "reachX": 157,
+      "silhouetteHeight": 337
+    },
+    {
+      "file": "special_1_004.png",
+      "frameIndex": 4,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -363,
+        "y": -317,
+        "width": 518,
+        "height": 317
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 588,
+      "height": 347,
+      "anchor": {
+        "x": 409,
+        "y": 341
+      },
+      "reachX": 174,
+      "silhouetteHeight": 337
+    },
+    {
+      "file": "special_1_005.png",
+      "frameIndex": 5,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -352,
+        "y": -319,
+        "width": 457,
+        "height": 319
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 520,
+      "height": 347,
+      "anchor": {
+        "x": 399,
+        "y": 341
+      },
+      "reachX": 116,
+      "silhouetteHeight": 337
+    },
+    {
+      "file": "special_1_006.png",
+      "frameIndex": 6,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -228,
+        "y": -320,
+        "width": 333,
+        "height": 320
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 364,
+      "height": 347,
+      "anchor": {
+        "x": 244,
+        "y": 341
+      },
+      "reachX": 115,
+      "silhouetteHeight": 337
+    }
+  ],
+  "frameData": [
+    {
+      "file": "sprites/special_1/special_1_001.png",
+      "width": 460,
+      "height": 347,
+      "anchor": {
+        "x": 341,
+        "y": 341
+      },
+      "reachX": 114,
+      "silhouetteHeight": 337,
+      "hurtbox": {
+        "x": -310,
+        "y": -318,
+        "width": 413,
+        "height": 318
+      },
+      "attackBox": null
+    },
+    {
+      "file": "sprites/special_1/special_1_002.png",
+      "width": 509,
+      "height": 347,
+      "anchor": {
+        "x": 391,
+        "y": 341
+      },
+      "reachX": 113,
+      "silhouetteHeight": 337,
+      "hurtbox": {
+        "x": -348,
+        "y": -321,
+        "width": 450,
+        "height": 321
+      },
+      "attackBox": null
+    },
+    {
+      "file": "sprites/special_1/special_1_003.png",
+      "width": 549,
+      "height": 347,
+      "anchor": {
+        "x": 387,
+        "y": 341
+      },
+      "reachX": 157,
+      "silhouetteHeight": 337,
+      "hurtbox": {
+        "x": -336,
+        "y": -318,
+        "width": 481,
+        "height": 318
+      },
+      "attackBox": null
+    },
+    {
+      "file": "sprites/special_1/special_1_004.png",
+      "width": 588,
+      "height": 347,
+      "anchor": {
+        "x": 409,
+        "y": 341
+      },
+      "reachX": 174,
+      "silhouetteHeight": 337,
+      "hurtbox": {
+        "x": -363,
+        "y": -317,
+        "width": 518,
+        "height": 317
+      },
+      "attackBox": null
+    },
+    {
+      "file": "sprites/special_1/special_1_005.png",
+      "width": 520,
+      "height": 347,
+      "anchor": {
+        "x": 399,
+        "y": 341
+      },
+      "reachX": 116,
+      "silhouetteHeight": 337,
+      "hurtbox": {
+        "x": -352,
+        "y": -319,
+        "width": 457,
+        "height": 319
+      },
+      "attackBox": null
+    },
+    {
+      "file": "sprites/special_1/special_1_006.png",
+      "width": 364,
+      "height": 347,
+      "anchor": {
+        "x": 244,
+        "y": 341
+      },
+      "reachX": 115,
+      "silhouetteHeight": 337,
+      "hurtbox": {
+        "x": -228,
+        "y": -320,
+        "width": 333,
+        "height": 320
+      },
+      "attackBox": null
+    }
+  ]
+}
