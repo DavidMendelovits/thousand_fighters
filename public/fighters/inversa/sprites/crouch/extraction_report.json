@@ -1,0 +1,297 @@
+{
+  "source": "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-extract-TVb0UU/source.png",
+  "moveId": "crouch",
+  "sourceSize": [
+    2172,
+    724
+  ],
+  "grid": [
+    1,
+    6
+  ],
+  "frameCount": 6,
+  "segmentation": "connected-components",
+  "medianSilhouetteHeight": 243,
+  "scaleApplied": 1.8641975308641976,
+  "warnings": [
+    "row rescaled by 1.864 to match target silhouette height 453px (was 243px)"
+  ],
+  "frames": [
+    {
+      "file": "crouch_001.png",
+      "frameIndex": 1,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -211,
+        "y": -680,
+        "width": 405,
+        "height": 680
+      },
+      "attackBox": {
+        "x": 195,
+        "y": -137,
+        "width": 44,
+        "height": 137
+      },
+      "empty": false,
+      "width": 482,
+      "height": 711,
+      "anchor": {
+        "x": 239,
+        "y": 705
+      },
+      "reachX": 238,
+      "silhouetteHeight": 701
+    },
+    {
+      "file": "crouch_002.png",
+      "frameIndex": 2,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -187,
+        "y": -572,
+        "width": 407,
+        "height": 572
+      },
+      "attackBox": {
+        "x": 195,
+        "y": -338,
+        "width": 53,
+        "height": 63
+      },
+      "empty": false,
+      "width": 463,
+      "height": 605,
+      "anchor": {
+        "x": 211,
+        "y": 599
+      },
+      "reachX": 247,
+      "silhouetteHeight": 595
+    },
+    {
+      "file": "crouch_003.png",
+      "frameIndex": 3,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -179,
+        "y": -433,
+        "width": 364,
+        "height": 433
+      },
+      "attackBox": {
+        "x": 195,
+        "y": -321,
+        "width": 2,
+        "height": 57
+      },
+      "empty": false,
+      "width": 407,
+      "height": 463,
+      "anchor": {
+        "x": 206,
+        "y": 457
+      },
+      "reachX": 196,
+      "silhouetteHeight": 453
+    },
+    {
+      "file": "crouch_004.png",
+      "frameIndex": 4,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -347,
+        "y": -418,
+        "width": 495,
+        "height": 418
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 536,
+      "height": 446,
+      "anchor": {
+        "x": 371,
+        "y": 440
+      },
+      "reachX": 160,
+      "silhouetteHeight": 436
+    },
+    {
+      "file": "crouch_005.png",
+      "frameIndex": 5,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -189,
+        "y": -343,
+        "width": 422,
+        "height": 343
+      },
+      "attackBox": {
+        "x": 195,
+        "y": -340,
+        "width": 52,
+        "height": 190
+      },
+      "empty": false,
+      "width": 472,
+      "height": 370,
+      "anchor": {
+        "x": 221,
+        "y": 364
+      },
+      "reachX": 246,
+      "silhouetteHeight": 360
+    },
+    {
+      "file": "crouch_006.png",
+      "frameIndex": 6,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -201,
+        "y": -324,
+        "width": 384,
+        "height": 324
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 424,
+      "height": 351,
+      "anchor": {
+        "x": 227,
+        "y": 345
+      },
+      "reachX": 192,
+      "silhouetteHeight": 341
+    }
+  ],
+  "frameData": [
+    {
+      "file": "sprites/crouch/crouch_001.png",
+      "width": 482,
+      "height": 711,
+      "anchor": {
+        "x": 239,
+        "y": 705
+      },
+      "reachX": 238,
+      "silhouetteHeight": 701,
+      "hurtbox": {
+        "x": -211,
+        "y": -680,
+        "width": 405,
+        "height": 680
+      },
+      "attackBox": {
+        "x": 195,
+        "y": -137,
+        "width": 44,
+        "height": 137
+      }
+    },
+    {
+      "file": "sprites/crouch/crouch_002.png",
+      "width": 463,
+      "height": 605,
+      "anchor": {
+        "x": 211,
+        "y": 599
+      },
+      "reachX": 247,
+      "silhouetteHeight": 595,
+      "hurtbox": {
+        "x": -187,
+        "y": -572,
+        "width": 407,
+        "height": 572
+      },
+      "attackBox": {
+        "x": 195,
+        "y": -338,
+        "width": 53,
+        "height": 63
+      }
+    },
+    {
+      "file": "sprites/crouch/crouch_003.png",
+      "width": 407,
+      "height": 463,
+      "anchor": {
+        "x": 206,
+        "y": 457
+      },
+      "reachX": 196,
+      "silhouetteHeight": 453,
+      "hurtbox": {
+        "x": -179,
+        "y": -433,
+        "width": 364,
+        "height": 433
+      },
+      "attackBox": {
+        "x": 195,
+        "y": -321,
+        "width": 2,
+        "height": 57
+      }
+    },
+    {
+      "file": "sprites/crouch/crouch_004.png",
+      "width": 536,
+      "height": 446,
+      "anchor": {
+        "x": 371,
+        "y": 440
+      },
+      "reachX": 160,
+      "silhouetteHeight": 436,
+      "hurtbox": {
+        "x": -347,
+        "y": -418,
+        "width": 495,
+        "height": 418
+      },
+      "attackBox": null
+    },
+    {
+      "file": "sprites/crouch/crouch_005.png",
+      "width": 472,
+      "height": 370,
+      "anchor": {
+        "x": 221,
+        "y": 364
+      },
+      "reachX": 246,
+      "silhouetteHeight": 360,
+      "hurtbox": {
+        "x": -189,
+        "y": -343,
+        "width": 422,
+        "height": 343
+      },
+      "attackBox": {
+        "x": 195,
+        "y": -340,
+        "width": 52,
+        "height": 190
+      }
+    },
+    {
+      "file": "sprites/crouch/crouch_006.png",
+      "width": 424,
+      "height": 351,
+      "anchor": {
+        "x": 227,
+        "y": 345
+      },
+      "reachX": 192,
+      "silhouetteHeight": 341,
+      "hurtbox": {
+        "x": -201,
+        "y": -324,
+        "width": 384,
+        "height": 324
+      },
+      "attackBox": null
+    }
+  ]
+}

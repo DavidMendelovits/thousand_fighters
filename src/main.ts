@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { FightScene } from './scenes/FightScene';
+import { loadCmsRoster } from './characters/roster';
 import { CANVAS_PARENT_ID, LayoutShell } from './ui/LayoutShell';
 import './style.css';
 
@@ -22,8 +23,12 @@ const config: Phaser.Types.Core.GameConfig = {
   scene: [FightScene],
 };
 
-const game = new Phaser.Game(config);
+// Merge CMS-exported fighters into the roster before the scenes construct;
+// loadCmsRoster never rejects, so the game always starts.
+loadCmsRoster().then(() => {
+  const game = new Phaser.Game(config);
 
-shell.onChange(() => {
-  game.scale.refresh();
+  shell.onChange(() => {
+    game.scale.refresh();
+  });
 });

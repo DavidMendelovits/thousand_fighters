@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fighter Testbed</title>
+    <style>
+      :root {
+        --bg: #0f1216;
+        --panel: #171c23;
+        --panel-2: #1f262f;
+        --line: #2a323d;
+        --text: #dbe7ff;
+        --muted: #8a97a8;
+        --accent: #6fb3ff;
+        --hit: #ff5252;
+        --warn: #f2b84b;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 13px;
+      }
+      #app {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 340px;
+        grid-template-rows: auto 1fr;
+        gap: 12px;
+        height: 100vh;
+        padding: 12px;
+      }
+      header {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 8px;
+      }
+      header h1 { font-size: 14px; margin: 0; letter-spacing: 0.04em; }
+      header .char { color: var(--accent); font-weight: 700; }
+      header .muted { color: var(--muted); font-size: 11px; }
+      #stage-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0a0d11;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+        min-height: 0;
+      }
+      #game { width: 100%; max-width: 800px; }
+      #game canvas { display: block; width: 100% !important; height: auto !important; }
+      aside {
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      section.card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px 12px;
+      }
+      section.card h2 {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        margin: 0 0 8px;
+      }
+      .row { display: flex; flex-wrap: wrap; gap: 6px; }
+      button {
+        background: var(--panel-2);
+        color: var(--text);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 6px 10px;
+        font: inherit;
+        cursor: pointer;
+      }
+      button:hover { border-color: var(--accent); }
+      button.active { background: var(--accent); color: #07101c; border-color: var(--accent); font-weight: 700; }
+      button.move { flex: 1 1 calc(50% - 6px); text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      button.move .anim { color: var(--muted); font-size: 10px; }
+      .field { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+      .field label { color: var(--muted); min-width: 64px; }
+      input[type="range"] { flex: 1; }
+      .hud-grid { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; }
+      .hud-grid .k { color: var(--muted); }
+      .hud-grid .v { text-align: right; }
+      .hitbox {
+        border-top: 1px dashed var(--line);
+        margin-top: 6px;
+        padding-top: 6px;
+      }
+      .hitbox .tag { color: var(--hit); font-weight: 700; }
+      .warnings { color: var(--warn); font-size: 11px; line-height: 1.5; }
+      .warnings:empty::before { content: "No issues — draft looks complete."; color: var(--muted); }
+      .help { color: var(--muted); font-size: 11px; line-height: 1.6; }
+      kbd {
+        background: var(--panel-2);
+        border: 1px solid var(--line);
+        border-bottom-width: 2px;
+        border-radius: 4px;
+        padding: 0 5px;
+        color: var(--text);
+      }
+      #status {
+        grid-column: 1 / -1;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: var(--muted);
+      }
+      #status.error { color: var(--hit); }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <h1>FIGHTER TESTBED</h1>
+        <span class="char" id="char-name">—</span>
+        <span class="muted" id="char-id"></span>
+      </header>
+
+      <div id="stage-wrap"><div id="game"></div></div>
+
+      <aside>
+        <section class="card">
+          <h2>Playback</h2>
+          <div class="row" id="playback">
+            <button data-mode="play" class="active">▶ Play</button>
+            <button data-mode="pause">⏸ Pause</button>
+            <button data-mode="slow">🐢 Slow</button>
+            <button id="step-btn">⏭ Step</button>
+            <button id="reset-btn">↺ Reset</button>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Moves</h2>
+          <div class="row" id="moves"></div>
+        </section>
+
+        <section class="card">
+          <h2>Training Dummy</h2>
+          <div class="row" id="dummy-mode">
+            <button data-dummy="post" class="active">Measuring post</button>
+            <button data-dummy="reactive">Reactive</button>
+          </div>
+          <div class="field">
+            <label for="distance">Distance</label>
+            <input type="range" id="distance" min="40" max="420" step="2" value="290" />
+            <span id="distance-val" class="v">290px</span>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Measurement</h2>
+          <div class="hud-grid" id="hud"></div>
+          <div id="hud-hitboxes"></div>
+        </section>
+
+        <section class="card">
+          <h2>Notes</h2>
+          <div class="warnings" id="warnings"></div>
+        </section>
+
+        <section class="card">
+          <h2>Controls</h2>
+          <div class="help">
+            <kbd>A</kbd>/<kbd>D</kbd> move · <kbd>W</kbd> jump · <kbd>S</kbd> crouch<br />
+            <kbd>F</kbd>/<kbd>G</kbd>/<kbd>H</kbd> attacks · <kbd>Space</kbd> pause · <kbd>.</kbd> step · <kbd>R</kbd> reset
+          </div>
+        </section>
+      </aside>
+
+      <div id="status"></div>
+    </div>
+
+    <script type="module" src="/src/testbed/main.ts"></script>
+  </body>
+</html>

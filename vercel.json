@@ -1,0 +1,22 @@
+{
+  "buildCommand": "npm run cms:vercel:build",
+  "outputDirectory": "dist",
+  "functions": {
+    "api/cms.js": {
+      "includeFiles": "public/fighters/janitor/**",
+      "excludeFiles": "node_modules/phaser/**",
+      "maxDuration": 60
+    },
+    "api/[...path].js": {
+      "includeFiles": "public/fighters/janitor/**",
+      "excludeFiles": "node_modules/phaser/**",
+      "maxDuration": 60
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/cms?path=:path*"
+    }
+  ]
+}

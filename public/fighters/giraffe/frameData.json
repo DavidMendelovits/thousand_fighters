@@ -1,0 +1,115 @@
+{
+  "anchorConvention": "frame anchor is the character pivot/feet, in pixels from each PNG top-left",
+  "frames": {
+    "base": [
+      {
+        "file": "sprites/base/base_001.png",
+        "width": 263,
+        "height": 670,
+        "anchor": {
+          "x": 110,
+          "y": 664
+        },
+        "reachX": 148,
+        "silhouetteHeight": 660,
+        "hurtbox": {
+          "x": -94,
+          "y": -634,
+          "width": 217,
+          "height": 634
+        },
+        "attackBox": null
+      },
+      {
+        "file": "sprites/base/base_002.png",
+        "width": 261,
+        "height": 671,
+        "anchor": {
+          "x": 110,
+          "y": 665
+        },
+        "reachX": 146,
+        "silhouetteHeight": 661,
+        "hurtbox": {
+          "x": -94,
+          "y": -636,
+          "width": 215,
+          "height": 636
+        },
+        "attackBox": null
+      },
+      {
+        "file": "sprites/base/base_003.png",
+        "width": 261,
+        "height": 670,
+        "anchor": {
+          "x": 111,
+          "y": 664
+        },
+        "reachX": 145,
+        "silhouetteHeight": 660,
+        "hurtbox": {
+          "x": -94,
+          "y": -634,
+          "width": 214,
+          "height": 634
+        },
+        "attackBox": null
+      },
+      {
+        "file": "sprites/base/base_004.png",
+        "width": 267,
+        "height": 670,
+        "anchor": {
+          "x": 115,
+          "y": 664
+        },
+        "reachX": 147,
+        "silhouetteHeight": 660,
+        "hurtbox": {
+          "x": -95,
+          "y": -634,
+          "width": 216,
+          "height": 634
+        },
+        "attackBox": null
+      },
+      {
+        "file": "sprites/base/base_005.png",
+        "width": 266,
+        "height": 662,
+        "anchor": {
+          "x": 112,
+          "y": 656
+        },
+        "reachX": 149,
+        "silhouetteHeight": 652,
+        "hurtbox": {
+          "x": -95,
+          "y": -627,
+          "width": 219,
+          "height": 627
+        },
+        "attackBox": null
+      },
+      {
+        "file": "sprites/base/base_006.png",
+        "width": 267,
+        "height": 666,
+        "anchor": {
+          "x": 111,
+          "y": 660
+        },
+        "reachX": 151,
+        "silhouetteHeight": 656,
+        "hurtbox": {
+          "x": -94,
+          "y": -630,
+          "width": 220,
+          "height": 630
+        },
+        "attackBox": null
+      }
+    ]
+  }
+}

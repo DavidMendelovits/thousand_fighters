@@ -1,0 +1,21 @@
+{
+  "id": "giraffe",
+  "artSource": "image-gen",
+  "frameData": "frameData.json",
+  "sheets": {
+    "base": "sheets/base.png"
+  },
+  "sprites": {
+    "base": [
+      "sprites/base/base_001.png",
+      "sprites/base/base_002.png",
+      "sprites/base/base_003.png",
+      "sprites/base/base_004.png",
+      "sprites/base/base_005.png",
+      "sprites/base/base_006.png"
+    ]
+  },
+  "frameCounts": {
+    "base": 6
+  }
+}

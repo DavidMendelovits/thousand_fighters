@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thousand Fighters CMS</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="admin-shell">
+      <header class="topbar">
+        <div>
+          <h1>Character CMS</h1>
+          <p id="system-status">Connecting to local pipeline</p>
+        </div>
+        <div class="topbar-actions">
+          <button id="adapter-health-strip" class="adapter-health-strip" type="button" title="Adapter health — open Pipeline tab" aria-label="Adapter health"></button>
+          <a class="ghost-link" href="/api/tools" target="_blank" rel="noreferrer">Tools JSON</a>
+          <a class="ghost-link" href="/api/pipeline" target="_blank" rel="noreferrer">Pipeline JSON</a>
+        </div>
+      </header>
+
+      <section class="workspace-grid">
+        <aside class="panel roster-panel">
+          <div class="panel-heading">
+            <h2>Roster</h2>
+            <button id="refresh-roster" type="button">Refresh</button>
+          </div>
+          <a href="/roster/new" class="new-fighter-link">+ New Fighter</a>
+          <div id="character-list" class="character-list"></div>
+        </aside>
+
+        <section class="panel workbench-panel">
+          <div class="panel-heading">
+            <h2>Character Workbench</h2>
+            <span id="selected-character" class="soft-label">No draft loaded</span>
+          </div>
+          <div id="character-workbench" class="character-workbench empty-state">
+            Select a fighter to inspect moves, frames, animation, stats, and assets.
+          </div>
+        </section>
+
+        <aside class="ops-column">
+          <div class="panel ops-panel">
+            <div class="ops-tabs" role="tablist" aria-label="Operations">
+              <button id="ops-tab-activity" class="ops-tab active" type="button" role="tab" aria-selected="true" data-ops-tab="activity">Activity</button>
+              <button id="ops-tab-pipeline" class="ops-tab" type="button" role="tab" aria-selected="false" data-ops-tab="pipeline">Pipeline <span id="adapter-count" class="ops-tab-badge">0</span></button>
+              <button id="ops-tab-tools" class="ops-tab" type="button" role="tab" aria-selected="false" data-ops-tab="tools">Tools</button>
+            </div>
+
+            <section class="ops-tab-pane chat-panel" role="tabpanel" aria-labelledby="ops-tab-activity" data-ops-pane="activity">
+              <div class="panel-heading">
+                <h2>Activity</h2>
+                <span id="chat-status" class="soft-label">Checking chat</span>
+              </div>
+              <div id="chat-thread" class="chat-thread" aria-live="polite"></div>
+              <form id="chat-form" class="chat-form">
+                <textarea id="chat-message" name="chatMessage" rows="3" placeholder="Change this fighter's health to 1200, list projectiles, or generate a new sprite sheet."></textarea>
+                <button id="send-chat" type="submit">Send</button>
+              </form>
+            </section>
+
+            <section class="ops-tab-pane" role="tabpanel" aria-labelledby="ops-tab-pipeline" data-ops-pane="pipeline" hidden>
+              <div class="panel-heading">
+                <h2>Pipeline</h2>
+                <span id="pipeline-summary" class="soft-label">Loading adapters</span>
+              </div>
+              <div class="ops-pane-scroll">
+                <div id="adapter-list" class="adapter-list"></div>
+                <h3>Remaining Work</h3>
+                <div id="gap-list" class="gap-list"></div>
+              </div>
+            </section>
+
+            <section class="ops-tab-pane" role="tabpanel" aria-labelledby="ops-tab-tools" data-ops-pane="tools" hidden>
+              <div class="panel-heading">
+                <h2>Dev Tools</h2>
+                <span class="soft-label">Builder &amp; asset uploader</span>
+              </div>
+              <div class="ops-pane-scroll dev-tools-body">
+              <section class="builder-panel-inner">
+                <div class="panel-heading">
+                  <h3 class="dev-tools-heading">Builder</h3>
+                  <span class="soft-label">Local tools</span>
+                </div>
+
+                <form id="draft-form" class="draft-form">
+                  <label>
+                    Character ID
+                    <input id="character-id" name="characterId" autocomplete="off" value="cms_test_fighter" />
+                  </label>
+                  <label>
+                    Character Brief
+                    <textarea id="character-brief" name="brief" rows="5">A nimble stage fighter with a readable silhouette, a signature projectile, and clear six-frame move rows.</textarea>
+                  </label>
+                  <div class="button-row">
+                    <button id="create-draft" type="submit">Create Draft</button>
+                    <button id="run-chain" type="button">Run Local E2E</button>
+                  </div>
+                </form>
+
+                <div class="tool-grid">
+                  <button id="generate-sheet" type="button">Generate Sheet</button>
+                  <button id="normalize-pack" type="button">Normalize</button>
+                  <button id="validate-pack" type="button">Validate</button>
+                  <button id="publish-character" type="button">Publish</button>
+                </div>
+              </section>
+
+              <section class="asset-uploader">
+                <div class="preview-header">
+                  <h3>Add Sprite Asset</h3>
+                  <span class="soft-label">File CMS</span>
+                </div>
+                <form id="asset-upload-form" class="asset-upload-form">
+                  <label>
+                    Asset Type
+                    <select id="asset-kind" name="assetKind">
+                      <option value="frame">Sprite frame</option>
+                      <option value="sheet">Move sheet</option>
+                      <option value="projectile">Projectile / VFX</option>
+                      <option value="source">Source image</option>
+                      <option value="custom">Custom path</option>
+                    </select>
+                  </label>
+                  <label>
+                    Move Set
+                    <select id="asset-move" name="assetMove">
+                      <option value="base">base</option>
+                      <option value="punch">punch</option>
+                      <option value="kick">kick</option>
+                      <option value="special_1">special_1</option>
+                      <option value="special_2">special_2</option>
+                    </select>
+                  </label>
+                  <label>
+                    Prefix
+                    <input id="asset-actor" name="assetActor" autocomplete="off" placeholder="blank, fighter-pack, lead" />
+                  </label>
+                  <label>
+                    Frame
+                    <input id="asset-frame" name="assetFrame" type="number" min="1" max="999" step="1" value="1" />
+                  </label>
+                  <label class="full-span">
+                    CMS Path
+                    <input id="asset-path" name="assetPath" autocomplete="off" />
+                  </label>
+                  <label class="full-span">
+                    File
+                    <input id="asset-file" name="assetFile" type="file" accept="image/png,image/svg+xml,image/webp,image/jpeg,application/json,text/plain" />
+                  </label>
+                  <button id="upload-asset" class="full-span" type="submit">Add Sprite</button>
+                </form>
+              </section>
+
+              <section class="artifact-preview">
+                <div class="preview-header">
+                  <h3>Latest Asset</h3>
+                  <span id="asset-label" class="soft-label">No generated asset</span>
+                </div>
+                <div id="asset-preview" class="asset-preview-empty"></div>
+              </section>
+              </div>
+            </section>
+          </div>
+        </aside>
+      </section>
+
+    </main>
+
+    <!-- Error detail modal — content injected by app.js -->
+    <div id="error-modal" class="error-modal" role="dialog" aria-modal="true" aria-labelledby="error-modal-title" hidden></div>
+
+    <!-- Move activity slide-over — content injected by app.js -->
+    <aside id="move-activity-panel" class="move-activity-panel" role="complementary" aria-labelledby="move-activity-title" hidden></aside>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

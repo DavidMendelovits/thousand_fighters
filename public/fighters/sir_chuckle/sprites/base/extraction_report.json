@@ -1,0 +1,257 @@
+{
+  "source": "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-extract-wewVRS/source.png",
+  "moveId": "base",
+  "sourceSize": [
+    2172,
+    724
+  ],
+  "grid": [
+    1,
+    6
+  ],
+  "frameCount": 6,
+  "segmentation": "connected-components",
+  "medianSilhouetteHeight": 475,
+  "scaleApplied": 1,
+  "warnings": [
+    "frames equalized to silhouette height 475px per frame (row median was 475px)"
+  ],
+  "frames": [
+    {
+      "file": "base_001.png",
+      "frameIndex": 1,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -157,
+        "y": -464,
+        "width": 274,
+        "height": 464
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 326,
+      "height": 485,
+      "anchor": {
+        "x": 185,
+        "y": 479
+      },
+      "reachX": 136,
+      "silhouetteHeight": 475
+    },
+    {
+      "file": "base_002.png",
+      "frameIndex": 2,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -155,
+        "y": -465,
+        "width": 275,
+        "height": 465
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 327,
+      "height": 485,
+      "anchor": {
+        "x": 182,
+        "y": 479
+      },
+      "reachX": 140,
+      "silhouetteHeight": 475
+    },
+    {
+      "file": "base_003.png",
+      "frameIndex": 3,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -165,
+        "y": -465,
+        "width": 282,
+        "height": 465
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 332,
+      "height": 485,
+      "anchor": {
+        "x": 191,
+        "y": 479
+      },
+      "reachX": 136,
+      "silhouetteHeight": 475
+    },
+    {
+      "file": "base_004.png",
+      "frameIndex": 4,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -143,
+        "y": -464,
+        "width": 265,
+        "height": 464
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 318,
+      "height": 485,
+      "anchor": {
+        "x": 171,
+        "y": 479
+      },
+      "reachX": 142,
+      "silhouetteHeight": 475
+    },
+    {
+      "file": "base_005.png",
+      "frameIndex": 5,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -155,
+        "y": -464,
+        "width": 264,
+        "height": 464
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 312,
+      "height": 485,
+      "anchor": {
+        "x": 180,
+        "y": 479
+      },
+      "reachX": 127,
+      "silhouetteHeight": 475
+    },
+    {
+      "file": "base_006.png",
+      "frameIndex": 6,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -156,
+        "y": -464,
+        "width": 270,
+        "height": 464
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 326,
+      "height": 485,
+      "anchor": {
+        "x": 185,
+        "y": 479
+      },
+      "reachX": 136,
+      "silhouetteHeight": 475
+    }
+  ],
+  "frameData": [
+    {
+      "file": "sprites/base/base_001.png",
+      "width": 326,
+      "height": 485,
+      "anchor": {
+        "x": 185,
+        "y": 479
+      },
+      "reachX": 136,
+      "silhouetteHeight": 475,
+      "hurtbox": {
+        "x": -157,
+        "y": -464,
+        "width": 274,
+        "height": 464
+      },
+      "attackBox": null
+    },
+    {
+      "file": "sprites/base/base_002.png",
+      "width": 327,
+      "height": 485,
+      "anchor": {
+        "x": 182,
+        "y": 479
+      },
+      "reachX": 140,
+      "silhouetteHeight": 475,
+      "hurtbox": {
+        "x": -155,
+        "y": -465,
+        "width": 275,
+        "height": 465
+      },
+      "attackBox": null
+    },
+    {
+      "file": "sprites/base/base_003.png",
+      "width": 332,
+      "height": 485,
+      "anchor": {
+        "x": 191,
+        "y": 479
+      },
+      "reachX": 136,
+      "silhouetteHeight": 475,
+      "hurtbox": {
+        "x": -165,
+        "y": -465,
+        "width": 282,
+        "height": 465
+      },
+      "attackBox": null
+    },
+    {
+      "file": "sprites/base/base_004.png",
+      "width": 318,
+      "height": 485,
+      "anchor": {
+        "x": 171,
+        "y": 479
+      },
+      "reachX": 142,
+      "silhouetteHeight": 475,
+      "hurtbox": {
+        "x": -143,
+        "y": -464,
+        "width": 265,
+        "height": 464
+      },
+      "attackBox": null
+    },
+    {
+      "file": "sprites/base/base_005.png",
+      "width": 312,
+      "height": 485,
+      "anchor": {
+        "x": 180,
+        "y": 479
+      },
+      "reachX": 127,
+      "silhouetteHeight": 475,
+      "hurtbox": {
+        "x": -155,
+        "y": -464,
+        "width": 264,
+        "height": 464
+      },
+      "attackBox": null
+    },
+    {
+      "file": "sprites/base/base_006.png",
+      "width": 326,
+      "height": 485,
+      "anchor": {
+        "x": 185,
+        "y": 479
+      },
+      "reachX": 136,
+      "silhouetteHeight": 475,
+      "hurtbox": {
+        "x": -156,
+        "y": -464,
+        "width": 270,
+        "height": 464
+      },
+      "attackBox": null
+    }
+  ]
+}

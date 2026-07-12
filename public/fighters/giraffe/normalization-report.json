@@ -1,0 +1,18 @@
+{
+  "workflow": "row-normalizer",
+  "moves": {
+    "base": {
+      "generatedAt": "2026-06-14T23:58:59.906Z",
+      "sourceAssetKey": "characters/giraffe/assets/source/giraffe_base_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 660,
+      "scaleApplied": 1,
+      "targetHeight": null,
+      "warnings": []
+    }
+  },
+  "warnings": []
+}

@@ -1,0 +1,323 @@
+{
+  "source": "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-extract-nI9vJq/source.png",
+  "moveId": "punch",
+  "sourceSize": [
+    2172,
+    724
+  ],
+  "grid": [
+    1,
+    6
+  ],
+  "frameCount": 6,
+  "segmentation": "connected-components",
+  "medianSilhouetteHeight": 292,
+  "scaleApplied": 1.154109589041096,
+  "warnings": [
+    "frames equalized to silhouette height 337px per frame (base median was 292px)",
+    "frame 1: 1.3% of opaque pixels remain near-magenta after despill",
+    "frame 2: 1.1% of opaque pixels remain near-magenta after despill",
+    "frame 3: 1.3% of opaque pixels remain near-magenta after despill",
+    "frame 4: 1.6% of opaque pixels remain near-magenta after despill",
+    "frame 5: 1.2% of opaque pixels remain near-magenta after despill",
+    "frame 6: 1.3% of opaque pixels remain near-magenta after despill"
+  ],
+  "frames": [
+    {
+      "file": "punch_001.png",
+      "frameIndex": 1,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -41,
+        "y": -320,
+        "width": 327,
+        "height": 320
+      },
+      "attackBox": {
+        "x": 278,
+        "y": -146,
+        "width": 35,
+        "height": 84
+      },
+      "empty": false,
+      "width": 373,
+      "height": 347,
+      "anchor": {
+        "x": 56,
+        "y": 341
+      },
+      "reachX": 312,
+      "silhouetteHeight": 337
+    },
+    {
+      "file": "punch_002.png",
+      "frameIndex": 2,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -43,
+        "y": -320,
+        "width": 342,
+        "height": 320
+      },
+      "attackBox": {
+        "x": 278,
+        "y": -163,
+        "width": 50,
+        "height": 112
+      },
+      "empty": false,
+      "width": 390,
+      "height": 347,
+      "anchor": {
+        "x": 58,
+        "y": 341
+      },
+      "reachX": 327,
+      "silhouetteHeight": 337
+    },
+    {
+      "file": "punch_003.png",
+      "frameIndex": 3,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -41,
+        "y": -320,
+        "width": 328,
+        "height": 320
+      },
+      "attackBox": {
+        "x": 278,
+        "y": -146,
+        "width": 37,
+        "height": 81
+      },
+      "empty": false,
+      "width": 375,
+      "height": 347,
+      "anchor": {
+        "x": 56,
+        "y": 341
+      },
+      "reachX": 314,
+      "silhouetteHeight": 337
+    },
+    {
+      "file": "punch_004.png",
+      "frameIndex": 4,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -38,
+        "y": -322,
+        "width": 310,
+        "height": 322
+      },
+      "attackBox": {
+        "x": 278,
+        "y": -302,
+        "width": 19,
+        "height": 218
+      },
+      "empty": false,
+      "width": 355,
+      "height": 347,
+      "anchor": {
+        "x": 54,
+        "y": 341
+      },
+      "reachX": 296,
+      "silhouetteHeight": 337
+    },
+    {
+      "file": "punch_005.png",
+      "frameIndex": 5,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -42,
+        "y": -320,
+        "width": 335,
+        "height": 320
+      },
+      "attackBox": {
+        "x": 278,
+        "y": -153,
+        "width": 44,
+        "height": 95
+      },
+      "empty": false,
+      "width": 383,
+      "height": 347,
+      "anchor": {
+        "x": 57,
+        "y": 341
+      },
+      "reachX": 321,
+      "silhouetteHeight": 337
+    },
+    {
+      "file": "punch_006.png",
+      "frameIndex": 6,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -40,
+        "y": -320,
+        "width": 313,
+        "height": 320
+      },
+      "attackBox": {
+        "x": 278,
+        "y": -138,
+        "width": 22,
+        "height": 61
+      },
+      "empty": false,
+      "width": 358,
+      "height": 347,
+      "anchor": {
+        "x": 54,
+        "y": 341
+      },
+      "reachX": 299,
+      "silhouetteHeight": 337
+    }
+  ],
+  "frameData": [
+    {
+      "file": "sprites/punch/punch_001.png",
+      "width": 373,
+      "height": 347,
+      "anchor": {
+        "x": 56,
+        "y": 341
+      },
+      "reachX": 312,
+      "silhouetteHeight": 337,
+      "hurtbox": {
+        "x": -41,
+        "y": -320,
+        "width": 327,
+        "height": 320
+      },
+      "attackBox": {
+        "x": 278,
+        "y": -146,
+        "width": 35,
+        "height": 84
+      }
+    },
+    {
+      "file": "sprites/punch/punch_002.png",
+      "width": 390,
+      "height": 347,
+      "anchor": {
+        "x": 58,
+        "y": 341
+      },
+      "reachX": 327,
+      "silhouetteHeight": 337,
+      "hurtbox": {
+        "x": -43,
+        "y": -320,
+        "width": 342,
+        "height": 320
+      },
+      "attackBox": {
+        "x": 278,
+        "y": -163,
+        "width": 50,
+        "height": 112
+      }
+    },
+    {
+      "file": "sprites/punch/punch_003.png",
+      "width": 375,
+      "height": 347,
+      "anchor": {
+        "x": 56,
+        "y": 341
+      },
+      "reachX": 314,
+      "silhouetteHeight": 337,
+      "hurtbox": {
+        "x": -41,
+        "y": -320,
+        "width": 328,
+        "height": 320
+      },
+      "attackBox": {
+        "x": 278,
+        "y": -146,
+        "width": 37,
+        "height": 81
+      }
+    },
+    {
+      "file": "sprites/punch/punch_004.png",
+      "width": 355,
+      "height": 347,
+      "anchor": {
+        "x": 54,
+        "y": 341
+      },
+      "reachX": 296,
+      "silhouetteHeight": 337,
+      "hurtbox": {
+        "x": -38,
+        "y": -322,
+        "width": 310,
+        "height": 322
+      },
+      "attackBox": {
+        "x": 278,
+        "y": -302,
+        "width": 19,
+        "height": 218
+      }
+    },
+    {
+      "file": "sprites/punch/punch_005.png",
+      "width": 383,
+      "height": 347,
+      "anchor": {
+        "x": 57,
+        "y": 341
+      },
+      "reachX": 321,
+      "silhouetteHeight": 337,
+      "hurtbox": {
+        "x": -42,
+        "y": -320,
+        "width": 335,
+        "height": 320
+      },
+      "attackBox": {
+        "x": 278,
+        "y": -153,
+        "width": 44,
+        "height": 95
+      }
+    },
+    {
+      "file": "sprites/punch/punch_006.png",
+      "width": 358,
+      "height": 347,
+      "anchor": {
+        "x": 54,
+        "y": 341
+      },
+      "reachX": 299,
+      "silhouetteHeight": 337,
+      "hurtbox": {
+        "x": -40,
+        "y": -320,
+        "width": 313,
+        "height": 320
+      },
+      "attackBox": {
+        "x": 278,
+        "y": -138,
+        "width": 22,
+        "height": 61
+      }
+    }
+  ]
+}

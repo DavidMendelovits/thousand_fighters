@@ -1,0 +1,286 @@
+{
+  "workflow": "row-normalizer",
+  "moves": {
+    "base": {
+      "generatedAt": "2026-06-17T14:30:34.967Z",
+      "sourceAssetKey": "characters/sir_chuckle/assets/source/sir_chuckle_base_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 475,
+      "scaleApplied": 1,
+      "targetHeight": null,
+      "warnings": [
+        "frames equalized to silhouette height 475px per frame (row median was 475px)"
+      ]
+    },
+    "punch": {
+      "generatedAt": "2026-06-17T14:30:35.813Z",
+      "sourceAssetKey": "characters/sir_chuckle/assets/source/sir_chuckle_punch_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 404,
+      "scaleApplied": 1.1757425742574257,
+      "targetHeight": 475,
+      "warnings": [
+        "frames equalized to silhouette height 475px per frame (base median was 404px)",
+        "frame 4: 1.2% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "kick": {
+      "generatedAt": "2026-06-17T14:30:36.671Z",
+      "sourceAssetKey": "characters/sir_chuckle/assets/source/sir_chuckle_kick_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 396,
+      "scaleApplied": 1.1994949494949494,
+      "targetHeight": 475,
+      "warnings": [
+        "frame 3: content bleeds 3% past its cell boundary — kept with this frame",
+        "frame 5: content bleeds 2% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 475px per frame (base median was 396px)"
+      ]
+    },
+    "special_1": {
+      "generatedAt": "2026-06-17T14:30:37.601Z",
+      "sourceAssetKey": "characters/sir_chuckle/assets/source/sir_chuckle_special_1_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 377,
+      "scaleApplied": 1.259946949602122,
+      "targetHeight": 475,
+      "warnings": [
+        "frames equalized to silhouette height 475px per frame (base median was 377px)",
+        "frame 4: 0.6% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "special_2": {
+      "generatedAt": "2026-06-17T14:30:38.561Z",
+      "sourceAssetKey": "characters/sir_chuckle/assets/source/sir_chuckle_special_2_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 384,
+      "scaleApplied": 1.2369791666666667,
+      "targetHeight": 475,
+      "warnings": [
+        "frame 3: content bleeds 11% past its cell boundary — kept with this frame",
+        "frame 6: content bleeds 24% past its cell boundary — kept with this frame",
+        "frames 4 and 3: silhouettes appear fused across the cell boundary — split at the grid line; regenerate this sheet with clearer gutters for a clean result",
+        "frame 4: content bleeds 20% past its cell boundary — kept with this frame",
+        "frame 6: content bleeds 24% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 475px per frame (base median was 384px)",
+        "frame 1: 1.1% of opaque pixels remain near-magenta after despill",
+        "frame 2: 1.1% of opaque pixels remain near-magenta after despill",
+        "frame 3: 0.9% of opaque pixels remain near-magenta after despill",
+        "frame 4: 4.3% of opaque pixels remain near-magenta after despill",
+        "frame 5: 0.7% of opaque pixels remain near-magenta after despill",
+        "frame 6: 0.9% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "jump": {
+      "generatedAt": "2026-06-17T14:30:39.357Z",
+      "sourceAssetKey": "characters/sir_chuckle/assets/source/sir_chuckle_jump_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 370,
+      "scaleApplied": 1.2837837837837838,
+      "targetHeight": 475,
+      "warnings": [
+        "row rescaled by 1.284 to match target silhouette height 475px (was 370px)"
+      ]
+    },
+    "crouch": {
+      "generatedAt": "2026-06-17T14:30:40.269Z",
+      "sourceAssetKey": "characters/sir_chuckle/assets/source/sir_chuckle_crouch_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 359,
+      "scaleApplied": 1.3231197771587744,
+      "targetHeight": 475,
+      "warnings": [
+        "row rescaled by 1.323 to match target silhouette height 475px (was 359px)"
+      ]
+    },
+    "dash_forward": {
+      "generatedAt": "2026-06-17T14:30:41.143Z",
+      "sourceAssetKey": "characters/sir_chuckle/assets/source/sir_chuckle_dash_forward_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 315,
+      "scaleApplied": 1.507936507936508,
+      "targetHeight": 475,
+      "warnings": [
+        "frame 4: content bleeds 9% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 475px per frame (base median was 315px)"
+      ]
+    },
+    "dash_back": {
+      "generatedAt": "2026-06-17T14:30:42.023Z",
+      "sourceAssetKey": "characters/sir_chuckle/assets/source/sir_chuckle_dash_back_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 383,
+      "scaleApplied": 1.2402088772845954,
+      "targetHeight": 475,
+      "warnings": [
+        "frame 4: content bleeds 4% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 475px per frame (base median was 383px)"
+      ]
+    },
+    "block": {
+      "generatedAt": "2026-06-17T14:30:42.865Z",
+      "sourceAssetKey": "characters/sir_chuckle/assets/source/sir_chuckle_block_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 468,
+      "scaleApplied": 1.014957264957265,
+      "targetHeight": 475,
+      "warnings": [
+        "frames equalized to silhouette height 475px per frame (base median was 468px)"
+      ]
+    },
+    "grab": {
+      "generatedAt": "2026-06-17T14:33:05.084Z",
+      "sourceAssetKey": "characters/sir_chuckle/assets/source/sir_chuckle_grab_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 380,
+      "scaleApplied": 1.25,
+      "targetHeight": 475,
+      "warnings": [
+        "frame 3: content bleeds 4% past its cell boundary — kept with this frame",
+        "frame 4: content bleeds 3% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 475px per frame (base median was 380px)"
+      ]
+    },
+    "throw": {
+      "generatedAt": "2026-06-17T14:33:05.946Z",
+      "sourceAssetKey": "characters/sir_chuckle/assets/source/sir_chuckle_throw_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 395,
+      "scaleApplied": 1.2025316455696202,
+      "targetHeight": 475,
+      "warnings": [
+        "frame 4: content bleeds 8% past its cell boundary — kept with this frame",
+        "frames equalized to silhouette height 475px per frame (base median was 395px)",
+        "frame 3: 0.5% of opaque pixels remain near-magenta after despill",
+        "frame 4: 1.0% of opaque pixels remain near-magenta after despill",
+        "frame 5: 1.1% of opaque pixels remain near-magenta after despill",
+        "frame 6: 0.5% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "walk_forward": {
+      "generatedAt": "2026-06-17T14:33:06.854Z",
+      "sourceAssetKey": "characters/sir_chuckle/assets/source/sir_chuckle_walk_forward_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 475,
+      "scaleApplied": 1,
+      "targetHeight": 475,
+      "warnings": [
+        "frames equalized to silhouette height 475px per frame (row median was 475px)"
+      ]
+    },
+    "walk_back": {
+      "generatedAt": "2026-06-17T14:33:07.742Z",
+      "sourceAssetKey": "characters/sir_chuckle/assets/source/sir_chuckle_walk_back_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 449,
+      "scaleApplied": 1.0579064587973275,
+      "targetHeight": 475,
+      "warnings": [
+        "frames equalized to silhouette height 475px per frame (base median was 449px)"
+      ]
+    }
+  },
+  "warnings": [
+    "base: frames equalized to silhouette height 475px per frame (row median was 475px)",
+    "punch: frames equalized to silhouette height 475px per frame (base median was 404px)",
+    "punch: frame 4: 1.2% of opaque pixels remain near-magenta after despill",
+    "kick: frame 3: content bleeds 3% past its cell boundary — kept with this frame",
+    "kick: frame 5: content bleeds 2% past its cell boundary — kept with this frame",
+    "kick: frames equalized to silhouette height 475px per frame (base median was 396px)",
+    "special_1: frames equalized to silhouette height 475px per frame (base median was 377px)",
+    "special_1: frame 4: 0.6% of opaque pixels remain near-magenta after despill",
+    "special_2: frame 3: content bleeds 11% past its cell boundary — kept with this frame",
+    "special_2: frame 6: content bleeds 24% past its cell boundary — kept with this frame",
+    "special_2: frames 4 and 3: silhouettes appear fused across the cell boundary — split at the grid line; regenerate this sheet with clearer gutters for a clean result",
+    "special_2: frame 4: content bleeds 20% past its cell boundary — kept with this frame",
+    "special_2: frame 6: content bleeds 24% past its cell boundary — kept with this frame",
+    "special_2: frames equalized to silhouette height 475px per frame (base median was 384px)",
+    "special_2: frame 1: 1.1% of opaque pixels remain near-magenta after despill",
+    "special_2: frame 2: 1.1% of opaque pixels remain near-magenta after despill",
+    "special_2: frame 3: 0.9% of opaque pixels remain near-magenta after despill",
+    "special_2: frame 4: 4.3% of opaque pixels remain near-magenta after despill",
+    "special_2: frame 5: 0.7% of opaque pixels remain near-magenta after despill",
+    "special_2: frame 6: 0.9% of opaque pixels remain near-magenta after despill",
+    "jump: row rescaled by 1.284 to match target silhouette height 475px (was 370px)",
+    "crouch: row rescaled by 1.323 to match target silhouette height 475px (was 359px)",
+    "dash_forward: frame 4: content bleeds 9% past its cell boundary — kept with this frame",
+    "dash_forward: frames equalized to silhouette height 475px per frame (base median was 315px)",
+    "dash_back: frame 4: content bleeds 4% past its cell boundary — kept with this frame",
+    "dash_back: frames equalized to silhouette height 475px per frame (base median was 383px)",
+    "block: frames equalized to silhouette height 475px per frame (base median was 468px)",
+    "grab: frame 3: content bleeds 4% past its cell boundary — kept with this frame",
+    "grab: frame 4: content bleeds 3% past its cell boundary — kept with this frame",
+    "grab: frames equalized to silhouette height 475px per frame (base median was 380px)",
+    "throw: frame 4: content bleeds 8% past its cell boundary — kept with this frame",
+    "throw: frames equalized to silhouette height 475px per frame (base median was 395px)",
+    "throw: frame 3: 0.5% of opaque pixels remain near-magenta after despill",
+    "throw: frame 4: 1.0% of opaque pixels remain near-magenta after despill",
+    "throw: frame 5: 1.1% of opaque pixels remain near-magenta after despill",
+    "throw: frame 6: 0.5% of opaque pixels remain near-magenta after despill",
+    "walk_forward: frames equalized to silhouette height 475px per frame (row median was 475px)",
+    "walk_back: frames equalized to silhouette height 475px per frame (base median was 449px)"
+  ],
+  "fixtureFill": {
+    "fixtureFighterId": "janitor",
+    "generatedAt": "2026-06-17T14:33:07.749Z",
+    "filledSheets": [],
+    "preservedSheets": [
+      "base",
+      "punch",
+      "kick",
+      "special_1",
+      "special_2",
+      "jump",
+      "crouch",
+      "dash_forward",
+      "dash_back",
+      "block",
+      "grab",
+      "throw",
+      "walk_forward",
+      "walk_back"
+    ]
+  }
+}

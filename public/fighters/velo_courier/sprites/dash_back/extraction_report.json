@@ -1,0 +1,284 @@
+{
+  "source": "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-extract-uSXt9V/source.png",
+  "moveId": "dash_back",
+  "sourceSize": [
+    2172,
+    724
+  ],
+  "grid": [
+    1,
+    6
+  ],
+  "frameCount": 6,
+  "segmentation": "connected-components",
+  "medianSilhouetteHeight": 241,
+  "scaleApplied": 1.3983402489626555,
+  "warnings": [
+    "frame 3: content bleeds 3% past its cell boundary — kept with this frame",
+    "frames equalized to silhouette height 337px per frame (base median was 241px)",
+    "frame 1: 1.5% of opaque pixels remain near-magenta after despill",
+    "frame 2: 1.4% of opaque pixels remain near-magenta after despill",
+    "frame 3: 2.3% of opaque pixels remain near-magenta after despill",
+    "frame 4: 2.3% of opaque pixels remain near-magenta after despill",
+    "frame 5: 1.9% of opaque pixels remain near-magenta after despill",
+    "frame 6: 1.5% of opaque pixels remain near-magenta after despill"
+  ],
+  "frames": [
+    {
+      "file": "dash_back_001.png",
+      "frameIndex": 1,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -216,
+        "y": -322,
+        "width": 307,
+        "height": 322
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 357,
+      "height": 347,
+      "anchor": {
+        "x": 231,
+        "y": 341
+      },
+      "reachX": 121,
+      "silhouetteHeight": 337
+    },
+    {
+      "file": "dash_back_002.png",
+      "frameIndex": 2,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -274,
+        "y": -322,
+        "width": 340,
+        "height": 322
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 398,
+      "height": 347,
+      "anchor": {
+        "x": 290,
+        "y": 341
+      },
+      "reachX": 103,
+      "silhouetteHeight": 337
+    },
+    {
+      "file": "dash_back_003.png",
+      "frameIndex": 3,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -265,
+        "y": -321,
+        "width": 374,
+        "height": 321
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 452,
+      "height": 347,
+      "anchor": {
+        "x": 281,
+        "y": 341
+      },
+      "reachX": 166,
+      "silhouetteHeight": 337
+    },
+    {
+      "file": "dash_back_004.png",
+      "frameIndex": 4,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -190,
+        "y": -317,
+        "width": 559,
+        "height": 317
+      },
+      "attackBox": {
+        "x": 278,
+        "y": -185,
+        "width": 157,
+        "height": 163
+      },
+      "empty": false,
+      "width": 649,
+      "height": 347,
+      "anchor": {
+        "x": 210,
+        "y": 341
+      },
+      "reachX": 434,
+      "silhouetteHeight": 337
+    },
+    {
+      "file": "dash_back_005.png",
+      "frameIndex": 5,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -72,
+        "y": -320,
+        "width": 376,
+        "height": 320
+      },
+      "attackBox": {
+        "x": 278,
+        "y": -153,
+        "width": 71,
+        "height": 100
+      },
+      "empty": false,
+      "width": 441,
+      "height": 347,
+      "anchor": {
+        "x": 88,
+        "y": 341
+      },
+      "reachX": 348,
+      "silhouetteHeight": 337
+    },
+    {
+      "file": "dash_back_006.png",
+      "frameIndex": 6,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -62,
+        "y": -321,
+        "width": 305,
+        "height": 321
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 348,
+      "height": 347,
+      "anchor": {
+        "x": 77,
+        "y": 341
+      },
+      "reachX": 266,
+      "silhouetteHeight": 337
+    }
+  ],
+  "frameData": [
+    {
+      "file": "sprites/dash_back/dash_back_001.png",
+      "width": 357,
+      "height": 347,
+      "anchor": {
+        "x": 231,
+        "y": 341
+      },
+      "reachX": 121,
+      "silhouetteHeight": 337,
+      "hurtbox": {
+        "x": -216,
+        "y": -322,
+        "width": 307,
+        "height": 322
+      },
+      "attackBox": null
+    },
+    {
+      "file": "sprites/dash_back/dash_back_002.png",
+      "width": 398,
+      "height": 347,
+      "anchor": {
+        "x": 290,
+        "y": 341
+      },
+      "reachX": 103,
+      "silhouetteHeight": 337,
+      "hurtbox": {
+        "x": -274,
+        "y": -322,
+        "width": 340,
+        "height": 322
+      },
+      "attackBox": null
+    },
+    {
+      "file": "sprites/dash_back/dash_back_003.png",
+      "width": 452,
+      "height": 347,
+      "anchor": {
+        "x": 281,
+        "y": 341
+      },
+      "reachX": 166,
+      "silhouetteHeight": 337,
+      "hurtbox": {
+        "x": -265,
+        "y": -321,
+        "width": 374,
+        "height": 321
+      },
+      "attackBox": null
+    },
+    {
+      "file": "sprites/dash_back/dash_back_004.png",
+      "width": 649,
+      "height": 347,
+      "anchor": {
+        "x": 210,
+        "y": 341
+      },
+      "reachX": 434,
+      "silhouetteHeight": 337,
+      "hurtbox": {
+        "x": -190,
+        "y": -317,
+        "width": 559,
+        "height": 317
+      },
+      "attackBox": {
+        "x": 278,
+        "y": -185,
+        "width": 157,
+        "height": 163
+      }
+    },
+    {
+      "file": "sprites/dash_back/dash_back_005.png",
+      "width": 441,
+      "height": 347,
+      "anchor": {
+        "x": 88,
+        "y": 341
+      },
+      "reachX": 348,
+      "silhouetteHeight": 337,
+      "hurtbox": {
+        "x": -72,
+        "y": -320,
+        "width": 376,
+        "height": 320
+      },
+      "attackBox": {
+        "x": 278,
+        "y": -153,
+        "width": 71,
+        "height": 100
+      }
+    },
+    {
+      "file": "sprites/dash_back/dash_back_006.png",
+      "width": 348,
+      "height": 347,
+      "anchor": {
+        "x": 77,
+        "y": 341
+      },
+      "reachX": 266,
+      "silhouetteHeight": 337,
+      "hurtbox": {
+        "x": -62,
+        "y": -321,
+        "width": 305,
+        "height": 321
+      },
+      "attackBox": null
+    }
+  ]
+}

@@ -1,0 +1,322 @@
+{
+  "source": "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-extract-Sj9FF6/source.png",
+  "moveId": "throw",
+  "sourceSize": [
+    2172,
+    724
+  ],
+  "grid": [
+    1,
+    6
+  ],
+  "frameCount": 6,
+  "segmentation": "connected-components",
+  "medianSilhouetteHeight": 395,
+  "scaleApplied": 1.2025316455696202,
+  "warnings": [
+    "frame 4: content bleeds 8% past its cell boundary — kept with this frame",
+    "frames equalized to silhouette height 475px per frame (base median was 395px)",
+    "frame 3: 0.5% of opaque pixels remain near-magenta after despill",
+    "frame 4: 1.0% of opaque pixels remain near-magenta after despill",
+    "frame 5: 1.1% of opaque pixels remain near-magenta after despill",
+    "frame 6: 0.5% of opaque pixels remain near-magenta after despill"
+  ],
+  "frames": [
+    {
+      "file": "throw_001.png",
+      "frameIndex": 1,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -151,
+        "y": -461,
+        "width": 276,
+        "height": 461
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -286,
+        "width": 8,
+        "height": 51
+      },
+      "empty": false,
+      "width": 326,
+      "height": 485,
+      "anchor": {
+        "x": 177,
+        "y": 479
+      },
+      "reachX": 144,
+      "silhouetteHeight": 475
+    },
+    {
+      "file": "throw_002.png",
+      "frameIndex": 2,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -140,
+        "y": -455,
+        "width": 315,
+        "height": 455
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -425,
+        "width": 60,
+        "height": 423
+      },
+      "empty": false,
+      "width": 361,
+      "height": 485,
+      "anchor": {
+        "x": 160,
+        "y": 479
+      },
+      "reachX": 196,
+      "silhouetteHeight": 475
+    },
+    {
+      "file": "throw_003.png",
+      "frameIndex": 3,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -153,
+        "y": -458,
+        "width": 423,
+        "height": 458
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -448,
+        "width": 178,
+        "height": 447
+      },
+      "empty": false,
+      "width": 493,
+      "height": 485,
+      "anchor": {
+        "x": 174,
+        "y": 479
+      },
+      "reachX": 314,
+      "silhouetteHeight": 475
+    },
+    {
+      "file": "throw_004.png",
+      "frameIndex": 4,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -237,
+        "y": -460,
+        "width": 430,
+        "height": 460
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -331,
+        "width": 79,
+        "height": 331
+      },
+      "empty": false,
+      "width": 489,
+      "height": 485,
+      "anchor": {
+        "x": 269,
+        "y": 479
+      },
+      "reachX": 215,
+      "silhouetteHeight": 475
+    },
+    {
+      "file": "throw_005.png",
+      "frameIndex": 5,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -128,
+        "y": -460,
+        "width": 283,
+        "height": 460
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -407,
+        "width": 33,
+        "height": 204
+      },
+      "empty": false,
+      "width": 317,
+      "height": 485,
+      "anchor": {
+        "x": 143,
+        "y": 479
+      },
+      "reachX": 169,
+      "silhouetteHeight": 475
+    },
+    {
+      "file": "throw_006.png",
+      "frameIndex": 6,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -151,
+        "y": -462,
+        "width": 269,
+        "height": 462
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -240,
+        "width": 1,
+        "height": 10
+      },
+      "empty": false,
+      "width": 320,
+      "height": 485,
+      "anchor": {
+        "x": 178,
+        "y": 479
+      },
+      "reachX": 137,
+      "silhouetteHeight": 475
+    }
+  ],
+  "frameData": [
+    {
+      "file": "sprites/throw/throw_001.png",
+      "width": 326,
+      "height": 485,
+      "anchor": {
+        "x": 177,
+        "y": 479
+      },
+      "reachX": 144,
+      "silhouetteHeight": 475,
+      "hurtbox": {
+        "x": -151,
+        "y": -461,
+        "width": 276,
+        "height": 461
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -286,
+        "width": 8,
+        "height": 51
+      }
+    },
+    {
+      "file": "sprites/throw/throw_002.png",
+      "width": 361,
+      "height": 485,
+      "anchor": {
+        "x": 160,
+        "y": 479
+      },
+      "reachX": 196,
+      "silhouetteHeight": 475,
+      "hurtbox": {
+        "x": -140,
+        "y": -455,
+        "width": 315,
+        "height": 455
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -425,
+        "width": 60,
+        "height": 423
+      }
+    },
+    {
+      "file": "sprites/throw/throw_003.png",
+      "width": 493,
+      "height": 485,
+      "anchor": {
+        "x": 174,
+        "y": 479
+      },
+      "reachX": 314,
+      "silhouetteHeight": 475,
+      "hurtbox": {
+        "x": -153,
+        "y": -458,
+        "width": 423,
+        "height": 458
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -448,
+        "width": 178,
+        "height": 447
+      }
+    },
+    {
+      "file": "sprites/throw/throw_004.png",
+      "width": 489,
+      "height": 485,
+      "anchor": {
+        "x": 269,
+        "y": 479
+      },
+      "reachX": 215,
+      "silhouetteHeight": 475,
+      "hurtbox": {
+        "x": -237,
+        "y": -460,
+        "width": 430,
+        "height": 460
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -331,
+        "width": 79,
+        "height": 331
+      }
+    },
+    {
+      "file": "sprites/throw/throw_005.png",
+      "width": 317,
+      "height": 485,
+      "anchor": {
+        "x": 143,
+        "y": 479
+      },
+      "reachX": 169,
+      "silhouetteHeight": 475,
+      "hurtbox": {
+        "x": -128,
+        "y": -460,
+        "width": 283,
+        "height": 460
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -407,
+        "width": 33,
+        "height": 204
+      }
+    },
+    {
+      "file": "sprites/throw/throw_006.png",
+      "width": 320,
+      "height": 485,
+      "anchor": {
+        "x": 178,
+        "y": 479
+      },
+      "reachX": 137,
+      "silhouetteHeight": 475,
+      "hurtbox": {
+        "x": -151,
+        "y": -462,
+        "width": 269,
+        "height": 462
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -240,
+        "width": 1,
+        "height": 10
+      }
+    }
+  ]
+}

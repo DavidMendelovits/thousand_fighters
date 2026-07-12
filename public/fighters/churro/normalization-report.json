@@ -1,0 +1,128 @@
+{
+  "workflow": "row-normalizer",
+  "moves": {
+    "base": {
+      "generatedAt": "2026-06-14T02:49:20.763Z",
+      "sourceAssetKey": "characters/churro/assets/source/churro_base_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 529,
+      "scaleApplied": 1,
+      "targetHeight": null,
+      "warnings": [
+        "frame 3: content bleeds 2% past its cell boundary — kept with this frame",
+        "frame 4: content bleeds 3% past its cell boundary — kept with this frame",
+        "frame 6: silhouette touches the sheet border — content may be truncated"
+      ]
+    },
+    "punch": {
+      "generatedAt": "2026-06-14T02:58:06.899Z",
+      "sourceAssetKey": "characters/churro/assets/source/churro_punch_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 378,
+      "scaleApplied": 1.3994708994708995,
+      "targetHeight": 529,
+      "warnings": [
+        "frame 5: content bleeds 4% past its cell boundary — kept with this frame",
+        "frame 4: content bleeds 4% past its cell boundary — kept with this frame",
+        "frame 3: content bleeds 7% past its cell boundary — kept with this frame",
+        "frame 4: content bleeds 16% past its cell boundary — kept with this frame",
+        "row rescaled by 1.399 to match target silhouette height 529px (was 378px)",
+        "frame 4: 0.6% of opaque pixels remain near-magenta after despill",
+        "frame 5: 0.6% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "kick": {
+      "generatedAt": "2026-06-14T04:09:31.522Z",
+      "sourceAssetKey": "characters/churro/assets/source/churro_kick_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 434,
+      "scaleApplied": 1.2188940092165899,
+      "targetHeight": 529,
+      "warnings": [
+        "frame 4: content bleeds 30% past its cell boundary — kept with this frame",
+        "frame 5: content bleeds 9% past its cell boundary — kept with this frame",
+        "row rescaled by 1.219 to match target silhouette height 529px (was 434px)",
+        "frame 4: 0.7% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "special_1": {
+      "generatedAt": "2026-06-14T04:12:17.104Z",
+      "sourceAssetKey": "characters/churro/assets/source/churro_special_1_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 366,
+      "scaleApplied": 1.4453551912568305,
+      "targetHeight": 529,
+      "warnings": [
+        "frame 5: content bleeds 8% past its cell boundary — kept with this frame",
+        "frame 3: content bleeds 7% past its cell boundary — kept with this frame",
+        "frame 4: content bleeds 15% past its cell boundary — kept with this frame",
+        "frame 5: content bleeds 27% past its cell boundary — kept with this frame",
+        "row rescaled by 1.445 to match target silhouette height 529px (was 366px)",
+        "frame 4: 1.0% of opaque pixels remain near-magenta after despill",
+        "frame 5: 1.2% of opaque pixels remain near-magenta after despill"
+      ]
+    },
+    "special_2": {
+      "generatedAt": "2026-06-14T04:12:18.681Z",
+      "sourceAssetKey": "characters/churro/assets/source/churro_special_2_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 366,
+      "scaleApplied": 1.4453551912568305,
+      "targetHeight": 529,
+      "warnings": [
+        "frame 5: content bleeds 8% past its cell boundary — kept with this frame",
+        "frame 3: content bleeds 7% past its cell boundary — kept with this frame",
+        "frame 4: content bleeds 15% past its cell boundary — kept with this frame",
+        "frame 5: content bleeds 27% past its cell boundary — kept with this frame",
+        "row rescaled by 1.445 to match target silhouette height 529px (was 366px)",
+        "frame 4: 1.0% of opaque pixels remain near-magenta after despill",
+        "frame 5: 1.2% of opaque pixels remain near-magenta after despill"
+      ]
+    }
+  },
+  "warnings": [
+    "base: frame 3: content bleeds 2% past its cell boundary — kept with this frame",
+    "base: frame 4: content bleeds 3% past its cell boundary — kept with this frame",
+    "base: frame 6: silhouette touches the sheet border — content may be truncated",
+    "punch: frame 5: content bleeds 4% past its cell boundary — kept with this frame",
+    "punch: frame 4: content bleeds 4% past its cell boundary — kept with this frame",
+    "punch: frame 3: content bleeds 7% past its cell boundary — kept with this frame",
+    "punch: frame 4: content bleeds 16% past its cell boundary — kept with this frame",
+    "punch: row rescaled by 1.399 to match target silhouette height 529px (was 378px)",
+    "punch: frame 4: 0.6% of opaque pixels remain near-magenta after despill",
+    "punch: frame 5: 0.6% of opaque pixels remain near-magenta after despill",
+    "kick: frame 4: content bleeds 30% past its cell boundary — kept with this frame",
+    "kick: frame 5: content bleeds 9% past its cell boundary — kept with this frame",
+    "kick: row rescaled by 1.219 to match target silhouette height 529px (was 434px)",
+    "kick: frame 4: 0.7% of opaque pixels remain near-magenta after despill",
+    "special_1: frame 5: content bleeds 8% past its cell boundary — kept with this frame",
+    "special_1: frame 3: content bleeds 7% past its cell boundary — kept with this frame",
+    "special_1: frame 4: content bleeds 15% past its cell boundary — kept with this frame",
+    "special_1: frame 5: content bleeds 27% past its cell boundary — kept with this frame",
+    "special_1: row rescaled by 1.445 to match target silhouette height 529px (was 366px)",
+    "special_1: frame 4: 1.0% of opaque pixels remain near-magenta after despill",
+    "special_1: frame 5: 1.2% of opaque pixels remain near-magenta after despill",
+    "special_2: frame 5: content bleeds 8% past its cell boundary — kept with this frame",
+    "special_2: frame 3: content bleeds 7% past its cell boundary — kept with this frame",
+    "special_2: frame 4: content bleeds 15% past its cell boundary — kept with this frame",
+    "special_2: frame 5: content bleeds 27% past its cell boundary — kept with this frame",
+    "special_2: row rescaled by 1.445 to match target silhouette height 529px (was 366px)",
+    "special_2: frame 4: 1.0% of opaque pixels remain near-magenta after despill",
+    "special_2: frame 5: 1.2% of opaque pixels remain near-magenta after despill"
+  ]
+}
