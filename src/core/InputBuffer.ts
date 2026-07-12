@@ -59,6 +59,13 @@ export class InputBuffer {
     if (this.history.length > this.maxHistory) this.history.shift();
   }
 
+  injectSequence(tokens: InputToken[]): void {
+    if (tokens.length === 0) return;
+    this.history.push({ tokens: [...tokens], frame: this.currentFrame, raw: { ...emptyInput } });
+    this.currentFrame += 1;
+    if (this.history.length > this.maxHistory) this.history.shift();
+  }
+
   matchSequence(sequence: InputToken[], windowFrames = 15): boolean {
     if (sequence.length === 0) return false;
 

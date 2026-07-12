@@ -4,6 +4,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "build": "tsc && vite build",
+    "cms:vercel:build": "npm run build",
+    "preview": "vite preview"
     "cms:admin": "doppler run -- node scripts/cms_admin_server.mjs",
     "cms:import-fighters": "node scripts/import_existing_fighters_to_cms.mjs",
     "cms:smoke": "node scripts/smoke_cms_storage.mjs",
