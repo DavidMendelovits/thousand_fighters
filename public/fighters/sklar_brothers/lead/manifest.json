@@ -1,60 +1,66 @@
 {
-  "character_description": "The red-shirt Sklar actor is one half of a synchronized comedy duo: short dark spiky hair, trimmed beard, red-and-blue plaid shirt, dark tie, dark pants, brown shoes, confident setup-man posture.\nSilhouette: average-height comedian fighter with squared shoulders and quick jab poses.\nClothing: red-and-blue plaid shirt, dark tie, dark pants, brown shoes.\nAttitude: confident deadpan setup energy.",
-  "moveset": {},
-  "sheet_paths": {
-    "base": "/fighters/sklar_lead/sheets/base.png",
-    "punch": "/fighters/sklar_lead/sheets/punch.png",
-    "kick": "/fighters/sklar_lead/sheets/kick.png",
-    "special_1": "/fighters/sklar_lead/sheets/special_1.png",
-    "special_2": "/fighters/sklar_lead/sheets/special_2.png"
+  "id": "sklar_brothers/lead",
+  "artSource": "image-gen",
+  "description": "description.txt",
+  "moveset": "moveset.txt",
+  "frameData": "frameData.json",
+  "sheets": {
+    "base": "sheets/base.png",
+    "punch": "sheets/punch.png",
+    "kick": "sheets/kick.png",
+    "special_1": "sheets/special_1.png",
+    "special_2": "sheets/special_2.png"
   },
-  "sprite_paths": {
+  "sprites": {
     "base": [
-      "/fighters/sklar_lead/sprites/base/base_001.png",
-      "/fighters/sklar_lead/sprites/base/base_002.png",
-      "/fighters/sklar_lead/sprites/base/base_003.png",
-      "/fighters/sklar_lead/sprites/base/base_004.png",
-      "/fighters/sklar_lead/sprites/base/base_005.png",
-      "/fighters/sklar_lead/sprites/base/base_006.png"
+      "sprites/base/base_001.png",
+      "sprites/base/base_002.png",
+      "sprites/base/base_003.png",
+      "sprites/base/base_004.png",
+      "sprites/base/base_005.png",
+      "sprites/base/base_006.png"
     ],
     "punch": [
-      "/fighters/sklar_lead/sprites/punch/punch_001.png",
-      "/fighters/sklar_lead/sprites/punch/punch_002.png",
-      "/fighters/sklar_lead/sprites/punch/punch_003.png",
-      "/fighters/sklar_lead/sprites/punch/punch_004.png",
-      "/fighters/sklar_lead/sprites/punch/punch_005.png",
-      "/fighters/sklar_lead/sprites/punch/punch_006.png"
+      "sprites/punch/punch_001.png",
+      "sprites/punch/punch_002.png",
+      "sprites/punch/punch_003.png",
+      "sprites/punch/punch_004.png",
+      "sprites/punch/punch_005.png",
+      "sprites/punch/punch_006.png"
     ],
     "kick": [
-      "/fighters/sklar_lead/sprites/kick/kick_001.png",
-      "/fighters/sklar_lead/sprites/kick/kick_002.png",
-      "/fighters/sklar_lead/sprites/kick/kick_003.png",
-      "/fighters/sklar_lead/sprites/kick/kick_004.png",
-      "/fighters/sklar_lead/sprites/kick/kick_005.png",
-      "/fighters/sklar_lead/sprites/kick/kick_006.png"
+      "sprites/kick/kick_001.png",
+      "sprites/kick/kick_002.png",
+      "sprites/kick/kick_003.png",
+      "sprites/kick/kick_004.png",
+      "sprites/kick/kick_005.png",
+      "sprites/kick/kick_006.png"
     ],
     "special_1": [
-      "/fighters/sklar_lead/sprites/special_1/special_1_001.png",
-      "/fighters/sklar_lead/sprites/special_1/special_1_002.png",
-      "/fighters/sklar_lead/sprites/special_1/special_1_003.png",
-      "/fighters/sklar_lead/sprites/special_1/special_1_004.png",
-      "/fighters/sklar_lead/sprites/special_1/special_1_005.png",
-      "/fighters/sklar_lead/sprites/special_1/special_1_006.png"
+      "sprites/special_1/special_1_001.png",
+      "sprites/special_1/special_1_002.png",
+      "sprites/special_1/special_1_003.png",
+      "sprites/special_1/special_1_004.png",
+      "sprites/special_1/special_1_005.png",
+      "sprites/special_1/special_1_006.png"
     ],
     "special_2": [
-      "/fighters/sklar_lead/sprites/special_2/special_2_001.png",
-      "/fighters/sklar_lead/sprites/special_2/special_2_002.png",
-      "/fighters/sklar_lead/sprites/special_2/special_2_003.png",
-      "/fighters/sklar_lead/sprites/special_2/special_2_004.png",
-      "/fighters/sklar_lead/sprites/special_2/special_2_005.png",
-      "/fighters/sklar_lead/sprites/special_2/special_2_006.png"
+      "sprites/special_2/special_2_001.png",
+      "sprites/special_2/special_2_002.png",
+      "sprites/special_2/special_2_003.png",
+      "sprites/special_2/special_2_004.png",
+      "sprites/special_2/special_2_005.png",
+      "sprites/special_2/special_2_006.png"
     ]
   },
-  "frame_counts": {
+  "frameCounts": {
     "base": 6,
     "punch": 6,
     "kick": 6,
     "special_1": 6,
     "special_2": 6
+  },
+  "projectiles": {
+    "unused_lead": "projectiles/unused_lead.png"
   }
 }

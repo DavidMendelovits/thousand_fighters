@@ -556,6 +556,49 @@ const mrSpookyFrames = makeFrameMeta({
   ],
 });
 
+const redMicFrames = makeFrameMeta({
+  base: [
+    [222, 286, 111, 248],
+    [246, 286, 123, 248],
+    [263, 286, 131, 248],
+    [270, 286, 135, 248],
+    [325, 286, 162, 248],
+    [235, 286, 117, 248],
+  ],
+  punch: [
+    [244, 286, 122, 248],
+    [258, 286, 129, 248],
+    [412, 286, 206, 248],
+    [340, 286, 170, 248],
+    [300, 286, 150, 248],
+    [232, 286, 116, 248],
+  ],
+  kick: [
+    [240, 286, 120, 248],
+    [220, 286, 110, 248],
+    [357, 286, 178, 248],
+    [305, 286, 152, 248],
+    [290, 286, 145, 248],
+    [241, 286, 120, 248],
+  ],
+  special_1: [
+    [234, 286, 117, 248],
+    [253, 286, 126, 248],
+    [391, 286, 195, 248],
+    [288, 286, 144, 248],
+    [267, 286, 133, 248],
+    [236, 286, 118, 248],
+  ],
+  special_2: [
+    [230, 286, 115, 248],
+    [263, 286, 131, 248],
+    [328, 286, 164, 248],
+    [334, 286, 167, 248],
+    [263, 286, 131, 248],
+    [241, 286, 120, 248],
+  ],
+});
+
 const sklarLeadFrames = makeFrameMeta({
   base: [
     [220, 301, 110, 263],
@@ -3378,6 +3421,226 @@ function makeMrSpookyMoves(): Move[] {
   ]);
 }
 
+function makeRedMicMoves(): Move[] {
+  const redNoteWave: ProjectileConfig = {
+    id: 'red_note_wave_projectile',
+    animation: 'red_note_wave',
+    width: 112,
+    height: 52,
+    speed: 5.8,
+    lifetime: 82,
+    pierces: 1,
+    clashesWithProjectiles: true,
+    spawnPolicy: { maxActivePerOwner: 2, ifAlreadyActive: 'block_spawn' },
+    hitbox: {
+      x: -56,
+      y: -26,
+      width: 112,
+      height: 52,
+      damage: 58,
+      hitstun: 22,
+      blockstun: 13,
+      chipDamage: 9,
+      knockback: { x: 5.6, y: -1 },
+      level: 'mid',
+    },
+  };
+
+  return addSixFrameVisualTimelines([
+    {
+      id: 'uppercut',
+      displayName: 'Stand-Up Sweep',
+      animation: 'special_1',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['forward', 'down', 'down-forward', 'hp'],
+        window: 18,
+      },
+      phases: [
+        { name: 'startup', frames: 7, events: [] },
+        {
+          name: 'active',
+          frames: 7,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'stand_sweep',
+                hitbox: {
+                  x: 14,
+                  y: -58,
+                  width: 146,
+                  height: 42,
+                  damage: 88,
+                  hitstun: 30,
+                  blockstun: 15,
+                  chipDamage: 6,
+                  knockback: { x: 4.6, y: -6 },
+                  level: 'mid',
+                  launches: true,
+                },
+              },
+            },
+          ],
+        },
+        { name: 'recovery', frames: 21, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'stand_sweep' } }] },
+      ],
+    },
+    {
+      id: 'fireball',
+      displayName: 'Top Hat Feedback',
+      animation: 'special_2',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['down', 'down-forward', 'forward', 'hp'],
+        window: 20,
+      },
+      phases: [
+        { name: 'startup', frames: 15, events: [] },
+        {
+          name: 'release',
+          frames: 5,
+          events: [
+            { onFrame: 0, event: { type: 'spawn_projectile', projectile: redNoteWave, offsetX: 76, offsetY: -104 } },
+            { onFrame: 0, event: { type: 'screen_shake', intensity: 0.002, duration: 3 } },
+          ],
+        },
+        { name: 'recovery', frames: 17, events: [] },
+      ],
+    },
+    {
+      id: 'dash_punch',
+      displayName: 'Cabaret Lunge',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'landing'],
+        sequence: ['forward', 'forward', 'lp'],
+        window: 16,
+      },
+      phases: [
+        { name: 'startup', frames: 7, events: [{ onFrame: 0, event: { type: 'set_velocity', vx: 7.2, relativeToFacing: true } }] },
+        {
+          name: 'active',
+          frames: 5,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'cabaret_lunge',
+                hitbox: midPunch({ x: 38, y: -94, width: 92, height: 30, damage: 70, hitstun: 22, blockstun: 12, knockback: { x: 7, y: 0 } }),
+              },
+            },
+          ],
+        },
+        {
+          name: 'recovery',
+          frames: 15,
+          events: [
+            { onFrame: 0, event: { type: 'hitbox_end', id: 'cabaret_lunge' } },
+            { onFrame: 0, event: { type: 'set_velocity', vx: 0, relativeToFacing: true } },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'crouch_low_kick',
+      displayName: 'Red Unit Sweep',
+      animation: 'kick',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['down', 'lk'],
+        window: 8,
+      },
+      phases: [
+        { name: 'startup', frames: 4, events: [{ onFrame: 0, event: { type: 'modify_hurtbox', hurtbox: { x: -30, y: -82, width: 60, height: 82 } } }] },
+        {
+          name: 'active',
+          frames: 5,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'red_sweep',
+                hitbox: {
+                  x: 18,
+                  y: -35,
+                  width: 86,
+                  height: 24,
+                  damage: 42,
+                  hitstun: 13,
+                  blockstun: 10,
+                  knockback: { x: 3.3, y: 0 },
+                  level: 'low',
+                },
+              },
+            },
+          ],
+        },
+        { name: 'recovery', frames: 10, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'red_sweep' } }] },
+      ],
+    },
+    {
+      id: 'heavy_punch',
+      displayName: 'Stand Thrust',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing'],
+        sequence: ['hp'],
+        window: 6,
+      },
+      phases: [
+        { name: 'startup', frames: 8, events: [] },
+        {
+          name: 'active',
+          frames: 4,
+          events: [
+            {
+              onFrame: 0,
+              event: {
+                type: 'hitbox_active',
+                id: 'stand_thrust',
+                hitbox: midPunch({
+                  x: 36,
+                  y: -100,
+                  width: 108,
+                  height: 30,
+                  damage: 82,
+                  hitstun: 27,
+                  blockstun: 14,
+                  chipDamage: 4,
+                  knockback: { x: 5.4, y: -4 },
+                  launches: true,
+                }),
+              },
+            },
+          ],
+        },
+        { name: 'recovery', frames: 18, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'stand_thrust' } }] },
+      ],
+    },
+    {
+      id: 'light_punch',
+      displayName: 'Mic Check Jab',
+      animation: 'punch',
+      trigger: {
+        allowedStates: ['idle', 'walk_forward', 'walk_back', 'crouch', 'landing', 'attack'],
+        sequence: ['lp'],
+        window: 6,
+        cancelFrom: ['light_punch'],
+      },
+      phases: [
+        { name: 'startup', frames: 3, events: [] },
+        { name: 'active', frames: 3, cancellable: true, events: [{ onFrame: 0, event: { type: 'hitbox_active', id: 'mic_jab', hitbox: midPunch({ x: 30, y: -92, width: 58, damage: 42, hitstun: 14 }) } }] },
+        { name: 'recovery', frames: 8, cancellable: true, events: [{ onFrame: 0, event: { type: 'hitbox_end', id: 'mic_jab' } }] },
+      ],
+      cancelInto: ['light_punch', 'heavy_punch'],
+    },
+  ]);
+}
+
 function makeDemiMoves(): Move[] {
   const remotePing: ProjectileConfig = {
     id: 'demi_remote_ping',
@@ -4588,6 +4851,55 @@ export const mrSpookyConfig: CharacterConfig = {
   moves: makeMrSpookyMoves(),
 };
 
+export const redMicConfig: CharacterConfig = {
+  id: 'red_mic',
+  displayName: 'Red Mic',
+  walkForwardSpeed: 3.05,
+  walkBackSpeed: 2.05,
+  jumpVelocity: 11,
+  jumpForwardVelocity: 4,
+  jumpBackVelocity: 3.2,
+  gravity: 0.55,
+  maxFallSpeed: 12,
+  maxHealth: 990,
+  pivotOffsetY: 0,
+  sprite: {
+    basePath: '/fighters/red_mic',
+    frameWidth: 256,
+    frameHeight: 256,
+    scale: 0.58,
+    anchorY: 248 / 286,
+    stateFrames: generatedBaseStateFrames,
+    frameCounts: {
+      base: 6,
+      punch: 6,
+      kick: 6,
+      special_1: 6,
+      special_2: 6,
+    },
+    sheets: {
+      base: 'sheets/base.png',
+      punch: 'sheets/punch.png',
+      kick: 'sheets/kick.png',
+      special_1: 'sheets/special_1.png',
+      special_2: 'sheets/special_2.png',
+    },
+    frames: redMicFrames,
+  },
+  hurtboxes: {
+    ...baseHurtboxes,
+    idle: { x: -27, y: -132, width: 54, height: 132 },
+    walk_forward: { x: -27, y: -132, width: 54, height: 132 },
+    walk_back: { x: -27, y: -132, width: 54, height: 132 },
+    attack: { x: -30, y: -134, width: 60, height: 134 },
+    crouch: { x: -32, y: -86, width: 64, height: 86 },
+    hitstun: { x: -30, y: -132, width: 60, height: 132 },
+    blockstun: { x: -30, y: -132, width: 60, height: 132 },
+  },
+  animations: fighterAnimations,
+  moves: makeRedMicMoves(),
+};
+
 const demiSprite = generatedSprite('/fighters/demi', uniformFrameMeta(6, 320, 320, 160, 286), 0.56);
 
 export const demiConfig: CharacterConfig = {
@@ -4715,6 +5027,26 @@ export const playableCharacters = [
   jugglingJoeConfig,
   rubberChickenConfig,
   mrSpookyConfig,
+  redMicConfig,
   demiConfig,
   sklarBrothersConfig,
 ] as const;
+
+/**
+ * Merge CMS-exported characters into the roster.
+ * Characters whose id already exists in playableCharacters are skipped.
+ *
+ * @param cmsConfigs - Array of CharacterConfig objects from CMS export
+ * @returns Combined roster with CMS fighters appended after built-in characters
+ */
+export function mergeRoster(cmsConfigs: CharacterConfig[]): CharacterConfig[] {
+  const existing = new Set(playableCharacters.map((c) => c.id));
+  const merged: CharacterConfig[] = [...playableCharacters];
+  for (const config of cmsConfigs) {
+    if (!existing.has(config.id)) {
+      merged.push(config);
+      existing.add(config.id);
+    }
+  }
+  return merged;
+}

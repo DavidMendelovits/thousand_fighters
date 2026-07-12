@@ -21,6 +21,14 @@ export class HitboxSystem {
         }
       }
     }
+
+    for (const active of attacker.getActiveGrabsWorld()) {
+      for (const hurtbox of hurtboxes) {
+        if (boxesOverlap(active.world, hurtbox.world)) {
+          HitResolver.resolveGrab(attacker, defender, active.grab, active.id);
+        }
+      }
+    }
   }
 
   private static checkProjectiles(fighters: [Fighter, Fighter], projectiles: ProjectilePool): void {

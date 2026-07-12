@@ -8,25 +8,52 @@ import type {
   FighterActorId,
   FighterScene,
   FighterState,
+  GrabSpec,
   Hitbox,
+  HitboxKeyframe,
   Hurtbox,
   Move,
   RawInput,
   SpriteFrameMeta,
   SpriteSheetId,
 } from '../schema/types';
+import { MOVE_SHEET_IDS } from '../../shared/animationRows.js';
+import { resolveStateSheet, stateRowFrame, isLoopingStateRow } from './animationRowPlayback';
 import { boxToWorld, type AABB } from '../util/aabb';
+import { interpolateHitboxGeometry } from './hitboxGeometry';
+import { selectTriggeredMove } from './moveSelection';
 
 const STAGE_LEFT = 96;
 const STAGE_RIGHT = 704;
 const FLOOR_Y = 390;
 const FIGHTER_WIDTH = 60;
 const FIGHTER_HEIGHT = 120;
-const MOVE_SHEETS = new Set<SpriteSheetId>(['punch', 'kick', 'special_1', 'special_2']);
+const MOVE_SHEETS = new Set<SpriteSheetId>(MOVE_SHEET_IDS);
 
 type ActiveHitbox = {
   actorId?: FighterActorId;
   hitbox: Hitbox;
+  keyframes?: HitboxKeyframe[];
+  // Frames since activation, drives keyframe interpolation.
+  age: number;
+};
+
+type ActiveGrab = {
+  actorId?: FighterActorId;
+  grab: GrabSpec;
+};
+
+type GrabHold = {
+  offsetX: number;
+  offsetY: number;
+  remaining: number;
+  pull: { fromX: number; frames: number; elapsed: number } | null;
+  release: {
+    knockback: { x: number; y: number };
+    hitstun: number;
+    launches: boolean;
+    knockdown: boolean;
+  };
 };
 
 type ActorPose = {
@@ -82,7 +109,12 @@ export class Fighter {
   movePhaseIndex = 0;
   movePhaseFrame = 0;
   activeHitboxes = new Map<string, ActiveHitbox>();
+  activeGrabs = new Map<string, ActiveGrab>();
   hasHitThisMove = new Set<string>();
+
+  // Set while this fighter is held by the opponent's grab.
+  grabbedBy: Fighter | null = null;
+  grabHold: GrabHold | null = null;
 
   inputBuffer = new InputBuffer();
   animationKey = 'idle';
@@ -141,6 +173,10 @@ export class Fighter {
 
   changeState(next: FighterState): void {
     if (this.state === next) return;
+    if (this.state === 'grabbed' && next !== 'grabbed') {
+      this.grabbedBy = null;
+      this.grabHold = null;
+    }
     this.state = next;
     this.stateFrame = 0;
     this.animationKey = this.config.animations[next] ?? next;
@@ -150,6 +186,7 @@ export class Fighter {
       this.movePhaseIndex = 0;
       this.movePhaseFrame = 0;
       this.activeHitboxes.clear();
+      this.activeGrabs.clear();
       this.hurtboxOverride = null;
       this.hurtboxDisabled = false;
       this.clearActorMoveOverrides();
@@ -158,6 +195,14 @@ export class Fighter {
 
   getHurtboxWorld(): AABB | null {
     return this.getHurtboxesWorld()[0]?.world ?? null;
+  }
+
+  getGuardboxWorld(): AABB | null {
+    const guardbox = this.config.guardboxes?.[this.state];
+    if (!guardbox) return null;
+    const actor = this.actorFor(this.primaryActorId());
+    const pose = this.actorPose(actor);
+    return boxToWorld(guardbox, pose.x, pose.y, pose.facing);
   }
 
   getHurtboxesWorld(): Array<{ actorId: FighterActorId; world: AABB }> {
@@ -180,7 +225,7 @@ export class Fighter {
         actorId: actor.id,
         id,
         hitbox: active.hitbox,
-        world: boxToWorld(active.hitbox, pose.x, pose.y, pose.facing),
+        world: boxToWorld(interpolateHitboxGeometry(active), pose.x, pose.y, pose.facing),
       };
     });
   }
@@ -218,6 +263,11 @@ export class Fighter {
       return;
     }
 
+    if (this.state === 'grabbed') {
+      this.tickGrabbed();
+      return;
+    }
+
     if (this.state === 'knockdown') {
       this.vx *= 0.9;
       if (this.grounded && this.stateFrame > 30) this.changeState('getup');
@@ -227,6 +277,20 @@ export class Fighter {
     if (this.state === 'getup') {
       if (this.stateFrame > 24) this.changeState('idle');
       return;
+    }
+
+    // Maintain active block state while holding back; exit when released.
+    // HitResolver.isBlocking() reads raw input so it still works in blockstun
+    // (the reactive path) without any changes here.
+    if (this.state === 'block') {
+      const backHeld = this.facing === 1 ? input.left : input.right;
+      if (!this.grounded || !backHeld) {
+        this.changeState('idle');
+        // Fall through to normal state handling below.
+      } else {
+        this.vx = 0;
+        return;
+      }
     }
 
     const move = this.findTriggeredMove(false);
@@ -254,12 +318,15 @@ export class Fighter {
 
     const forwardHeld = this.facing === 1 ? input.right : input.left;
     const backHeld = this.facing === 1 ? input.left : input.right;
-    if (forwardHeld) {
+
+    // Hold-back guard: grounded + back held → enter visible block state.
+    // vx=0 (no backward movement while blocking).
+    if (backHeld && !forwardHeld && !input.down && !input.up) {
+      this.vx = 0;
+      this.changeState('block');
+    } else if (forwardHeld) {
       this.vx = this.config.walkForwardSpeed * this.facing;
       this.changeState('walk_forward');
-    } else if (backHeld) {
-      this.vx = -this.config.walkBackSpeed * this.facing;
-      this.changeState('walk_back');
     } else {
       this.vx = 0;
       this.changeState('idle');
@@ -267,16 +334,59 @@ export class Fighter {
   }
 
   private findTriggeredMove(forCancel: boolean): Move | null {
-    return (
-      this.config.moves.find((move) => {
-        const trigger = move.trigger;
-        if (!trigger.allowedStates.includes(this.state)) return false;
-        if (forCancel && trigger.cancelFrom && this.currentMove && !trigger.cancelFrom.includes(this.currentMove.id)) return false;
-        if (!this.grounded && move.airOk !== true) return false;
-        if (this.grounded && move.groundOk === false) return false;
-        return this.inputBuffer.matchSequence(trigger.sequence, trigger.window ?? 15);
-      }) ?? null
-    );
+    return selectTriggeredMove(this.config.moves, this.inputBuffer, this, forCancel);
+  }
+
+  private tickGrabbed(): void {
+    const grabber = this.grabbedBy;
+    const hold = this.grabHold;
+    // Grabber interrupted (hit out of the move, move ended early, died):
+    // drop out without release knockback.
+    if (!grabber || !hold || grabber.state !== 'attack') {
+      this.releaseGrab(false);
+      return;
+    }
+
+    let offsetX = hold.offsetX;
+    if (hold.pull && hold.pull.elapsed < hold.pull.frames) {
+      const t = hold.pull.elapsed / hold.pull.frames;
+      offsetX = hold.pull.fromX + (hold.offsetX - hold.pull.fromX) * t;
+      hold.pull.elapsed += 1;
+    }
+
+    this.vx = 0;
+    this.vy = 0;
+    this.x = grabber.x + offsetX * grabber.facing;
+    this.y = grabber.y + hold.offsetY;
+    this.facing = (grabber.facing * -1) as 1 | -1;
+    this.grounded = this.y >= FLOOR_Y;
+
+    hold.remaining -= 1;
+    if (hold.remaining <= 0) this.releaseGrab(true);
+  }
+
+  releaseGrab(applyRelease: boolean): void {
+    const grabber = this.grabbedBy;
+    const release = this.grabHold?.release ?? null;
+    this.grabbedBy = null;
+    this.grabHold = null;
+
+    if (applyRelease && release && grabber) {
+      this.vx = release.knockback.x * grabber.facing;
+      this.vy = release.knockback.y;
+      this.hitstun = release.hitstun;
+      if (release.launches || !this.grounded) {
+        this.grounded = false;
+        this.changeState('juggle');
+      } else if (release.knockdown) {
+        this.changeState('knockdown');
+      } else {
+        this.changeState('hitstun');
+      }
+      return;
+    }
+
+    this.changeState(this.grounded ? 'idle' : 'airborne');
   }
 
   private startJump(input: RawInput): void {
@@ -301,6 +411,8 @@ export class Fighter {
   }
 
   private applyPhysics(): void {
+    // Position is locked to the grabber while held.
+    if (this.state === 'grabbed') return;
     if (!this.grounded || this.vy < 0) {
       this.vy = Math.min(this.config.maxFallSpeed, this.vy + this.config.gravity);
     }
@@ -329,7 +441,7 @@ export class Fighter {
   }
 
   private autoFace(opponent: Fighter): void {
-    if (!this.grounded || this.state === 'attack' || this.state === 'hitstun' || this.state === 'blockstun') return;
+    if (!this.grounded || this.state === 'attack' || this.state === 'hitstun' || this.state === 'block' || this.state === 'blockstun') return;
     this.facing = this.x <= opponent.x ? 1 : -1;
   }
 
@@ -386,13 +498,13 @@ export class Fighter {
       actor.body.setScale(sprite.scale);
       actor.body.clearTint();
       if (this.state === 'hitstun' || this.state === 'juggle') actor.body.setTint(0xffffff);
-      if (this.state === 'blockstun') actor.body.setTint(0x9dffbd);
+      if (this.state === 'block' || this.state === 'blockstun') actor.body.setTint(0x9dffbd);
     } else if (actor.body instanceof Phaser.GameObjects.Rectangle) {
       actor.body.setScale(pose.facing, this.state === 'crouch' ? 0.58 : 1);
       actor.body.setFillStyle(this.playerNum === 1 ? 0xd44949 : 0x426edb);
       if (this.state === 'attack') actor.body.setFillStyle(0xf2b84b);
       if (this.state === 'hitstun' || this.state === 'juggle') actor.body.setFillStyle(0xffffff);
-      if (this.state === 'blockstun') actor.body.setFillStyle(0x62d980);
+      if (this.state === 'block' || this.state === 'blockstun') actor.body.setFillStyle(0x62d980);
     }
 
     actor.body.setAlpha(this.invulnerable ? 0.55 : 1);
@@ -405,6 +517,19 @@ export class Fighter {
       return {
         sheet: this.currentMove.animation as SpriteSheetId,
         frame: this.moveVisualFrame(this.currentMove, visualDelay, sprite),
+      };
+    }
+
+    // State-driven row playback (T21): if this fighter owns a dedicated row for
+    // the current state (jump/crouch/block), play it. Gated on row ownership so
+    // fighters without these rows fall through to the base logic below,
+    // byte-for-byte unchanged.
+    const stateSheet = resolveStateSheet(this.state, (row) => (sprite?.frameCounts?.[row] ?? 0) > 0);
+    if (stateSheet !== 'base') {
+      const elapsed = Math.max(0, this.stateFrame - visualDelay);
+      return {
+        sheet: stateSheet,
+        frame: stateRowFrame(elapsed, sprite?.frameCounts?.[stateSheet] ?? 1, isLoopingStateRow(stateSheet)),
       };
     }
 
@@ -427,8 +552,10 @@ export class Fighter {
       crouch: 4,
       airborne: 5,
       landing: 4,
+      block: 3,
       blockstun: 3,
       hitstun: 3,
+      grabbed: 3,
       juggle: 5,
       knockdown: 4,
       getup: 4,
@@ -467,12 +594,39 @@ export class Fighter {
     return Phaser.Math.Clamp(Math.floor((elapsed / Math.max(totalFrames, 1)) * frameCount), 0, maxFrame);
   }
 
-  setActiveHitbox(id: string, hitbox: Hitbox, actorId?: FighterActorId): void {
-    this.activeHitboxes.set(id, { actorId, hitbox });
+  setActiveHitbox(id: string, hitbox: Hitbox, actorId?: FighterActorId, keyframes?: HitboxKeyframe[]): void {
+    this.activeHitboxes.set(id, { actorId, hitbox, keyframes, age: 0 });
+  }
+
+  ageActiveHitboxes(): void {
+    for (const active of this.activeHitboxes.values()) {
+      active.age += 1;
+    }
   }
 
   clearActiveHitbox(id: string): void {
     this.activeHitboxes.delete(id);
+  }
+
+  setActiveGrab(id: string, grab: GrabSpec, actorId?: FighterActorId): void {
+    this.activeGrabs.set(id, { actorId, grab });
+  }
+
+  clearActiveGrab(id: string): void {
+    this.activeGrabs.delete(id);
+  }
+
+  getActiveGrabsWorld(): Array<{ actorId: FighterActorId; id: string; grab: GrabSpec; world: AABB }> {
+    return [...this.activeGrabs.entries()].map(([id, active]) => {
+      const actor = this.actorFor(this.fusionFrames > 0 ? this.primaryActorId() : (active.actorId ?? this.primaryActorId()));
+      const pose = this.actorPose(actor);
+      return {
+        actorId: actor.id,
+        id,
+        grab: active.grab,
+        world: boxToWorld(active.grab.hitbox, pose.x, pose.y, pose.facing),
+      };
+    });
   }
 
   setActorOffset(actorId: FighterActorId, offsetX: number, offsetY = 0, duration: number | null = null): void {

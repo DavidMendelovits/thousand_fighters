@@ -15,7 +15,8 @@ export type InputToken =
   | 'lk'
   | 'mk'
   | 'hk'
-  | 'neutral';
+  | 'neutral'
+  | 'grab';
 
 export type RawInput = {
   left: boolean;
@@ -72,9 +73,47 @@ export type Hurtbox = {
 
 export type FighterActorId = 'lead' | 'echo' | 'fusion' | (string & {});
 
+/**
+ * A command-grab/tether check. While active, overlap with the opponent's
+ * hurtbox locks them into the `grabbed` state: held at holdOffsetX (optionally
+ * pulled there from the contact point over pullFrames — the tentacle drag-in),
+ * then released with knockback. Grabs are unblockable but whiff against
+ * invulnerable, already-grabbed, downed, or dead opponents.
+ */
+export type GrabSpec = {
+  hitbox: Hurtbox;
+  damage?: number;
+  holdOffsetX: number;
+  holdOffsetY?: number;
+  holdDuration: number;
+  pullFrames?: number;
+  releaseKnockback?: { x: number; y: number };
+  releaseHitstun?: number;
+  releaseLaunches?: boolean;
+  releaseKnockdown?: boolean;
+  grabSound?: string;
+};
+
+/**
+ * Optional per-frame geometry for an active hitbox, interpolated linearly by
+ * frames since activation. Lets a hitbox ride an extending limb (a tentacle
+ * tip moving outward) instead of covering the whole reach for the whole
+ * active window. Omitted fields hold the base hitbox value. An implicit
+ * keyframe at atFrame 0 with the base geometry anchors the interpolation.
+ */
+export type HitboxKeyframe = {
+  atFrame: number;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+};
+
 export type MoveEvent =
-  | { type: 'hitbox_active'; hitbox: Hitbox; id?: string; actor?: FighterActorId }
+  | { type: 'hitbox_active'; hitbox: Hitbox; keyframes?: HitboxKeyframe[]; id?: string; actor?: FighterActorId }
   | { type: 'hitbox_end'; id?: string; actor?: FighterActorId }
+  | { type: 'grab_check'; grab: GrabSpec; id?: string; actor?: FighterActorId }
+  | { type: 'grab_end'; id?: string }
   | { type: 'spawn_projectile'; projectile: ProjectileConfig; offsetX: number; offsetY: number }
   | { type: 'spawn_projectile_at_target'; projectile: ProjectileConfig; offsetX: number; offsetY: number }
   | { type: 'spawn_projectile_from_sky'; projectile: ProjectileConfig; targetOffsetX: number; spawnOffsetY: number }
@@ -146,7 +185,11 @@ export type ProjectileConfig = {
   };
 };
 
-export type SpriteSheetId = 'base' | 'punch' | 'kick' | 'special_1' | 'special_2';
+// A sprite-sheet / animation-row id. Formerly a fixed 5-member union; now a
+// string keyed by the data-driven registry in shared/animationRows.js (T20).
+// The canonical row ids live there; this stays `string` so the ~40 existing
+// `as SpriteSheetId` cast sites go inert without churn.
+export type SpriteSheetId = string;
 
 export type SpriteFrameMeta = {
   file: string;
@@ -190,7 +233,9 @@ export type FighterState =
   | 'landing'
   | 'attack'
   | 'hitstun'
+  | 'block'
   | 'blockstun'
+  | 'grabbed'
   | 'knockdown'
   | 'getup'
   | 'juggle'
@@ -208,6 +253,7 @@ export type CharacterConfig = {
   maxFallSpeed: number;
   maxHealth: number;
   hurtboxes: Partial<Record<FighterState, Hurtbox>>;
+  guardboxes?: Partial<Record<FighterState, Hurtbox>>;
   pivotOffsetY: number;
   sprite?: CharacterSpriteConfig;
   actors?: FighterActorConfig[];
@@ -218,4 +264,5 @@ export type CharacterConfig = {
 export type FighterScene = Phaser.Scene & {
   projectiles: ProjectilePool;
   hitPauseFrames: number;
+  _soundsPlayedThisFrame?: Set<string>;
 };

@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Character Gym</title>
+    <style>
+      /* Tokens mirror DESIGN.md (the admin design system). */
+      :root {
+        --bg: #101318;
+        --panel: #181d24;
+        --panel-2: #202732;
+        --line: #374253;
+        --text: #f2f6fb;
+        --muted: #9eabba;
+        --accent: #54d6a2;
+        --accent-2: #f0b35b;
+        --danger: #ff6b6b;
+        --focus: #79a8ff;
+        /* Overlay palette (shared intent with TestbedScene; see design §9). */
+        --ov-visual: #5bd6e6;
+        --ov-anchor: #f0b35b;
+        --ov-hurt: #79a8ff;
+        --ov-hit: #ff6b6b;
+        --ov-guard: #9fe6b0;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+        font-size: 13px;
+      }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+
+      /* Below the minimum usable width this is not a real tool. Be honest. */
+      #too-narrow {
+        display: none;
+        position: fixed; inset: 0;
+        align-items: center; justify-content: center;
+        text-align: center; padding: 24px;
+        background: var(--bg); color: var(--muted); z-index: 100;
+      }
+      @media (max-width: 1099px) {
+        #too-narrow { display: flex; }
+        #app { display: none !important; }
+      }
+
+      #app {
+        display: grid;
+        grid-template-columns: 230px minmax(0, 1fr) 320px;
+        grid-template-rows: auto minmax(0, 1fr) 200px;
+        grid-template-areas:
+          "topbar topbar topbar"
+          "nav    canvas  inspector"
+          "nav    timeline inspector";
+        gap: 10px;
+        height: 100vh;
+        padding: 10px;
+      }
+
+      /* Topbar */
+      #topbar {
+        grid-area: topbar;
+        display: flex; align-items: center; gap: 12px;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 8px;
+      }
+      #topbar .crumb { color: var(--muted); }
+      #topbar .crumb b { color: var(--text); }
+      #topbar .spacer { flex: 1; }
+      #topbar .legend { display: flex; gap: 10px; font-size: 11px; color: var(--muted); }
+      #topbar .legend span::before {
+        content: ""; display: inline-block; width: 9px; height: 9px;
+        border-radius: 2px; margin-right: 4px; vertical-align: middle;
+      }
+      #topbar .legend .l-visual::before { background: var(--ov-visual); }
+      #topbar .legend .l-anchor::before { background: var(--ov-anchor); }
+      #topbar .legend .l-hurt::before { background: var(--ov-hurt); }
+      #topbar .legend .l-hit::before { background: var(--ov-hit); }
+      #topbar .legend .l-guard::before { background: var(--ov-guard); }
+      #dirty { color: var(--accent-2); font-size: 11px; display: none; }
+      #dirty.on { display: inline; }
+      button {
+        background: #26303c; color: var(--text);
+        border: 1px solid var(--line); border-radius: 6px;
+        padding: 6px 12px; font: inherit; cursor: pointer;
+      }
+      button:hover { background: #2d3848; border-color: var(--focus); }
+      button.active { background: var(--accent); color: #07140e; border-color: var(--accent); font-weight: 700; }
+      button:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+      #save-btn { background: var(--accent); color: #07140e; border-color: var(--accent); font-weight: 700; }
+      #save-btn:disabled { opacity: 0.5; cursor: default; }
+
+      .panel {
+        background: var(--panel); border: 1px solid var(--line);
+        border-radius: 8px; padding: 10px;
+      }
+      .panel h2 {
+        font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+        color: var(--muted); margin: 0 0 8px;
+      }
+
+      /* Move navigator */
+      #nav { grid-area: nav; overflow-y: auto; }
+      #nav input[type="search"] {
+        width: 100%; background: #0f141b; border: 1px solid var(--line);
+        border-radius: 6px; color: var(--text); padding: 6px 8px; margin-bottom: 8px; font: inherit;
+      }
+      .nav-group > .nav-group-label {
+        font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+        color: var(--muted); margin: 8px 0 4px; cursor: default;
+      }
+      .nav-move {
+        display: flex; align-items: center; gap: 8px;
+        padding: 5px 8px; border-radius: 6px; cursor: pointer; color: var(--text);
+      }
+      .nav-move:hover { background: var(--panel-2); }
+      .nav-move.active { background: #20332e; }
+      .nav-move .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--muted); }
+      .nav-move .dot.ok { background: var(--accent); }
+      .nav-move .dot.partial { background: var(--accent-2); }
+      .nav-move .label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .nav-move .count { color: var(--muted); font-size: 11px; }
+      #add-move { width: 100%; margin-top: 10px; }
+      #add-move-note { color: var(--muted); font-size: 10px; margin-top: 4px; line-height: 1.4; }
+
+      /* Canvas */
+      #canvas-wrap {
+        grid-area: canvas;
+        display: flex; align-items: center; justify-content: center;
+        background: #141820; border: 1px solid var(--line); border-radius: 8px;
+        overflow: hidden; min-height: 0; position: relative;
+      }
+      #game { width: 100%; height: 100%; }
+      #game canvas { display: block; margin: 0 auto; }
+
+      /* Inspector */
+      #inspector { grid-area: inspector; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+      .seg { display: flex; gap: 4px; }
+      .seg button { flex: 1; padding: 5px 4px; font-size: 11px; }
+      .num-grid { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center; margin-top: 8px; }
+      .num-grid label { color: var(--muted); }
+      .num-grid input {
+        background: #0f141b; border: 1px solid var(--line); border-radius: 6px;
+        color: var(--text); padding: 5px 8px; font: inherit; width: 100%;
+      }
+      .num-grid input:focus-visible { outline: 2px solid var(--focus); outline-offset: 0; }
+      .ro-note { color: var(--muted); font-size: 11px; margin-top: 6px; line-height: 1.5; }
+      [hidden] { display: none !important; }
+      .num-grid input:disabled { opacity: 0.55; cursor: default; }
+      .num-grid select {
+        background: #0f141b; border: 1px solid var(--line); border-radius: 6px;
+        color: var(--text); padding: 5px 8px; font: inherit; width: 100%;
+      }
+      .subhead {
+        font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+        color: var(--muted); margin: 12px 0 2px; font-weight: 600;
+      }
+      .badge-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+      .badge-row button { padding: 4px 8px; font-size: 11px; }
+      .badge {
+        font-size: 10px; font-weight: 700; letter-spacing: 0.05em;
+        padding: 2px 7px; border-radius: 4px; text-transform: uppercase;
+        background: #26303c; color: var(--muted); border: 1px solid var(--line);
+      }
+      .badge.overridden { background: #20332e; color: var(--accent); border-color: var(--accent); }
+
+      /* Timeline */
+      #timeline { grid-area: timeline; display: flex; flex-direction: column; }
+      #transport { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+      #transport .spacer { flex: 1; }
+      #transport label { color: var(--muted); font-size: 11px; display: flex; align-items: center; gap: 4px; }
+      #filmstrip { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; flex: 1; }
+      .frame-tile {
+        flex: none; border: 1px solid var(--line); border-radius: 6px;
+        background: #17202a; cursor: pointer; overflow: hidden;
+        display: flex; flex-direction: column; position: relative;
+      }
+      .frame-tile.active { border-color: var(--accent); }
+      .frame-tile[draggable="true"] { cursor: grab; }
+      .frame-tile.dragover { border-color: var(--focus); box-shadow: inset 0 0 0 1px var(--focus); }
+      .frame-tile.needs-anchor::after {
+        content: ""; position: absolute; top: 4px; right: 4px;
+        width: 7px; height: 7px; border-radius: 50%; background: var(--accent-2);
+      }
+      .frame-tile.has-warning::before {
+        content: "!"; position: absolute; top: 2px; left: 4px; z-index: 1;
+        width: 12px; height: 12px; border-radius: 50%; background: var(--danger);
+        color: #1a0000; font-size: 9px; font-weight: 700; text-align: center; line-height: 12px;
+      }
+      /* Width is set per-tile from the frame's aspect ratio — frames are not
+         square (a mop/corn swing is far wider than an idle pose). */
+      .frame-tile .thumb {
+        height: 92px; min-width: 40px; background-size: contain; background-repeat: no-repeat;
+        background-position: center bottom;
+        image-rendering: pixelated;
+      }
+      .frame-tile .cap { font-size: 10px; color: var(--muted); text-align: center; padding: 2px 0; border-top: 1px solid var(--line); }
+      .frame-tile.active .cap { color: var(--accent); }
+
+      #status {
+        position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+        background: var(--bg); color: var(--muted); text-align: center; padding: 24px; z-index: 50;
+      }
+      #status.error { color: var(--danger); }
+      #status.on { display: flex; }
+
+      /* Right-click context menu */
+      .ctx-menu {
+        position: fixed; z-index: 200; min-width: 184px;
+        background: #1b2430; border: 1px solid var(--line); border-radius: 8px;
+        padding: 4px; box-shadow: 0 10px 28px rgba(0,0,0,0.55);
+        display: flex; flex-direction: column; gap: 2px;
+      }
+      .ctx-menu button {
+        text-align: left; padding: 7px 10px; font-size: 12px;
+        background: transparent; border: none; border-radius: 5px;
+        color: var(--text); cursor: pointer;
+      }
+      .ctx-menu button:hover { background: #26323f; }
+      .ctx-menu button.danger { color: #ff8f8f; }
+      .ctx-menu button.danger:hover { background: #3a1f24; }
+
+      /* Filmstrip: frame whose hit is deleted for the current activation */
+      .frame-tile.hit-disabled { box-shadow: inset 0 0 0 2px #ff6b6b; filter: grayscale(0.45) brightness(0.72); }
+    </style>
+  </head>
+  <body>
+    <div id="too-narrow">
+      <div>Character Gym needs a wider screen (≥1100px).<br />It's a desktop tool — open it on a larger display.</div>
+    </div>
+
+    <div id="app">
+      <div id="topbar">
+        <span class="crumb">Roster / <b id="char-name">—</b> / Gym</span>
+        <span class="spacer"></span>
+        <div class="legend">
+          <span class="l-visual">visual</span>
+          <span class="l-anchor">anchor</span>
+          <span class="l-hurt">hurtbox</span>
+          <span class="l-hit">hitbox</span>
+          <span class="l-guard">guard</span>
+        </div>
+        <span id="dirty">● Unsaved</span>
+        <button id="undo-btn" disabled title="Undo (⌘Z)">↶ Undo</button>
+        <button id="save-btn" disabled title="Save anchor edits (⌘S)">Save</button>
+      </div>
+
+      <nav id="nav" class="panel" aria-label="Move navigator">
+        <input type="search" id="move-search" placeholder="Search moves…" aria-label="Search moves" />
+        <div id="move-list"></div>
+        <button id="add-move" disabled>+ Move</button>
+        <div id="add-move-note">Engine supports 5 sheets today. Combos/dashes are staged until the sprite-sheet contract is lifted (T16).</div>
+      </nav>
+
+      <div id="canvas-wrap"><div id="game"></div></div>
+
+      <aside id="inspector">
+        <section class="panel">
+          <h2>Bounds mode</h2>
+          <div class="seg" id="bounds-mode">
+            <button data-mode="visual">Visual</button>
+            <button data-mode="anchor" class="active">Anchor</button>
+            <button data-mode="hurtbox">Hurtbox</button>
+            <button data-mode="hitbox">Hitbox</button>
+            <button data-mode="guard">Guard</button>
+          </div>
+          <div class="ro-note" id="mode-note">Anchor: drag the feet pivot on the canvas, or type below. Other modes are read-only in Phase 1.</div>
+        </section>
+
+        <section class="panel" id="anchor-panel">
+          <h2>Anchor (this frame)</h2>
+          <div class="num-grid">
+            <label for="anchor-x">X</label><input class="mono" id="anchor-x" type="number" step="1" />
+            <label for="anchor-y">Y</label><input class="mono" id="anchor-y" type="number" step="1" />
+          </div>
+          <div class="ro-note" id="anchor-meta"></div>
+          <div class="ro-note" id="frame-warnings" style="color: var(--danger)"></div>
+        </section>
+
+        <section class="panel" id="gizmo-panel" hidden>
+          <h2>Gizmo</h2>
+          <div class="seg" id="gizmo-mode">
+            <button data-gizmo="move" class="active" title="Move (Q)">Move</button>
+            <button data-gizmo="scale" title="Scale (W)">Scale</button>
+          </div>
+          <div class="ro-note">Drag a corner handle to resize, or drag the box body to move — or type below. Boxes are frame-px, anchor-relative (× sprite scale at runtime).</div>
+        </section>
+
+        <section class="panel" id="hurtbox-panel" hidden>
+          <h2>Hurtbox (per state)</h2>
+          <div class="num-grid">
+            <label for="hurt-state">State</label>
+            <select class="mono" id="hurt-state"></select>
+          </div>
+          <div class="badge-row">
+            <span id="hurt-badge" class="badge">MEASURED</span>
+            <button id="hurt-override">Override</button>
+            <button id="hurt-reset" hidden>Reset to measured</button>
+          </div>
+          <div class="num-grid">
+            <label for="hurt-x">X</label><input class="mono" id="hurt-x" type="number" step="1" disabled />
+            <label for="hurt-y">Y</label><input class="mono" id="hurt-y" type="number" step="1" disabled />
+            <label for="hurt-w">W</label><input class="mono" id="hurt-w" type="number" step="1" disabled />
+            <label for="hurt-h">H</label><input class="mono" id="hurt-h" type="number" step="1" disabled />
+          </div>
+          <div class="ro-note" id="hurt-note"></div>
+        </section>
+
+        <section class="panel" id="guardbox-panel" hidden>
+          <h2>Guard box (per state)</h2>
+          <div class="num-grid">
+            <label for="guard-state">State</label>
+            <select class="mono" id="guard-state"></select>
+          </div>
+          <div class="badge-row">
+            <span id="guard-badge" class="badge">NONE</span>
+            <button id="guard-override">Override</button>
+            <button id="guard-reset" hidden>Reset (remove)</button>
+          </div>
+          <div class="num-grid">
+            <label for="guard-x">X</label><input class="mono" id="guard-x" type="number" step="1" disabled />
+            <label for="guard-y">Y</label><input class="mono" id="guard-y" type="number" step="1" disabled />
+            <label for="guard-w">W</label><input class="mono" id="guard-w" type="number" step="1" disabled />
+            <label for="guard-h">H</label><input class="mono" id="guard-h" type="number" step="1" disabled />
+          </div>
+          <div class="ro-note" id="guard-note"></div>
+        </section>
+
+        <section class="panel" id="hitbox-panel" hidden>
+          <h2>Hitbox (per activation)</h2>
+          <div class="num-grid">
+            <label for="hit-activation">Activation</label>
+            <select class="mono" id="hit-activation"></select>
+          </div>
+          <h3 class="subhead">Geometry</h3>
+          <div class="badge-row">
+            <span id="hit-badge" class="badge">MEASURED</span>
+            <button id="hit-override">Override</button>
+            <button id="hit-reset" hidden>Reset to measured</button>
+          </div>
+          <div class="num-grid">
+            <label for="hit-x">X</label><input class="mono" id="hit-x" type="number" step="1" disabled />
+            <label for="hit-y">Y</label><input class="mono" id="hit-y" type="number" step="1" disabled />
+            <label for="hit-w">W</label><input class="mono" id="hit-w" type="number" step="1" disabled />
+            <label for="hit-h">H</label><input class="mono" id="hit-h" type="number" step="1" disabled />
+          </div>
+          <div class="badge-row">
+            <button id="hit-disable-frame" title="Carve this frame out of the hitbox's active window so the move does not hit here (X)">Delete hit on frame</button>
+          </div>
+          <h3 class="subhead">Numbers (authored)</h3>
+          <div class="num-grid">
+            <label for="hb-damage">Damage</label><input class="mono" id="hb-damage" type="number" step="1" />
+            <label for="hb-hitstun">Hitstun</label><input class="mono" id="hb-hitstun" type="number" step="1" />
+            <label for="hb-blockstun">Blockstun</label><input class="mono" id="hb-blockstun" type="number" step="1" />
+            <label for="hb-kbx">Knock X</label><input class="mono" id="hb-kbx" type="number" step="0.5" />
+            <label for="hb-kby">Knock Y</label><input class="mono" id="hb-kby" type="number" step="0.5" />
+            <label for="hb-level">Level</label>
+            <select class="mono" id="hb-level"><option value="high">high</option><option value="mid">mid</option><option value="low">low</option></select>
+          </div>
+          <div class="ro-note" id="hit-note"></div>
+        </section>
+
+        <section class="panel" id="projectile-panel">
+          <h2>Projectile</h2>
+          <div class="num-grid">
+            <label for="proj-select">Entity</label>
+            <select class="mono" id="proj-select"></select>
+          </div>
+          <div class="ro-note" id="proj-empty">No projectiles on this draft. Generate one in the admin (generate_projectile).</div>
+          <div id="proj-fields" hidden>
+            <h3 class="subhead">Motion</h3>
+            <div class="num-grid">
+              <label for="proj-w">Width</label><input class="mono" id="proj-w" type="number" step="1" data-proj="width" />
+              <label for="proj-h">Height</label><input class="mono" id="proj-h" type="number" step="1" data-proj="height" />
+              <label for="proj-speed">Speed</label><input class="mono" id="proj-speed" type="number" step="0.5" data-proj="speed" />
+              <label for="proj-vx">Vel X</label><input class="mono" id="proj-vx" type="number" step="0.5" data-proj="velocity.x" />
+              <label for="proj-vy">Vel Y</label><input class="mono" id="proj-vy" type="number" step="0.5" data-proj="velocity.y" />
+              <label for="proj-gravity">Gravity</label><input class="mono" id="proj-gravity" type="number" step="0.1" data-proj="gravity" />
+              <label for="proj-lifetime">Lifetime</label><input class="mono" id="proj-lifetime" type="number" step="1" data-proj="lifetime" />
+              <label for="proj-pierces">Pierces</label><input class="mono" id="proj-pierces" type="number" step="1" data-proj="pierces" />
+            </div>
+            <h3 class="subhead">Hitbox</h3>
+            <div class="num-grid">
+              <label for="proj-hb-damage">Damage</label><input class="mono" id="proj-hb-damage" type="number" step="1" data-proj="hitbox.damage" />
+              <label for="proj-hb-hitstun">Hitstun</label><input class="mono" id="proj-hb-hitstun" type="number" step="1" data-proj="hitbox.hitstun" />
+              <label for="proj-hb-blockstun">Blockstun</label><input class="mono" id="proj-hb-blockstun" type="number" step="1" data-proj="hitbox.blockstun" />
+              <label for="proj-hb-kbx">Knock X</label><input class="mono" id="proj-hb-kbx" type="number" step="0.5" data-proj="hitbox.knockback.x" />
+              <label for="proj-hb-kby">Knock Y</label><input class="mono" id="proj-hb-kby" type="number" step="0.5" data-proj="hitbox.knockback.y" />
+              <label for="proj-hb-level">Level</label>
+              <select class="mono" id="proj-hb-level" data-proj="hitbox.level"><option value="high">high</option><option value="mid">mid</option><option value="low">low</option></select>
+            </div>
+            <div class="ro-note" id="proj-note"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Live status</h2>
+          <div class="num-grid mono" id="hud"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Notes</h2>
+          <div class="ro-note" id="warnings"></div>
+        </section>
+      </aside>
+
+      <div id="timeline" class="panel">
+        <div id="transport">
+          <button id="prev-btn" title="Previous frame (,)">◀</button>
+          <button id="play-btn" class="active" title="Play/pause (Space)">▮▮</button>
+          <button id="next-btn" title="Next frame (.)">▶</button>
+          <button data-speed="0.5">0.5×</button>
+          <button data-speed="1" class="active">1×</button>
+          <button data-speed="2">2×</button>
+          <span class="spacer"></span>
+          <label><input type="checkbox" id="onion" /> Onion-skin</label>
+          <span id="frame-readout" class="mono" style="color:var(--muted)"></span>
+        </div>
+        <div id="filmstrip"></div>
+      </div>
+    </div>
+
+    <div id="status"></div>
+    <div id="ctx-menu" class="ctx-menu" hidden></div>
+
+    <script type="module" src="/src/gym/main.ts"></script>
+  </body>
+</html>

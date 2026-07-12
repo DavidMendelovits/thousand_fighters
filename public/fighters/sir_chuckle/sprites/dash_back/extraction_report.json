@@ -1,0 +1,298 @@
+{
+  "source": "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-extract-kItKwJ/source.png",
+  "moveId": "dash_back",
+  "sourceSize": [
+    2172,
+    724
+  ],
+  "grid": [
+    1,
+    6
+  ],
+  "frameCount": 6,
+  "segmentation": "connected-components",
+  "medianSilhouetteHeight": 383,
+  "scaleApplied": 1.2402088772845954,
+  "warnings": [
+    "frame 4: content bleeds 4% past its cell boundary — kept with this frame",
+    "frames equalized to silhouette height 475px per frame (base median was 383px)"
+  ],
+  "frames": [
+    {
+      "file": "dash_back_001.png",
+      "frameIndex": 1,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -89,
+        "y": -463,
+        "width": 270,
+        "height": 463
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -452,
+        "width": 61,
+        "height": 235
+      },
+      "empty": false,
+      "width": 310,
+      "height": 485,
+      "anchor": {
+        "x": 108,
+        "y": 479
+      },
+      "reachX": 197,
+      "silhouetteHeight": 475
+    },
+    {
+      "file": "dash_back_002.png",
+      "frameIndex": 2,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -175,
+        "y": -458,
+        "width": 348,
+        "height": 458
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -413,
+        "width": 61,
+        "height": 193
+      },
+      "empty": false,
+      "width": 398,
+      "height": 485,
+      "anchor": {
+        "x": 196,
+        "y": 479
+      },
+      "reachX": 197,
+      "silhouetteHeight": 475
+    },
+    {
+      "file": "dash_back_003.png",
+      "frameIndex": 3,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -449,
+        "y": -461,
+        "width": 464,
+        "height": 461
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 503,
+      "height": 485,
+      "anchor": {
+        "x": 470,
+        "y": 479
+      },
+      "reachX": 28,
+      "silhouetteHeight": 475
+    },
+    {
+      "file": "dash_back_004.png",
+      "frameIndex": 4,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -91,
+        "y": -457,
+        "width": 444,
+        "height": 457
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -400,
+        "width": 243,
+        "height": 340
+      },
+      "empty": false,
+      "width": 495,
+      "height": 485,
+      "anchor": {
+        "x": 111,
+        "y": 479
+      },
+      "reachX": 379,
+      "silhouetteHeight": 475
+    },
+    {
+      "file": "dash_back_005.png",
+      "frameIndex": 5,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -118,
+        "y": -460,
+        "width": 257,
+        "height": 460
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -277,
+        "width": 26,
+        "height": 59
+      },
+      "empty": false,
+      "width": 308,
+      "height": 485,
+      "anchor": {
+        "x": 141,
+        "y": 479
+      },
+      "reachX": 162,
+      "silhouetteHeight": 475
+    },
+    {
+      "file": "dash_back_006.png",
+      "frameIndex": 6,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -145,
+        "y": -461,
+        "width": 261,
+        "height": 461
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 308,
+      "height": 485,
+      "anchor": {
+        "x": 168,
+        "y": 479
+      },
+      "reachX": 135,
+      "silhouetteHeight": 475
+    }
+  ],
+  "frameData": [
+    {
+      "file": "sprites/dash_back/dash_back_001.png",
+      "width": 310,
+      "height": 485,
+      "anchor": {
+        "x": 108,
+        "y": 479
+      },
+      "reachX": 197,
+      "silhouetteHeight": 475,
+      "hurtbox": {
+        "x": -89,
+        "y": -463,
+        "width": 270,
+        "height": 463
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -452,
+        "width": 61,
+        "height": 235
+      }
+    },
+    {
+      "file": "sprites/dash_back/dash_back_002.png",
+      "width": 398,
+      "height": 485,
+      "anchor": {
+        "x": 196,
+        "y": 479
+      },
+      "reachX": 197,
+      "silhouetteHeight": 475,
+      "hurtbox": {
+        "x": -175,
+        "y": -458,
+        "width": 348,
+        "height": 458
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -413,
+        "width": 61,
+        "height": 193
+      }
+    },
+    {
+      "file": "sprites/dash_back/dash_back_003.png",
+      "width": 503,
+      "height": 485,
+      "anchor": {
+        "x": 470,
+        "y": 479
+      },
+      "reachX": 28,
+      "silhouetteHeight": 475,
+      "hurtbox": {
+        "x": -449,
+        "y": -461,
+        "width": 464,
+        "height": 461
+      },
+      "attackBox": null
+    },
+    {
+      "file": "sprites/dash_back/dash_back_004.png",
+      "width": 495,
+      "height": 485,
+      "anchor": {
+        "x": 111,
+        "y": 479
+      },
+      "reachX": 379,
+      "silhouetteHeight": 475,
+      "hurtbox": {
+        "x": -91,
+        "y": -457,
+        "width": 444,
+        "height": 457
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -400,
+        "width": 243,
+        "height": 340
+      }
+    },
+    {
+      "file": "sprites/dash_back/dash_back_005.png",
+      "width": 308,
+      "height": 485,
+      "anchor": {
+        "x": 141,
+        "y": 479
+      },
+      "reachX": 162,
+      "silhouetteHeight": 475,
+      "hurtbox": {
+        "x": -118,
+        "y": -460,
+        "width": 257,
+        "height": 460
+      },
+      "attackBox": {
+        "x": 137,
+        "y": -277,
+        "width": 26,
+        "height": 59
+      }
+    },
+    {
+      "file": "sprites/dash_back/dash_back_006.png",
+      "width": 308,
+      "height": 485,
+      "anchor": {
+        "x": 168,
+        "y": 479
+      },
+      "reachX": 135,
+      "silhouetteHeight": 475,
+      "hurtbox": {
+        "x": -145,
+        "y": -461,
+        "width": 261,
+        "height": 461
+      },
+      "attackBox": null
+    }
+  ]
+}

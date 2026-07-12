@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { playableCharacters } from '../characters/stamptownFighters';
+import { roster } from '../characters/roster';
+import { collectProjectileAnimations } from '../core/projectileAssets';
 import { ComputerPlayer } from '../core/ComputerPlayer';
 import { Fighter } from '../core/Fighter';
 import { GameLoop } from '../core/GameLoop';
@@ -11,6 +12,7 @@ import type { CharacterConfig, CharacterSpriteConfig, SpriteFrameMeta, SpriteShe
 import { LayoutShell } from '../ui/LayoutShell';
 import { prefersTouchControls } from '../util/device';
 import { DebugOverlay } from './DebugOverlay';
+import { DebugPanel } from './DebugPanel';
 
 const FLOOR_Y = 390;
 const ROUND_FRAMES = 99 * 60;
@@ -45,6 +47,7 @@ export class FightScene extends Phaser.Scene {
   fighters!: [Fighter, Fighter];
   projectiles!: ProjectilePool;
   hitPauseFrames = 0;
+  _soundsPlayedThisFrame: Set<string> | undefined = undefined;
   roundTimer = ROUND_FRAMES;
   debugMode = true;
   frameCounter = 0;
@@ -53,8 +56,12 @@ export class FightScene extends Phaser.Scene {
   readonly computerPlayer = new ComputerPlayer();
   singlePlayer = true;
   isPaused = false;
-  selectedP1Id = playableCharacters[0].id;
-  selectedP2Id = playableCharacters[2].id;
+  // Defaults; init() may override from scene data. Optional access tolerates a
+  // 1–2 char CMS roster (P2 falls back to P1 for a mirror match).
+  // ponytail: a 0-char roster (fully wiped CMS) has no fighters to select — out
+  // of scope; add an empty-state screen if that becomes a real workflow.
+  selectedP1Id = roster[0]?.id ?? '';
+  selectedP2Id = roster[2]?.id ?? roster[1]?.id ?? roster[0]?.id ?? '';
   p1Rounds = 0;
   p2Rounds = 0;
   roundNumber = 1;
@@ -80,8 +87,8 @@ export class FightScene extends Phaser.Scene {
 
   init(data: FightSceneData = {}): void {
     this.hasSceneData = Object.keys(data).length > 0;
-    this.selectedP1Id = data.p1Id ?? playableCharacters[0].id;
-    this.selectedP2Id = data.p2Id ?? playableCharacters[2].id;
+    this.selectedP1Id = data.p1Id ?? roster[0]?.id ?? '';
+    this.selectedP2Id = data.p2Id ?? roster[2]?.id ?? roster[1]?.id ?? roster[0]?.id ?? '';
     this.singlePlayer = prefersTouchControls() ? true : (data.cpu ?? true);
     this.p1Rounds = data.p1Rounds ?? 0;
     this.p2Rounds = data.p2Rounds ?? 0;
@@ -97,6 +104,12 @@ export class FightScene extends Phaser.Scene {
   }
 
   preload(): void {
+    const arenaParams = new URLSearchParams(window.location.search);
+    const arenaId = arenaParams.get('arena');
+    if (arenaId) {
+      this.load.image(`arena_${arenaId}`, this.assetUrl(`/arenas/${arenaId}/background.png`));
+    }
+
     this.load.image('cardbross_cross', this.assetUrl('/fighters/mr_cardboard/projectiles/cardbross_cross.png'));
     this.load.image('hi_vis_vest', this.assetUrl('/fighters/viggo/projectiles/hi_vis_vest.png'));
     this.load.image('bucket_wave', this.assetUrl('/fighters/janitor/projectiles/bucket_wave.png'));
@@ -110,9 +123,31 @@ export class FightScene extends Phaser.Scene {
     this.load.image('juggling_balls', this.assetUrl('/fighters/juggling_joe/projectiles/juggling_balls.png'));
     this.load.image('squeak_storm', this.assetUrl('/fighters/rubber_chicken/projectiles/squeak_storm.png'));
     this.load.image('rubber_bat', this.assetUrl('/fighters/mr_spooky/projectiles/rubber_bat.png'));
+    this.load.image('red_note_wave', this.assetUrl('/fighters/red_mic/projectiles/red_note_wave.png'));
     this.load.image('demi_laser', this.assetUrl('/fighters/demi/projectiles/remote_laser.png'));
     this.load.image('remote_spark', this.assetUrl('/fighters/demi/projectiles/remote_spark.png'));
     this.load.image('morph_flash', this.assetUrl('/fighters/demi/projectiles/morph_flash.png'));
+
+    // The keys above are hand-authored fighters whose projectile filename can
+    // differ from the texture key (e.g. martin_firebolt → firebolt.png), so they
+    // stay explicit. CMS-generated fighters follow the convention
+    // `/fighters/<id>/projectiles/<animation>.png` (written by the exporter), so
+    // load those dynamically by walking each character's move spawn events. The
+    // guard set skips anything already queued above so we never request a wrong
+    // path for the hand-authored fighters.
+    const queuedProjectileKeys = new Set<string>([
+      'cardbross_cross', 'hi_vis_vest', 'bucket_wave', 'apple_shards',
+      'martin_firebolt', 'martin_ink_spark', 'martin_ground_rune', 'martin_lightning_from_sky',
+      'purple_note_wave', 'foam_wave', 'juggling_balls', 'squeak_storm',
+      'rubber_bat', 'red_note_wave', 'demi_laser', 'remote_spark', 'morph_flash',
+    ]);
+    for (const character of roster) {
+      for (const animation of collectProjectileAnimations(character)) {
+        if (queuedProjectileKeys.has(animation)) continue;
+        queuedProjectileKeys.add(animation);
+        this.load.image(animation, this.assetUrl(`/fighters/${character.id}/projectiles/${animation}.png`));
+      }
+    }
 
     const preloadSpriteConfig = (sprite: CharacterSpriteConfig, keyPrefix: string): void => {
       for (const [sheet, frameCount] of Object.entries(sprite.frameCounts)) {
@@ -131,12 +166,46 @@ export class FightScene extends Phaser.Scene {
       }
     };
 
-    for (const character of playableCharacters) {
+    for (const character of roster) {
       if (character.sprite) preloadSpriteConfig(character.sprite, character.id);
       for (const actor of character.actors ?? []) {
         if (actor.sprite) preloadSpriteConfig(actor.sprite, `${character.id}:${actor.id}`);
       }
     }
+
+    this.load.json('assets-index', '/assets-index.json');
+    this.load.once('filecomplete-json-assets-index', (_key: string, _type: string, data: unknown) => {
+      if (!data || typeof data !== 'object') return;
+      const index = data as Record<string, unknown>;
+      const sounds = index['sounds'];
+      if (!Array.isArray(sounds)) return;
+
+      let count = 0;
+      for (const sound of sounds) {
+        if (!sound || typeof sound !== 'object') continue;
+        const s = sound as Record<string, unknown>;
+        const name = typeof s['name'] === 'string' ? s['name'] : null;
+        const file = typeof s['file'] === 'string' ? s['file'] : null;
+        const fighterId = typeof s['fighterId'] === 'string' ? s['fighterId'] : null;
+        if (!name || !file) continue;
+
+        const key = fighterId ? `${fighterId}:${name}` : name;
+        const url = fighterId
+          ? `/audio/sfx/fighters/${fighterId}/${file}`
+          : `/audio/sfx/${file}`;
+        this.load.audio(key, url);
+        count += 1;
+      }
+
+      if (count > 50) {
+        console.warn(`[FightScene] preloading ${count} sounds — consider pruning the assets index`);
+      }
+
+      if (count > 0) this.load.start();
+    });
+    this.load.on('loaderror', (file: { key: string; type: string }) => {
+      if (file.key === 'assets-index') return; // missing index is expected until sounds are generated
+    });
   }
 
   create(): void {
@@ -145,11 +214,20 @@ export class FightScene extends Phaser.Scene {
     const p1FromQuery = params.get('p1');
     const p2FromQuery = params.get('p2');
     if (!this.hasSceneData) {
-      if (p1FromQuery) this.selectedP1Id = this.characterFromParam(p1FromQuery, playableCharacters[0]).id;
-      if (p2FromQuery) this.selectedP2Id = this.characterFromParam(p2FromQuery, playableCharacters[2]).id;
+      if (p1FromQuery) this.selectedP1Id = this.characterFromParam(p1FromQuery, roster[0]).id;
+      if (p2FromQuery) this.selectedP2Id = this.characterFromParam(p2FromQuery, roster[2]).id;
     }
 
     this.cameras.main.setBackgroundColor('#141820');
+
+    const arenaQueryParams = new URLSearchParams(window.location.search);
+    const arenaIdForBg = arenaQueryParams.get('arena');
+    if (arenaIdForBg && this.textures.exists(`arena_${arenaIdForBg}`)) {
+      const bg = this.add.image(this.scale.width / 2, this.scale.height / 2, `arena_${arenaIdForBg}`);
+      bg.setDisplaySize(this.scale.width, this.scale.height);
+      bg.setDepth(-10);
+    }
+
     this.createProjectileTextures();
     if (params.get('debug') === 'sprites') {
       this.createSpriteDebugView(params);
@@ -169,8 +247,8 @@ export class FightScene extends Phaser.Scene {
 
     this.projectiles = new ProjectilePool(this);
     this.fighters = [
-      new Fighter(this, this.characterFromParam(this.selectedP1Id, playableCharacters[0]), 1, { x: 200, y: FLOOR_Y }),
-      new Fighter(this, this.characterFromParam(this.selectedP2Id, playableCharacters[2]), 2, { x: 600, y: FLOOR_Y }),
+      new Fighter(this, this.characterFromParam(this.selectedP1Id, roster[0]), 1, { x: 200, y: FLOOR_Y }),
+      new Fighter(this, this.characterFromParam(this.selectedP2Id, roster[2]), 2, { x: 600, y: FLOOR_Y }),
     ];
 
     this.hudGraphics = this.add.graphics().setDepth(50);
@@ -207,9 +285,15 @@ export class FightScene extends Phaser.Scene {
     this.createPauseModal();
     this.createWinnerModal();
 
+    DebugPanel.create(this);
+
     this.input.keyboard?.on('keydown-F1', () => {
+      DebugPanel.current()?.toggle();
       this.debugMode = !this.debugMode;
       if (!this.debugMode) DebugOverlay.clear(this);
+    });
+    this.input.keyboard?.on('keydown-F3', () => {
+      DebugPanel.current()?.togglePanel();
     });
     this.input.keyboard?.on('keydown-F2', () => {
       this.toggleCpu();
@@ -231,6 +315,10 @@ export class FightScene extends Phaser.Scene {
       if (!debugMove) return;
       this.fighters[debugMove.player].debugStartMove(debugMove.moveId);
     });
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      DebugPanel.current()?.destroy();
+    });
+
     this.installDebugHooks();
     this.installTouchHooks();
 
@@ -273,6 +361,8 @@ export class FightScene extends Phaser.Scene {
 
   fixedUpdate(): void {
     if (!this.fighters || !this.projectiles) return;
+
+    this._soundsPlayedThisFrame?.clear();
 
     if (this.roundResolved) {
       this.renderFrame();
@@ -395,6 +485,7 @@ export class FightScene extends Phaser.Scene {
         [
           'P / Esc        Resume',
           'F1             Toggle debug boxes',
+          'F3             Debug panel (per-actor)',
           'F2             Toggle CPU',
           'R              Restart round',
           '',
@@ -620,7 +711,7 @@ export class FightScene extends Phaser.Scene {
         card.rect.setStrokeStyle(2, selected ? 0xfff0a3 : 0x485568, selected ? 1 : 0.85);
         card.rect.setFillStyle(selected ? 0x24364b : 0x0b0e13, 1);
       }
-      helpText.setText(`P1: ${this.characterFromParam(p1Id, playableCharacters[0]).displayName}     P2: ${this.characterFromParam(p2Id, playableCharacters[2]).displayName}     CPU: ${this.singlePlayer ? 'ON' : 'OFF'}`);
+      helpText.setText(`P1: ${this.characterFromParam(p1Id, roster[0]).displayName}     P2: ${this.characterFromParam(p2Id, roster[2]).displayName}     CPU: ${this.singlePlayer ? 'ON' : 'OFF'}`);
     };
 
     const createRow = (player: 1 | 2, y: number): void => {
@@ -631,11 +722,11 @@ export class FightScene extends Phaser.Scene {
           fontSize: '18px',
         })
         .setOrigin(0, 0.5);
-      const spacing = playableCharacters.length > 1 ? Math.min(124, 704 / (playableCharacters.length - 1)) : 124;
+      const spacing = roster.length > 1 ? Math.min(124, 704 / (roster.length - 1)) : 124;
       const cardWidth = Math.min(112, Math.max(58, spacing - 8));
       const cardHeight = 112;
       const startX = 48;
-      playableCharacters.forEach((character, index) => {
+      roster.forEach((character, index) => {
         const x = startX + index * spacing;
         const rect = this.add.rectangle(x, y, cardWidth, cardHeight, 0x0b0e13, 1).setInteractive({ useHandCursor: true });
         rect.on('pointerdown', () => {
@@ -672,8 +763,8 @@ export class FightScene extends Phaser.Scene {
       updateCards();
     });
     const backButton = this.createPauseButton(554, 406, 'DEFAULTS', () => {
-      p1Id = playableCharacters[0].id;
-      p2Id = playableCharacters[2].id;
+      p1Id = roster[0].id;
+      p2Id = roster[2].id;
       updateCards();
     });
     this.add.container(0, 0, [...startButton, ...cpuButton, ...backButton]).setDepth(10);
@@ -827,7 +918,7 @@ export class FightScene extends Phaser.Scene {
       .setOrigin(0, 0);
 
     let y = 42;
-    for (const character of playableCharacters) {
+    for (const character of roster) {
       if (characterFilter && character.id !== characterFilter) continue;
       if (!character.sprite) continue;
       this.add
@@ -883,9 +974,10 @@ export class FightScene extends Phaser.Scene {
       { key: 'juggling_balls', x: 480, row: 2 },
       { key: 'squeak_storm', x: 674, row: 2 },
       { key: 'rubber_bat', x: 92, row: 3 },
-      { key: 'demi_laser', x: 286, row: 3 },
-      { key: 'morph_flash', x: 480, row: 3 },
-      { key: 'remote_spark', x: 674, row: 3 },
+      { key: 'red_note_wave', x: 250, row: 3 },
+      { key: 'demi_laser', x: 408, row: 3 },
+      { key: 'morph_flash', x: 594, row: 3 },
+      { key: 'remote_spark', x: 92, row: 4 },
     ].forEach(({ key, x, row }) => {
       const texture = this.textures.get(key).getSourceImage() as { width: number; height: number };
       const scale = Math.min(0.75, 86 / Math.max(texture.width, texture.height));
@@ -925,7 +1017,7 @@ export class FightScene extends Phaser.Scene {
 
   private characterFromParam(id: string | null, fallback: CharacterConfig): CharacterConfig {
     if (!id) return fallback;
-    return playableCharacters.find((character) => character.id === id) ?? fallback;
+    return roster.find((character) => character.id === id) ?? fallback;
   }
 
   private debugFrameMeta(sprite: CharacterSpriteConfig, sheet: SpriteSheetId, frameCount: number): SpriteFrameMeta[] {
@@ -946,6 +1038,9 @@ export class FightScene extends Phaser.Scene {
   }
 
   private resolveFighterSpacing(): void {
+    // A held fighter is position-locked to the grabber; pushing them apart
+    // would fight the grab every frame.
+    if (this.fighters.some((fighter) => fighter.state === 'grabbed')) return;
     const [leftFighter, rightFighter] =
       this.fighters[0].x <= this.fighters[1].x ? this.fighters : [this.fighters[1], this.fighters[0]];
     const overlap = MIN_FIGHTER_DISTANCE - (rightFighter.x - leftFighter.x);

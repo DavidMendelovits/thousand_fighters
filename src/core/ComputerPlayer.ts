@@ -52,7 +52,7 @@ export class ComputerPlayer {
     }
 
     const raw = emptyRaw(this.previous);
-    if (self.state === 'attack' || self.state === 'hitstun' || self.state === 'blockstun' || self.state === 'juggle') {
+    if (self.state === 'attack' || self.state === 'hitstun' || self.state === 'blockstun' || self.state === 'grabbed' || self.state === 'juggle') {
       return raw;
     }
 

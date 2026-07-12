@@ -39,10 +39,18 @@ export class InputBuffer {
     else if (back) tokens.push('back');
     else tokens.push('neutral');
 
-    if (raw.lp && !raw.lpPrev) tokens.push('lp');
+    // LP+LK pressed together on the same frame → emit 'grab' and suppress the
+    // bare lp/lk so the grab token doesn't also shadow-match a bare-button move.
+    const lpNew = raw.lp && !raw.lpPrev;
+    const lkNew = raw.lk && !raw.lkPrev;
+    if (lpNew && lkNew) {
+      tokens.push('grab');
+    } else {
+      if (lpNew) tokens.push('lp');
+      if (lkNew) tokens.push('lk');
+    }
     if (raw.mp && !raw.mpPrev) tokens.push('mp');
     if (raw.hp && !raw.hpPrev) tokens.push('hp');
-    if (raw.lk && !raw.lkPrev) tokens.push('lk');
     if (raw.mk && !raw.mkPrev) tokens.push('mk');
     if (raw.hk && !raw.hkPrev) tokens.push('hk');
 

@@ -1,0 +1,300 @@
+{
+  "source": "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-extract-J9u9HE/source.png",
+  "moveId": "kick",
+  "sourceSize": [
+    2172,
+    724
+  ],
+  "grid": [
+    1,
+    6
+  ],
+  "frameCount": 6,
+  "segmentation": "connected-components",
+  "medianSilhouetteHeight": 405,
+  "scaleApplied": 1.1185185185185185,
+  "warnings": [
+    "frame 4: content bleeds 8% past its cell boundary — kept with this frame",
+    "frames equalized to silhouette height 453px per frame (base median was 405px)",
+    "frame 4: 0.5% of opaque pixels remain near-magenta after despill",
+    "frame 6: 0.5% of opaque pixels remain near-magenta after despill"
+  ],
+  "frames": [
+    {
+      "file": "kick_001.png",
+      "frameIndex": 1,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -101,
+        "y": -437,
+        "width": 289,
+        "height": 437
+      },
+      "attackBox": {
+        "x": 195,
+        "y": -375,
+        "width": 9,
+        "height": 30
+      },
+      "empty": false,
+      "width": 325,
+      "height": 463,
+      "anchor": {
+        "x": 117,
+        "y": 457
+      },
+      "reachX": 203,
+      "silhouetteHeight": 453
+    },
+    {
+      "file": "kick_002.png",
+      "frameIndex": 2,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -96,
+        "y": -438,
+        "width": 269,
+        "height": 438
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 306,
+      "height": 463,
+      "anchor": {
+        "x": 113,
+        "y": 457
+      },
+      "reachX": 188,
+      "silhouetteHeight": 453
+    },
+    {
+      "file": "kick_003.png",
+      "frameIndex": 3,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -100,
+        "y": -437,
+        "width": 348,
+        "height": 437
+      },
+      "attackBox": {
+        "x": 195,
+        "y": -309,
+        "width": 75,
+        "height": 138
+      },
+      "empty": false,
+      "width": 395,
+      "height": 463,
+      "anchor": {
+        "x": 121,
+        "y": 457
+      },
+      "reachX": 269,
+      "silhouetteHeight": 453
+    },
+    {
+      "file": "kick_004.png",
+      "frameIndex": 4,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -146,
+        "y": -443,
+        "width": 615,
+        "height": 443
+      },
+      "attackBox": {
+        "x": 195,
+        "y": -453,
+        "width": 292,
+        "height": 200
+      },
+      "empty": false,
+      "width": 656,
+      "height": 463,
+      "anchor": {
+        "x": 165,
+        "y": 457
+      },
+      "reachX": 486,
+      "silhouetteHeight": 453
+    },
+    {
+      "file": "kick_005.png",
+      "frameIndex": 5,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -92,
+        "y": -438,
+        "width": 288,
+        "height": 438
+      },
+      "attackBox": {
+        "x": 195,
+        "y": -255,
+        "width": 19,
+        "height": 36
+      },
+      "empty": false,
+      "width": 327,
+      "height": 463,
+      "anchor": {
+        "x": 109,
+        "y": 457
+      },
+      "reachX": 213,
+      "silhouetteHeight": 453
+    },
+    {
+      "file": "kick_006.png",
+      "frameIndex": 6,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -100,
+        "y": -437,
+        "width": 264,
+        "height": 437
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 299,
+      "height": 463,
+      "anchor": {
+        "x": 116,
+        "y": 457
+      },
+      "reachX": 178,
+      "silhouetteHeight": 453
+    }
+  ],
+  "frameData": [
+    {
+      "file": "sprites/kick/kick_001.png",
+      "width": 325,
+      "height": 463,
+      "anchor": {
+        "x": 117,
+        "y": 457
+      },
+      "reachX": 203,
+      "silhouetteHeight": 453,
+      "hurtbox": {
+        "x": -101,
+        "y": -437,
+        "width": 289,
+        "height": 437
+      },
+      "attackBox": {
+        "x": 195,
+        "y": -375,
+        "width": 9,
+        "height": 30
+      }
+    },
+    {
+      "file": "sprites/kick/kick_002.png",
+      "width": 306,
+      "height": 463,
+      "anchor": {
+        "x": 113,
+        "y": 457
+      },
+      "reachX": 188,
+      "silhouetteHeight": 453,
+      "hurtbox": {
+        "x": -96,
+        "y": -438,
+        "width": 269,
+        "height": 438
+      },
+      "attackBox": null
+    },
+    {
+      "file": "sprites/kick/kick_003.png",
+      "width": 395,
+      "height": 463,
+      "anchor": {
+        "x": 121,
+        "y": 457
+      },
+      "reachX": 269,
+      "silhouetteHeight": 453,
+      "hurtbox": {
+        "x": -100,
+        "y": -437,
+        "width": 348,
+        "height": 437
+      },
+      "attackBox": {
+        "x": 195,
+        "y": -309,
+        "width": 75,
+        "height": 138
+      }
+    },
+    {
+      "file": "sprites/kick/kick_004.png",
+      "width": 656,
+      "height": 463,
+      "anchor": {
+        "x": 165,
+        "y": 457
+      },
+      "reachX": 486,
+      "silhouetteHeight": 453,
+      "hurtbox": {
+        "x": -146,
+        "y": -443,
+        "width": 615,
+        "height": 443
+      },
+      "attackBox": {
+        "x": 195,
+        "y": -453,
+        "width": 292,
+        "height": 200
+      }
+    },
+    {
+      "file": "sprites/kick/kick_005.png",
+      "width": 327,
+      "height": 463,
+      "anchor": {
+        "x": 109,
+        "y": 457
+      },
+      "reachX": 213,
+      "silhouetteHeight": 453,
+      "hurtbox": {
+        "x": -92,
+        "y": -438,
+        "width": 288,
+        "height": 438
+      },
+      "attackBox": {
+        "x": 195,
+        "y": -255,
+        "width": 19,
+        "height": 36
+      }
+    },
+    {
+      "file": "sprites/kick/kick_006.png",
+      "width": 299,
+      "height": 463,
+      "anchor": {
+        "x": 116,
+        "y": 457
+      },
+      "reachX": 178,
+      "silhouetteHeight": 453,
+      "hurtbox": {
+        "x": -100,
+        "y": -437,
+        "width": 264,
+        "height": 437
+      },
+      "attackBox": null
+    }
+  ]
+}
