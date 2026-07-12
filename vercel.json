@@ -4,10 +4,12 @@
   "functions": {
     "api/cms.js": {
       "includeFiles": "public/fighters/janitor/**",
+      "excludeFiles": "node_modules/phaser/**",
       "maxDuration": 60
     },
     "api/[...path].js": {
       "includeFiles": "public/fighters/janitor/**",
+      "excludeFiles": "node_modules/phaser/**",
       "maxDuration": 60
     }
   },
