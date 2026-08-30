@@ -1,0 +1,285 @@
+{
+  "anchorConvention": "frame anchor is the character pivot/feet, in pixels from each PNG top-left",
+  "frames": {
+    "base": [
+      {
+        "file": "sprites/base/base_001.png",
+        "width": 226,
+        "height": 295,
+        "anchor": {
+          "x": 113,
+          "y": 257
+        }
+      },
+      {
+        "file": "sprites/base/base_002.png",
+        "width": 266,
+        "height": 286,
+        "anchor": {
+          "x": 133,
+          "y": 248
+        }
+      },
+      {
+        "file": "sprites/base/base_003.png",
+        "width": 329,
+        "height": 286,
+        "anchor": {
+          "x": 164,
+          "y": 248
+        }
+      },
+      {
+        "file": "sprites/base/base_004.png",
+        "width": 274,
+        "height": 291,
+        "anchor": {
+          "x": 137,
+          "y": 253
+        }
+      },
+      {
+        "file": "sprites/base/base_005.png",
+        "width": 308,
+        "height": 286,
+        "anchor": {
+          "x": 154,
+          "y": 248
+        }
+      },
+      {
+        "file": "sprites/base/base_006.png",
+        "width": 278,
+        "height": 286,
+        "anchor": {
+          "x": 139,
+          "y": 248
+        }
+      }
+    ],
+    "punch": [
+      {
+        "file": "sprites/punch/punch_001.png",
+        "width": 267,
+        "height": 286,
+        "anchor": {
+          "x": 133,
+          "y": 248
+        }
+      },
+      {
+        "file": "sprites/punch/punch_002.png",
+        "width": 316,
+        "height": 286,
+        "anchor": {
+          "x": 158,
+          "y": 248
+        }
+      },
+      {
+        "file": "sprites/punch/punch_003.png",
+        "width": 350,
+        "height": 286,
+        "anchor": {
+          "x": 175,
+          "y": 248
+        }
+      },
+      {
+        "file": "sprites/punch/punch_004.png",
+        "width": 273,
+        "height": 286,
+        "anchor": {
+          "x": 136,
+          "y": 248
+        }
+      },
+      {
+        "file": "sprites/punch/punch_005.png",
+        "width": 244,
+        "height": 286,
+        "anchor": {
+          "x": 122,
+          "y": 248
+        }
+      },
+      {
+        "file": "sprites/punch/punch_006.png",
+        "width": 224,
+        "height": 286,
+        "anchor": {
+          "x": 112,
+          "y": 248
+        }
+      }
+    ],
+    "kick": [
+      {
+        "file": "sprites/kick/kick_001.png",
+        "width": 220,
+        "height": 286,
+        "anchor": {
+          "x": 110,
+          "y": 248
+        }
+      },
+      {
+        "file": "sprites/kick/kick_002.png",
+        "width": 301,
+        "height": 286,
+        "anchor": {
+          "x": 150,
+          "y": 248
+        }
+      },
+      {
+        "file": "sprites/kick/kick_003.png",
+        "width": 325,
+        "height": 286,
+        "anchor": {
+          "x": 162,
+          "y": 248
+        }
+      },
+      {
+        "file": "sprites/kick/kick_004.png",
+        "width": 274,
+        "height": 286,
+        "anchor": {
+          "x": 137,
+          "y": 248
+        }
+      },
+      {
+        "file": "sprites/kick/kick_005.png",
+        "width": 278,
+        "height": 286,
+        "anchor": {
+          "x": 139,
+          "y": 248
+        }
+      },
+      {
+        "file": "sprites/kick/kick_006.png",
+        "width": 231,
+        "height": 286,
+        "anchor": {
+          "x": 115,
+          "y": 248
+        }
+      }
+    ],
+    "special_1": [
+      {
+        "file": "sprites/special_1/special_1_001.png",
+        "width": 286,
+        "height": 286,
+        "anchor": {
+          "x": 143,
+          "y": 248
+        }
+      },
+      {
+        "file": "sprites/special_1/special_1_002.png",
+        "width": 313,
+        "height": 286,
+        "anchor": {
+          "x": 156,
+          "y": 248
+        }
+      },
+      {
+        "file": "sprites/special_1/special_1_003.png",
+        "width": 311,
+        "height": 287,
+        "anchor": {
+          "x": 155,
+          "y": 249
+        }
+      },
+      {
+        "file": "sprites/special_1/special_1_004.png",
+        "width": 381,
+        "height": 286,
+        "anchor": {
+          "x": 190,
+          "y": 248
+        }
+      },
+      {
+        "file": "sprites/special_1/special_1_005.png",
+        "width": 263,
+        "height": 286,
+        "anchor": {
+          "x": 131,
+          "y": 248
+        }
+      },
+      {
+        "file": "sprites/special_1/special_1_006.png",
+        "width": 344,
+        "height": 286,
+        "anchor": {
+          "x": 172,
+          "y": 248
+        }
+      }
+    ],
+    "special_2": [
+      {
+        "file": "sprites/special_2/special_2_001.png",
+        "width": 233,
+        "height": 286,
+        "anchor": {
+          "x": 116,
+          "y": 248
+        }
+      },
+      {
+        "file": "sprites/special_2/special_2_002.png",
+        "width": 346,
+        "height": 286,
+        "anchor": {
+          "x": 173,
+          "y": 248
+        }
+      },
+      {
+        "file": "sprites/special_2/special_2_003.png",
+        "width": 240,
+        "height": 286,
+        "anchor": {
+          "x": 120,
+          "y": 248
+        }
+      },
+      {
+        "file": "sprites/special_2/special_2_004.png",
+        "width": 252,
+        "height": 286,
+        "anchor": {
+          "x": 126,
+          "y": 248
+        }
+      },
+      {
+        "file": "sprites/special_2/special_2_005.png",
+        "width": 252,
+        "height": 286,
+        "anchor": {
+          "x": 126,
+          "y": 248
+        }
+      },
+      {
+        "file": "sprites/special_2/special_2_006.png",
+        "width": 252,
+        "height": 286,
+        "anchor": {
+          "x": 126,
+          "y": 248
+        }
+      }
+    ]
+  }
+}

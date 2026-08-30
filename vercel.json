@@ -3,13 +3,11 @@
   "outputDirectory": "dist",
   "functions": {
     "api/cms.js": {
-      "includeFiles": "public/fighters/janitor/**",
-      "excludeFiles": "node_modules/phaser/**",
+      "excludeFiles": "{node_modules/phaser/**,public/fighters/**}",
       "maxDuration": 60
     },
     "api/[...path].js": {
-      "includeFiles": "public/fighters/janitor/**",
-      "excludeFiles": "node_modules/phaser/**",
+      "excludeFiles": "{node_modules/phaser/**,public/fighters/**}",
       "maxDuration": 60
     }
   },

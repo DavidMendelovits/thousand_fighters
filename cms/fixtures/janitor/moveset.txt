@@ -1,0 +1,15 @@
+[punch]
+name=Mop Check
+description=Quick forward mop jab that keeps opponents at staff range.
+
+[kick]
+name=Wet Sweep
+description=Low sliding sweep with the mop head dragging across the floor.
+
+[special_1]
+name=Spin Cycle
+description=The Janitor spins the mop in a wide circular staff attack.
+
+[special_2]
+name=Bucket Wave
+description=The Janitor sloshes a bucket forward, sending a low water wave projectile along the stage.

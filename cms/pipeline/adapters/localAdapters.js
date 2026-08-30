@@ -69,7 +69,7 @@ export function createLocalPlaceholderSoundGenerator(overrides = {}) {
 }
 
 export function createLocalSpriteNormalizer({ storage, fixtureFighterId = 'janitor', fixtureRoot } = {}) {
-  const resolvedFixtureRoot = path.resolve(fixtureRoot ?? path.join(REPO_ROOT, 'public', 'fighters', fixtureFighterId));
+  const resolvedFixtureRoot = path.resolve(fixtureRoot ?? path.join(REPO_ROOT, 'cms', 'fixtures', fixtureFighterId));
 
   return {
     id: 'local-fixture-normalizer',
