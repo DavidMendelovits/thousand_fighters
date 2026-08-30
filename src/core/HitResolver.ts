@@ -1,6 +1,6 @@
 import type { Fighter } from './Fighter';
 import type { FighterScene, GrabSpec, Hitbox } from '../schema/types';
-import { HitPause } from '../util/hitpause';
+import { BLOCK_HITSTOP_FRAMES, GRAB_HITSTOP_FRAMES, HitPause, hitstopForDamage } from '../util/hitpause';
 import { boxesOverlap, boxToWorld, type AABB } from '../util/aabb';
 
 export class HitResolver {
@@ -48,7 +48,7 @@ export class HitResolver {
       }
     }
 
-    HitPause.trigger(attacker.scene, 4);
+    HitPause.trigger(attacker.scene, GRAB_HITSTOP_FRAMES);
     return true;
   }
 
@@ -75,6 +75,7 @@ export class HitResolver {
       defender.health = Math.max(0, defender.health - (hitbox.chipDamage ?? 0));
       defender.changeState('blockstun');
       defender.vx = Math.sign(defender.x - attacker.x) * 2;
+      HitPause.trigger(attacker.scene, BLOCK_HITSTOP_FRAMES);
     } else {
       const wasGrounded = defender.grounded;
       defender.hitstun = hitbox.hitstun;
@@ -91,7 +92,7 @@ export class HitResolver {
         defender.changeState('hitstun');
       }
 
-      HitPause.trigger(attacker.scene, 4);
+      HitPause.trigger(attacker.scene, hitstopForDamage(hitbox.damage));
     }
 
     if (defender.health <= 0) defender.changeState('dead');

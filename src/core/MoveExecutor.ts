@@ -3,6 +3,9 @@ import type { Move, MoveEvent } from '../schema/types';
 
 export class MoveExecutor {
   static start(fighter: Fighter, move: Move): void {
+    // Consume the buffered press that triggered this move so it can't also
+    // auto-fire a cancel/follow-up still inside its match window.
+    fighter.inputBuffer.consumeAll();
     fighter.currentMove = move;
     fighter.movePhaseIndex = 0;
     fighter.movePhaseFrame = 0;

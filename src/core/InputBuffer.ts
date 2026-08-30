@@ -23,6 +23,15 @@ export class InputBuffer {
   private history: Array<{ tokens: InputToken[]; frame: number; raw: RawInput }> = [];
   private currentFrame = 0;
   private readonly maxHistory = 60;
+  // Frames at or before this are unmatchable. Set when a move fires so one
+  // buffered press can't also trigger/cancel into a second move for free
+  // (held directions re-emit every frame, so walking and charge motions are
+  // unaffected).
+  private consumedThroughFrame = -1;
+
+  consumeAll(): void {
+    this.consumedThroughFrame = this.currentFrame - 1;
+  }
 
   record(raw: RawInput, facing: 1 | -1): void {
     const tokens: InputToken[] = [];
@@ -62,7 +71,7 @@ export class InputBuffer {
   matchSequence(sequence: InputToken[], windowFrames = 15): boolean {
     if (sequence.length === 0) return false;
 
-    const recent = this.history.slice(-windowFrames);
+    const recent = this.history.slice(-windowFrames).filter((entry) => entry.frame > this.consumedThroughFrame);
     let seqIdx = 0;
 
     for (const entry of recent) {

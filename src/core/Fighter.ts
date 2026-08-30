@@ -22,12 +22,15 @@ import { resolveStateSheet, stateRowFrame, isLoopingStateRow } from './animation
 import { boxToWorld, type AABB } from '../util/aabb';
 import { interpolateHitboxGeometry } from './hitboxGeometry';
 import { selectTriggeredMove } from './moveSelection';
+import { isThreatened } from './threat';
 
 const STAGE_LEFT = 96;
 const STAGE_RIGHT = 704;
 const FLOOR_Y = 390;
 const FIGHTER_WIDTH = 60;
 const FIGHTER_HEIGHT = 120;
+// Grounded pre-jump frames: makes jumps readable/grabbable and jump-ins committal.
+const JUMP_SQUAT_FRAMES = 3;
 const MOVE_SHEETS = new Set<SpriteSheetId>(MOVE_SHEET_IDS);
 
 type ActiveHitbox = {
@@ -118,6 +121,7 @@ export class Fighter {
 
   inputBuffer = new InputBuffer();
   animationKey = 'idle';
+  private pendingJumpVx: number | null = null;
 
   readonly body: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Sprite;
   readonly label: Phaser.GameObjects.Text;
@@ -154,7 +158,6 @@ export class Fighter {
   }
 
   update(input: RawInput, opponent: Fighter, projectiles: ProjectilePool): void {
-    void projectiles;
     if (this.state === 'dead') {
       this.syncVisuals();
       return;
@@ -163,7 +166,7 @@ export class Fighter {
     this.tickModifiers();
     this.inputBuffer.record(input, this.facing);
     this.autoFace(opponent);
-    this.runState(input);
+    this.runState(input, opponent, projectiles);
     this.applyPhysics();
     this.keepInStage();
     this.recordPose();
@@ -243,7 +246,7 @@ export class Fighter {
     return true;
   }
 
-  private runState(input: RawInput): void {
+  private runState(input: RawInput, opponent: Fighter, projectiles: ProjectilePool): void {
     if (this.state === 'attack') {
       const cancel = this.findTriggeredMove(true);
       if (cancel && MoveExecutor.tryCancel(this, cancel)) return;
@@ -279,12 +282,34 @@ export class Fighter {
       return;
     }
 
+    if (this.state === 'jump_startup') {
+      // Committal pre-jump: still grounded and grabbable for JUMP_SQUAT_FRAMES.
+      if (this.stateFrame >= JUMP_SQUAT_FRAMES) {
+        this.vy = -this.config.jumpVelocity;
+        this.vx = this.pendingJumpVx ?? 0;
+        this.pendingJumpVx = null;
+        this.grounded = false;
+        this.changeState('airborne');
+      }
+      return;
+    }
+
+    // Proximity guard: back only locks into guard stance while actually
+    // threatened; otherwise back = retreat (walk_back). Reactive blocking in
+    // HitResolver.isBlocking reads raw input, so retreating still blocks.
+    const threatened = isThreatened(
+      this.x,
+      opponent.x,
+      opponent.state,
+      projectiles.active.filter((p) => p.owner !== this).map((p) => ({ x: p.x, vx: p.vx })),
+    );
+
     // Maintain active block state while holding back; exit when released.
     // HitResolver.isBlocking() reads raw input so it still works in blockstun
     // (the reactive path) without any changes here.
     if (this.state === 'block') {
       const backHeld = this.facing === 1 ? input.left : input.right;
-      if (!this.grounded || !backHeld) {
+      if (!this.grounded || !backHeld || !threatened) {
         this.changeState('idle');
         // Fall through to normal state handling below.
       } else {
@@ -319,11 +344,15 @@ export class Fighter {
     const forwardHeld = this.facing === 1 ? input.right : input.left;
     const backHeld = this.facing === 1 ? input.left : input.right;
 
-    // Hold-back guard: grounded + back held → enter visible block state.
-    // vx=0 (no backward movement while blocking).
+    // Grounded + back held: guard stance only under threat, retreat otherwise.
     if (backHeld && !forwardHeld && !input.down && !input.up) {
-      this.vx = 0;
-      this.changeState('block');
+      if (threatened) {
+        this.vx = 0;
+        this.changeState('block');
+      } else {
+        this.vx = -this.config.walkBackSpeed * this.facing;
+        this.changeState('walk_back');
+      }
     } else if (forwardHeld) {
       this.vx = this.config.walkForwardSpeed * this.facing;
       this.changeState('walk_forward');
@@ -392,14 +421,13 @@ export class Fighter {
   private startJump(input: RawInput): void {
     const forwardHeld = this.facing === 1 ? input.right : input.left;
     const backHeld = this.facing === 1 ? input.left : input.right;
-    this.vy = -this.config.jumpVelocity;
-    this.vx = forwardHeld
+    this.pendingJumpVx = forwardHeld
       ? this.config.jumpForwardVelocity * this.facing
       : backHeld
         ? -this.config.jumpBackVelocity * this.facing
         : 0;
-    this.grounded = false;
-    this.changeState('airborne');
+    this.vx = 0;
+    this.changeState('jump_startup');
   }
 
   private horizontalAirVelocity(input: RawInput): number {
@@ -550,6 +578,7 @@ export class Fighter {
       walk_forward: 1 + (Math.floor(delayedStateFrame / 8) % 2),
       walk_back: 2 - (Math.floor(delayedStateFrame / 8) % 2),
       crouch: 4,
+      jump_startup: 4,
       airborne: 5,
       landing: 4,
       block: 3,
