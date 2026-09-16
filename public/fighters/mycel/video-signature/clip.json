@@ -1,0 +1,310 @@
+{
+  "schemaVersion": 1,
+  "id": "mycel_signature",
+  "displayName": "Mycel \u00b7 video signature",
+  "kind": "attack",
+  "playback": "once",
+  "tickRate": 60,
+  "totalTicks": 48,
+  "canvas": {
+    "width": 106,
+    "height": 139
+  },
+  "anchor": {
+    "x": 44,
+    "y": 133
+  },
+  "rootMode": "baked",
+  "layers": [
+    {
+      "id": "body",
+      "role": "body",
+      "z": 0,
+      "blend": "normal",
+      "sheet": "layers/body.png",
+      "frames": [
+        {
+          "x": 0,
+          "y": 0,
+          "width": 106,
+          "height": 139,
+          "file": "sprites/body/body_001.png",
+          "durationTicks": 4,
+          "sourceFrame": 0,
+          "sourceTimeMs": 0.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 106,
+          "y": 0,
+          "width": 106,
+          "height": 139,
+          "file": "sprites/body/body_002.png",
+          "durationTicks": 4,
+          "sourceFrame": 12,
+          "sourceTimeMs": 500.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 212,
+          "y": 0,
+          "width": 106,
+          "height": 139,
+          "file": "sprites/body/body_003.png",
+          "durationTicks": 4,
+          "sourceFrame": 24,
+          "sourceTimeMs": 1000.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 318,
+          "y": 0,
+          "width": 106,
+          "height": 139,
+          "file": "sprites/body/body_004.png",
+          "durationTicks": 4,
+          "sourceFrame": 42,
+          "sourceTimeMs": 1750.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 424,
+          "y": 0,
+          "width": 106,
+          "height": 139,
+          "file": "sprites/body/body_005.png",
+          "durationTicks": 3,
+          "sourceFrame": 60,
+          "sourceTimeMs": 2500.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 530,
+          "y": 0,
+          "width": 106,
+          "height": 139,
+          "file": "sprites/body/body_006.png",
+          "durationTicks": 3,
+          "sourceFrame": 72,
+          "sourceTimeMs": 3000.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 636,
+          "y": 0,
+          "width": 106,
+          "height": 139,
+          "file": "sprites/body/body_007.png",
+          "durationTicks": 6,
+          "sourceFrame": 84,
+          "sourceTimeMs": 3500.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 742,
+          "y": 0,
+          "width": 106,
+          "height": 139,
+          "file": "sprites/body/body_008.png",
+          "durationTicks": 6,
+          "sourceFrame": 96,
+          "sourceTimeMs": 4000.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 0,
+          "y": 139,
+          "width": 106,
+          "height": 139,
+          "file": "sprites/body/body_009.png",
+          "durationTicks": 6,
+          "sourceFrame": 108,
+          "sourceTimeMs": 4500.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 106,
+          "y": 139,
+          "width": 106,
+          "height": 139,
+          "file": "sprites/body/body_010.png",
+          "durationTicks": 8,
+          "sourceFrame": 120,
+          "sourceTimeMs": 5000.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "type": "activate",
+      "label": "Cast / extension begins",
+      "tick": 16
+    }
+  ],
+  "palette": [
+    "#f0edd1",
+    "#eae3bc",
+    "#e4d7a8",
+    "#e0cf9e",
+    "#ddc489",
+    "#e0b24d",
+    "#c5b57a",
+    "#cfa95c",
+    "#d29f3e",
+    "#d3991f",
+    "#c1a465",
+    "#be995a",
+    "#9f9b5a",
+    "#ca8c25",
+    "#b9883b",
+    "#a28960",
+    "#a88741",
+    "#a77d36",
+    "#a27128",
+    "#7f883f",
+    "#847647",
+    "#836a3c",
+    "#6a7a29",
+    "#5d6b29",
+    "#886030",
+    "#7e5f31",
+    "#795d33",
+    "#6b5e35",
+    "#7b5435",
+    "#6f5130",
+    "#674e2d",
+    "#566120",
+    "#565729",
+    "#5a492a",
+    "#49571f",
+    "#375711",
+    "#3d4719",
+    "#67392e",
+    "#533b21",
+    "#433e1e",
+    "#45331b",
+    "#432c1b",
+    "#472024",
+    "#2c3b14",
+    "#2e2b16",
+    "#252010",
+    "#1b130d",
+    "#23060e"
+  ],
+  "intent": {
+    "topologyChanges": false,
+    "scaleChanges": false,
+    "paletteChanges": false
+  },
+  "qa": {
+    "status": "needs-review",
+    "checks": [
+      {
+        "id": "shared-scale",
+        "label": "Shared scale",
+        "status": "pass",
+        "detail": "One 0.266667\u00d7 transform; no silhouette fitting"
+      },
+      {
+        "id": "parts",
+        "label": "Disconnected parts",
+        "status": "pass",
+        "detail": "All foreground components retained"
+      },
+      {
+        "id": "clipping",
+        "label": "Source framing",
+        "status": "pass",
+        "detail": "0 source boundary contacts"
+      },
+      {
+        "id": "motion",
+        "label": "Pose diversity",
+        "status": "pass",
+        "detail": "10 distinct selected composites; not a motion-quality score"
+      },
+      {
+        "id": "review",
+        "label": "Art and gameplay",
+        "status": "warn",
+        "detail": "Human review required; morphology, loop seams and combat timing are not automatically approved"
+      }
+    ],
+    "warnings": []
+  },
+  "provenance": {
+    "method": "generated-video",
+    "provider": "fal",
+    "model": "kling-video/v3/standard/image-to-video",
+    "description": "Reviewed video-derived body motion. Fixed reference-foot anchor and scale; authored action timing. Long-range attached extension and collisions remain engine-driven. Prototype, not final sprite cleanup.",
+    "compiler": "animation-clip-v1",
+    "scale": 0.26666666666666666,
+    "sources": [
+      {
+        "sha256": "aeec24fa63a9345a360dcc464404afb36c940185ab891eaf9182b57a8a3e2fc8",
+        "frameCount": 121,
+        "video": "/Users/davidmendelovits/space/thousand_fighters/artifacts/animation-video/oddities/mycel-roots-v1/source.mp4",
+        "size": [
+          960,
+          960
+        ]
+      }
+    ]
+  },
+  "review": {
+    "contactSheet": "contact-sheet.png",
+    "preview": "preview.png"
+  }
+}

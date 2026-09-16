@@ -2,6 +2,7 @@ import { assetApiUrl, writeCharacterAssetUpload } from '../assets/uploadCharacte
 import { exportCharacterToRuntime } from '../export/exportCharacterToRuntime.js';
 import { build as buildAssetsIndex } from '../../scripts/build_assets_index.mjs';
 import { SHEET_IDS } from '../../shared/animationRows.js';
+import {validateCombatRules} from '../export/validateCombatRules.js';
 import { validateCombos, validateProjectiles, validateProjectileReferences } from '../export/convertDraftToCharacterConfig.js';
 
 // Row ids an agent can generate, sourced from the registry so the tool schema
@@ -75,7 +76,9 @@ export function createCmsTools({ pipeline, repository, registry }) {
       }, ['characterId', 'patch']),
       execute: async ({ characterId, patch, note }) => {
         const current = await repository.getDraft(characterId);
-        const draft = await repository.saveDraft(characterId, deepMerge(current, patch ?? {}), {
+        const merged=deepMerge(current,patch??{});
+        validateCombatRules(merged,characterId);
+        const draft = await repository.saveDraft(characterId, merged, {
           provider: 'cms-tool',
           adapterId: 'update-character-draft',
           note: note ?? null,
@@ -91,19 +94,21 @@ export function createCmsTools({ pipeline, repository, registry }) {
         prompt: stringSchema('Sprite generation prompt.'),
         moveId: stringSchema(`Row id (one of: ${ROW_ID_LIST}). Defaults to base.`),
         spriteProfile: stringSchema('Sprite profile: standard (1x6 row) or wide (2x3 grid with ~2x wider cells, for long-reach extending-limb moves). Defaults to standard.'),
+        generator: {type:'string',enum:['image','video'],description:'image uses the configured image provider; video uses fal Kling motion from an extracted base pose.'},
         referenceAssetKeys: {
           type: 'array',
           items: { type: 'string' },
           description: 'Optional storage keys of reference images. Defaults to the concept art for the base row, and to the base sheet plus concept art for every other row.',
         },
       }, ['characterId', 'prompt']),
-      execute: async ({ characterId, prompt, moveId, spriteProfile, referenceAssetKeys, context }) => {
+      execute: async ({ characterId, prompt, moveId, spriteProfile, generator, referenceAssetKeys, context }) => {
         assertRowId(moveId);
         const result = await pipeline.generateSpriteSheet({
           characterId,
           prompt,
           moveId: moveId || undefined,
           spriteProfile: spriteProfile || undefined,
+          generator: generator ?? 'image',
           referenceAssetKeys: referenceAssetKeys ?? [],
           context: context ?? {},
         });
@@ -721,6 +726,16 @@ function withAssetApiUrl(result) {
       ...result.asset,
       apiUrl: assetApiUrl(result.asset.key),
     },
+    videoAsset: result.videoAsset
+      ? {
+          ...result.videoAsset,
+          apiUrl: assetApiUrl(result.videoAsset.key),
+      }
+      : result.videoAsset,
+    frameAssets: result.frameAssets?.map((frameAsset) => ({
+      ...frameAsset,
+      apiUrl: assetApiUrl(frameAsset.key),
+    })) ?? result.frameAssets,
   };
 }
 

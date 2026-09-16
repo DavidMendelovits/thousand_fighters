@@ -1,0 +1,16 @@
+[
+  {
+    "id": "brine_abyssal",
+    "parent": "brine",
+    "prompt": "Use case: stylized-concept. Asset type: original 16-bit arcade fighting game transformation sprites. Exactly 8 equal cells, FOUR columns TWO rows, landscape 1536x1024. Background 100% solid flat #FF00FF, absolutely no gradients/shadows/scenery/text/grid lines. Same character and same body scale in all cells, entire full body and every limb inside its cell with generous magenta margin on all sides. Side view facing RIGHT, feet aligned across row. Crisp chunky pixel clusters, restrained 32-color sprite palette, dark outlines, NOT 3D, NOT action figures. Row1: idle combat guard, low anticipation crouch, forward heavy punch, forward kick. Row2: forward cast palms, close grasp arms, throw followthrough, hurt recoil. No detached effects or opponents. Character: Brine's transformed Abyssal Admiral form, massive dark navy squid-headed dock boxer, ivory coral crown and shoulder plates, luminous cyan suckers on four muscular tentacle arms, torn navy sailor trousers, brass boots. Clearly recognizable cephalopod fighter but dramatically wider silhouette than base red squid. Same four arms and costume across poses.",
+    "ref": "/Users/davidmendelovits/space/thousand_fighters/public/fighters/brine/portrait.png",
+    "name": "brine_abyssal"
+  },
+  {
+    "id": "taffy_sugarstorm",
+    "parent": "taffy",
+    "prompt": "Use case: stylized-concept. Asset type: original 16-bit arcade fighting game transformation sprites. Exactly 8 equal cells, FOUR columns TWO rows, landscape 1536x1024. Background 100% solid flat #FF00FF, absolutely no gradients/shadows/scenery/text/grid lines. Same character and same body scale in all cells, entire full body and every limb inside its cell with generous magenta margin on all sides. Side view facing RIGHT, feet aligned across row. Crisp chunky pixel clusters, restrained 32-color sprite palette, dark outlines, NOT 3D, NOT action figures. Row1: idle combat guard, low anticipation crouch, forward heavy punch, forward kick. Row2: forward cast palms, close grasp arms, throw followthrough, hurt recoil. No detached effects or opponents. Character: Taffy Riot transformed Sugarstorm form, tall elastic golden candy boxer, twisted caramel crown hair, dark teal cropped jacket, huge amber translucent-looking hard-candy gauntlets with opaque pixel shading, candy-striped long trousers and teal shoes. Dynamic rubber-hose long arms but bounded within cells, powerful adult fighter silhouette, not a toy. Consistent two arms costume and proportions across all eight poses.",
+    "ref": "/Users/davidmendelovits/space/thousand_fighters/public/fighters/taffy/portrait.png",
+    "name": "taffy_sugarstorm"
+  }
+]

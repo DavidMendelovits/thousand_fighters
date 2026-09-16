@@ -58,10 +58,12 @@ export async function loadCmsRoster(): Promise<CharacterConfig[]> {
     // Only CMS-discovered fighters enter the roster — no built-in merge. (Use
     // mergeRoster from stamptownFighters if you ever want the built-ins back.)
     for (const config of configs) {
-      if (config && !roster.some((existing) => existing.id === config.id)) {
+      if (config && config.selectable !== false && !config.parentId && !roster.some((existing) => existing.id === config.id)) {
         roster.push(config);
       }
     }
+    // Feature the new collection without deleting or hiding existing fighters.
+    roster.sort((a, b) => Number(b.rosterGroup === 'oddities') - Number(a.rosterGroup === 'oddities'));
   } catch {
     // No assets index (dev without build step) — built-ins only.
   }

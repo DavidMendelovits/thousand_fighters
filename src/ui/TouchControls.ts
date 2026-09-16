@@ -13,6 +13,9 @@ const ATTACK_BUTTONS: ReadonlyArray<{ name: TouchAttackButton; label: string; ki
   { name: 'lk', label: 'LK', kind: 'kick' },
   { name: 'mk', label: 'MK', kind: 'kick' },
   { name: 'hk', label: 'HK', kind: 'kick' },
+  { name: 'dash', label: 'DASH', kind: 'kick' },
+  { name: 'power', label: 'POWER', kind: 'punch' },
+  { name: 'transform', label: 'FORM', kind: 'punch' },
 ];
 
 const DPAD_NUB_TRAVEL = 0.7;

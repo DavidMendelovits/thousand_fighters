@@ -1,0 +1,546 @@
+{
+  "id": "energy_cast",
+  "displayName": "Ion bloom",
+  "kind": "projectile-cast",
+  "playback": "loop",
+  "tickRate": 60,
+  "scale": 1,
+  "padding": 5,
+  "rootMode": "in-place",
+  "intent": {
+    "topologyChanges": false,
+    "scaleChanges": false,
+    "paletteChanges": false
+  },
+  "selection": [
+    {
+      "frame": 0,
+      "durationTicks": 8
+    },
+    {
+      "frame": 1,
+      "durationTicks": 3
+    },
+    {
+      "frame": 2,
+      "durationTicks": 3
+    },
+    {
+      "frame": 3,
+      "durationTicks": 3
+    },
+    {
+      "frame": 4,
+      "durationTicks": 3
+    },
+    {
+      "frame": 5,
+      "durationTicks": 3
+    },
+    {
+      "frame": 6,
+      "durationTicks": 3
+    },
+    {
+      "frame": 7,
+      "durationTicks": 3
+    },
+    {
+      "frame": 8,
+      "durationTicks": 3
+    },
+    {
+      "frame": 9,
+      "durationTicks": 3
+    },
+    {
+      "frame": 10,
+      "durationTicks": 3
+    },
+    {
+      "frame": 11,
+      "durationTicks": 3
+    },
+    {
+      "frame": 12,
+      "durationTicks": 3
+    },
+    {
+      "frame": 13,
+      "durationTicks": 3
+    },
+    {
+      "frame": 14,
+      "durationTicks": 3
+    },
+    {
+      "frame": 15,
+      "durationTicks": 3
+    },
+    {
+      "frame": 16,
+      "durationTicks": 3
+    },
+    {
+      "frame": 17,
+      "durationTicks": 3
+    },
+    {
+      "frame": 18,
+      "durationTicks": 3
+    },
+    {
+      "frame": 19,
+      "durationTicks": 3
+    },
+    {
+      "frame": 20,
+      "durationTicks": 3
+    },
+    {
+      "frame": 21,
+      "durationTicks": 3
+    },
+    {
+      "frame": 22,
+      "durationTicks": 3
+    },
+    {
+      "frame": 23,
+      "durationTicks": 8
+    }
+  ],
+  "layers": [
+    {
+      "id": "body",
+      "role": "body",
+      "z": 0,
+      "source": {
+        "frames": [
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/000.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/001.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/002.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/003.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/004.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/005.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/006.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/007.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/008.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/009.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/010.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/011.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/012.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/013.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/014.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/015.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/016.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/017.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/018.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/019.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/020.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/021.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/022.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/body/023.png"
+        ],
+        "fps": 20,
+        "anchor": {
+          "x": 60,
+          "y": 103
+        },
+        "rootTrack": [
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          }
+        ]
+      }
+    },
+    {
+      "id": "aura",
+      "role": "aura",
+      "z": -1,
+      "blend": "normal",
+      "source": {
+        "frames": [
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/000.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/001.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/002.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/003.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/004.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/005.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/006.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/007.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/008.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/009.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/010.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/011.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/012.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/013.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/014.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/015.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/016.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/017.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/018.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/019.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/020.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/021.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/022.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/aura/023.png"
+        ],
+        "fps": 20,
+        "anchor": {
+          "x": 60,
+          "y": 103
+        },
+        "rootTrack": [
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          }
+        ]
+      }
+    },
+    {
+      "id": "projectile",
+      "role": "projectile",
+      "z": 1,
+      "blend": "normal",
+      "source": {
+        "frames": [
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/000.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/001.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/002.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/003.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/004.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/005.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/006.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/007.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/008.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/009.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/010.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/011.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/012.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/013.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/014.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/015.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/016.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/017.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/018.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/019.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/020.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/021.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/022.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-gtowfd2y/projectile/023.png"
+        ],
+        "fps": 20,
+        "anchor": {
+          "x": 60,
+          "y": 103
+        },
+        "rootTrack": [
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          },
+          {
+            "x": 60,
+            "y": 103
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "tick": 8,
+      "type": "charge",
+      "label": "Charge"
+    },
+    {
+      "tick": 38,
+      "type": "spawn",
+      "label": "Release"
+    },
+    {
+      "tick": 74,
+      "type": "recover",
+      "label": "Recover"
+    }
+  ],
+  "provenance": {
+    "method": "procedural-fixture",
+    "description": "Deterministic geometry fixture with known pivots and timing. Tests the compiler; not AI-generated or production character art."
+  }
+}

@@ -1,0 +1,353 @@
+{
+  "anchorConvention": "Feet pivot; one scale across all eight source poses. Attached extensions rendered separately.",
+  "frames": {
+    "base": [
+      {
+        "file": "sprites/poses/pose_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_002.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_003.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_004.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_005.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_006.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_007.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_008.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "punch": [
+      {
+        "file": "sprites/poses/pose_002.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_003.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "kick": [
+      {
+        "file": "sprites/poses/pose_002.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_004.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "special_1": [
+      {
+        "file": "sprites/poses/pose_002.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_005.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "special_2": [
+      {
+        "file": "sprites/poses/pose_002.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_005.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "grab": [
+      {
+        "file": "sprites/poses/pose_002.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_006.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_007.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "throw": [
+      {
+        "file": "sprites/poses/pose_002.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_006.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_007.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "crouch": [
+      {
+        "file": "sprites/poses/pose_002.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "block": [
+      {
+        "file": "sprites/poses/pose_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "jump": [
+      {
+        "file": "sprites/poses/pose_002.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_004.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "walk_forward": [
+      {
+        "file": "sprites/poses/pose_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_002.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "walk_back": [
+      {
+        "file": "sprites/poses/pose_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_002.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/poses/pose_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ]
+  }
+}

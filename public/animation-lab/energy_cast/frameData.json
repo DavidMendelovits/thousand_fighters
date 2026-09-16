@@ -1,0 +1,731 @@
+{
+  "anchorConvention": "frame anchor is the actor pivot in PNG pixels",
+  "frames": {
+    "body": [
+      {
+        "file": "sprites/body/body_001.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 8
+      },
+      {
+        "file": "sprites/body/body_002.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/body/body_003.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/body/body_004.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/body/body_005.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/body/body_006.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/body/body_007.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/body/body_008.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/body/body_009.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/body/body_010.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/body/body_011.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/body/body_012.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/body/body_013.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/body/body_014.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/body/body_015.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/body/body_016.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/body/body_017.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/body/body_018.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/body/body_019.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/body/body_020.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/body/body_021.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/body/body_022.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/body/body_023.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/body/body_024.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 8
+      }
+    ],
+    "aura": [
+      {
+        "file": "sprites/aura/aura_001.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 8
+      },
+      {
+        "file": "sprites/aura/aura_002.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/aura/aura_003.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/aura/aura_004.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/aura/aura_005.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/aura/aura_006.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/aura/aura_007.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/aura/aura_008.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/aura/aura_009.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/aura/aura_010.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/aura/aura_011.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/aura/aura_012.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/aura/aura_013.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/aura/aura_014.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/aura/aura_015.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/aura/aura_016.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/aura/aura_017.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/aura/aura_018.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/aura/aura_019.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/aura/aura_020.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/aura/aura_021.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/aura/aura_022.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/aura/aura_023.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/aura/aura_024.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 8
+      }
+    ],
+    "projectile": [
+      {
+        "file": "sprites/projectile/projectile_001.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 8
+      },
+      {
+        "file": "sprites/projectile/projectile_002.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/projectile/projectile_003.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/projectile/projectile_004.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/projectile/projectile_005.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/projectile/projectile_006.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/projectile/projectile_007.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/projectile/projectile_008.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/projectile/projectile_009.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/projectile/projectile_010.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/projectile/projectile_011.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/projectile/projectile_012.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/projectile/projectile_013.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/projectile/projectile_014.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/projectile/projectile_015.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/projectile/projectile_016.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/projectile/projectile_017.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/projectile/projectile_018.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/projectile/projectile_019.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/projectile/projectile_020.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/projectile/projectile_021.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/projectile/projectile_022.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/projectile/projectile_023.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 3
+      },
+      {
+        "file": "sprites/projectile/projectile_024.png",
+        "width": 140,
+        "height": 101,
+        "anchor": {
+          "x": 49,
+          "y": 72
+        },
+        "durationFrames": 8
+      }
+    ]
+  }
+}

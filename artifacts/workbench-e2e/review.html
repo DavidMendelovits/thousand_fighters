@@ -1,0 +1,7 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Latch - workbench acceptance recording</title>
+<style>body{margin:0;background:#101316;color:#eee;font:16px system-ui;padding:24px}h1{font-size:24px;margin:0 0 8px}p{color:#b7c0c8;margin:0 0 16px}video{display:block;width:min(100%,1200px);max-height:78vh;background:#000}nav{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}button,a{background:#252e35;color:#eee;padding:9px 13px;border:1px solid #5f737e;border-radius:4px;cursor:pointer}a{display:inline-block;text-decoration:none}</style>
+<h1>Latch: workbench to live fight</h1><p>Actual agent-browser recording. 1x playback; provider waits and debugging cut. No staged game-state injection.</p>
+<video id="recording" controls preload="metadata" src="latch-workbench-to-fight.mp4"></video>
+<nav><button id="play">Play / pause</button><button data-at="0">Create character</button><button data-at="57">Video motion</button><button data-at="92">Review frames</button><button data-at="114">QA and publish</button><button data-at="120.2">Keyboard proof</button><button data-at="124.2">Live CPU fight</button></nav>
+<a href="07-live-fight.webm">Uncut live fight</a> <a href="README.md">Evidence and limitations</a>
+<script>const v=document.getElementById('recording');document.getElementById('play').onclick=()=>v.paused?v.play():v.pause();for(const b of document.querySelectorAll('[data-at]'))b.onclick=()=>{v.currentTime=Number(b.dataset.at);v.play();};</script></html>

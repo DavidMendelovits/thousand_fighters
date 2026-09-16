@@ -1,0 +1,169 @@
+{
+  "clips": [
+    {
+      "id": "janitor_vault",
+      "name": "Janitor · mop vault",
+      "description": "A live video candidate: anticipation, full inversion and landing, reduced to 15 deliberate poses.",
+      "url": "/animation-lab/janitor_vault/clip.json",
+      "tags": [
+        "15 poses",
+        "generated video",
+        "candidate"
+      ]
+    },
+    {
+      "id": "janitor_morph",
+      "name": "Janitor · liquid shift",
+      "description": "Melting, detached droplets and reformation. Intentional growth survives normalization; framing needs review.",
+      "url": "/animation-lab/janitor_morph/clip.json",
+      "tags": [
+        "15 poses",
+        "body morph",
+        "candidate"
+      ]
+    },
+    {
+      "id": "acrobatics",
+      "name": "Orbit vault",
+      "description": "An inverted vault with an authored trajectory. Toggle root motion to inspect alignment.",
+      "url": "/animation-lab/acrobatics/clip.json",
+      "tags": [
+        "24 frames",
+        "root motion",
+        "fixture"
+      ]
+    },
+    {
+      "id": "morph",
+      "name": "Sludge awakening",
+      "description": "Five separated droplets reform into an oversized creature. Growth survives normalization.",
+      "url": "/animation-lab/morph/clip.json",
+      "tags": [
+        "24 frames",
+        "topology change",
+        "fixture"
+      ]
+    },
+    {
+      "id": "energy_cast",
+      "name": "Ion bloom",
+      "description": "Independently switch the body, orbiting aura and travelling projectile on or off.",
+      "url": "/animation-lab/energy_cast/clip.json",
+      "tags": [
+        "3 layers",
+        "projectile + aura",
+        "fixture"
+      ]
+    },
+    {
+      "id": "oddities_meridian",
+      "name": "Madame Meridian · signature",
+      "description": "Video-derived body motion used in the live fight engine. Extensions and collisions are authored separately.",
+      "url": "/fighters/meridian/video-signature/clip.json",
+      "tags": [
+        "generated video",
+        "playable",
+        "prototype"
+      ]
+    },
+    {
+      "id": "oddities_brine",
+      "name": "Brine · signature",
+      "description": "Video-derived body motion used in the live fight engine. Extensions and collisions are authored separately.",
+      "url": "/fighters/brine/video-signature/clip.json",
+      "tags": [
+        "generated video",
+        "playable",
+        "prototype"
+      ]
+    },
+    {
+      "id": "oddities_taffy",
+      "name": "Taffy Riot · signature",
+      "description": "Video-derived body motion used in the live fight engine. Extensions and collisions are authored separately.",
+      "url": "/fighters/taffy/video-signature/clip.json",
+      "tags": [
+        "generated video",
+        "playable",
+        "prototype"
+      ]
+    },
+    {
+      "id": "oddities_vesper",
+      "name": "Sister Static · signature",
+      "description": "Video-derived body motion used in the live fight engine. Extensions and collisions are authored separately.",
+      "url": "/fighters/vesper/video-signature/clip.json",
+      "tags": [
+        "generated video",
+        "playable",
+        "prototype"
+      ]
+    },
+    {
+      "id": "oddities_vellum",
+      "name": "Vellum · signature",
+      "description": "Video-derived body motion used in the live fight engine. Extensions and collisions are authored separately.",
+      "url": "/fighters/vellum/video-signature/clip.json",
+      "tags": [
+        "generated video",
+        "playable",
+        "prototype"
+      ]
+    },
+    {
+      "id": "oddities_kiln",
+      "name": "Kilnheart · signature",
+      "description": "Video-derived body motion used in the live fight engine. Extensions and collisions are authored separately.",
+      "url": "/fighters/kiln/video-signature/clip.json",
+      "tags": [
+        "generated video",
+        "playable",
+        "prototype"
+      ]
+    },
+    {
+      "id": "oddities_mycel",
+      "name": "Maestro Mycel · signature",
+      "description": "Video-derived body motion used in the live fight engine. Extensions and collisions are authored separately.",
+      "url": "/fighters/mycel/video-signature/clip.json",
+      "tags": [
+        "generated video",
+        "playable",
+        "prototype"
+      ]
+    },
+    {
+      "id": "oddities_rook",
+      "name": "Rivet Rook · signature",
+      "description": "Video-derived body motion used in the live fight engine. Extensions and collisions are authored separately.",
+      "url": "/fighters/rook/video-signature/clip.json",
+      "tags": [
+        "generated video",
+        "playable",
+        "prototype"
+      ]
+    },
+    {
+      "id": "oddities_veil",
+      "name": "Widow Veil · signature",
+      "description": "Video-derived body motion used in the live fight engine. Extensions and collisions are authored separately.",
+      "url": "/fighters/veil/video-signature/clip.json",
+      "tags": [
+        "generated video",
+        "playable",
+        "prototype"
+      ]
+    },
+    {
+      "id": "oddities_bellwether",
+      "name": "Bellwether · signature",
+      "description": "Video-derived body motion used in the live fight engine. Extensions and collisions are authored separately.",
+      "url": "/fighters/bellwether/video-signature/clip.json",
+      "tags": [
+        "generated video",
+        "playable",
+        "prototype"
+      ]
+    }
+  ]
+}

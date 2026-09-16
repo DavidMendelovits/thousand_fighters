@@ -1,0 +1,272 @@
+{
+  "id": "acrobatics",
+  "displayName": "Orbit vault",
+  "kind": "acrobatics",
+  "playback": "loop",
+  "tickRate": 60,
+  "scale": 1,
+  "padding": 5,
+  "rootMode": "extract",
+  "intent": {
+    "topologyChanges": false,
+    "scaleChanges": false,
+    "paletteChanges": false
+  },
+  "selection": [
+    {
+      "frame": 0,
+      "durationTicks": 8
+    },
+    {
+      "frame": 1,
+      "durationTicks": 3
+    },
+    {
+      "frame": 2,
+      "durationTicks": 3
+    },
+    {
+      "frame": 3,
+      "durationTicks": 3
+    },
+    {
+      "frame": 4,
+      "durationTicks": 3
+    },
+    {
+      "frame": 5,
+      "durationTicks": 3
+    },
+    {
+      "frame": 6,
+      "durationTicks": 3
+    },
+    {
+      "frame": 7,
+      "durationTicks": 3
+    },
+    {
+      "frame": 8,
+      "durationTicks": 3
+    },
+    {
+      "frame": 9,
+      "durationTicks": 3
+    },
+    {
+      "frame": 10,
+      "durationTicks": 3
+    },
+    {
+      "frame": 11,
+      "durationTicks": 3
+    },
+    {
+      "frame": 12,
+      "durationTicks": 3
+    },
+    {
+      "frame": 13,
+      "durationTicks": 3
+    },
+    {
+      "frame": 14,
+      "durationTicks": 3
+    },
+    {
+      "frame": 15,
+      "durationTicks": 3
+    },
+    {
+      "frame": 16,
+      "durationTicks": 3
+    },
+    {
+      "frame": 17,
+      "durationTicks": 3
+    },
+    {
+      "frame": 18,
+      "durationTicks": 3
+    },
+    {
+      "frame": 19,
+      "durationTicks": 3
+    },
+    {
+      "frame": 20,
+      "durationTicks": 3
+    },
+    {
+      "frame": 21,
+      "durationTicks": 3
+    },
+    {
+      "frame": 22,
+      "durationTicks": 3
+    },
+    {
+      "frame": 23,
+      "durationTicks": 8
+    }
+  ],
+  "layers": [
+    {
+      "id": "body",
+      "role": "body",
+      "z": 0,
+      "source": {
+        "frames": [
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/000.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/001.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/002.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/003.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/004.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/005.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/006.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/007.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/008.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/009.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/010.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/011.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/012.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/013.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/014.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/015.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/016.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/017.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/018.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/019.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/020.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/021.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/022.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-705xl6uw/body/023.png"
+        ],
+        "fps": 20,
+        "anchor": {
+          "x": 46,
+          "y": 104
+        },
+        "rootTrack": [
+          {
+            "x": 46.0,
+            "y": 104.0
+          },
+          {
+            "x": 48.78260869565217,
+            "y": 97.73633414157266
+          },
+          {
+            "x": 51.565217391304344,
+            "y": 91.58934852677689
+          },
+          {
+            "x": 54.34782608695652,
+            "y": 85.6735498670729
+          },
+          {
+            "x": 57.130434782608695,
+            "y": 80.09913829837006
+          },
+          {
+            "x": 59.91304347826087,
+            "y": 74.96995456100157
+          },
+          {
+            "x": 62.69565217391305,
+            "y": 70.3815456432063
+          },
+          {
+            "x": 65.47826086956522,
+            "y": 66.41938492151968
+          },
+          {
+            "x": 68.26086956521739,
+            "y": 63.15727995349074
+          },
+          {
+            "x": 71.04347826086956,
+            "y": 60.655997582534255
+          },
+          {
+            "x": 73.82608695652173,
+            "y": 58.96213196661315
+          },
+          {
+            "x": 76.6086956521739,
+            "y": 58.1072366172352
+          },
+          {
+            "x": 79.3913043478261,
+            "y": 58.1072366172352
+          },
+          {
+            "x": 82.17391304347825,
+            "y": 58.96213196661314
+          },
+          {
+            "x": 84.95652173913044,
+            "y": 60.655997582534255
+          },
+          {
+            "x": 87.73913043478261,
+            "y": 63.15727995349074
+          },
+          {
+            "x": 90.52173913043478,
+            "y": 66.41938492151966
+          },
+          {
+            "x": 93.30434782608695,
+            "y": 70.3815456432063
+          },
+          {
+            "x": 96.08695652173913,
+            "y": 74.96995456100157
+          },
+          {
+            "x": 98.86956521739131,
+            "y": 80.09913829837006
+          },
+          {
+            "x": 101.65217391304347,
+            "y": 85.67354986707288
+          },
+          {
+            "x": 104.43478260869566,
+            "y": 91.58934852677686
+          },
+          {
+            "x": 107.21739130434783,
+            "y": 97.73633414157266
+          },
+          {
+            "x": 110.0,
+            "y": 104.0
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "tick": 8,
+      "type": "launch",
+      "label": "Launch"
+    },
+    {
+      "tick": 38,
+      "type": "apex",
+      "label": "Inversion"
+    },
+    {
+      "tick": 74,
+      "type": "land",
+      "label": "Land"
+    }
+  ],
+  "provenance": {
+    "method": "procedural-fixture",
+    "description": "Deterministic geometry fixture with known pivots and timing. Tests the compiler; not AI-generated or production character art."
+  }
+}

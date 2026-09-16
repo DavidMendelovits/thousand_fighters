@@ -1,0 +1,117 @@
+{
+  "duration": 140.2,
+  "edits": [
+    {
+      "at": 0,
+      "end": 13,
+      "rawFile": "01-create-generate.webm",
+      "rawStart": 11,
+      "duration": 13,
+      "title": "01  New Fighter - created through the workbench"
+    },
+    {
+      "at": 13,
+      "end": 27,
+      "rawFile": "01-create-generate.webm",
+      "rawStart": 32,
+      "duration": 14,
+      "title": "02  Enter the concept and create the character draft"
+    },
+    {
+      "at": 27,
+      "end": 36,
+      "rawFile": "01-create-generate.webm",
+      "rawStart": 54,
+      "duration": 9,
+      "title": "03  Draft returned - four authored moves and a projectile"
+    },
+    {
+      "at": 36,
+      "end": 45,
+      "rawFile": "01-create-generate.webm",
+      "rawStart": 84,
+      "duration": 9,
+      "title": "04  Generate the base art in the interface"
+    },
+    {
+      "at": 45,
+      "end": 57,
+      "rawFile": "01-create-generate.webm",
+      "rawStart": 172,
+      "duration": 12,
+      "title": "05  Base generation completes - provider wait cut"
+    },
+    {
+      "at": 57,
+      "end": 67,
+      "rawFile": "02-motion-authoring.webm",
+      "rawStart": 42,
+      "duration": 10,
+      "title": "06  Select Video motion and generate the key jab"
+    },
+    {
+      "at": 67,
+      "end": 74,
+      "rawFile": "02-motion-authoring.webm",
+      "rawStart": 56,
+      "duration": 7,
+      "title": "07  Generate the kick from the same base reference"
+    },
+    {
+      "at": 74,
+      "end": 82,
+      "rawFile": "02-motion-authoring.webm",
+      "rawStart": 76,
+      "duration": 8,
+      "title": "08  Submit the two special-move videos"
+    },
+    {
+      "at": 82,
+      "end": 92,
+      "rawFile": "02-motion-authoring.webm",
+      "rawStart": 97,
+      "duration": 10,
+      "title": "09  Generate a separate key projectile sprite"
+    },
+    {
+      "at": 92,
+      "end": 105,
+      "rawFile": "09-final-review-publish.webm",
+      "rawStart": 33,
+      "duration": 13,
+      "title": "10  Re-extract and review the video-derived poses"
+    },
+    {
+      "at": 105,
+      "end": 114,
+      "rawFile": "04-final-gameplay.webm",
+      "rawStart": 42,
+      "duration": 9,
+      "title": "11  Review the source video in the workbench"
+    },
+    {
+      "at": 114,
+      "end": 120.2,
+      "rawFile": "09-final-review-publish.webm",
+      "rawStart": 82,
+      "duration": 6.2,
+      "title": "12  Inspect QA warnings and publish the fighter"
+    },
+    {
+      "at": 120.2,
+      "end": 124.2,
+      "rawFile": "08-final-input-proof.webm",
+      "rawStart": 2.2,
+      "duration": 4,
+      "title": "13  Keyboard test - jump and a damaging key projectile - CPU off"
+    },
+    {
+      "at": 124.2,
+      "end": 140.2,
+      "rawFile": "07-live-fight.webm",
+      "rawStart": 2,
+      "duration": 16,
+      "title": "14  Live CPU fight - Latch versus Brine - both take damage"
+    }
+  ]
+}

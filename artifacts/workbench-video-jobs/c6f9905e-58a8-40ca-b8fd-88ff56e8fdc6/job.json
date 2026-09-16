@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "provider": "fal",
+  "model": "fal-ai/kling-video/v3/standard/image-to-video",
+  "mode": "image-to-video",
+  "createdAt": "2026-09-16T16:04:51.437Z",
+  "transportStatus": "downloaded",
+  "qualityStatus": "unreviewed",
+  "request": {
+    "prompt": "Animate ONLY the single reference fighter, facing RIGHT, fixed side-view camera. Crisp 16-bit pixel art, identical costume, silhouette, palette and proportions. Solid flat #ff00ff background throughout, no floor, no shadows, no camera motion, no opponent, no text. Keep the whole actor within the frame with generous margin. Perform ONE special_2 action: anticipate, execute with a clear strongest contact pose in the middle, follow through, then recover to the initial ready stance. Any fired projectile is separate, not a second character or a persistent part of the body. Motion brief: The reference purple hermit-crab locksmith Latch performs one forward throwing gesture toward the RIGHT with his small claw, while the large brass key claw and purple shell stay attached and unchanged. Wind up, quick forward release gesture at chest height, then recover. Do not draw the thrown projectile: it will be a separate game sprite. One actor only, full body, fixed side camera, magenta background, consistent pixel art. No text, panels or copies.",
+    "duration": "5",
+    "orientation": null,
+    "audio": false,
+    "references": {
+      "image": {
+        "kind": "file",
+        "path": "/Users/davidmendelovits/space/thousand_fighters/artifacts/workbench-video-jobs/c6f9905e-58a8-40ca-b8fd-88ff56e8fdc6/reference.png",
+        "contentType": "image/png",
+        "bytes": 45878,
+        "sha256": "e495eec3ec3b0f4d077ae46f87f01af355539a02962b6a8b44f2c3bf6b5042df",
+        "width": 512,
+        "height": 512
+      }
+    },
+    "payloadSha256": "3c6b16e1acec4322774915122a734f0b087e3025da7908a480b1c4115b738547"
+  },
+  "submissionAttempts": 1,
+  "task": {
+    "requestId": "01a0aaf6-be87-7622-85e5-9d374899cab6",
+    "model": "fal-ai/kling-video/v3/standard/image-to-video",
+    "statusUrl": "https://queue.fal.run/fal-ai/kling-video/requests/01a0aaf6-be87-7622-85e5-9d374899cab6/status",
+    "responseUrl": "https://queue.fal.run/fal-ai/kling-video/requests/01a0aaf6-be87-7622-85e5-9d374899cab6"
+  },
+  "updatedAt": "2026-09-16T16:06:35.188Z",
+  "remoteStatus": "COMPLETED",
+  "output": {
+    "path": "source.mp4",
+    "contentType": "video/mp4",
+    "bytes": 4779683,
+    "sha256": "ae872340450dde1a59efec8e001ce308d00845dd95fa48639e06fa92cfc30c83"
+  },
+  "completedAt": "2026-09-16T16:06:35.188Z"
+}

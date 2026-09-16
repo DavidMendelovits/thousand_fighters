@@ -1,0 +1,397 @@
+{
+  "animation": "acrobatics",
+  "tickRate": 60,
+  "visualTimeline": [
+    {
+      "frame": 0,
+      "duration": 8
+    },
+    {
+      "frame": 1,
+      "duration": 3
+    },
+    {
+      "frame": 2,
+      "duration": 3
+    },
+    {
+      "frame": 3,
+      "duration": 3
+    },
+    {
+      "frame": 4,
+      "duration": 3
+    },
+    {
+      "frame": 5,
+      "duration": 3
+    },
+    {
+      "frame": 6,
+      "duration": 3
+    },
+    {
+      "frame": 7,
+      "duration": 3
+    },
+    {
+      "frame": 8,
+      "duration": 3
+    },
+    {
+      "frame": 9,
+      "duration": 3
+    },
+    {
+      "frame": 10,
+      "duration": 3
+    },
+    {
+      "frame": 11,
+      "duration": 3
+    },
+    {
+      "frame": 12,
+      "duration": 3
+    },
+    {
+      "frame": 13,
+      "duration": 3
+    },
+    {
+      "frame": 14,
+      "duration": 3
+    },
+    {
+      "frame": 15,
+      "duration": 3
+    },
+    {
+      "frame": 16,
+      "duration": 3
+    },
+    {
+      "frame": 17,
+      "duration": 3
+    },
+    {
+      "frame": 18,
+      "duration": 3
+    },
+    {
+      "frame": 19,
+      "duration": 3
+    },
+    {
+      "frame": 20,
+      "duration": 3
+    },
+    {
+      "frame": 21,
+      "duration": 3
+    },
+    {
+      "frame": 22,
+      "duration": 3
+    },
+    {
+      "frame": 23,
+      "duration": 8
+    }
+  ],
+  "frameCounts": {
+    "acrobatics": 24
+  },
+  "sprites": {
+    "acrobatics": [
+      "sprites/body/body_001.png",
+      "sprites/body/body_002.png",
+      "sprites/body/body_003.png",
+      "sprites/body/body_004.png",
+      "sprites/body/body_005.png",
+      "sprites/body/body_006.png",
+      "sprites/body/body_007.png",
+      "sprites/body/body_008.png",
+      "sprites/body/body_009.png",
+      "sprites/body/body_010.png",
+      "sprites/body/body_011.png",
+      "sprites/body/body_012.png",
+      "sprites/body/body_013.png",
+      "sprites/body/body_014.png",
+      "sprites/body/body_015.png",
+      "sprites/body/body_016.png",
+      "sprites/body/body_017.png",
+      "sprites/body/body_018.png",
+      "sprites/body/body_019.png",
+      "sprites/body/body_020.png",
+      "sprites/body/body_021.png",
+      "sprites/body/body_022.png",
+      "sprites/body/body_023.png",
+      "sprites/body/body_024.png"
+    ]
+  },
+  "frameData": {
+    "frames": {
+      "acrobatics": [
+        {
+          "file": "sprites/body/body_001.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 8
+        },
+        {
+          "file": "sprites/body/body_002.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "sprites/body/body_003.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "sprites/body/body_004.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "sprites/body/body_005.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "sprites/body/body_006.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "sprites/body/body_007.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "sprites/body/body_008.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "sprites/body/body_009.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "sprites/body/body_010.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "sprites/body/body_011.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "sprites/body/body_012.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "sprites/body/body_013.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "sprites/body/body_014.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "sprites/body/body_015.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "sprites/body/body_016.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "sprites/body/body_017.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "sprites/body/body_018.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "sprites/body/body_019.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "sprites/body/body_020.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "sprites/body/body_021.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "sprites/body/body_022.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "sprites/body/body_023.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "sprites/body/body_024.png",
+          "width": 91,
+          "height": 91,
+          "anchor": {
+            "x": 45,
+            "y": 45
+          },
+          "durationFrames": 8
+        }
+      ]
+    }
+  },
+  "events": [
+    {
+      "tick": 8,
+      "type": "launch",
+      "label": "Launch"
+    },
+    {
+      "tick": 38,
+      "type": "apex",
+      "label": "Inversion"
+    },
+    {
+      "tick": 74,
+      "type": "land",
+      "label": "Land"
+    }
+  ],
+  "note": "Review before import. Bind events/VFX/root motion deliberately; combat hitboxes are not inferred from art."
+}

@@ -1,0 +1,113 @@
+{
+  "id": "janitor_vault",
+  "displayName": "Janitor \u00b7 mop vault",
+  "kind": "acrobatics",
+  "playback": "once",
+  "tickRate": 60,
+  "scale": 0.25,
+  "padding": 6,
+  "paletteSize": 32,
+  "rootMode": "baked",
+  "intent": {
+    "topologyChanges": false,
+    "scaleChanges": false,
+    "paletteChanges": false
+  },
+  "provenance": {
+    "method": "generated-video",
+    "provider": "fal",
+    "model": "kling-video/v3/standard/image-to-video",
+    "description": "Live five-second generation from the approved Janitor sprite. Authored source-frame selection. Candidate: inspect mop continuity, landing drift, and residual key edges; not approved production art."
+  },
+  "layers": [
+    {
+      "id": "body",
+      "role": "body",
+      "z": 0,
+      "source": {
+        "video": "source.mp4",
+        "fps": 24,
+        "anchor": {
+          "x": 480,
+          "y": 787
+        },
+        "background": "#ff00ff",
+        "backgroundMode": "chroma"
+      }
+    }
+  ],
+  "selection": [
+    {
+      "frame": 16,
+      "durationTicks": 6
+    },
+    {
+      "frame": 28,
+      "durationTicks": 4
+    },
+    {
+      "frame": 44,
+      "durationTicks": 3
+    },
+    {
+      "frame": 54,
+      "durationTicks": 3
+    },
+    {
+      "frame": 60,
+      "durationTicks": 3,
+      "event": {
+        "type": "launch",
+        "label": "Vault launch"
+      }
+    },
+    {
+      "frame": 65,
+      "durationTicks": 3
+    },
+    {
+      "frame": 70,
+      "durationTicks": 3
+    },
+    {
+      "frame": 75,
+      "durationTicks": 3,
+      "event": {
+        "type": "apex",
+        "label": "Full inversion"
+      }
+    },
+    {
+      "frame": 80,
+      "durationTicks": 4
+    },
+    {
+      "frame": 85,
+      "durationTicks": 3
+    },
+    {
+      "frame": 90,
+      "durationTicks": 3
+    },
+    {
+      "frame": 94,
+      "durationTicks": 5,
+      "event": {
+        "type": "land",
+        "label": "Landing"
+      }
+    },
+    {
+      "frame": 99,
+      "durationTicks": 4
+    },
+    {
+      "frame": 108,
+      "durationTicks": 6
+    },
+    {
+      "frame": 120,
+      "durationTicks": 10
+    }
+  ]
+}

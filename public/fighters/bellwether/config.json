@@ -1,0 +1,1272 @@
+{
+  "id": "bellwether",
+  "displayName": "Bellwether",
+  "rosterGroup": "oddities",
+  "concept": {
+    "role": "Pressure-wave bruiser",
+    "biography": "A salvage diver who surfaced with a church bell for a head. It rings for ships that have not sunk yet.",
+    "accent": "#d7ba76",
+    "tags": [
+      "PRESSURE KNOCKBACK",
+      "SONIC STUN",
+      "HEAVY"
+    ],
+    "counterplay": "The wide pressure wave is slow. Guard the toll, then use mobility to avoid the grab.",
+    "artStatus": "Video-derived signature body motion; generated key poses for other actions. Attached extensions and projectiles are engine-driven."
+  },
+  "walkForwardSpeed": 2.3,
+  "walkBackSpeed": 1.6099999999999999,
+  "jumpVelocity": 10,
+  "jumpForwardVelocity": 3.2199999999999998,
+  "jumpBackVelocity": 2.3,
+  "gravity": 0.55,
+  "maxFallSpeed": 13,
+  "maxHealth": 1180,
+  "pivotOffsetY": 0,
+  "pushboxWidth": 52,
+  "hurtboxes": {
+    "idle": {
+      "x": -22,
+      "y": -116,
+      "width": 44,
+      "height": 116
+    },
+    "crouch": {
+      "x": -24,
+      "y": -72,
+      "width": 48,
+      "height": 72
+    }
+  },
+  "animations": {
+    "idle": "base",
+    "attack": "punch",
+    "grabbed": "hurt",
+    "stunned": "hurt",
+    "hitstun": "hurt"
+  },
+  "moves": [
+    {
+      "id": "rising_break",
+      "displayName": "Rising Break",
+      "description": "Hit-confirmed launcher; opens an air route at the cost of long recovery.",
+      "animation": "kick",
+      "inputLabel": "↓ + G · Launcher",
+      "trigger": {
+        "allowedStates": [
+          "idle",
+          "walk_forward",
+          "block",
+          "crouch",
+          "landing"
+        ],
+        "sequence": [
+          "down",
+          "lk"
+        ],
+        "window": 7
+      },
+      "visualTimeline": [
+        {
+          "frame": 0,
+          "duration": 9
+        },
+        {
+          "frame": 1,
+          "duration": 5
+        },
+        {
+          "frame": 2,
+          "duration": 28
+        }
+      ],
+      "phases": [
+        {
+          "name": "startup",
+          "frames": 9,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "set_velocity",
+                "vx": 2,
+                "relativeToFacing": true
+              }
+            }
+          ]
+        },
+        {
+          "name": "active",
+          "frames": 5,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "hitbox_active",
+                "hitbox": {
+                  "x": 20,
+                  "y": -125,
+                  "width": 100,
+                  "height": 80,
+                  "damage": 62,
+                  "hitstun": 32,
+                  "blockstun": 12,
+                  "knockback": {
+                    "x": 2,
+                    "y": -8
+                  },
+                  "launches": true
+                }
+              }
+            }
+          ],
+          "cancellable": true
+        },
+        {
+          "name": "recovery",
+          "frames": 28,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "hitbox_end"
+              }
+            },
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "set_velocity",
+                "vx": 0
+              }
+            }
+          ],
+          "cancellable": true
+        }
+      ],
+      "cancelInto": [
+        "dead_toll"
+      ],
+      "cancelOn": "hit"
+    },
+    {
+      "id": "pressure_front",
+      "displayName": "Depth Charge",
+      "description": "A compressed water front launches and pushes the opponent far away.",
+      "animation": "video_signature",
+      "trigger": {
+        "allowedStates": [
+          "idle",
+          "walk_forward",
+          "walk_back",
+          "crouch",
+          "block",
+          "landing"
+        ],
+        "sequence": [
+          "hp"
+        ],
+        "window": 7
+      },
+      "visualTimeline": [
+        {
+          "frame": 0,
+          "duration": 4
+        },
+        {
+          "frame": 1,
+          "duration": 4
+        },
+        {
+          "frame": 2,
+          "duration": 4
+        },
+        {
+          "frame": 3,
+          "duration": 4
+        },
+        {
+          "frame": 4,
+          "duration": 3
+        },
+        {
+          "frame": 5,
+          "duration": 3
+        },
+        {
+          "frame": 6,
+          "duration": 6
+        },
+        {
+          "frame": 7,
+          "duration": 6
+        },
+        {
+          "frame": 8,
+          "duration": 6
+        },
+        {
+          "frame": 9,
+          "duration": 8
+        }
+      ],
+      "phases": [
+        {
+          "name": "startup",
+          "frames": 16,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "set_velocity",
+                "vx": 0
+              }
+            }
+          ]
+        },
+        {
+          "name": "active",
+          "frames": 6,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "spawn_projectile",
+                "projectile": {
+                  "id": "pressure_front",
+                  "animation": "odd_pressure_front",
+                  "width": 58,
+                  "height": 80,
+                  "speed": 3.8,
+                  "lifetime": 100,
+                  "hitbox": {
+                    "x": -28,
+                    "y": -38,
+                    "width": 56,
+                    "height": 76,
+                    "damage": 80,
+                    "hitstun": 16,
+                    "blockstun": 10,
+                    "knockback": {
+                      "x": 12,
+                      "y": -3
+                    },
+                    "level": "mid",
+                    "launches": true
+                  },
+                  "spawnPolicy": {
+                    "maxActivePerOwner": 1,
+                    "ifAlreadyActive": "block_spawn"
+                  },
+                  "visual": {
+                    "kind": "wave",
+                    "color": 9164244,
+                    "accent": 16773308
+                  },
+                  "impact": {
+                    "id": "pressure_front_impact",
+                    "kind": "pressure",
+                    "color": 9164244,
+                    "accent": 16773308,
+                    "durationTicks": 18,
+                    "radius": 40.599999999999994
+                  }
+                },
+                "offsetX": 46,
+                "offsetY": -72
+              }
+            }
+          ]
+        },
+        {
+          "name": "recovery",
+          "frames": 26,
+          "events": []
+        }
+      ],
+      "inputLabel": "H"
+    },
+    {
+      "id": "dead_toll",
+      "displayName": "Dead Toll",
+      "description": "A ringing shockwave stuns without pushing, inviting a close grab.",
+      "animation": "special_1",
+      "trigger": {
+        "allowedStates": [
+          "idle",
+          "walk_forward",
+          "walk_back",
+          "crouch",
+          "block",
+          "landing"
+        ],
+        "sequence": [
+          "down",
+          "hp"
+        ],
+        "window": 7
+      },
+      "visualTimeline": [
+        {
+          "frame": 0,
+          "duration": 16
+        },
+        {
+          "frame": 1,
+          "duration": 6
+        },
+        {
+          "frame": 2,
+          "duration": 26
+        }
+      ],
+      "phases": [
+        {
+          "name": "startup",
+          "frames": 16,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "set_velocity",
+                "vx": 0
+              }
+            }
+          ]
+        },
+        {
+          "name": "active",
+          "frames": 6,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "spawn_projectile",
+                "projectile": {
+                  "id": "dead_toll",
+                  "animation": "odd_dead_toll",
+                  "width": 50,
+                  "height": 60,
+                  "speed": 6,
+                  "lifetime": 100,
+                  "hitbox": {
+                    "x": -24,
+                    "y": -28,
+                    "width": 48,
+                    "height": 56,
+                    "damage": 32,
+                    "hitstun": 16,
+                    "blockstun": 10,
+                    "knockback": {
+                      "x": 0,
+                      "y": 0
+                    },
+                    "level": "mid",
+                    "stun": 46
+                  },
+                  "spawnPolicy": {
+                    "maxActivePerOwner": 1,
+                    "ifAlreadyActive": "block_spawn"
+                  },
+                  "visual": {
+                    "kind": "wave",
+                    "color": 14929027,
+                    "accent": 16773308
+                  },
+                  "impact": {
+                    "id": "dead_toll_impact",
+                    "kind": "pressure",
+                    "color": 14929027,
+                    "accent": 16773308,
+                    "durationTicks": 18,
+                    "radius": 35
+                  }
+                },
+                "offsetX": 46,
+                "offsetY": -72
+              }
+            }
+          ]
+        },
+        {
+          "name": "recovery",
+          "frames": 26,
+          "events": []
+        }
+      ],
+      "inputLabel": "↓ + H"
+    },
+    {
+      "id": "clinch",
+      "displayName": "Catch & Cast",
+      "description": "Close-range unblockable grab. The victim is held, then thrown; jump to evade.",
+      "animation": "throw",
+      "trigger": {
+        "allowedStates": [
+          "idle",
+          "walk_forward",
+          "walk_back",
+          "crouch",
+          "block",
+          "landing"
+        ],
+        "sequence": [
+          "grab"
+        ],
+        "window": 7
+      },
+      "visualTimeline": [
+        {
+          "frame": 0,
+          "duration": 7
+        },
+        {
+          "frame": 1,
+          "duration": 5
+        },
+        {
+          "frame": 2,
+          "duration": 44
+        }
+      ],
+      "phases": [
+        {
+          "name": "startup",
+          "frames": 7,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "set_velocity",
+                "vx": 0
+              }
+            }
+          ]
+        },
+        {
+          "name": "active",
+          "frames": 5,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "grab_check",
+                "grab": {
+                  "hitbox": {
+                    "x": 20,
+                    "y": -104,
+                    "width": 50,
+                    "height": 88
+                  },
+                  "damage": 120,
+                  "holdOffsetX": 44,
+                  "holdDuration": 22,
+                  "pullFrames": 5,
+                  "releaseKnockback": {
+                    "x": 6,
+                    "y": -5
+                  },
+                  "releaseHitstun": 24,
+                  "releaseLaunches": true,
+                  "groundOnly": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "recovery",
+          "frames": 44,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "grab_end"
+              }
+            }
+          ]
+        }
+      ],
+      "inputLabel": "F + G · Grab"
+    },
+    {
+      "id": "punch",
+      "displayName": "Quick Check",
+      "description": "",
+      "animation": "punch",
+      "trigger": {
+        "allowedStates": [
+          "idle",
+          "walk_forward",
+          "walk_back",
+          "crouch",
+          "block",
+          "landing"
+        ],
+        "sequence": [
+          "lp"
+        ],
+        "window": 7
+      },
+      "visualTimeline": [
+        {
+          "frame": 0,
+          "duration": 5
+        },
+        {
+          "frame": 1,
+          "duration": 5
+        },
+        {
+          "frame": 2,
+          "duration": 10
+        }
+      ],
+      "phases": [
+        {
+          "name": "startup",
+          "frames": 5,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "set_velocity",
+                "vx": 0
+              }
+            }
+          ]
+        },
+        {
+          "name": "active",
+          "frames": 5,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "hitbox_active",
+                "hitbox": {
+                  "x": 24,
+                  "y": -90,
+                  "width": 46,
+                  "height": 32,
+                  "damage": 36,
+                  "hitstun": 16,
+                  "blockstun": 10,
+                  "knockback": {
+                    "x": 3,
+                    "y": 0
+                  },
+                  "level": "mid"
+                }
+              }
+            }
+          ],
+          "cancellable": true
+        },
+        {
+          "name": "recovery",
+          "frames": 10,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "hitbox_end"
+              }
+            }
+          ],
+          "cancellable": true
+        }
+      ],
+      "inputLabel": "F · Punch",
+      "cancelInto": [
+        "kick",
+        "rising_break"
+      ],
+      "cancelOn": "hit"
+    },
+    {
+      "id": "kick",
+      "displayName": "Low Sweep",
+      "description": "",
+      "animation": "kick",
+      "trigger": {
+        "allowedStates": [
+          "idle",
+          "walk_forward",
+          "walk_back",
+          "crouch",
+          "block",
+          "landing"
+        ],
+        "sequence": [
+          "lk"
+        ],
+        "window": 7
+      },
+      "visualTimeline": [
+        {
+          "frame": 0,
+          "duration": 8
+        },
+        {
+          "frame": 1,
+          "duration": 5
+        },
+        {
+          "frame": 2,
+          "duration": 15
+        }
+      ],
+      "phases": [
+        {
+          "name": "startup",
+          "frames": 8,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "set_velocity",
+                "vx": 0
+              }
+            }
+          ]
+        },
+        {
+          "name": "active",
+          "frames": 5,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "hitbox_active",
+                "hitbox": {
+                  "x": 24,
+                  "y": -40,
+                  "width": 65,
+                  "height": 32,
+                  "damage": 48,
+                  "hitstun": 32,
+                  "blockstun": 10,
+                  "knockback": {
+                    "x": 1,
+                    "y": 0
+                  },
+                  "level": "low"
+                }
+              }
+            }
+          ],
+          "cancellable": true
+        },
+        {
+          "name": "recovery",
+          "frames": 15,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "hitbox_end"
+              }
+            }
+          ],
+          "cancellable": true
+        }
+      ],
+      "inputLabel": "G · Kick",
+      "cancelInto": [
+        "pressure_front"
+      ],
+      "cancelOn": "hit"
+    }
+  ],
+  "sprite": {
+    "basePath": "/fighters/bellwether",
+    "scale": 1,
+    "frames": {
+      "base": [
+        {
+          "file": "sprites/poses/pose_001.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_002.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_003.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_004.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_005.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_006.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_007.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_008.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        }
+      ],
+      "punch": [
+        {
+          "file": "sprites/poses/pose_002.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_003.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_001.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        }
+      ],
+      "kick": [
+        {
+          "file": "sprites/poses/pose_002.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_004.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_001.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        }
+      ],
+      "special_1": [
+        {
+          "file": "sprites/poses/pose_002.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_005.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_001.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        }
+      ],
+      "special_2": [
+        {
+          "file": "sprites/poses/pose_002.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_005.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_001.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        }
+      ],
+      "grab": [
+        {
+          "file": "sprites/poses/pose_002.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_006.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_007.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        }
+      ],
+      "throw": [
+        {
+          "file": "sprites/poses/pose_002.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_006.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_007.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        }
+      ],
+      "crouch": [
+        {
+          "file": "sprites/poses/pose_002.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        }
+      ],
+      "block": [
+        {
+          "file": "sprites/poses/pose_001.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        }
+      ],
+      "jump": [
+        {
+          "file": "sprites/poses/pose_002.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_004.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        }
+      ],
+      "walk_forward": [
+        {
+          "file": "sprites/poses/pose_001.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_002.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_001.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        }
+      ],
+      "walk_back": [
+        {
+          "file": "sprites/poses/pose_001.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_002.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_001.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        }
+      ],
+      "video_signature": [
+        {
+          "file": "video-signature/sprites/body/body_001.png",
+          "width": 133,
+          "height": 128,
+          "anchor": {
+            "x": 53,
+            "y": 122
+          },
+          "durationFrames": 4
+        },
+        {
+          "file": "video-signature/sprites/body/body_002.png",
+          "width": 133,
+          "height": 128,
+          "anchor": {
+            "x": 53,
+            "y": 122
+          },
+          "durationFrames": 4
+        },
+        {
+          "file": "video-signature/sprites/body/body_003.png",
+          "width": 133,
+          "height": 128,
+          "anchor": {
+            "x": 53,
+            "y": 122
+          },
+          "durationFrames": 4
+        },
+        {
+          "file": "video-signature/sprites/body/body_004.png",
+          "width": 133,
+          "height": 128,
+          "anchor": {
+            "x": 53,
+            "y": 122
+          },
+          "durationFrames": 4
+        },
+        {
+          "file": "video-signature/sprites/body/body_005.png",
+          "width": 133,
+          "height": 128,
+          "anchor": {
+            "x": 53,
+            "y": 122
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "video-signature/sprites/body/body_006.png",
+          "width": 133,
+          "height": 128,
+          "anchor": {
+            "x": 53,
+            "y": 122
+          },
+          "durationFrames": 3
+        },
+        {
+          "file": "video-signature/sprites/body/body_007.png",
+          "width": 133,
+          "height": 128,
+          "anchor": {
+            "x": 53,
+            "y": 122
+          },
+          "durationFrames": 6
+        },
+        {
+          "file": "video-signature/sprites/body/body_008.png",
+          "width": 133,
+          "height": 128,
+          "anchor": {
+            "x": 53,
+            "y": 122
+          },
+          "durationFrames": 6
+        },
+        {
+          "file": "video-signature/sprites/body/body_009.png",
+          "width": 133,
+          "height": 128,
+          "anchor": {
+            "x": 53,
+            "y": 122
+          },
+          "durationFrames": 6
+        },
+        {
+          "file": "video-signature/sprites/body/body_010.png",
+          "width": 133,
+          "height": 128,
+          "anchor": {
+            "x": 53,
+            "y": 122
+          },
+          "durationFrames": 8
+        }
+      ],
+      "dash_forward": [
+        {
+          "file": "sprites/poses/pose_002.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_003.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_001.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        }
+      ],
+      "dash_back": [
+        {
+          "file": "sprites/poses/pose_002.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        },
+        {
+          "file": "sprites/poses/pose_001.png",
+          "width": 224,
+          "height": 192,
+          "anchor": {
+            "x": 96,
+            "y": 176
+          }
+        }
+      ]
+    },
+    "frameCounts": {
+      "base": 8,
+      "punch": 3,
+      "kick": 3,
+      "special_1": 3,
+      "special_2": 3,
+      "grab": 3,
+      "throw": 3,
+      "crouch": 1,
+      "block": 1,
+      "jump": 2,
+      "walk_forward": 3,
+      "walk_back": 3,
+      "video_signature": 10,
+      "dash_forward": 3,
+      "dash_back": 2
+    },
+    "sheets": {},
+    "stateFrames": {
+      "idle": 0,
+      "walk_forward": 0,
+      "walk_back": 0,
+      "crouch": 1,
+      "airborne": 1,
+      "landing": 1,
+      "block": 0,
+      "blockstun": 7,
+      "hitstun": 7,
+      "stunned": 7,
+      "grabbed": 7,
+      "juggle": 7,
+      "dead": 7,
+      "knockdown": 7,
+      "getup": 1
+    }
+  },
+  "stats": {
+    "defense": 1.15,
+    "weight": 1.3,
+    "knockback": 1.25,
+    "speed": 0.9
+  },
+  "powerUps": [
+    {
+      "id": "bellwether_surge",
+      "name": "Second Wind",
+      "cost": 25,
+      "durationTicks": 360,
+      "color": 15910765,
+      "modifiers": {
+        "attack": 1.15,
+        "defense": 1.1,
+        "projectileAttack": 1.15,
+        "projectileDefense": 1.1,
+        "speed": 1.12,
+        "knockback": 1.1
+      }
+    }
+  ],
+  "comboRoutes": [
+    {
+      "name": "Deep End",
+      "purpose": "Hit-confirm route; end in the character-specific ranged or heavy special.",
+      "moves": [
+        "punch",
+        "kick",
+        "pressure_front"
+      ]
+    },
+    {
+      "name": "Deep End / lift",
+      "purpose": "Launcher branch. Spacing and airborne height determine the follow-up.",
+      "moves": [
+        "punch",
+        "rising_break",
+        "dead_toll"
+      ]
+    },
+    {
+      "name": "Low opener",
+      "purpose": "Alternate grounded permutation with a distinct starter.",
+      "moves": [
+        "kick",
+        "pressure_front"
+      ]
+    }
+  ]
+}

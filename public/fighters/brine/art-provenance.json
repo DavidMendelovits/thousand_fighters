@@ -1,0 +1,14 @@
+{
+  "generator": "built-in image_gen",
+  "sourceType": "generated-key-poses",
+  "notVideoGenerated": true,
+  "prompt": "Use case: stylized-concept. Asset: actual game-ready 16-bit arcade pixel-art CHARACTER POSE SHEET for Brine. An original humanoid squid dockyard boxer: broad coral-red squid mantle head with two stern golden eyes, four thick curling orange-red tentacle arms with cream suckers, dark navy sailor trousers, heavy sea boots, rope belt. Clearly cephalopod, NOT human face. Broad low silhouette.\nExactly EIGHT full-body poses of this SAME character in an exact 4 column by 2 row equal-cell grid. Landscape canvas, 1536x1024 if possible. No text, no panel lines. Every pose faces RIGHT in strict fighting-game side view, visible full body and feet; same body size and design in every cell, no perspective change.\nReading left to right: TOP ROW: 1 neutral fighting ready stance, 2 crouched anticipation with fists drawn back, 3 fully extended forward straight arm strike, 4 side kick with foot extended right. BOTTOM ROW: 5 spell-casting gesture with forward open hand (NO detached magical effects), 6 both arms extended forward open hands ready to GRAB, 7 throwing follow-through arms sweeping downward forward, 8 recoiling from a hit with arched back.\nAuthentic low-resolution pixel art with deliberate chunky pixel clusters, strong dark pixel outlines, restrained 24-color palette, flat two-tone shading. NOT 3D, NOT toys/action figures, NOT rendered plastic, NOT airbrushed, NOT photoreal, NOT a concept painting. Silhouette readable at 80 pixels tall.\nEntire subject must fit in each equal cell with large plain margins on ALL FOUR SIDES. All feet on same baseline within each cell. No body part may cross cell boundary. Background 100% solid flat #FF00FF magenta, NO gradients, NO ground shadows. No opponent, no scenery, no labels, no text, no watermark.",
+  "cleanup": "Built-in image edit replaced gradient with magenta, deterministic chroma removal, shared nearest-neighbor scale and 48-color palette.",
+  "scale": 0.3473053892215569,
+  "warnings": [
+    "Pose 2: inspect source cell edge",
+    "Pose 6: inspect source cell edge"
+  ],
+  "status": "prototype-review",
+  "poseCount": 8
+}

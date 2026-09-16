@@ -1,0 +1,69 @@
+{
+  "id": "vesper",
+  "artSource": "generated-key-poses",
+  "sheets": {
+    "poses": "poses.png"
+  },
+  "sprites": {
+    "base": [
+      "sprites/poses/pose_001.png",
+      "sprites/poses/pose_002.png",
+      "sprites/poses/pose_003.png",
+      "sprites/poses/pose_004.png",
+      "sprites/poses/pose_005.png",
+      "sprites/poses/pose_006.png",
+      "sprites/poses/pose_007.png",
+      "sprites/poses/pose_008.png"
+    ],
+    "punch": [
+      "sprites/poses/pose_002.png",
+      "sprites/poses/pose_003.png",
+      "sprites/poses/pose_001.png"
+    ],
+    "kick": [
+      "sprites/poses/pose_002.png",
+      "sprites/poses/pose_004.png",
+      "sprites/poses/pose_001.png"
+    ],
+    "special_1": [
+      "sprites/poses/pose_002.png",
+      "sprites/poses/pose_005.png",
+      "sprites/poses/pose_001.png"
+    ],
+    "special_2": [
+      "sprites/poses/pose_002.png",
+      "sprites/poses/pose_005.png",
+      "sprites/poses/pose_001.png"
+    ],
+    "grab": [
+      "sprites/poses/pose_002.png",
+      "sprites/poses/pose_006.png",
+      "sprites/poses/pose_007.png"
+    ],
+    "throw": [
+      "sprites/poses/pose_002.png",
+      "sprites/poses/pose_006.png",
+      "sprites/poses/pose_007.png"
+    ],
+    "crouch": [
+      "sprites/poses/pose_002.png"
+    ],
+    "block": [
+      "sprites/poses/pose_001.png"
+    ],
+    "jump": [
+      "sprites/poses/pose_002.png",
+      "sprites/poses/pose_004.png"
+    ],
+    "walk_forward": [
+      "sprites/poses/pose_001.png",
+      "sprites/poses/pose_002.png",
+      "sprites/poses/pose_001.png"
+    ],
+    "walk_back": [
+      "sprites/poses/pose_001.png",
+      "sprites/poses/pose_002.png",
+      "sprites/poses/pose_001.png"
+    ]
+  }
+}

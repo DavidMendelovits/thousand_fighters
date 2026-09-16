@@ -83,6 +83,13 @@ export class FighterPackQaAdapter {
 
     // Check 9: projectile-assets
     checks.push(await this._checkProjectileAssets(assetRoot, manifest));
+    const authoredProjectiles = (await this.repository.getDraft(characterId).catch(() => null))?.projectiles ?? [];
+    const missingAuthoredProjectiles = [];
+    for (const projectile of authoredProjectiles) {
+      if (!projectile.sourceKey || !await this.storage.exists(projectile.sourceKey)) missingAuthoredProjectiles.push(projectile.id);
+    }
+    checks.push({id:'authored-projectile-assets', status:missingAuthoredProjectiles.length?'error':'pass',
+      message:missingAuthoredProjectiles.length?`Generate missing projectile sprites before publishing: ${missingAuthoredProjectiles.join(', ')}.`:`All ${authoredProjectiles.length} authored projectile sprites are present.`});
 
     // Check 10: minimum-frame-count
     checks.push(this._checkMinimumFrameCount(frameData, manifest));

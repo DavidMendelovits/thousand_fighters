@@ -50,6 +50,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("input", type=Path, help="Source row sheet PNG.")
     parser.add_argument("output_dir", type=Path, help="Output directory for frames.")
+    parser.add_argument("--video-source", action="store_true", help="Remove connected compressed chroma spill and preserve one scale across the motion.")
     parser.add_argument(
         "--move-id", required=True, help="Move id used as filename prefix."
     )
@@ -98,6 +99,28 @@ def is_near_magenta(pixel: tuple[int, ...]) -> bool:
     """Looser magenta detection used for residue auditing."""
     r, g, b = pixel[0], pixel[1], pixel[2]
     return r >= 180 and b >= 160 and g <= 100
+
+
+def foreground_mask(data, width, height, video_source=False):
+    background = [pixel[3] == 0 or is_magenta(pixel) for pixel in data]
+    if video_source:
+        # Only grow from known background. Dark purple interior details are not
+        # globally keyed out just because the character has a purple palette.
+        queue = deque(i for i, value in enumerate(background) if value)
+        while queue:
+            i = queue.popleft()
+            x, y = i % width, i // width
+            for nx, ny in ((x-1,y),(x+1,y),(x,y-1),(x,y+1)):
+                if not (0 <= nx < width and 0 <= ny < height):
+                    continue
+                j = ny * width + nx
+                if background[j]:
+                    continue
+                r, g, b, _ = data[j]
+                if min(r,b) > 70 and g < min(r,b) * .42 and .78 < r / max(1,b) < 1.28:
+                    background[j] = True
+                    queue.append(j)
+    return [not value for value in background]
 
 
 def label_components(
@@ -289,7 +312,7 @@ def foot_anchor_x(image: Image.Image, bbox: tuple[int, int, int, int]) -> int:
     return round(weighted_x / total_weight)
 
 
-def normalize_frame(silhouette: Image.Image) -> tuple[Image.Image, dict[str, object]]:
+def normalize_frame(silhouette: Image.Image, pivot=None) -> tuple[Image.Image, dict[str, object]]:
     """Recanvas a keyed silhouette crop with standard padding and compute its anchor.
 
     Returns (frame, meta) where meta has anchor/reachX/silhouetteHeight relative
@@ -303,15 +326,21 @@ def normalize_frame(silhouette: Image.Image) -> tuple[Image.Image, dict[str, obj
 
     tight = silhouette.crop(bbox)
     anchor_x_in_tight = foot_anchor_x(silhouette, bbox) - bbox[0]
+    anchor_y_in_tight = tight.height
+    if pivot is not None:
+        anchor_x_in_tight = round(pivot[0]) - bbox[0]
+        anchor_y_in_tight = round(pivot[1]) - bbox[1]
 
-    width = tight.width + SIDE_PADDING * 2
-    height = tight.height + SIDE_PADDING + FLOOR_PADDING
+    pad_x = SIDE_PADDING + max(0, -anchor_x_in_tight)
+    pad_y = SIDE_PADDING + max(0, -anchor_y_in_tight)
+    width = max(tight.width, anchor_x_in_tight) + pad_x + SIDE_PADDING
+    height = max(tight.height, anchor_y_in_tight) + pad_y + FLOOR_PADDING
     frame = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-    frame.alpha_composite(tight, (SIDE_PADDING, SIDE_PADDING))
+    frame.alpha_composite(tight, (pad_x, pad_y))
 
-    anchor_x = SIDE_PADDING + anchor_x_in_tight
-    anchor_y = height - FLOOR_PADDING
-    reach_x = (SIDE_PADDING + tight.width - 1) - anchor_x
+    anchor_x = pad_x + anchor_x_in_tight
+    anchor_y = pad_y + anchor_y_in_tight
+    reach_x = (pad_x + tight.width - 1) - anchor_x
 
     meta = {
         "empty": False,
@@ -458,6 +487,7 @@ def extract_frames(
     target_height: int | None = None,
     body_half_width: int | None = None,
     equalize_frames: bool = True,
+    video_source: bool = False,
 ) -> dict[str, object]:
     """Extract, key, despill, anchor, and (optionally) rescale frames from a sheet."""
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -472,24 +502,31 @@ def extract_frames(
 
     # Pass 1: segment the sheet into connected character blobs and assign each
     # blob wholly to its majority grid cell — no hard cuts at cell boundaries.
-    data = raw.getdata()
-    fg = [not is_magenta(pixel) for pixel in data]
+    data = list(raw.getdata())
+    fg = foreground_mask(data, width, height, video_source)
     components = label_components(fg, width, height)
     cell_pixels = assign_components_to_cells(
         components, width, rows, cols, col_width, row_height, warnings
     )
 
     silhouettes: list[Image.Image | None] = []
+    source_bounds = []
+    video_origin = None
     edge_touches: list[bool] = []
     for i in range(frame_count):
         pixels = cell_pixels[i]
         if not pixels:
             silhouettes.append(None)
+            source_bounds.append(None)
             edge_touches.append(False)
             warnings.append(f"frame {i + 1}: empty cell — no character content detected")
             continue
 
         keyed, bbox = silhouette_from_pixels(raw, pixels)
+        local_bounds = (bbox[0] - (i % cols) * col_width, bbox[1] - (i // cols) * row_height)
+        source_bounds.append(local_bounds)
+        if video_source and video_origin is None:
+            video_origin = (local_bounds[0] + foot_anchor_x(keyed, alpha_bbox(keyed)), local_bounds[1] + keyed.height)
         # Touching the sheet's outer border means the canvas truncated content.
         touches = (
             bbox[0] <= 0 or bbox[2] >= width
@@ -513,6 +550,10 @@ def extract_frames(
     # rows like jump/crouch where height legitimately changes).
     heights = [alpha_bbox(s)[3] - alpha_bbox(s)[1] for s in silhouettes if s is not None and alpha_bbox(s)]
     median_height = sorted(heights)[len(heights) // 2] if heights else 0
+    if video_source and heights:
+        # Image-to-video begins from the approved ready pose. Anchor scale to
+        # that pose, not a crouched median or the tallest extension.
+        median_height = heights[0]
     scale_applied = 1.0
     if equalize_frames and median_height:
         # Target = explicit override if given, else the row's own median.
@@ -550,7 +591,7 @@ def extract_frames(
         if abs(factor - 1.0) > RESCALE_TOLERANCE:
             scale_applied = factor
             silhouettes = [
-                s.resize((max(1, round(s.width * factor)), max(1, round(s.height * factor))), Image.LANCZOS)
+                s.resize((max(1, round(s.width * factor)), max(1, round(s.height * factor))), Image.Resampling.NEAREST if video_source else Image.LANCZOS)
                 if s is not None else None
                 for s in silhouettes
             ]
@@ -587,7 +628,10 @@ def extract_frames(
             hurtbox = None
             attack_box = None
         else:
-            frame, meta = normalize_frame(silhouette)
+            pivot = None
+            if video_source and video_origin is not None:
+                pivot = tuple((video_origin[axis] - source_bounds[i][axis]) * scale_applied for axis in (0, 1))
+            frame, meta = normalize_frame(silhouette, pivot)
             residue = magenta_residue_ratio(frame)
             if residue > 0.005:
                 warnings.append(
@@ -645,6 +689,7 @@ def main() -> int:
         target_height=args.target_height,
         body_half_width=args.body_half_width,
         equalize_frames=args.equalize_frames,
+        video_source=args.video_source,
     )
     print(json.dumps({
         "output": str(args.output_dir),

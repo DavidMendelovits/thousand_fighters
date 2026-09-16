@@ -1,0 +1,107 @@
+{
+  "anchorConvention": "frame anchor is the actor pivot in PNG pixels",
+  "frames": {
+    "body": [
+      {
+        "file": "sprites/body/body_001.png",
+        "width": 183,
+        "height": 128,
+        "anchor": {
+          "x": 82,
+          "y": 122
+        },
+        "durationFrames": 4
+      },
+      {
+        "file": "sprites/body/body_002.png",
+        "width": 183,
+        "height": 128,
+        "anchor": {
+          "x": 82,
+          "y": 122
+        },
+        "durationFrames": 4
+      },
+      {
+        "file": "sprites/body/body_003.png",
+        "width": 183,
+        "height": 128,
+        "anchor": {
+          "x": 82,
+          "y": 122
+        },
+        "durationFrames": 5
+      },
+      {
+        "file": "sprites/body/body_004.png",
+        "width": 183,
+        "height": 128,
+        "anchor": {
+          "x": 82,
+          "y": 122
+        },
+        "durationFrames": 5
+      },
+      {
+        "file": "sprites/body/body_005.png",
+        "width": 183,
+        "height": 128,
+        "anchor": {
+          "x": 82,
+          "y": 122
+        },
+        "durationFrames": 4
+      },
+      {
+        "file": "sprites/body/body_006.png",
+        "width": 183,
+        "height": 128,
+        "anchor": {
+          "x": 82,
+          "y": 122
+        },
+        "durationFrames": 4
+      },
+      {
+        "file": "sprites/body/body_007.png",
+        "width": 183,
+        "height": 128,
+        "anchor": {
+          "x": 82,
+          "y": 122
+        },
+        "durationFrames": 6
+      },
+      {
+        "file": "sprites/body/body_008.png",
+        "width": 183,
+        "height": 128,
+        "anchor": {
+          "x": 82,
+          "y": 122
+        },
+        "durationFrames": 6
+      },
+      {
+        "file": "sprites/body/body_009.png",
+        "width": 183,
+        "height": 128,
+        "anchor": {
+          "x": 82,
+          "y": 122
+        },
+        "durationFrames": 6
+      },
+      {
+        "file": "sprites/body/body_010.png",
+        "width": 183,
+        "height": 128,
+        "anchor": {
+          "x": 82,
+          "y": 122
+        },
+        "durationFrames": 8
+      }
+    ]
+  }
+}

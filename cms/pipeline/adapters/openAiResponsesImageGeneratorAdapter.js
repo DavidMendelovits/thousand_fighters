@@ -1,4 +1,5 @@
 import { rowPromptProfile } from '../rowPromptProfiles.js';
+import { pixelArtDirection } from './pixelArtDirection.js';
 
 const DEFAULT_RESPONSES_MODEL = 'gpt-5.5';
 const DEFAULT_IMAGE_MODEL = 'gpt-image-2';
@@ -144,6 +145,7 @@ function imagePromptFor(request) {
   const task = request.task ?? 'image-generation';
   if (task === 'character-concept') {
     return [
+      pixelArtDirection(),
       'Create a character turnaround sheet for a 2D fighting game character.',
       '',
       'Layout — STRICT 1x3 GRID of three equal square panels side by side:',
@@ -170,6 +172,7 @@ function imagePromptFor(request) {
   }
   if (task === 'arena-background') {
     return [
+      pixelArtDirection(),
       'Draw a production-ready 2D fighting game arena background.',
       '',
       'Arena format:',
@@ -178,12 +181,31 @@ function imagePromptFor(request) {
       '- Atmospheric depth with foreground elements and background layers.',
       '- Dramatic, moody lighting with high contrast so fighter silhouettes stay readable.',
       '- No characters, no UI elements, no text, no health bars.',
-      '- Style: detailed pixel art or digital painting, dark tones, vibrant accent colors.',
+      '- Style: detailed 16-bit pixel art, dark tones, vibrant accent colors.',
       '',
       'Arena concept:',
       request.prompt ?? '',
       '',
       request.context ? `Context:\n${JSON.stringify(request.context, null, 2)}` : '',
+    ].filter(Boolean).join('\n');
+  }
+  if (task === 'fighter-5x6-sheet') {
+    return [
+      pixelArtDirection(),
+      'Draw one production-ready fighting-game sprite sheet.',
+      'Exactly 5 rows and 6 columns: 30 evenly sized cells.',
+      'Rows from top to bottom: idle/base, punch, kick, special move 1, special move 2.',
+      'One full-body fighter per cell, facing right, with consistent identity, costume, scale, palette, floor line, and camera.',
+      'No opponent, duplicate, text, UI, borders, scenery, gradients, or shadows.',
+      'Use a perfectly flat solid chroma-magenta #ff00ff background and generous empty gutters between every cell.',
+      '',
+      'Character prompt:',
+      request.prompt ?? '',
+      '',
+      'Reference asset storage keys:',
+      JSON.stringify(request.referenceAssetKeys ?? []),
+      '',
+      referenceNote(request),
     ].filter(Boolean).join('\n');
   }
   if (task === 'fighter-1x6-row') {
@@ -202,6 +224,7 @@ function imagePromptFor(request) {
         ];
     const scaleLines = profile.scaleNote ? [`- ${profile.scaleNote}`] : [];
     return [
+      pixelArtDirection(),
       'Draw a production-ready 2D fighting-game sprite row for Thousand Fighters.',
       '',
       'Sheet format:',
@@ -229,6 +252,7 @@ function imagePromptFor(request) {
   }
   if (task === 'projectile-sprite') {
     return [
+      pixelArtDirection(),
       'Draw a single 2D fighting-game projectile sprite for Thousand Fighters.',
       '',
       'Format:',
@@ -250,6 +274,7 @@ function imagePromptFor(request) {
   if (task === 'fighter-2x3-grid') {
     const moveId = request.moveId ?? 'base';
     return [
+      pixelArtDirection(),
       'Draw a production-ready 2D fighting-game sprite sheet for Thousand Fighters.',
       '',
       'Sheet format (WIDE move profile):',

@@ -1,0 +1,82 @@
+{
+  "workflow": "row-normalizer",
+  "moves": {
+    "base": {
+      "generatedAt": "2026-09-16T16:00:13.974Z",
+      "sourceAssetKey": "characters/latch/assets/source/latch_base_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 283,
+      "scaleApplied": 1,
+      "targetHeight": null,
+      "warnings": [
+        "frames equalized to silhouette height 283px per frame (row median was 283px)"
+      ]
+    },
+    "kick": {
+      "generatedAt": "2026-09-16T16:22:53.717Z",
+      "sourceAssetKey": "characters/latch/assets/source/latch_kick_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 268,
+      "scaleApplied": 1.0559701492537314,
+      "targetHeight": 283,
+      "warnings": [
+        "row rescaled by 1.056 to match target silhouette height 283px (was 268px)"
+      ]
+    },
+    "special_1": {
+      "generatedAt": "2026-09-16T16:22:56.428Z",
+      "sourceAssetKey": "characters/latch/assets/source/latch_special_1_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 272,
+      "scaleApplied": 1.0404411764705883,
+      "targetHeight": 283,
+      "warnings": [
+        "row rescaled by 1.040 to match target silhouette height 283px (was 272px)"
+      ]
+    },
+    "special_2": {
+      "generatedAt": "2026-09-16T16:22:58.688Z",
+      "sourceAssetKey": "characters/latch/assets/source/latch_special_2_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 264,
+      "scaleApplied": 1.071969696969697,
+      "targetHeight": 283,
+      "warnings": [
+        "row rescaled by 1.072 to match target silhouette height 283px (was 264px)"
+      ]
+    },
+    "punch": {
+      "generatedAt": "2026-09-16T16:22:51.462Z",
+      "sourceAssetKey": "characters/latch/assets/source/latch_punch_sheet.png",
+      "grid": [
+        1,
+        6
+      ],
+      "medianSilhouetteHeight": 264,
+      "scaleApplied": 1.071969696969697,
+      "targetHeight": 283,
+      "warnings": [
+        "row rescaled by 1.072 to match target silhouette height 283px (was 264px)"
+      ]
+    }
+  },
+  "warnings": [
+    "base: frames equalized to silhouette height 283px per frame (row median was 283px)",
+    "kick: row rescaled by 1.056 to match target silhouette height 283px (was 268px)",
+    "special_1: row rescaled by 1.040 to match target silhouette height 283px (was 272px)",
+    "special_2: row rescaled by 1.072 to match target silhouette height 283px (was 264px)",
+    "punch: row rescaled by 1.072 to match target silhouette height 283px (was 264px)"
+  ]
+}

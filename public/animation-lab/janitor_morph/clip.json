@@ -1,0 +1,386 @@
+{
+  "schemaVersion": 1,
+  "id": "janitor_morph",
+  "displayName": "Janitor \u00b7 liquid shift",
+  "kind": "transformation",
+  "playback": "hold",
+  "tickRate": 60,
+  "totalTicks": 76,
+  "canvas": {
+    "width": 245,
+    "height": 204
+  },
+  "anchor": {
+    "x": 119,
+    "y": 187
+  },
+  "rootMode": "baked",
+  "layers": [
+    {
+      "id": "body",
+      "role": "body",
+      "z": 0,
+      "blend": "normal",
+      "sheet": "layers/body.png",
+      "frames": [
+        {
+          "x": 0,
+          "y": 0,
+          "width": 245,
+          "height": 204,
+          "file": "sprites/body/body_001.png",
+          "durationTicks": 8,
+          "sourceFrame": 0,
+          "sourceTimeMs": 0.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 245,
+          "y": 0,
+          "width": 245,
+          "height": 204,
+          "file": "sprites/body/body_002.png",
+          "durationTicks": 4,
+          "sourceFrame": 22,
+          "sourceTimeMs": 916.667,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 490,
+          "y": 0,
+          "width": 245,
+          "height": 204,
+          "file": "sprites/body/body_003.png",
+          "durationTicks": 4,
+          "sourceFrame": 34,
+          "sourceTimeMs": 1416.667,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 735,
+          "y": 0,
+          "width": 245,
+          "height": 204,
+          "file": "sprites/body/body_004.png",
+          "durationTicks": 4,
+          "sourceFrame": 42,
+          "sourceTimeMs": 1750.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 980,
+          "y": 0,
+          "width": 245,
+          "height": 204,
+          "file": "sprites/body/body_005.png",
+          "durationTicks": 4,
+          "sourceFrame": 49,
+          "sourceTimeMs": 2041.667,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 1225,
+          "y": 0,
+          "width": 245,
+          "height": 204,
+          "file": "sprites/body/body_006.png",
+          "durationTicks": 5,
+          "sourceFrame": 56,
+          "sourceTimeMs": 2333.333,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 1470,
+          "y": 0,
+          "width": 245,
+          "height": 204,
+          "file": "sprites/body/body_007.png",
+          "durationTicks": 5,
+          "sourceFrame": 61,
+          "sourceTimeMs": 2541.667,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 1715,
+          "y": 0,
+          "width": 245,
+          "height": 204,
+          "file": "sprites/body/body_008.png",
+          "durationTicks": 4,
+          "sourceFrame": 66,
+          "sourceTimeMs": 2750.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 0,
+          "y": 204,
+          "width": 245,
+          "height": 204,
+          "file": "sprites/body/body_009.png",
+          "durationTicks": 4,
+          "sourceFrame": 72,
+          "sourceTimeMs": 3000.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 245,
+          "y": 204,
+          "width": 245,
+          "height": 204,
+          "file": "sprites/body/body_010.png",
+          "durationTicks": 4,
+          "sourceFrame": 78,
+          "sourceTimeMs": 3250.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 490,
+          "y": 204,
+          "width": 245,
+          "height": 204,
+          "file": "sprites/body/body_011.png",
+          "durationTicks": 4,
+          "sourceFrame": 84,
+          "sourceTimeMs": 3500.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 735,
+          "y": 204,
+          "width": 245,
+          "height": 204,
+          "file": "sprites/body/body_012.png",
+          "durationTicks": 4,
+          "sourceFrame": 91,
+          "sourceTimeMs": 3791.667,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 980,
+          "y": 204,
+          "width": 245,
+          "height": 204,
+          "file": "sprites/body/body_013.png",
+          "durationTicks": 4,
+          "sourceFrame": 99,
+          "sourceTimeMs": 4125.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 1225,
+          "y": 204,
+          "width": 245,
+          "height": 204,
+          "file": "sprites/body/body_014.png",
+          "durationTicks": 6,
+          "sourceFrame": 110,
+          "sourceTimeMs": 4583.333,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 1470,
+          "y": 204,
+          "width": 245,
+          "height": 204,
+          "file": "sprites/body/body_015.png",
+          "durationTicks": 12,
+          "sourceFrame": 120,
+          "sourceTimeMs": 5000.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "type": "transform-start",
+      "label": "Dissolve",
+      "tick": 12
+    },
+    {
+      "type": "reform",
+      "label": "Reformation",
+      "tick": 38
+    },
+    {
+      "type": "transform-end",
+      "label": "Final form",
+      "tick": 64
+    }
+  ],
+  "palette": [
+    "#d4d6d0",
+    "#dbc19e",
+    "#b2c7d4",
+    "#aabbc9",
+    "#b1b4b8",
+    "#9eb1c2",
+    "#b0a19c",
+    "#97a3b1",
+    "#89a0aa",
+    "#8391a0",
+    "#828a9a",
+    "#7b8997",
+    "#818597",
+    "#7e8597",
+    "#7d8497",
+    "#798495",
+    "#817d88",
+    "#767d8c",
+    "#6f7b8c",
+    "#6d7080",
+    "#617384",
+    "#5d6979",
+    "#5b6072",
+    "#4d5e6e",
+    "#565162",
+    "#495061",
+    "#424c5c",
+    "#3d4554",
+    "#3f3947",
+    "#2a323d",
+    "#271c27",
+    "#0f121a"
+  ],
+  "intent": {
+    "topologyChanges": true,
+    "scaleChanges": true,
+    "paletteChanges": false
+  },
+  "qa": {
+    "status": "needs-review",
+    "checks": [
+      {
+        "id": "shared-scale",
+        "label": "Shared scale",
+        "status": "pass",
+        "detail": "One 0.25\u00d7 transform; no silhouette fitting"
+      },
+      {
+        "id": "parts",
+        "label": "Disconnected parts",
+        "status": "pass",
+        "detail": "All foreground components retained"
+      },
+      {
+        "id": "clipping",
+        "label": "Source framing",
+        "status": "warn",
+        "detail": "9 source boundary contacts"
+      },
+      {
+        "id": "motion",
+        "label": "Pose diversity",
+        "status": "pass",
+        "detail": "15 distinct selected composites; not a motion-quality score"
+      },
+      {
+        "id": "review",
+        "label": "Art and gameplay",
+        "status": "warn",
+        "detail": "Human review required; morphology, loop seams and combat timing are not automatically approved"
+      }
+    ],
+    "warnings": [
+      "Source boundary touched; inspect possible clipping: body:61, body:66, body:72, body:78, body:84, body:91, body:99, body:110, body:120"
+    ]
+  },
+  "provenance": {
+    "method": "generated-video",
+    "provider": "fal",
+    "model": "kling-video/v3/standard/image-to-video",
+    "description": "Live five-second body-morph candidate. Melting, separated droplets, and growth survive one shared normalization transform. The generated final form is taller but does not fully match the requested sludge monster; remains unapproved.",
+    "compiler": "animation-clip-v1",
+    "scale": 0.25,
+    "sources": [
+      {
+        "sha256": "b52f57ceff0cfe313a5454eaedf9661fbe47384609da1171810137af8894ea57",
+        "frameCount": 121,
+        "video": "/Users/davidmendelovits/space/thousand_fighters/artifacts/animation-video/janitor-morph-v2/source.mp4",
+        "size": [
+          960,
+          960
+        ]
+      }
+    ]
+  },
+  "review": {
+    "contactSheet": "contact-sheet.png",
+    "preview": "preview.png"
+  }
+}

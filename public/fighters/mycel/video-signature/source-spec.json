@@ -1,0 +1,85 @@
+{
+  "id": "mycel_signature",
+  "displayName": "Mycel \u00b7 video signature",
+  "kind": "attack",
+  "playback": "once",
+  "tickRate": 60,
+  "scale": 0.26666666666666666,
+  "padding": 6,
+  "paletteSize": 48,
+  "rootMode": "baked",
+  "intent": {
+    "topologyChanges": false,
+    "scaleChanges": false,
+    "paletteChanges": false
+  },
+  "provenance": {
+    "method": "generated-video",
+    "provider": "fal",
+    "model": "kling-video/v3/standard/image-to-video",
+    "description": "Reviewed video-derived body motion. Fixed reference-foot anchor and scale; authored action timing. Long-range attached extension and collisions remain engine-driven. Prototype, not final sprite cleanup."
+  },
+  "layers": [
+    {
+      "id": "body",
+      "role": "body",
+      "z": 0,
+      "source": {
+        "video": "source.mp4",
+        "fps": 24,
+        "anchor": {
+          "x": 462,
+          "y": 788
+        },
+        "background": "#ff00ff",
+        "backgroundMode": "chroma"
+      }
+    }
+  ],
+  "selection": [
+    {
+      "frame": 0,
+      "durationTicks": 4
+    },
+    {
+      "frame": 12,
+      "durationTicks": 4
+    },
+    {
+      "frame": 24,
+      "durationTicks": 4
+    },
+    {
+      "frame": 42,
+      "durationTicks": 4
+    },
+    {
+      "frame": 60,
+      "durationTicks": 3,
+      "event": {
+        "type": "activate",
+        "label": "Cast / extension begins"
+      }
+    },
+    {
+      "frame": 72,
+      "durationTicks": 3
+    },
+    {
+      "frame": 84,
+      "durationTicks": 6
+    },
+    {
+      "frame": 96,
+      "durationTicks": 6
+    },
+    {
+      "frame": 108,
+      "durationTicks": 6
+    },
+    {
+      "frame": 120,
+      "durationTicks": 8
+    }
+  ]
+}

@@ -425,11 +425,11 @@ function runSpawnFile(file, args, options) {
     child.on('error', rejectOnce);
     child.on('close', (code, signal) => {
       if (settled) return;
-      settled = true;
-      clearTimeout(timeout);
       const stdout = Buffer.concat(stdoutChunks).toString('utf8');
       const stderr = Buffer.concat(stderrChunks).toString('utf8');
       if (code === 0) {
+        settled = true;
+        clearTimeout(timeout);
         resolve({ stdout, stderr });
         return;
       }

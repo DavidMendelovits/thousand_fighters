@@ -16,12 +16,15 @@ import type {
   RawInput,
   SpriteFrameMeta,
   SpriteSheetId,
+  PowerUpSpec,
+  CharacterForm,
 } from '../schema/types';
 import { MOVE_SHEET_IDS } from '../../shared/animationRows.js';
 import { resolveStateSheet, stateRowFrame, isLoopingStateRow } from './animationRowPlayback';
 import { boxToWorld, type AABB } from '../util/aabb';
 import { interpolateHitboxGeometry } from './hitboxGeometry';
 import { selectTriggeredMove } from './moveSelection';
+import {ComboCounter,effectiveStats,scaledBox} from './combatRules';
 
 const STAGE_LEFT = 96;
 const STAGE_RIGHT = 704;
@@ -41,12 +44,16 @@ type ActiveHitbox = {
 type ActiveGrab = {
   actorId?: FighterActorId;
   grab: GrabSpec;
+  keyframes?: HitboxKeyframe[];
+  age: number;
 };
 
 type GrabHold = {
   offsetX: number;
   offsetY: number;
   remaining: number;
+  requiresAttack?: boolean;
+  anchor?: { x: number; y: number; facing: 1 | -1 };
   pull: { fromX: number; frames: number; elapsed: number } | null;
   release: {
     knockback: { x: number; y: number };
@@ -82,6 +89,21 @@ type FighterActorRuntime = {
 export class Fighter {
   id: string;
   config: CharacterConfig;
+  readonly baseConfig: CharacterConfig;
+  activeForm: CharacterForm | null = null;
+  formTicks: number | null = null;
+  powers: Array<{spec:PowerUpSpec;remaining:number|null}> = [];
+  meter=60;
+  contactThisMove=false;
+  hitThisMove=false;
+  moveSerial=0;
+  readonly combo=new ComboCounter();
+  airDodgeUsed=false;
+  movementTicks=0;
+  private movementDirection:1|-1=1;
+  private lastDirection:{direction:number;tick:number}|null=null;
+  private priorHorizontal=0;
+  private simulationTick=0;
   playerNum: 1 | 2;
   scene: FighterScene;
 
@@ -98,6 +120,7 @@ export class Fighter {
   health: number;
   hitstun = 0;
   blockstun = 0;
+  grabImmunity = 0;
 
   invulnerable: { duration: number; against: string[] } | null = null;
   armor: { hits: number; duration: number } | null = null;
@@ -119,7 +142,7 @@ export class Fighter {
   inputBuffer = new InputBuffer();
   animationKey = 'idle';
 
-  readonly body: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Sprite;
+  body: Phaser.GameObjects.Rectangle | Phaser.GameObjects.Sprite;
   readonly label: Phaser.GameObjects.Text;
 
   private readonly actors = new Map<FighterActorId, FighterActorRuntime>();
@@ -135,6 +158,7 @@ export class Fighter {
     this.scene = scene;
     this.id = `${config.id}-p${playerNum}`;
     this.config = config;
+    this.baseConfig = config;
     this.playerNum = playerNum;
     this.x = position.x;
     this.y = position.y;
@@ -161,10 +185,12 @@ export class Fighter {
     }
 
     this.tickModifiers();
+    this.simulationTick++;
     this.inputBuffer.record(input, this.facing);
     this.autoFace(opponent);
     this.runState(input);
     this.applyPhysics();
+    this.combo.tick(['hitstun','juggle','stunned','grabbed'].includes(this.state));
     this.keepInStage();
     this.recordPose();
     this.stateFrame += 1;
@@ -172,6 +198,7 @@ export class Fighter {
   }
 
   changeState(next: FighterState): void {
+    if(next==='dead') {this.powers=[];if(this.activeForm)this.exitForm(false);}
     if (this.state === next) return;
     if (this.state === 'grabbed' && next !== 'grabbed') {
       this.grabbedBy = null;
@@ -202,7 +229,7 @@ export class Fighter {
     if (!guardbox) return null;
     const actor = this.actorFor(this.primaryActorId());
     const pose = this.actorPose(actor);
-    return boxToWorld(guardbox, pose.x, pose.y, pose.facing);
+    return boxToWorld(scaledBox(guardbox,this.stats.size), pose.x, pose.y, pose.facing);
   }
 
   getHurtboxesWorld(): Array<{ actorId: FighterActorId; world: AABB }> {
@@ -213,7 +240,7 @@ export class Fighter {
       const hurtbox = override ?? actor.config.hurtboxes?.[this.state] ?? actor.config.hurtboxes?.idle ?? this.hurtboxOverride ?? this.config.hurtboxes[this.state] ?? this.config.hurtboxes.idle;
       if (!hurtbox) return [];
       const pose = this.actorPose(actor);
-      return [{ actorId: actor.id, world: boxToWorld(hurtbox, pose.x, pose.y, pose.facing) }];
+      return [{ actorId: actor.id, world: boxToWorld(scaledBox(hurtbox,this.stats.size), pose.x, pose.y, pose.facing) }];
     });
   }
 
@@ -225,7 +252,7 @@ export class Fighter {
         actorId: actor.id,
         id,
         hitbox: active.hitbox,
-        world: boxToWorld(interpolateHitboxGeometry(active), pose.x, pose.y, pose.facing),
+        world: boxToWorld(scaledBox(interpolateHitboxGeometry(active),this.stats.size), pose.x, pose.y, pose.facing),
       };
     });
   }
@@ -251,7 +278,7 @@ export class Fighter {
       return;
     }
 
-    if (this.state === 'hitstun' || this.state === 'juggle') {
+    if (this.state === 'hitstun' || this.state === 'juggle' || this.state === 'stunned') {
       this.hitstun = Math.max(0, this.hitstun - 1);
       if (this.hitstun === 0) this.changeState(this.grounded ? 'idle' : 'airborne');
       return;
@@ -279,6 +306,28 @@ export class Fighter {
       return;
     }
 
+    if(this.state==='dash'||this.state==='air_dodge'||this.state==='wavedash'){
+      this.movementTicks--;
+      if(this.state==='wavedash')this.vx*=.88;
+      if(this.movementTicks<=0){this.changeState(this.grounded?'idle':'airborne');return;}
+      if(this.state==='dash'&&this.stateFrame>=4){const m=this.findTriggeredMove(false);if(m){MoveExecutor.start(this,m);return;}}
+      return;
+    }
+    if(input.transform&&this.grounded&&!this.activeForm){const form=this.baseConfig.forms?.[0];if(form&&this.enterForm(form.id))return;}
+    if(input.power&&this.grounded){const power=this.config.powerUps?.[0]??this.baseConfig.powerUps?.[0];if(power&&this.applyPowerUp(power))return;}
+    const horizontal=input.right&&!input.left?1:input.left&&!input.right?-1:0;
+    let doubleTap=false;
+    if(horizontal&&horizontal!==this.priorHorizontal){
+      doubleTap=this.lastDirection?.direction===horizontal&&this.simulationTick-this.lastDirection.tick<=12;
+      this.lastDirection={direction:horizontal,tick:this.simulationTick};
+    }
+    this.priorHorizontal=horizontal;
+    if(input.dash||doubleTap){
+      if(this.grounded&&input.up){this.startJump(input);this.startAirDodge(horizontal||this.facing,true);return;}
+      if(this.grounded){this.movementDirection=(horizontal||this.facing) as 1|-1;this.vx=this.movementDirection*8*this.stats.speed;this.movementTicks=13;this.changeState('dash');return;}
+      if(!this.airDodgeUsed){this.startAirDodge(horizontal||this.facing,Boolean(input.down));return;}
+    }
+
     // Maintain active block state while holding back; exit when released.
     // HitResolver.isBlocking() reads raw input so it still works in blockstun
     // (the reactive path) without any changes here.
@@ -288,6 +337,8 @@ export class Fighter {
         this.changeState('idle');
         // Fall through to normal state handling below.
       } else {
+        const guardedMove = this.findTriggeredMove(false);
+        if (guardedMove) { MoveExecutor.start(this, guardedMove); return; }
         this.vx = 0;
         return;
       }
@@ -325,7 +376,7 @@ export class Fighter {
       this.vx = 0;
       this.changeState('block');
     } else if (forwardHeld) {
-      this.vx = this.config.walkForwardSpeed * this.facing;
+      this.vx = this.config.walkForwardSpeed * this.facing * this.stats.speed;
       this.changeState('walk_forward');
     } else {
       this.vx = 0;
@@ -334,7 +385,45 @@ export class Fighter {
   }
 
   private findTriggeredMove(forCancel: boolean): Move | null {
-    return selectTriggeredMove(this.config.moves, this.inputBuffer, this, forCancel);
+    return selectTriggeredMove(this.config.moves.filter(m=>this.meter>=(m.cost?.meter??0)), this.inputBuffer, this, forCancel);
+  }
+
+  get stats(){return effectiveStats(this.config.stats,this.powers.map(p=>p.spec));}
+  resetAdvanced():void {this.exitForm();this.powers=[];this.meter=60;this.combo.reset();this.airDodgeUsed=false;this.movementTicks=0;this.lastDirection=null;this.priorHorizontal=0;}
+  applyPowerUp(spec:PowerUpSpec):boolean {
+    if(this.state==='dead'||this.meter<spec.cost)return false;
+    this.meter-=spec.cost;
+    this.powers=this.powers.filter(p=>p.spec.id!==spec.id);
+    this.powers.push({spec,remaining:spec.durationTicks});
+    return true;
+  }
+  enterForm(id:string):boolean {
+    const form=this.baseConfig.forms?.find(f=>f.id===id);
+    if(!form||this.activeForm||this.state==='dead'||this.meter<form.cost)return false;
+    if(form.config.parentId!==this.baseConfig.id||form.config.selectable!==false)return false;
+    this.meter-=form.cost;this.activeForm=form;this.formTicks=form.durationTicks;
+    this.replaceConfig(form.config);this.changeState(this.grounded?'idle':'airborne');this.inputBuffer.consumeButtons();this.refreshVisuals();return true;
+  }
+  exitForm(resetState=true):void {
+    if(!this.activeForm)return;
+    this.activeForm=null;this.formTicks=null;
+    const previous=this.state;
+    this.replaceConfig(this.baseConfig);
+    if(resetState){this.state='attack';this.changeState(['hitstun','juggle','stunned','grabbed','knockdown','dead'].includes(previous)?previous:(this.grounded?'idle':'airborne'));}
+  }
+  private replaceConfig(config:CharacterConfig):void {
+    for(const actor of this.actors.values())actor.body.destroy();
+    this.actors.clear();this.actorOrder.length=0;this.clearActorMoveOverrides();this.fusionFrames=0;this.leadSwapped=false;
+    this.config=config;this.currentMove=null;this.activeHitboxes.clear();this.activeGrabs.clear();
+    this.invulnerable=null;this.armor=null;
+    this.body=this.createActors(this.playerNum===1?0xd44949:0x426edb);
+    this.poseHistory=Array.from({length:this.maxPoseHistory},()=>({x:this.x,y:this.y,facing:this.facing}));
+  }
+  private startAirDodge(direction:number,down:boolean):void {
+    this.airDodgeUsed=true;this.movementDirection=direction as 1|-1;this.vx=direction*8*this.stats.speed;this.vy=down?9:0;
+    this.movementTicks=14;this.changeState('air_dodge');
+    // Wavelanding is spacing, not a repeatable ground invincibility exploit.
+    if(!down)this.invulnerable={duration:4,against:['high','mid','low','projectile']};
   }
 
   private tickGrabbed(): void {
@@ -342,7 +431,9 @@ export class Fighter {
     const hold = this.grabHold;
     // Grabber interrupted (hit out of the move, move ended early, died):
     // drop out without release knockback.
-    if (!grabber || !hold || grabber.state !== 'attack') {
+    if (!grabber || !hold || grabber.state === 'dead' ||
+      ['hitstun', 'stunned', 'juggle', 'grabbed', 'knockdown'].includes(grabber.state) ||
+      (hold.requiresAttack !== false && grabber.state !== 'attack')) {
       this.releaseGrab(false);
       return;
     }
@@ -356,9 +447,10 @@ export class Fighter {
 
     this.vx = 0;
     this.vy = 0;
-    this.x = grabber.x + offsetX * grabber.facing;
-    this.y = grabber.y + hold.offsetY;
-    this.facing = (grabber.facing * -1) as 1 | -1;
+    const anchor = hold.anchor ?? grabber;
+    this.x = anchor.x + offsetX * anchor.facing;
+    this.y = anchor.y + hold.offsetY;
+    this.facing = (anchor.facing * -1) as 1 | -1;
     this.grounded = this.y >= FLOOR_Y;
 
     hold.remaining -= 1;
@@ -370,9 +462,10 @@ export class Fighter {
     const release = this.grabHold?.release ?? null;
     this.grabbedBy = null;
     this.grabHold = null;
+    this.grabImmunity = 24;
 
     if (applyRelease && release && grabber) {
-      this.vx = release.knockback.x * grabber.facing;
+      this.vx = release.knockback.x * grabber.facing * grabber.stats.knockback / this.stats.weight;
       this.vy = release.knockback.y;
       this.hitstun = release.hitstun;
       if (release.launches || !this.grounded) {
@@ -394,9 +487,9 @@ export class Fighter {
     const backHeld = this.facing === 1 ? input.left : input.right;
     this.vy = -this.config.jumpVelocity;
     this.vx = forwardHeld
-      ? this.config.jumpForwardVelocity * this.facing
+      ? this.config.jumpForwardVelocity * this.facing * this.stats.speed
       : backHeld
-        ? -this.config.jumpBackVelocity * this.facing
+        ? -this.config.jumpBackVelocity * this.facing * this.stats.speed
         : 0;
     this.grounded = false;
     this.changeState('airborne');
@@ -405,8 +498,8 @@ export class Fighter {
   private horizontalAirVelocity(input: RawInput): number {
     const forwardHeld = this.facing === 1 ? input.right : input.left;
     const backHeld = this.facing === 1 ? input.left : input.right;
-    if (forwardHeld) return this.config.jumpForwardVelocity * 0.65 * this.facing;
-    if (backHeld) return -this.config.jumpBackVelocity * 0.65 * this.facing;
+    if (forwardHeld) return this.config.jumpForwardVelocity * 0.65 * this.facing * this.stats.speed;
+    if (backHeld) return -this.config.jumpBackVelocity * 0.65 * this.facing * this.stats.speed;
     return this.vx * 0.98;
   }
 
@@ -423,10 +516,12 @@ export class Fighter {
     if (this.y >= FLOOR_Y) {
       this.y = FLOOR_Y;
       this.vy = 0;
+      if(!this.grounded&&this.state==='air_dodge'){this.changeState('wavedash');this.movementTicks=8;this.invulnerable=null;}
       if (!this.grounded && (this.state === 'airborne' || this.state === 'juggle')) {
         this.changeState(this.state === 'juggle' ? 'knockdown' : 'landing');
       }
       this.grounded = true;
+      this.airDodgeUsed=false;
     } else {
       this.grounded = false;
     }
@@ -441,11 +536,15 @@ export class Fighter {
   }
 
   private autoFace(opponent: Fighter): void {
-    if (!this.grounded || this.state === 'attack' || this.state === 'hitstun' || this.state === 'block' || this.state === 'blockstun') return;
+    if (!this.grounded || ['attack', 'dash','air_dodge','wavedash','hitstun', 'stunned', 'grabbed', 'block', 'blockstun'].includes(this.state)) return;
     this.facing = this.x <= opponent.x ? 1 : -1;
   }
 
   private tickModifiers(): void {
+    for(const p of this.powers)if(p.remaining!==null)p.remaining--;
+    this.powers=this.powers.filter(p=>p.remaining===null||p.remaining>0);
+    if(this.formTicks!==null&&--this.formTicks<=0)this.exitForm();
+    this.grabImmunity = Math.max(0, this.grabImmunity - 1);
     if (this.fusionFrames > 0) {
       this.fusionFrames -= 1;
     }
@@ -476,6 +575,10 @@ export class Fighter {
 
     this.label.setPosition(this.x, this.y - FIGHTER_HEIGHT - 18);
     this.label.setText(this.fusionFrames > 0 ? `${this.currentMove?.id ?? this.state}:fusion` : (this.currentMove?.id ?? this.state));
+    if (this.config.rosterGroup === 'oddities') {
+      this.label.setText(this.currentMove?.displayName ?? ({ grabbed: 'CAPTURED', stunned: 'STUNNED', blockstun: 'BLOCK', juggle: 'LAUNCH' } as Partial<Record<FighterState,string>>)[this.state] ?? '');
+      this.label.setFontSize(10);
+    }
   }
 
   private syncActorVisual(actor: FighterActorRuntime): void {
@@ -485,6 +588,7 @@ export class Fighter {
 
     const pose = this.actorPose(actor);
     actor.body.setPosition(pose.x, pose.y);
+    actor.body.setAngle(this.state === 'grabbed' ? -12 * pose.facing : (this.state === 'knockdown' || this.state === 'dead') ? 75 * pose.facing : 0);
 
     const sprite = this.spriteForActor(actor);
     if (actor.body instanceof Phaser.GameObjects.Sprite && sprite) {
@@ -495,9 +599,11 @@ export class Fighter {
       actor.body.setTexture(this.frameKey(visual.sheet, visual.frame, actor.id));
       actor.body.setOrigin(pose.facing === -1 ? 1 - originX : originX, originY);
       actor.body.setFlipX(pose.facing === -1);
-      actor.body.setScale(sprite.scale);
+      actor.body.setScale(sprite.scale*this.stats.size);
       actor.body.clearTint();
       if (this.state === 'hitstun' || this.state === 'juggle') actor.body.setTint(0xffffff);
+      if (this.state === 'stunned') actor.body.setTint(0xffef8a);
+      if (this.state === 'grabbed') actor.body.setTint(0xffc38f);
       if (this.state === 'block' || this.state === 'blockstun') actor.body.setTint(0x9dffbd);
     } else if (actor.body instanceof Phaser.GameObjects.Rectangle) {
       actor.body.setScale(pose.facing, this.state === 'crouch' ? 0.58 : 1);
@@ -513,7 +619,11 @@ export class Fighter {
   private currentVisualFrame(actor?: FighterActorRuntime): { sheet: SpriteSheetId; frame: number } {
     const visualDelay = this.fusionFrames > 0 ? 0 : (actor?.config.visualDelay ?? 0);
     const sprite = actor ? this.spriteForActor(actor) : this.config.sprite;
-    if (this.currentMove && MOVE_SHEETS.has(this.currentMove.animation as SpriteSheetId)) {
+    if(['dash','air_dodge','wavedash'].includes(this.state)){
+      const row=this.state==='dash'?(this.movementDirection===this.facing?'dash_forward':'dash_back'):this.state==='air_dodge'?'jump':'crouch';
+      if(sprite?.frameCounts[row])return {sheet:row,frame:stateRowFrame(this.stateFrame,sprite.frameCounts[row]!,false)};
+    }
+    if (this.currentMove && (MOVE_SHEETS.has(this.currentMove.animation as SpriteSheetId) || (sprite?.frameCounts[this.currentMove.animation] ?? 0) > 0)) {
       return {
         sheet: this.currentMove.animation as SpriteSheetId,
         frame: this.moveVisualFrame(this.currentMove, visualDelay, sprite),
@@ -556,6 +666,7 @@ export class Fighter {
       blockstun: 3,
       hitstun: 3,
       grabbed: 3,
+      stunned: 3,
       juggle: 5,
       knockdown: 4,
       getup: 4,
@@ -602,14 +713,15 @@ export class Fighter {
     for (const active of this.activeHitboxes.values()) {
       active.age += 1;
     }
+    for (const active of this.activeGrabs.values()) active.age += 1;
   }
 
   clearActiveHitbox(id: string): void {
     this.activeHitboxes.delete(id);
   }
 
-  setActiveGrab(id: string, grab: GrabSpec, actorId?: FighterActorId): void {
-    this.activeGrabs.set(id, { actorId, grab });
+  setActiveGrab(id: string, grab: GrabSpec, actorId?: FighterActorId, keyframes?: HitboxKeyframe[]): void {
+    this.activeGrabs.set(id, { actorId, grab, keyframes, age: 0 });
   }
 
   clearActiveGrab(id: string): void {
@@ -624,7 +736,7 @@ export class Fighter {
         actorId: actor.id,
         id,
         grab: active.grab,
-        world: boxToWorld(active.grab.hitbox, pose.x, pose.y, pose.facing),
+        world: boxToWorld(scaledBox(interpolateHitboxGeometry({ hitbox: active.grab.hitbox, keyframes: active.keyframes, age: active.age }),this.stats.size), pose.x, pose.y, pose.facing),
       };
     });
   }

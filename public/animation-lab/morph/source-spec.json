@@ -1,0 +1,272 @@
+{
+  "id": "morph",
+  "displayName": "Sludge awakening",
+  "kind": "transformation",
+  "playback": "once",
+  "tickRate": 60,
+  "scale": 1,
+  "padding": 5,
+  "rootMode": "in-place",
+  "intent": {
+    "topologyChanges": true,
+    "scaleChanges": true,
+    "paletteChanges": false
+  },
+  "selection": [
+    {
+      "frame": 0,
+      "durationTicks": 8
+    },
+    {
+      "frame": 1,
+      "durationTicks": 3
+    },
+    {
+      "frame": 2,
+      "durationTicks": 3
+    },
+    {
+      "frame": 3,
+      "durationTicks": 3
+    },
+    {
+      "frame": 4,
+      "durationTicks": 3
+    },
+    {
+      "frame": 5,
+      "durationTicks": 3
+    },
+    {
+      "frame": 6,
+      "durationTicks": 3
+    },
+    {
+      "frame": 7,
+      "durationTicks": 3
+    },
+    {
+      "frame": 8,
+      "durationTicks": 3
+    },
+    {
+      "frame": 9,
+      "durationTicks": 3
+    },
+    {
+      "frame": 10,
+      "durationTicks": 3
+    },
+    {
+      "frame": 11,
+      "durationTicks": 3
+    },
+    {
+      "frame": 12,
+      "durationTicks": 3
+    },
+    {
+      "frame": 13,
+      "durationTicks": 3
+    },
+    {
+      "frame": 14,
+      "durationTicks": 3
+    },
+    {
+      "frame": 15,
+      "durationTicks": 3
+    },
+    {
+      "frame": 16,
+      "durationTicks": 3
+    },
+    {
+      "frame": 17,
+      "durationTicks": 3
+    },
+    {
+      "frame": 18,
+      "durationTicks": 3
+    },
+    {
+      "frame": 19,
+      "durationTicks": 3
+    },
+    {
+      "frame": 20,
+      "durationTicks": 3
+    },
+    {
+      "frame": 21,
+      "durationTicks": 3
+    },
+    {
+      "frame": 22,
+      "durationTicks": 3
+    },
+    {
+      "frame": 23,
+      "durationTicks": 8
+    }
+  ],
+  "layers": [
+    {
+      "id": "body",
+      "role": "body",
+      "z": 0,
+      "source": {
+        "frames": [
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/000.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/001.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/002.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/003.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/004.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/005.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/006.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/007.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/008.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/009.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/010.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/011.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/012.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/013.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/014.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/015.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/016.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/017.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/018.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/019.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/020.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/021.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/022.png",
+          "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-demo-bmtb4s6r/body/023.png"
+        ],
+        "fps": 20,
+        "anchor": {
+          "x": 80,
+          "y": 113
+        },
+        "rootTrack": [
+          {
+            "x": 80,
+            "y": 113
+          },
+          {
+            "x": 80,
+            "y": 113
+          },
+          {
+            "x": 80,
+            "y": 113
+          },
+          {
+            "x": 80,
+            "y": 113
+          },
+          {
+            "x": 80,
+            "y": 113
+          },
+          {
+            "x": 80,
+            "y": 113
+          },
+          {
+            "x": 80,
+            "y": 113
+          },
+          {
+            "x": 80,
+            "y": 113
+          },
+          {
+            "x": 80,
+            "y": 113
+          },
+          {
+            "x": 80,
+            "y": 113
+          },
+          {
+            "x": 80,
+            "y": 113
+          },
+          {
+            "x": 80,
+            "y": 113
+          },
+          {
+            "x": 80,
+            "y": 113
+          },
+          {
+            "x": 80,
+            "y": 113
+          },
+          {
+            "x": 80,
+            "y": 113
+          },
+          {
+            "x": 80,
+            "y": 113
+          },
+          {
+            "x": 80,
+            "y": 113
+          },
+          {
+            "x": 80,
+            "y": 113
+          },
+          {
+            "x": 80,
+            "y": 113
+          },
+          {
+            "x": 80,
+            "y": 113
+          },
+          {
+            "x": 80,
+            "y": 113
+          },
+          {
+            "x": 80,
+            "y": 113
+          },
+          {
+            "x": 80,
+            "y": 113
+          },
+          {
+            "x": 80,
+            "y": 113
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "tick": 8,
+      "type": "transform-start",
+      "label": "Dissolve"
+    },
+    {
+      "tick": 38,
+      "type": "reform",
+      "label": "Reform"
+    },
+    {
+      "tick": 74,
+      "type": "transform-end",
+      "label": "New form"
+    }
+  ],
+  "provenance": {
+    "method": "procedural-fixture",
+    "description": "Deterministic geometry fixture with known pivots and timing. Tests the compiler; not AI-generated or production character art."
+  }
+}

@@ -1,0 +1,493 @@
+{
+  "schemaVersion": 1,
+  "id": "morph",
+  "displayName": "Sludge awakening",
+  "kind": "transformation",
+  "playback": "once",
+  "tickRate": 60,
+  "totalTicks": 82,
+  "canvas": {
+    "width": 125,
+    "height": 127
+  },
+  "anchor": {
+    "x": 62,
+    "y": 104
+  },
+  "rootMode": "in-place",
+  "layers": [
+    {
+      "id": "body",
+      "role": "body",
+      "z": 0,
+      "blend": "normal",
+      "sheet": "layers/body.png",
+      "frames": [
+        {
+          "x": 0,
+          "y": 0,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_001.png",
+          "durationTicks": 8,
+          "sourceFrame": 0,
+          "sourceTimeMs": 0.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 125,
+          "y": 0,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_002.png",
+          "durationTicks": 3,
+          "sourceFrame": 1,
+          "sourceTimeMs": 50.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 250,
+          "y": 0,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_003.png",
+          "durationTicks": 3,
+          "sourceFrame": 2,
+          "sourceTimeMs": 100.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 375,
+          "y": 0,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_004.png",
+          "durationTicks": 3,
+          "sourceFrame": 3,
+          "sourceTimeMs": 150.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 500,
+          "y": 0,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_005.png",
+          "durationTicks": 3,
+          "sourceFrame": 4,
+          "sourceTimeMs": 200.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 625,
+          "y": 0,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_006.png",
+          "durationTicks": 3,
+          "sourceFrame": 5,
+          "sourceTimeMs": 250.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 750,
+          "y": 0,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_007.png",
+          "durationTicks": 3,
+          "sourceFrame": 6,
+          "sourceTimeMs": 300.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 875,
+          "y": 0,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_008.png",
+          "durationTicks": 3,
+          "sourceFrame": 7,
+          "sourceTimeMs": 350.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 0,
+          "y": 127,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_009.png",
+          "durationTicks": 3,
+          "sourceFrame": 8,
+          "sourceTimeMs": 400.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 125,
+          "y": 127,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_010.png",
+          "durationTicks": 3,
+          "sourceFrame": 9,
+          "sourceTimeMs": 450.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 250,
+          "y": 127,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_011.png",
+          "durationTicks": 3,
+          "sourceFrame": 10,
+          "sourceTimeMs": 500.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 375,
+          "y": 127,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_012.png",
+          "durationTicks": 3,
+          "sourceFrame": 11,
+          "sourceTimeMs": 550.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 500,
+          "y": 127,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_013.png",
+          "durationTicks": 3,
+          "sourceFrame": 12,
+          "sourceTimeMs": 600.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 625,
+          "y": 127,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_014.png",
+          "durationTicks": 3,
+          "sourceFrame": 13,
+          "sourceTimeMs": 650.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 750,
+          "y": 127,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_015.png",
+          "durationTicks": 3,
+          "sourceFrame": 14,
+          "sourceTimeMs": 700.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 875,
+          "y": 127,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_016.png",
+          "durationTicks": 3,
+          "sourceFrame": 15,
+          "sourceTimeMs": 750.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 0,
+          "y": 254,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_017.png",
+          "durationTicks": 3,
+          "sourceFrame": 16,
+          "sourceTimeMs": 800.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 125,
+          "y": 254,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_018.png",
+          "durationTicks": 3,
+          "sourceFrame": 17,
+          "sourceTimeMs": 850.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 250,
+          "y": 254,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_019.png",
+          "durationTicks": 3,
+          "sourceFrame": 18,
+          "sourceTimeMs": 900.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 375,
+          "y": 254,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_020.png",
+          "durationTicks": 3,
+          "sourceFrame": 19,
+          "sourceTimeMs": 950.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 500,
+          "y": 254,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_021.png",
+          "durationTicks": 3,
+          "sourceFrame": 20,
+          "sourceTimeMs": 1000.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 625,
+          "y": 254,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_022.png",
+          "durationTicks": 3,
+          "sourceFrame": 21,
+          "sourceTimeMs": 1050.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 750,
+          "y": 254,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_023.png",
+          "durationTicks": 3,
+          "sourceFrame": 22,
+          "sourceTimeMs": 1100.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 875,
+          "y": 254,
+          "width": 125,
+          "height": 127,
+          "file": "sprites/body/body_024.png",
+          "durationTicks": 8,
+          "sourceFrame": 23,
+          "sourceTimeMs": 1150.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "tick": 8,
+      "type": "transform-start",
+      "label": "Dissolve"
+    },
+    {
+      "tick": 38,
+      "type": "reform",
+      "label": "Reform"
+    },
+    {
+      "tick": 74,
+      "type": "transform-end",
+      "label": "New form"
+    }
+  ],
+  "palette": null,
+  "intent": {
+    "topologyChanges": true,
+    "scaleChanges": true,
+    "paletteChanges": false
+  },
+  "qa": {
+    "status": "needs-review",
+    "checks": [
+      {
+        "id": "shared-scale",
+        "label": "Shared scale",
+        "status": "pass",
+        "detail": "One 1\u00d7 transform; no silhouette fitting"
+      },
+      {
+        "id": "parts",
+        "label": "Disconnected parts",
+        "status": "pass",
+        "detail": "All foreground components retained"
+      },
+      {
+        "id": "clipping",
+        "label": "Source framing",
+        "status": "pass",
+        "detail": "0 source boundary contacts"
+      },
+      {
+        "id": "motion",
+        "label": "Pose diversity",
+        "status": "pass",
+        "detail": "24 distinct selected composites; not a motion-quality score"
+      },
+      {
+        "id": "review",
+        "label": "Art and gameplay",
+        "status": "warn",
+        "detail": "Human review required; morphology, loop seams and combat timing are not automatically approved"
+      }
+    ],
+    "warnings": []
+  },
+  "provenance": {
+    "method": "procedural-fixture",
+    "description": "Deterministic geometry fixture with known pivots and timing. Tests the compiler; not AI-generated or production character art.",
+    "compiler": "animation-clip-v1",
+    "scale": 1,
+    "sources": [
+      {
+        "sha256": "c19dff5f23389de9a850922b00e530d18524048dc1b6fa59ba61b1194daf7f67",
+        "frameCount": 24,
+        "video": null,
+        "size": [
+          160,
+          144
+        ]
+      }
+    ]
+  },
+  "review": {
+    "contactSheet": "contact-sheet.png",
+    "preview": "preview.png"
+  }
+}

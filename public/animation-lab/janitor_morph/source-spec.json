@@ -1,0 +1,113 @@
+{
+  "id": "janitor_morph",
+  "displayName": "Janitor \u00b7 liquid shift",
+  "kind": "transformation",
+  "playback": "hold",
+  "tickRate": 60,
+  "scale": 0.25,
+  "padding": 6,
+  "paletteSize": 32,
+  "rootMode": "baked",
+  "intent": {
+    "topologyChanges": true,
+    "scaleChanges": true,
+    "paletteChanges": false
+  },
+  "provenance": {
+    "method": "generated-video",
+    "provider": "fal",
+    "model": "kling-video/v3/standard/image-to-video",
+    "description": "Live five-second body-morph candidate. Melting, separated droplets, and growth survive one shared normalization transform. The generated final form is taller but does not fully match the requested sludge monster; remains unapproved."
+  },
+  "layers": [
+    {
+      "id": "body",
+      "role": "body",
+      "z": 0,
+      "source": {
+        "video": "source.mp4",
+        "fps": 24,
+        "anchor": {
+          "x": 480,
+          "y": 787
+        },
+        "background": "#ff00ff",
+        "backgroundMode": "chroma"
+      }
+    }
+  ],
+  "selection": [
+    {
+      "frame": 0,
+      "durationTicks": 8
+    },
+    {
+      "frame": 22,
+      "durationTicks": 4
+    },
+    {
+      "frame": 34,
+      "durationTicks": 4,
+      "event": {
+        "type": "transform-start",
+        "label": "Dissolve"
+      }
+    },
+    {
+      "frame": 42,
+      "durationTicks": 4
+    },
+    {
+      "frame": 49,
+      "durationTicks": 4
+    },
+    {
+      "frame": 56,
+      "durationTicks": 5
+    },
+    {
+      "frame": 61,
+      "durationTicks": 5
+    },
+    {
+      "frame": 66,
+      "durationTicks": 4
+    },
+    {
+      "frame": 72,
+      "durationTicks": 4,
+      "event": {
+        "type": "reform",
+        "label": "Reformation"
+      }
+    },
+    {
+      "frame": 78,
+      "durationTicks": 4
+    },
+    {
+      "frame": 84,
+      "durationTicks": 4
+    },
+    {
+      "frame": 91,
+      "durationTicks": 4
+    },
+    {
+      "frame": 99,
+      "durationTicks": 4
+    },
+    {
+      "frame": 110,
+      "durationTicks": 6
+    },
+    {
+      "frame": 120,
+      "durationTicks": 12,
+      "event": {
+        "type": "transform-end",
+        "label": "Final form"
+      }
+    }
+  ]
+}

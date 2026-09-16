@@ -9,6 +9,16 @@ const MOVE_ORDER = ['base', 'punch', 'kick', 'special_1', 'special_2', 'jump', '
 // proxy, so the game dev server (npm run dev) must be running alongside the CMS
 // admin server. Override with window.TESTBED_BASE_URL if your ports differ.
 const TESTBED_BASE_URL = window.TESTBED_BASE_URL || 'http://127.0.0.1:5173';
+const EMBEDDED=window.self!==window.top;
+const ROUTE_PREFIX=location.pathname.startsWith('/cms-admin')?'/cms-admin':'';
+if(EMBEDDED)document.body.classList.add('studio-embedded');
+window.addEventListener('message', event => {
+  if(event.origin !== location.origin || event.source !== window.parent || event.data?.type !== 'studio-workspace') return;
+  setOpsTab(event.data.workspace === 'pipeline' ? 'pipeline' : 'activity');
+  document.querySelector(event.data.workspace === 'pipeline'?'.ops-panel':'#character-workbench')?.scrollIntoView({block:'start'});
+});
+const animationLabLink = document.getElementById('animation-lab-link');
+if (animationLabLink) animationLabLink.href = `${TESTBED_BASE_URL}/animation-lab.html`;
 
 function openTestbed(characterId) {
   if (!characterId) return;
@@ -29,7 +39,7 @@ function openGym(characterId) {
 // ---------------------------------------------------------------------------
 
 function getCurrentRoute() {
-  const pathname = location.pathname;
+  const pathname = location.pathname.replace(/^\/cms-admin/,'');
   if (pathname === '/pipeline') return { page: 'pipeline' };
   if (pathname === '/roster') return { page: 'roster' };
   if (pathname === '/roster/new') return { page: 'roster', isNew: true };
@@ -39,7 +49,7 @@ function getCurrentRoute() {
 }
 
 function navigateTo(path) {
-  history.pushState(null, '', path);
+  history.pushState(null, '', `${ROUTE_PREFIX}${path}`);
   handleRouteChange();
 }
 
@@ -78,6 +88,7 @@ const state = {
   qaReports: {},
   selectSeq: 0,
   movePrompts: {},
+  rowGenerators: {},
   assetCacheBust: 0,
 };
 
@@ -174,6 +185,8 @@ elements.characterWorkbench.addEventListener('click', handleWorkbenchClick);
 // Per-row prompt edits live in state so workbench re-renders (e.g. while other
 // rows finish generating) don't wipe them.
 elements.characterWorkbench.addEventListener('input', (event) => {
+  const generatorInput = event.target.closest('[data-row-generator]');
+  if (generatorInput) state.rowGenerators[`${state.currentCharacterId}:${generatorInput.dataset.rowGenerator}`] = generatorInput.value;
   const promptInput = event.target.closest('[data-move-prompt]');
   if (!promptInput) return;
   state.movePrompts[`${state.currentCharacterId}:${promptInput.dataset.movePrompt}`] = promptInput.value;
@@ -188,6 +201,10 @@ const WORKBENCH_CTA_HANDLERS = {
 };
 
 function handleWorkbenchClick(event) {
+  if (event.target.closest('[data-save-authoring]')) { void saveAuthoring(); return; }
+  const reextract = event.target.closest('[data-reextract]');
+  if (reextract) { void reextractRow(reextract.dataset.reextract); return; }
+  if(event.target.closest('[data-save-combat]')){void saveCombatRules();return;}
   const cta = event.target.closest('[id^="cta-"]');
   if (cta && WORKBENCH_CTA_HANDLERS[cta.id]) {
     WORKBENCH_CTA_HANDLERS[cta.id]();
@@ -372,7 +389,7 @@ async function selectCharacter(characterId, options = {}) {
   if (options.pushState !== false) {
     const targetPath = `/roster/${characterId}`;
     if (location.pathname !== targetPath) {
-      history.pushState(null, '', targetPath);
+      history.pushState(null, '', `${ROUTE_PREFIX}${targetPath}`);
     }
   }
 
@@ -395,6 +412,7 @@ async function selectCharacter(characterId, options = {}) {
   const assets = assetResult.assets.map((asset) =>
     asset.apiUrl ? { ...asset, apiUrl: withCacheBust(asset.apiUrl) } : asset);
   state.currentDraftData = draft;
+  if(EMBEDDED)window.parent.postMessage({type:'studio-character',characterId},location.origin);
   state.currentAssets = assets;
   state.qaReports[characterId] = qaReport;
   elements.characterId.value = draft.id;
@@ -493,7 +511,7 @@ function setMoveCardLoading(moveId, loading) {
 }
 
 function spriteBrief() {
-  return (state.currentDraftData?.description ?? elements.characterBrief.value ?? '').trim();
+  return (state.currentDraftData?.artBrief ?? state.currentDraftData?.description ?? elements.characterBrief.value ?? '').trim();
 }
 
 // Per-row move identity — the "what this move is" line that makes each row's
@@ -513,8 +531,8 @@ const ROW_PROMPT_DESCRIPTIONS = {
   dash_forward: 'dash forward — an explosive forward burst that recovers to neutral',
   dash_back: 'dash back — an explosive backward hop/retreat that recovers to neutral',
   block: 'block — raising into a fully settled, held defensive guard',
-  grab: 'grab — reach out, grip the opponent, and hold',
-  throw: 'throw — wind up with the held opponent, release, and recover',
+  grab: 'grab — this single fighter alone mimes a grab on empty air: reach out, close both hands on nothing, and hold the clench. NO second character, no opponent, no other body anywhere — only this one fighter',
+  throw: 'throw — this single fighter alone mimes a throw on empty air: wind up the arms as if holding something, heave the empty hands up and forward, release into nothing, and recover. NO second character, no opponent, no thrown body — only this one fighter',
   walk_forward: 'walk forward — a seamless looping forward walk cycle, facing right, advancing',
   walk_back: 'walk backward — a seamless looping backward/retreating walk cycle, facing right, stepping back',
 };
@@ -525,9 +543,11 @@ const ROW_PROMPT_DESCRIPTIONS = {
 // frame roles are NOT duplicated here.
 function buildRowPrompt(moveId) {
   const moveDescription = ROW_PROMPT_DESCRIPTIONS[moveId];
+  const authoredMoves = (state.currentDraftData?.moves ?? []).filter((move) => move.animation === moveId);
   return [
     spriteBrief(),
     moveDescription ? `Move: ${moveDescription}.` : '',
+    ...authoredMoves.map((move) => `Character-specific action: ${move.displayName ?? move.id}. ${move.description ?? ''}`),
     'Side-view fighting game sprite row. Magenta background, full body visible, generous gutters, no cropping.',
   ].filter(Boolean).join(' ');
 }
@@ -587,10 +607,14 @@ async function generateMoveRow(moveId) {
   try {
     const prompt = rowPromptFor(moveId);
     const spriteProfile = moveSpriteProfile(moveId);
+    const generator=elements.characterWorkbench.querySelector(`[data-row-generator="${moveId}"]`)?.value??'image';
     const result = await invokeToolStreaming('generate_sprite_sheet',
-      { characterId, prompt, moveId, spriteProfile },
+      { characterId, prompt, moveId, spriteProfile, generator },
       (event) => {
         if (event.type === 'stdout' || event.type === 'stderr') logMoveStream(moveId, event.data);
+        if ((event.type === 'status' || event.type === 'warning') && event.message) {
+          logMoveActivity(moveId, event.message, event.type === 'warning' ? 'error' : '');
+        }
       });
     state.sourceAssetKey = result.asset.key;
     showLatestAsset({ ...result.asset, apiUrl: result.asset.apiUrl ?? result.asset.url });
@@ -603,6 +627,18 @@ async function generateMoveRow(moveId) {
     for (const warning of result.warnings ?? []) {
       logMoveActivity(moveId, warning, 'error');
       log(`${moveId}: ${warning}`, 'error');
+    }
+    if (Number.isFinite(result.elapsedMs)) {
+      const generation = Number.isFinite(result.generationMs) ? formatElapsedMs(result.generationMs) : 'unknown';
+      const postprocess = Number.isFinite(result.postprocessMs) ? formatElapsedMs(result.postprocessMs) : 'unknown';
+      logMoveActivity(
+        moveId,
+        `Timing: ${formatElapsedMs(result.elapsedMs)} total (${generation} generation, ${postprocess} local post-process).`,
+        'pass',
+      );
+    }
+    if (Number.isFinite(result.estimatedCostUsd)) {
+      logMoveActivity(moveId, `Estimated provider cost: $${result.estimatedCostUsd.toFixed(4)}.`, 'pass');
     }
     log(`${moveId} row generated.`, 'pass');
 
@@ -620,7 +656,7 @@ async function generateMoveRow(moveId) {
       logMoveActivity(moveId, 'Frames extracted.', 'pass');
     } catch (extractErr) {
       logMoveActivity(moveId, `Frame extraction failed: ${extractErr.message}`, 'error');
-      // Non-fatal: the source sheet is still available
+      throw extractErr; // A source sheet alone is not a playable row.
     }
 
     state.generatingMoves.delete(moveId);
@@ -647,6 +683,15 @@ async function generateMoveRow(moveId) {
     setMoveCardLoading(moveId, false);
     return null;
   }
+}
+
+function formatElapsedMs(milliseconds) {
+  if (milliseconds < 1_000) return `${Math.round(milliseconds)}ms`;
+  const seconds = milliseconds / 1_000;
+  if (seconds < 60) return `${seconds.toFixed(seconds < 10 ? 1 : 0)}s`;
+  const minutes = Math.floor(seconds / 60);
+  const remainder = Math.round(seconds % 60);
+  return `${minutes}m ${remainder}s`;
 }
 
 // The base row defines the fighter's look and scale, so it must exist before
@@ -771,6 +816,7 @@ async function publishCharacter() {
     await invokeTool('export_character_config', { characterId });
   } catch (error) {
     log(`publish: runtime config export failed — ${error.message}`, 'fail');
+    throw new Error(`Release saved, but runtime export failed. Character is not ready to play: ${error.message}`);
   }
   await Promise.all([loadCharacters(), loadPipeline()]);
   await selectCharacter(characterId, { silent: true });
@@ -1413,6 +1459,7 @@ function renderCharacterWorkbench(draft, assets) {
         <div class="summary-actions">
           <button type="button" class="playtest-btn" data-playtest="${escapeHtml(draft.id)}" title="Open the single-player testbed for this fighter">▶ Playtest</button>
           <button type="button" class="gym-btn" data-gym="${escapeHtml(draft.id)}" title="Open the Character Gym to align frames and tune bounds">🛠 Gym</button>
+          <a class="playtest-btn" href="${escapeHtml(TESTBED_BASE_URL)}/?p1=${encodeURIComponent(draft.id)}&p2=brine" target="_top">Play published fighter ↗</a>
         </div>
       </div>
       <div class="summary-side">
@@ -1420,6 +1467,8 @@ function renderCharacterWorkbench(draft, assets) {
         ${renderAnimationBindings(draft.animations)}
       </div>
     </section>
+    <details class="combat-rules-editor"><summary>Identity, movement & move definitions</summary><p>Edit the actual draft without regenerating art. Coordinates are relative to the feet: negative Y is above the floor. Jump velocities are positive magnitudes. Publish separately to update the game.</p><textarea id="authoring-json" aria-label="Character authoring JSON" rows="16">${escapeHtml(JSON.stringify({artBrief:draft.artBrief??draft.description,stats:draft.stats??{},moves:draft.moves??[]},null,2))}</textarea><button type="button" data-save-authoring>Save character definitions</button><span id="authoring-save-status" role="status"></span></details>
+    <details class="combat-rules-editor"><summary>Advanced combat rules · stats, power-ups & hidden forms</summary><p>Multipliers use 1 as neutral. Forms contain a complete config with parentId and selectable:false. Save updates the draft; publish separately to ship it.</p><textarea id="advanced-combat-json" aria-label="Advanced combat JSON" rows="12">${escapeHtml(JSON.stringify({combatStats:draft.combatStats??{},powerUps:draft.powerUps??[],forms:draft.forms??[]},null,2))}</textarea><button type="button" data-save-combat>Save combat rules to draft</button><span id="combat-save-status" role="status"></span></details>
     ${renderConceptSection(conceptAsset)}
     <section class="move-board">
       ${moveGroups.map(renderMoveGroup).join('')}
@@ -1431,6 +1480,48 @@ function renderCharacterWorkbench(draft, assets) {
   // All workbench buttons are handled by the delegated click handler —
   // no per-render listener attachment.
   startAnimationPreviews();
+}
+
+async function saveAuthoring() {
+  const status = document.getElementById('authoring-save-status');
+  const characterId = state.currentCharacterId;
+  try {
+    const patch = JSON.parse(document.getElementById('authoring-json').value);
+    if (!patch || Array.isArray(patch) || Object.keys(patch).some(key => !['artBrief','stats','moves'].includes(key))) throw new Error('Only artBrief, stats and moves belong here.');
+    if (typeof patch.artBrief !== 'string' || !patch.artBrief.trim()) throw new Error('An art brief is required.');
+    if (!patch.stats || Object.values(patch.stats).some(value => typeof value !== 'number' || !Number.isFinite(value))) throw new Error('Movement stats must be finite numbers.');
+    if (!Array.isArray(patch.moves) || !patch.moves.length || patch.moves.some(move => !move.id || !move.animation || !move.trigger?.sequence?.length || !move.phases?.length)) throw new Error('Every move needs an id, animation, input sequence and phases.');
+    await invokeTool('update_character_draft', {characterId, patch, note:'Workbench character definitions editor'});
+    state.currentDraftData = {...state.currentDraftData, ...patch};
+    status.textContent = 'Saved. Run QA, then publish to update gameplay.';
+  } catch (error) { status.textContent = error.message; }
+}
+
+async function reextractRow(moveId) {
+  const characterId = state.currentCharacterId;
+  const source = state.currentAssets.find(asset => asset.relativePath === `source/${characterId}_${moveId}_sheet.png`);
+  if (!source || state.generatingMoves.has(moveId)) return;
+  state.generatingMoves.add(moveId);
+  setMoveCardLoading(moveId, true);
+  try {
+    await invokeTool('extract_row_frames', {characterId, moveId, sourceAssetKey:source.key, spriteProfile:moveSpriteProfile(moveId)});
+    await selectCharacter(characterId, {silent:true});
+  } catch (error) { showError(error); }
+  finally { state.generatingMoves.delete(moveId); setMoveCardLoading(moveId, false); }
+}
+
+async function saveCombatRules(){
+  const status=document.getElementById('combat-save-status');
+  try{
+    const patch=JSON.parse(document.getElementById('advanced-combat-json').value);
+    if(!patch||Array.isArray(patch)||typeof patch!=='object')throw new Error('Expected an object.');
+    const allowed=new Set(['combatStats','powerUps','forms']);
+    if(Object.keys(patch).some(k=>!allowed.has(k)))throw new Error('Only combatStats, powerUps and forms belong here.');
+    for(const [key,value] of Object.entries(patch.combatStats??{}))if(!['attack','defense','projectileAttack','projectileDefense','speed','weight','knockback','size'].includes(key)||typeof value!=='number'||!Number.isFinite(value)||value<=0)throw new Error('Stats require positive finite multipliers.');
+    for(const form of patch.forms??[])if(!form.id||form.config?.parentId!==state.currentCharacterId||form.config?.selectable!==false||!form.config?.sprite||!Array.isArray(form.config?.moves))throw new Error('Each form needs an id and a complete hidden character config owned by this fighter.');
+    const r=await fetch('/api/tools/update_character_draft',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({characterId:state.currentCharacterId,patch,note:'Advanced combat editor'})});
+    if(!r.ok)throw new Error((await r.json()).error??'Save failed');status.textContent='Saved to draft. Publish when ready.';
+  }catch(error){status.textContent=error.message;}
 }
 
 function renderEmptyWorkbench(message) {
@@ -1583,6 +1674,8 @@ function renderProjectileEntity(entity) {
 }
 
 function renderMoveGroup(group) {
+  const source = state.currentAssets.find(asset => asset.relativePath === `source/${state.currentCharacterId}_${group.id}_sheet.png`);
+  const generator = state.rowGenerators[`${state.currentCharacterId}:${group.id}`] ?? (source?.metadata?.provider === 'fal-video' ? 'video' : 'image');
   const primaryFrames = groupPrimaryFrames(group);
   const previewFrames = group.id === 'projectiles' && primaryFrames.length === 0
     ? group.projectiles
@@ -1613,8 +1706,10 @@ function renderMoveGroup(group) {
           <h3>${escapeHtml(moveGroupTitle(group))}</h3>
         </div>
         <div class="move-card-actions">
+          ${canGenerate?`<select data-row-generator="${escapeHtml(group.id)}" aria-label="${escapeHtml(group.id)} generation method"><option value="image" ${generator==='image'?'selected':''}>Image poses</option><option value="video" ${generator==='video'?'selected':''} ${group.id==='base'?'disabled':''}>Video motion · fal</option></select>`:''}
           ${activityButton}
           ${generateButton}
+          ${hasFrames && canGenerate ? `<button type="button" data-reextract="${escapeHtml(group.id)}" title="Rebuild transparent frames from the existing source, without a paid generation" ${isLoading?'disabled':''}>Re-extract</button>` : ''}
           <span class="frame-count">${escapeHtml(groupAssetCount(group))} assets</span>
         </div>
       </header>
@@ -1661,6 +1756,7 @@ function renderMoveCardTabs(group) {
          <span class="soft-label">${escapeHtml(primarySheet.relativePath)}</span>
        </a>`
     : '<span class="empty-inline">No source sheet generated for this move yet.</span>';
+  const motionAsset=state.currentAssets.find(a=>a.relativePath?.includes(`_${group.id}_motion.mp4`));
   const promptPane = `
     <textarea class="move-prompt-input" data-move-prompt="${escapeHtml(group.id)}" rows="4" spellcheck="false">${escapeHtml(rowPromptFor(group.id))}</textarea>
     <div class="move-prompt-actions">
@@ -1681,7 +1777,7 @@ function renderMoveCardTabs(group) {
     ${pane('data', renderMoveData(group))}
     ${canGenerate ? pane('prompt', promptPane) : ''}
     ${pane('sounds', soundsPane)}
-    ${pane('source', sourcePane)}
+    ${pane('source', (motionAsset?`<p>Video-derived motion · fal Kling. Six sampled poses; review before publishing.</p><video controls preload="metadata" style="width:100%;max-height:320px" src="${escapeHtml(motionAsset.apiUrl)}"></video>`:'')+sourcePane)}
   `;
 }
 

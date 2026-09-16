@@ -4,7 +4,7 @@ import { ContourSpriteNormalizerAdapter } from './contourSpriteNormalizerAdapter
 export function createSpriteNormalizerAdapter(options = {}) {
   const provider = options.provider
     ?? process.env.SPRITE_NORMALIZER_PROVIDER
-    ?? 'local';
+    ?? 'contour';
 
   if (provider === 'contour') {
     return new ContourSpriteNormalizerAdapter(options);

@@ -1,0 +1,101 @@
+{
+  "id": "taffy_signature",
+  "displayName": "Taffy \u00b7 video signature",
+  "kind": "attack",
+  "playback": "once",
+  "tickRate": 60,
+  "scale": 0.26666666666666666,
+  "padding": 6,
+  "paletteSize": 48,
+  "rootMode": "baked",
+  "intent": {
+    "topologyChanges": false,
+    "scaleChanges": false,
+    "paletteChanges": false
+  },
+  "provenance": {
+    "method": "generated-video",
+    "provider": "fal",
+    "model": "kling-video/v3/standard/image-to-video",
+    "description": "Reviewed video-derived body motion. Fixed reference-foot anchor and scale; authored action timing. Long-range attached extension and collisions remain engine-driven. Prototype, not final sprite cleanup."
+  },
+  "layers": [
+    {
+      "id": "body",
+      "role": "body",
+      "z": 0,
+      "source": {
+        "video": "source.mp4",
+        "fps": 24,
+        "anchor": {
+          "x": 479,
+          "y": 788
+        },
+        "background": "#ff00ff",
+        "backgroundMode": "chroma"
+      }
+    }
+  ],
+  "selection": [
+    {
+      "frame": 0,
+      "durationTicks": 4
+    },
+    {
+      "frame": 24,
+      "durationTicks": 4
+    },
+    {
+      "frame": 48,
+      "durationTicks": 4
+    },
+    {
+      "frame": 52,
+      "durationTicks": 4,
+      "event": {
+        "type": "activate",
+        "label": "Cast / extension begins"
+      }
+    },
+    {
+      "frame": 56,
+      "durationTicks": 4
+    },
+    {
+      "frame": 64,
+      "durationTicks": 4
+    },
+    {
+      "frame": 72,
+      "durationTicks": 4
+    },
+    {
+      "frame": 80,
+      "durationTicks": 4
+    },
+    {
+      "frame": 88,
+      "durationTicks": 4
+    },
+    {
+      "frame": 96,
+      "durationTicks": 6
+    },
+    {
+      "frame": 100,
+      "durationTicks": 6
+    },
+    {
+      "frame": 104,
+      "durationTicks": 8
+    },
+    {
+      "frame": 112,
+      "durationTicks": 8
+    },
+    {
+      "frame": 120,
+      "durationTicks": 8
+    }
+  ]
+}

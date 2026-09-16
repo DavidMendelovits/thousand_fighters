@@ -1,8 +1,882 @@
 {
-  "generatedAt": "2026-06-17T14:33:07.994Z",
-  "fighterCount": 22,
+  "generatedAt": "2026-09-16T16:23:49.966Z",
+  "fighterCount": 33,
   "arenaCount": 0,
   "fighters": {
+    "bellwether": {
+      "displayName": "bellwether",
+      "basePath": "/fighters/bellwether",
+      "artSource": "generated-key-poses",
+      "config": "config.json",
+      "sheets": {
+        "poses": "poses.png"
+      },
+      "frameCounts": {
+        "base": 8,
+        "punch": 3,
+        "kick": 3,
+        "special_1": 3,
+        "special_2": 3,
+        "grab": 3,
+        "throw": 3,
+        "crouch": 1,
+        "block": 1,
+        "jump": 2,
+        "walk_forward": 3,
+        "walk_back": 3
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_008.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "grab": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "throw": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "crouch": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "block": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "jump": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "walk_forward": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "walk_back": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ]
+      },
+      "sprites": {
+        "base": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_003.png",
+          "sprites/poses/pose_004.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png",
+          "sprites/poses/pose_008.png"
+        ],
+        "punch": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_003.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "kick": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_004.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "special_1": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "special_2": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "grab": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png"
+        ],
+        "throw": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png"
+        ],
+        "crouch": [
+          "sprites/poses/pose_002.png"
+        ],
+        "block": [
+          "sprites/poses/pose_001.png"
+        ],
+        "jump": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_004.png"
+        ],
+        "walk_forward": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "walk_back": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_001.png"
+        ]
+      },
+      "projectiles": {},
+      "sounds": {}
+    },
+    "brine": {
+      "displayName": "brine",
+      "basePath": "/fighters/brine",
+      "artSource": "generated-key-poses",
+      "config": "config.json",
+      "sheets": {
+        "poses": "poses.png"
+      },
+      "frameCounts": {
+        "base": 8,
+        "punch": 3,
+        "kick": 3,
+        "special_1": 3,
+        "special_2": 3,
+        "grab": 3,
+        "throw": 3,
+        "crouch": 1,
+        "block": 1,
+        "jump": 2,
+        "walk_forward": 3,
+        "walk_back": 3
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_008.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "grab": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "throw": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "crouch": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "block": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "jump": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "walk_forward": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "walk_back": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ]
+      },
+      "sprites": {
+        "base": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_003.png",
+          "sprites/poses/pose_004.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png",
+          "sprites/poses/pose_008.png"
+        ],
+        "punch": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_003.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "kick": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_004.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "special_1": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "special_2": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "grab": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png"
+        ],
+        "throw": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png"
+        ],
+        "crouch": [
+          "sprites/poses/pose_002.png"
+        ],
+        "block": [
+          "sprites/poses/pose_001.png"
+        ],
+        "jump": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_004.png"
+        ],
+        "walk_forward": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "walk_back": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_001.png"
+        ]
+      },
+      "projectiles": {},
+      "sounds": {}
+    },
     "churro": {
       "displayName": "churro",
       "basePath": "/fighters/churro",
@@ -7272,6 +8146,443 @@
       },
       "sounds": {}
     },
+    "kiln": {
+      "displayName": "kiln",
+      "basePath": "/fighters/kiln",
+      "artSource": "generated-key-poses",
+      "config": "config.json",
+      "sheets": {
+        "poses": "poses.png"
+      },
+      "frameCounts": {
+        "base": 8,
+        "punch": 3,
+        "kick": 3,
+        "special_1": 3,
+        "special_2": 3,
+        "grab": 3,
+        "throw": 3,
+        "crouch": 1,
+        "block": 1,
+        "jump": 2,
+        "walk_forward": 3,
+        "walk_back": 3
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_008.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "grab": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "throw": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "crouch": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "block": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "jump": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "walk_forward": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "walk_back": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ]
+      },
+      "sprites": {
+        "base": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_003.png",
+          "sprites/poses/pose_004.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png",
+          "sprites/poses/pose_008.png"
+        ],
+        "punch": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_003.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "kick": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_004.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "special_1": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "special_2": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "grab": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png"
+        ],
+        "throw": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png"
+        ],
+        "crouch": [
+          "sprites/poses/pose_002.png"
+        ],
+        "block": [
+          "sprites/poses/pose_001.png"
+        ],
+        "jump": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_004.png"
+        ],
+        "walk_forward": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "walk_back": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_001.png"
+        ]
+      },
+      "projectiles": {},
+      "sounds": {}
+    },
     "kitsune_stride": {
       "displayName": "kitsune_stride",
       "basePath": "/fighters/kitsune_stride",
@@ -9315,6 +10626,697 @@
       },
       "sounds": {}
     },
+    "latch": {
+      "displayName": "latch",
+      "basePath": "/fighters/latch",
+      "artSource": "image-gen",
+      "config": "config.json",
+      "sheets": {
+        "base": "sheets/base.png",
+        "kick": "sheets/kick.png",
+        "special_1": "sheets/special_1.png",
+        "special_2": "sheets/special_2.png",
+        "punch": "sheets/punch.png"
+      },
+      "frameCounts": {
+        "base": 6,
+        "kick": 6,
+        "special_1": 6,
+        "special_2": 6,
+        "punch": 6
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/base/base_001.png",
+            "width": 335,
+            "height": 293,
+            "anchor": {
+              "x": 137,
+              "y": 287
+            },
+            "reachX": 193,
+            "silhouetteHeight": 283,
+            "hurtbox": {
+              "x": -123,
+              "y": -273,
+              "width": 301,
+              "height": 273
+            },
+            "attackBox": null
+          },
+          {
+            "file": "sprites/base/base_002.png",
+            "width": 323,
+            "height": 293,
+            "anchor": {
+              "x": 127,
+              "y": 287
+            },
+            "reachX": 191,
+            "silhouetteHeight": 283,
+            "hurtbox": {
+              "x": -113,
+              "y": -273,
+              "width": 287,
+              "height": 273
+            },
+            "attackBox": null
+          },
+          {
+            "file": "sprites/base/base_003.png",
+            "width": 319,
+            "height": 293,
+            "anchor": {
+              "x": 125,
+              "y": 287
+            },
+            "reachX": 189,
+            "silhouetteHeight": 283,
+            "hurtbox": {
+              "x": -111,
+              "y": -273,
+              "width": 284,
+              "height": 273
+            },
+            "attackBox": null
+          },
+          {
+            "file": "sprites/base/base_004.png",
+            "width": 314,
+            "height": 293,
+            "anchor": {
+              "x": 121,
+              "y": 287
+            },
+            "reachX": 188,
+            "silhouetteHeight": 283,
+            "hurtbox": {
+              "x": -108,
+              "y": -273,
+              "width": 283,
+              "height": 273
+            },
+            "attackBox": null
+          },
+          {
+            "file": "sprites/base/base_005.png",
+            "width": 331,
+            "height": 293,
+            "anchor": {
+              "x": 134,
+              "y": 287
+            },
+            "reachX": 192,
+            "silhouetteHeight": 283,
+            "hurtbox": {
+              "x": -120,
+              "y": -273,
+              "width": 296,
+              "height": 273
+            },
+            "attackBox": null
+          },
+          {
+            "file": "sprites/base/base_006.png",
+            "width": 332,
+            "height": 293,
+            "anchor": {
+              "x": 136,
+              "y": 287
+            },
+            "reachX": 191,
+            "silhouetteHeight": 283,
+            "hurtbox": {
+              "x": -122,
+              "y": -273,
+              "width": 297,
+              "height": 273
+            },
+            "attackBox": null
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/kick/kick_001.png",
+            "width": 350,
+            "height": 293,
+            "anchor": {
+              "x": 136,
+              "y": 287
+            },
+            "reachX": 209,
+            "silhouetteHeight": 283,
+            "hurtbox": {
+              "x": -121,
+              "y": -274,
+              "width": 315,
+              "height": 274
+            },
+            "attackBox": {
+              "x": 192,
+              "y": -156,
+              "width": 18,
+              "height": 42
+            }
+          },
+          {
+            "file": "sprites/kick/kick_002.png",
+            "width": 337,
+            "height": 293,
+            "anchor": {
+              "x": 123,
+              "y": 287
+            },
+            "reachX": 209,
+            "silhouetteHeight": 283,
+            "hurtbox": {
+              "x": -112,
+              "y": -272,
+              "width": 301,
+              "height": 272
+            },
+            "attackBox": {
+              "x": 192,
+              "y": -139,
+              "width": 18,
+              "height": 33
+            }
+          },
+          {
+            "file": "sprites/kick/kick_003.png",
+            "width": 380,
+            "height": 293,
+            "anchor": {
+              "x": 157,
+              "y": 287
+            },
+            "reachX": 218,
+            "silhouetteHeight": 283,
+            "hurtbox": {
+              "x": -132,
+              "y": -274,
+              "width": 335,
+              "height": 274
+            },
+            "attackBox": {
+              "x": 192,
+              "y": -156,
+              "width": 27,
+              "height": 34
+            }
+          },
+          {
+            "file": "sprites/kick/kick_004.png",
+            "width": 397,
+            "height": 301,
+            "anchor": {
+              "x": 174,
+              "y": 287
+            },
+            "reachX": 218,
+            "silhouetteHeight": 291,
+            "hurtbox": {
+              "x": -153,
+              "y": -271,
+              "width": 353,
+              "height": 279
+            },
+            "attackBox": {
+              "x": 192,
+              "y": -199,
+              "width": 27,
+              "height": 43
+            }
+          },
+          {
+            "file": "sprites/kick/kick_005.png",
+            "width": 413,
+            "height": 314,
+            "anchor": {
+              "x": 106,
+              "y": 270
+            },
+            "reachX": 302,
+            "silhouetteHeight": 304,
+            "hurtbox": {
+              "x": -94,
+              "y": -257,
+              "width": 357,
+              "height": 295
+            },
+            "attackBox": {
+              "x": 192,
+              "y": -131,
+              "width": 111,
+              "height": 169
+            }
+          },
+          {
+            "file": "sprites/kick/kick_006.png",
+            "width": 350,
+            "height": 310,
+            "anchor": {
+              "x": 119,
+              "y": 300
+            },
+            "reachX": 226,
+            "silhouetteHeight": 300,
+            "hurtbox": {
+              "x": -104,
+              "y": -284,
+              "width": 313,
+              "height": 288
+            },
+            "attackBox": {
+              "x": 192,
+              "y": -173,
+              "width": 35,
+              "height": 50
+            }
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/special_1/special_1_001.png",
+            "width": 324,
+            "height": 293,
+            "anchor": {
+              "x": 132,
+              "y": 287
+            },
+            "reachX": 187,
+            "silhouetteHeight": 283,
+            "hurtbox": {
+              "x": -119,
+              "y": -272,
+              "width": 292,
+              "height": 272
+            },
+            "attackBox": null
+          },
+          {
+            "file": "sprites/special_1/special_1_002.png",
+            "width": 299,
+            "height": 272,
+            "anchor": {
+              "x": 124,
+              "y": 266
+            },
+            "reachX": 170,
+            "silhouetteHeight": 258,
+            "hurtbox": {
+              "x": -105,
+              "y": -252,
+              "width": 266,
+              "height": 248
+            },
+            "attackBox": null
+          },
+          {
+            "file": "sprites/special_1/special_1_003.png",
+            "width": 391,
+            "height": 264,
+            "anchor": {
+              "x": 215,
+              "y": 258
+            },
+            "reachX": 171,
+            "silhouetteHeight": 254,
+            "hurtbox": {
+              "x": -197,
+              "y": -246,
+              "width": 352,
+              "height": 246
+            },
+            "attackBox": null
+          },
+          {
+            "file": "sprites/special_1/special_1_004.png",
+            "width": 358,
+            "height": 418,
+            "anchor": {
+              "x": 124,
+              "y": 412
+            },
+            "reachX": 229,
+            "silhouetteHeight": 404,
+            "hurtbox": {
+              "x": -108,
+              "y": -385,
+              "width": 320,
+              "height": 381
+            },
+            "attackBox": {
+              "x": 192,
+              "y": -408,
+              "width": 38,
+              "height": 92
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_005.png",
+            "width": 358,
+            "height": 418,
+            "anchor": {
+              "x": 124,
+              "y": 412
+            },
+            "reachX": 229,
+            "silhouetteHeight": 404,
+            "hurtbox": {
+              "x": -109,
+              "y": -387,
+              "width": 319,
+              "height": 383
+            },
+            "attackBox": {
+              "x": 192,
+              "y": -408,
+              "width": 38,
+              "height": 92
+            }
+          },
+          {
+            "file": "sprites/special_1/special_1_006.png",
+            "width": 349,
+            "height": 264,
+            "anchor": {
+              "x": 119,
+              "y": 258
+            },
+            "reachX": 225,
+            "silhouetteHeight": 250,
+            "hurtbox": {
+              "x": -104,
+              "y": -243,
+              "width": 311,
+              "height": 239
+            },
+            "attackBox": {
+              "x": 192,
+              "y": -204,
+              "width": 34,
+              "height": 46
+            }
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/special_2/special_2_001.png",
+            "width": 334,
+            "height": 293,
+            "anchor": {
+              "x": 143,
+              "y": 287
+            },
+            "reachX": 186,
+            "silhouetteHeight": 283,
+            "hurtbox": {
+              "x": -127,
+              "y": -274,
+              "width": 305,
+              "height": 274
+            },
+            "attackBox": null
+          },
+          {
+            "file": "sprites/special_2/special_2_002.png",
+            "width": 274,
+            "height": 302,
+            "anchor": {
+              "x": 135,
+              "y": 296
+            },
+            "reachX": 134,
+            "silhouetteHeight": 292,
+            "hurtbox": {
+              "x": -110,
+              "y": -282,
+              "width": 234,
+              "height": 282
+            },
+            "attackBox": null
+          },
+          {
+            "file": "sprites/special_2/special_2_003.png",
+            "width": 325,
+            "height": 344,
+            "anchor": {
+              "x": 152,
+              "y": 338
+            },
+            "reachX": 168,
+            "silhouetteHeight": 334,
+            "hurtbox": {
+              "x": -138,
+              "y": -325,
+              "width": 288,
+              "height": 325
+            },
+            "attackBox": null
+          },
+          {
+            "file": "sprites/special_2/special_2_004.png",
+            "width": 463,
+            "height": 370,
+            "anchor": {
+              "x": 152,
+              "y": 364
+            },
+            "reachX": 306,
+            "silhouetteHeight": 360,
+            "hurtbox": {
+              "x": -127,
+              "y": -338,
+              "width": 429,
+              "height": 338
+            },
+            "attackBox": {
+              "x": 192,
+              "y": -360,
+              "width": 115,
+              "height": 214
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_005.png",
+            "width": 445,
+            "height": 284,
+            "anchor": {
+              "x": 143,
+              "y": 278
+            },
+            "reachX": 297,
+            "silhouetteHeight": 274,
+            "hurtbox": {
+              "x": -121,
+              "y": -264,
+              "width": 408,
+              "height": 264
+            },
+            "attackBox": {
+              "x": 192,
+              "y": -248,
+              "width": 106,
+              "height": 85
+            }
+          },
+          {
+            "file": "sprites/special_2/special_2_006.png",
+            "width": 445,
+            "height": 284,
+            "anchor": {
+              "x": 143,
+              "y": 278
+            },
+            "reachX": 297,
+            "silhouetteHeight": 274,
+            "hurtbox": {
+              "x": -121,
+              "y": -264,
+              "width": 404,
+              "height": 264
+            },
+            "attackBox": {
+              "x": 192,
+              "y": -248,
+              "width": 106,
+              "height": 94
+            }
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/punch/punch_001.png",
+            "width": 330,
+            "height": 293,
+            "anchor": {
+              "x": 135,
+              "y": 287
+            },
+            "reachX": 190,
+            "silhouetteHeight": 283,
+            "hurtbox": {
+              "x": -122,
+              "y": -270,
+              "width": 295,
+              "height": 270
+            },
+            "attackBox": null
+          },
+          {
+            "file": "sprites/punch/punch_002.png",
+            "width": 261,
+            "height": 306,
+            "anchor": {
+              "x": 135,
+              "y": 300
+            },
+            "reachX": 121,
+            "silhouetteHeight": 296,
+            "hurtbox": {
+              "x": -122,
+              "y": -286,
+              "width": 231,
+              "height": 286
+            },
+            "attackBox": null
+          },
+          {
+            "file": "sprites/punch/punch_003.png",
+            "width": 381,
+            "height": 297,
+            "anchor": {
+              "x": 238,
+              "y": 291
+            },
+            "reachX": 138,
+            "silhouetteHeight": 287,
+            "hurtbox": {
+              "x": -220,
+              "y": -277,
+              "width": 347,
+              "height": 277
+            },
+            "attackBox": null
+          },
+          {
+            "file": "sprites/punch/punch_004.png",
+            "width": 437,
+            "height": 374,
+            "anchor": {
+              "x": 126,
+              "y": 368
+            },
+            "reachX": 306,
+            "silhouetteHeight": 364,
+            "hurtbox": {
+              "x": -107,
+              "y": -318,
+              "width": 410,
+              "height": 318
+            },
+            "attackBox": {
+              "x": 192,
+              "y": -364,
+              "width": 115,
+              "height": 343
+            }
+          },
+          {
+            "file": "sprites/punch/punch_005.png",
+            "width": 428,
+            "height": 297,
+            "anchor": {
+              "x": 126,
+              "y": 291
+            },
+            "reachX": 297,
+            "silhouetteHeight": 287,
+            "hurtbox": {
+              "x": -109,
+              "y": -275,
+              "width": 392,
+              "height": 275
+            },
+            "attackBox": {
+              "x": 192,
+              "y": -218,
+              "width": 106,
+              "height": 68
+            }
+          },
+          {
+            "file": "sprites/punch/punch_006.png",
+            "width": 342,
+            "height": 306,
+            "anchor": {
+              "x": 135,
+              "y": 300
+            },
+            "reachX": 202,
+            "silhouetteHeight": 296,
+            "hurtbox": {
+              "x": -121,
+              "y": -282,
+              "width": 299,
+              "height": 282
+            },
+            "attackBox": {
+              "x": 192,
+              "y": -193,
+              "width": 11,
+              "height": 17
+            }
+          }
+        ]
+      },
+      "sprites": {
+        "base": [
+          "sprites/base/base_001.png",
+          "sprites/base/base_002.png",
+          "sprites/base/base_003.png",
+          "sprites/base/base_004.png",
+          "sprites/base/base_005.png",
+          "sprites/base/base_006.png"
+        ],
+        "kick": [
+          "sprites/kick/kick_001.png",
+          "sprites/kick/kick_002.png",
+          "sprites/kick/kick_003.png",
+          "sprites/kick/kick_004.png",
+          "sprites/kick/kick_005.png",
+          "sprites/kick/kick_006.png"
+        ],
+        "special_1": [
+          "sprites/special_1/special_1_001.png",
+          "sprites/special_1/special_1_002.png",
+          "sprites/special_1/special_1_003.png",
+          "sprites/special_1/special_1_004.png",
+          "sprites/special_1/special_1_005.png",
+          "sprites/special_1/special_1_006.png"
+        ],
+        "special_2": [
+          "sprites/special_2/special_2_001.png",
+          "sprites/special_2/special_2_002.png",
+          "sprites/special_2/special_2_003.png",
+          "sprites/special_2/special_2_004.png",
+          "sprites/special_2/special_2_005.png",
+          "sprites/special_2/special_2_006.png"
+        ],
+        "punch": [
+          "sprites/punch/punch_001.png",
+          "sprites/punch/punch_002.png",
+          "sprites/punch/punch_003.png",
+          "sprites/punch/punch_004.png",
+          "sprites/punch/punch_005.png",
+          "sprites/punch/punch_006.png"
+        ]
+      },
+      "projectiles": {},
+      "sounds": {}
+    },
     "martin_urbano": {
       "displayName": "martin_urbano",
       "basePath": "/fighters/martin_urbano",
@@ -9664,6 +11666,443 @@
         "ink_spark": "projectiles/ink_spark.png",
         "lightning_from_sky": "projectiles/lightning_from_sky.png"
       },
+      "sounds": {}
+    },
+    "meridian": {
+      "displayName": "meridian",
+      "basePath": "/fighters/meridian",
+      "artSource": "generated-key-poses",
+      "config": "config.json",
+      "sheets": {
+        "poses": "poses.png"
+      },
+      "frameCounts": {
+        "base": 8,
+        "punch": 3,
+        "kick": 3,
+        "special_1": 3,
+        "special_2": 3,
+        "grab": 3,
+        "throw": 3,
+        "crouch": 1,
+        "block": 1,
+        "jump": 2,
+        "walk_forward": 3,
+        "walk_back": 3
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_003.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_008.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_003.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          }
+        ],
+        "grab": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          }
+        ],
+        "throw": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          }
+        ],
+        "crouch": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          }
+        ],
+        "block": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          }
+        ],
+        "jump": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          }
+        ],
+        "walk_forward": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          }
+        ],
+        "walk_back": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 160,
+            "height": 160,
+            "anchor": {
+              "x": 72,
+              "y": 148
+            }
+          }
+        ]
+      },
+      "sprites": {
+        "base": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_003.png",
+          "sprites/poses/pose_004.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png",
+          "sprites/poses/pose_008.png"
+        ],
+        "punch": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_003.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "kick": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_004.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "special_1": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "special_2": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "grab": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png"
+        ],
+        "throw": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png"
+        ],
+        "crouch": [
+          "sprites/poses/pose_002.png"
+        ],
+        "block": [
+          "sprites/poses/pose_001.png"
+        ],
+        "jump": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_004.png"
+        ],
+        "walk_forward": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "walk_back": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_001.png"
+        ]
+      },
+      "projectiles": {},
       "sounds": {}
     },
     "mic_monarch": {
@@ -10841,6 +13280,443 @@
       },
       "sounds": {}
     },
+    "mycel": {
+      "displayName": "mycel",
+      "basePath": "/fighters/mycel",
+      "artSource": "generated-key-poses",
+      "config": "config.json",
+      "sheets": {
+        "poses": "poses.png"
+      },
+      "frameCounts": {
+        "base": 8,
+        "punch": 3,
+        "kick": 3,
+        "special_1": 3,
+        "special_2": 3,
+        "grab": 3,
+        "throw": 3,
+        "crouch": 1,
+        "block": 1,
+        "jump": 2,
+        "walk_forward": 3,
+        "walk_back": 3
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_008.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "grab": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "throw": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "crouch": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "block": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "jump": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "walk_forward": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "walk_back": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ]
+      },
+      "sprites": {
+        "base": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_003.png",
+          "sprites/poses/pose_004.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png",
+          "sprites/poses/pose_008.png"
+        ],
+        "punch": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_003.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "kick": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_004.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "special_1": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "special_2": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "grab": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png"
+        ],
+        "throw": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png"
+        ],
+        "crouch": [
+          "sprites/poses/pose_002.png"
+        ],
+        "block": [
+          "sprites/poses/pose_001.png"
+        ],
+        "jump": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_004.png"
+        ],
+        "walk_forward": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "walk_back": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_001.png"
+        ]
+      },
+      "projectiles": {},
+      "sounds": {}
+    },
     "robot": {
       "displayName": "janitor",
       "basePath": "/fighters/robot",
@@ -11187,6 +14063,443 @@
       "projectiles": {
         "bucket_wave": "projectiles/bucket_wave.png"
       },
+      "sounds": {}
+    },
+    "rook": {
+      "displayName": "rook",
+      "basePath": "/fighters/rook",
+      "artSource": "generated-key-poses",
+      "config": "config.json",
+      "sheets": {
+        "poses": "poses.png"
+      },
+      "frameCounts": {
+        "base": 8,
+        "punch": 3,
+        "kick": 3,
+        "special_1": 3,
+        "special_2": 3,
+        "grab": 3,
+        "throw": 3,
+        "crouch": 1,
+        "block": 1,
+        "jump": 2,
+        "walk_forward": 3,
+        "walk_back": 3
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_008.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "grab": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "throw": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "crouch": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "block": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "jump": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "walk_forward": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "walk_back": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ]
+      },
+      "sprites": {
+        "base": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_003.png",
+          "sprites/poses/pose_004.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png",
+          "sprites/poses/pose_008.png"
+        ],
+        "punch": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_003.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "kick": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_004.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "special_1": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "special_2": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "grab": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png"
+        ],
+        "throw": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png"
+        ],
+        "crouch": [
+          "sprites/poses/pose_002.png"
+        ],
+        "block": [
+          "sprites/poses/pose_001.png"
+        ],
+        "jump": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_004.png"
+        ],
+        "walk_forward": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "walk_back": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_001.png"
+        ]
+      },
+      "projectiles": {},
       "sounds": {}
     },
     "rubber_chicken": {
@@ -14558,6 +17871,1317 @@
       },
       "sounds": {}
     },
+    "taffy": {
+      "displayName": "taffy",
+      "basePath": "/fighters/taffy",
+      "artSource": "generated-key-poses",
+      "config": "config.json",
+      "sheets": {
+        "poses": "poses.png"
+      },
+      "frameCounts": {
+        "base": 8,
+        "punch": 3,
+        "kick": 3,
+        "special_1": 3,
+        "special_2": 3,
+        "grab": 3,
+        "throw": 3,
+        "crouch": 1,
+        "block": 1,
+        "jump": 2,
+        "walk_forward": 3,
+        "walk_back": 3
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_008.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "grab": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "throw": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "crouch": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "block": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "jump": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "walk_forward": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "walk_back": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ]
+      },
+      "sprites": {
+        "base": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_003.png",
+          "sprites/poses/pose_004.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png",
+          "sprites/poses/pose_008.png"
+        ],
+        "punch": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_003.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "kick": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_004.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "special_1": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "special_2": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "grab": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png"
+        ],
+        "throw": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png"
+        ],
+        "crouch": [
+          "sprites/poses/pose_002.png"
+        ],
+        "block": [
+          "sprites/poses/pose_001.png"
+        ],
+        "jump": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_004.png"
+        ],
+        "walk_forward": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "walk_back": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_001.png"
+        ]
+      },
+      "projectiles": {},
+      "sounds": {}
+    },
+    "veil": {
+      "displayName": "veil",
+      "basePath": "/fighters/veil",
+      "artSource": "generated-key-poses",
+      "config": "config.json",
+      "sheets": {
+        "poses": "poses.png"
+      },
+      "frameCounts": {
+        "base": 8,
+        "punch": 3,
+        "kick": 3,
+        "special_1": 3,
+        "special_2": 3,
+        "grab": 3,
+        "throw": 3,
+        "crouch": 1,
+        "block": 1,
+        "jump": 2,
+        "walk_forward": 3,
+        "walk_back": 3
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_008.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "grab": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "throw": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "crouch": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "block": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "jump": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "walk_forward": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "walk_back": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ]
+      },
+      "sprites": {
+        "base": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_003.png",
+          "sprites/poses/pose_004.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png",
+          "sprites/poses/pose_008.png"
+        ],
+        "punch": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_003.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "kick": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_004.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "special_1": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "special_2": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "grab": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png"
+        ],
+        "throw": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png"
+        ],
+        "crouch": [
+          "sprites/poses/pose_002.png"
+        ],
+        "block": [
+          "sprites/poses/pose_001.png"
+        ],
+        "jump": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_004.png"
+        ],
+        "walk_forward": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "walk_back": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_001.png"
+        ]
+      },
+      "projectiles": {},
+      "sounds": {}
+    },
+    "vellum": {
+      "displayName": "vellum",
+      "basePath": "/fighters/vellum",
+      "artSource": "generated-key-poses",
+      "config": "config.json",
+      "sheets": {
+        "poses": "poses.png"
+      },
+      "frameCounts": {
+        "base": 8,
+        "punch": 3,
+        "kick": 3,
+        "special_1": 3,
+        "special_2": 3,
+        "grab": 3,
+        "throw": 3,
+        "crouch": 1,
+        "block": 1,
+        "jump": 2,
+        "walk_forward": 3,
+        "walk_back": 3
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_008.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "grab": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "throw": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "crouch": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "block": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "jump": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "walk_forward": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "walk_back": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ]
+      },
+      "sprites": {
+        "base": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_003.png",
+          "sprites/poses/pose_004.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png",
+          "sprites/poses/pose_008.png"
+        ],
+        "punch": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_003.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "kick": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_004.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "special_1": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "special_2": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "grab": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png"
+        ],
+        "throw": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png"
+        ],
+        "crouch": [
+          "sprites/poses/pose_002.png"
+        ],
+        "block": [
+          "sprites/poses/pose_001.png"
+        ],
+        "jump": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_004.png"
+        ],
+        "walk_forward": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "walk_back": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_001.png"
+        ]
+      },
+      "projectiles": {},
+      "sounds": {}
+    },
     "velo_courier": {
       "displayName": "velo_courier",
       "basePath": "/fighters/velo_courier",
@@ -16504,6 +21128,443 @@
       "projectiles": {
         "bucket_wave": "projectiles/bucket_wave.png"
       },
+      "sounds": {}
+    },
+    "vesper": {
+      "displayName": "vesper",
+      "basePath": "/fighters/vesper",
+      "artSource": "generated-key-poses",
+      "config": "config.json",
+      "sheets": {
+        "poses": "poses.png"
+      },
+      "frameCounts": {
+        "base": 8,
+        "punch": 3,
+        "kick": 3,
+        "special_1": 3,
+        "special_2": 3,
+        "grab": 3,
+        "throw": 3,
+        "crouch": 1,
+        "block": 1,
+        "jump": 2,
+        "walk_forward": 3,
+        "walk_back": 3
+      },
+      "frameData": {
+        "base": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_008.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "punch": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "special_1": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "special_2": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_005.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "grab": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "throw": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_006.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_007.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "crouch": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "block": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "jump": [
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_004.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "walk_forward": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "walk_back": [
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/poses/pose_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ]
+      },
+      "sprites": {
+        "base": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_003.png",
+          "sprites/poses/pose_004.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png",
+          "sprites/poses/pose_008.png"
+        ],
+        "punch": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_003.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "kick": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_004.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "special_1": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "special_2": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_005.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "grab": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png"
+        ],
+        "throw": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_006.png",
+          "sprites/poses/pose_007.png"
+        ],
+        "crouch": [
+          "sprites/poses/pose_002.png"
+        ],
+        "block": [
+          "sprites/poses/pose_001.png"
+        ],
+        "jump": [
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_004.png"
+        ],
+        "walk_forward": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_001.png"
+        ],
+        "walk_back": [
+          "sprites/poses/pose_001.png",
+          "sprites/poses/pose_002.png",
+          "sprites/poses/pose_001.png"
+        ]
+      },
+      "projectiles": {},
       "sounds": {}
     },
     "viggo": {

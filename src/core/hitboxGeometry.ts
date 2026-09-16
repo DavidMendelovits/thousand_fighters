@@ -1,7 +1,7 @@
-import type { Hitbox, HitboxKeyframe } from '../schema/types';
+import type { Hurtbox, HitboxKeyframe } from '../schema/types';
 
 export type KeyframedHitbox = {
-  hitbox: Hitbox;
+  hitbox: Hurtbox;
   keyframes?: HitboxKeyframe[];
   // Frames since activation, drives keyframe interpolation.
   age: number;

@@ -202,6 +202,8 @@ export function characterContentDraftGuidance() {
     'frameCounts: use 6 frames per row unless the brief says otherwise. walk_forward/walk_back are looping walk cycles; grab/throw are the grab and throw animations.',
     'Set sprite.relativeHeight from the brief: 1.0 for a standard fighter, up to 1.6 for giants, down to 0.5 for tiny fighters. This is how intended character height reaches the game.',
     'Moves should be mechanically readable and usable by the runtime config.',
+    'Coordinates are feet-origin: y=0 is the floor, negative y is ABOVE the floor. Melee hitbox y and hand projectile offsetY should normally be negative (for example -70); positive values put attacks underground. Projectile hitboxes are relative to their projectile center.',
+    'Physics stats are positive magnitudes: jumpVelocity and jumpBackVelocity must be POSITIVE. The engine applies upward/backward signs. Use jumpVelocity around 10-13 and jumpBackVelocity around 3.',
     'Do not include markdown. Return only JSON matching the supplied schema.',
   ];
 }

@@ -12,6 +12,14 @@
   --focus: #79a8ff;
 }
 
+.studio-embedded{--bg:#111214;--panel:#191b1e;--panel-2:#22242a;--line:#303136;--accent:#e9eb9a;--text:#eeeae2;--muted:#93959c}
+.studio-embedded .admin-shell{max-width:none;padding:14px}
+.studio-embedded .topbar{display:none}
+.combat-rules-editor{border:1px solid var(--line);padding:16px;margin:20px 0}
+.combat-rules-editor summary{cursor:pointer;font-weight:600;font-size:13px}
+.combat-rules-editor p,.combat-rules-editor [role=status]{font-size:12px;color:var(--muted);line-height:1.6}
+.combat-rules-editor textarea{display:block;width:100%;font:12px monospace;margin:12px 0}
+
 * {
   box-sizing: border-box;
 }
@@ -2127,3 +2135,12 @@ details[open] .dev-tools-summary {
 }
 .kit-check { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #9fb3cc; }
 .kit-check input { flex: 0 0 auto; }
+
+/* Embedded workspace gets less horizontal room than the standalone CMS. */
+.studio-embedded .character-summary { grid-template-columns: minmax(0,1fr); }
+.studio-embedded .combat-rules-editor { max-width:100%; box-sizing:border-box; }
+.studio-embedded .combat-rules-editor textarea { width:100%; box-sizing:border-box; }
+@media (min-width:721px) and (max-width:1300px) {
+  .studio-embedded .workspace-grid { grid-template-columns:180px minmax(0,1fr); }
+  .studio-embedded .ops-column { grid-column:1/-1; grid-template-columns:1fr; }
+}

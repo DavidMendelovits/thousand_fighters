@@ -16,6 +16,8 @@ import {
 } from '../export/convertDraftToCharacterConfig.js';
 import { MOVE_SHEET_IDS } from '../../shared/animationRows.js';
 import { rowPromptProfile } from './rowPromptProfiles.js';
+import { projectileImpact } from '../../shared/projectileImpact.js';
+import {generateWorkbenchVideoRow} from './adapters/workbenchVideoRow.js';
 
 // Canonical inputs the engine's InputBuffer can actually match. A combo move
 // authored with anything else (a motion shorthand like "qcf", or an empty
@@ -35,6 +37,7 @@ export class CharacterCreationPipeline {
   constructor(registry, options = {}) {
     this.registry = registry;
     this.clock = options.clock ?? (() => new Date());
+    this.extractionQueues = new Map();
   }
 
   async createCharacterDraft({ characterId, brief, schemaVersion = 1, context = {} }) {
@@ -69,6 +72,7 @@ export class CharacterCreationPipeline {
       id: characterId,
       displayName: result.value?.displayName ?? characterId,
       description: result.value?.description ?? brief,
+      artBrief: brief,
       stats: result.value?.stats ?? {},
       sprite: result.value?.sprite ?? {},
       moves,
@@ -128,7 +132,8 @@ export class CharacterCreationPipeline {
     return textModel.describeImage({ imageBase64, contentType, prompt, context, onProgress: context.onProgress });
   }
 
-  async generateSpriteSheet({ characterId, prompt, moveId, spriteProfile, referenceAssetKeys = [], extraReferenceAssetKeys = [], targetPath, context = {} }) {
+  async generateSpriteSheet({ characterId, prompt, moveId, spriteProfile, generator = 'image', referenceAssetKeys = [], extraReferenceAssetKeys = [], targetPath, context = {} }) {
+    if(!['image','video'].includes(generator))throw new Error('Unknown row generator');
     const imageGenerator = this.registry.resolve(PipelinePort.IMAGE_GENERATOR);
     const repository = this.registry.resolve(PipelinePort.CHARACTER_REPOSITORY);
     const storage = this.registry.resolve(PipelinePort.ASSET_STORAGE);
@@ -171,7 +176,7 @@ export class CharacterCreationPipeline {
       }
     }
 
-    const result = await imageGenerator.generateImage({
+    const request = {
       task: resolvedProfile === 'wide' ? 'fighter-2x3-grid' : 'fighter-1x6-row',
       prompt,
       moveId: resolvedMoveId,
@@ -180,28 +185,87 @@ export class CharacterCreationPipeline {
       referenceImages,
       context,
       onProgress: context.onProgress,
-    });
+    };
+    const result = generator==='video'
+      ? await generateWorkbenchVideoRow({characterId,moveId:resolvedMoveId,prompt,task:request.task,storage,repository,onProgress:context.onProgress})
+      : await imageGenerator.generateImage(request);
 
     const contentType = result.contentType ?? 'image/png';
     const key = targetPath ?? `source/${characterId}_${resolvedMoveId}_sheet${extensionForContentType(contentType)}`;
     const asset = await repository.writeAsset(characterId, key, bytesFromImageResult(result), {
       contentType,
       provider: result.provider ?? imageGenerator.provider ?? 'unknown',
-      adapterId: imageGenerator.id ?? 'imageGenerator',
+      adapterId: generator==='video'?'fal-workbench-video':imageGenerator.id ?? 'imageGenerator',
       model: result.model ?? null,
       prompt,
+      generationMs: result.generationMs ?? null,
+      postprocessMs: result.postprocessMs ?? null,
+      elapsedMs: result.elapsedMs ?? null,
+      frameTimings: result.frameTimings ?? null,
+      estimatedCostUsd: result.estimatedCostUsd ?? null,
+      taskId: result.taskId ?? null,
+      usage: result.usage ?? null,
     });
+
+    let videoAsset = null;
+    if (result.videoBytes) {
+      videoAsset = await repository.writeAsset(
+        characterId,
+        `source/${characterId}_${resolvedMoveId}_${result.provider==='fal-video'?'motion':'h3'}.mp4`,
+        Buffer.from(result.videoBytes),
+        {
+          contentType: result.videoContentType ?? 'video/mp4',
+          provider: result.provider ?? imageGenerator.provider ?? 'unknown',
+          adapterId: generator==='video'?'fal-workbench-video':imageGenerator.id ?? 'imageGenerator',
+          model: result.model ?? null,
+          prompt,
+          sourceTaskId: result.taskId ?? null,
+          generationMs: result.generationMs ?? null,
+          elapsedMs: result.elapsedMs ?? null,
+          usage: result.usage ?? null,
+        },
+      );
+    }
+
+    const frameAssets = [];
+    for (const frame of result.frameImages ?? []) {
+      const frameNumber = String(frame.frameNumber).padStart(2, '0');
+      const frameContentType = frame.contentType ?? 'image/png';
+      frameAssets.push(await repository.writeAsset(
+        characterId,
+        `source/${characterId}_${resolvedMoveId}_frames/frame_${frameNumber}${extensionForContentType(frameContentType)}`,
+        Buffer.from(frame.bytes),
+        {
+          contentType: frameContentType,
+          provider: result.provider ?? imageGenerator.provider ?? 'unknown',
+          adapterId: imageGenerator.id ?? 'imageGenerator',
+          model: result.model ?? null,
+          prompt,
+          frameNumber: frame.frameNumber,
+          sourceTaskId: frame.taskId ?? null,
+          elapsedMs: result.frameTimings?.find((timing) => timing.frameNumber === frame.frameNumber)?.elapsedMs ?? null,
+        },
+      ));
+    }
 
     // Non-base rows generated without the base sheet drift visually — surface
     // that so callers can warn or regenerate once the base row exists.
-    const referencesUsed = referenceImages.map((image) => image.sourceKey);
-    const baseReferenceAttached = referencesUsed.some((key) => key.endsWith(`${characterId}_base_sheet.png`));
+    const referencesUsed = generator==='video'?[`characters/${characterId}/assets/fighter-pack/sprites/base/base_001.png`]:referenceImages.map((image) => image.sourceKey);
+    const baseReferenceAttached = referencesUsed.some((key) => key.endsWith(`${characterId}_base_sheet.png`)||key.endsWith('/base/base_001.png'));
 
     return {
       asset,
       provider: result.provider ?? imageGenerator.provider ?? 'unknown',
       model: result.model ?? null,
       promptRef: result.promptRef ?? null,
+      videoAsset,
+      frameAssets,
+      generationMs: result.generationMs ?? null,
+      postprocessMs: result.postprocessMs ?? null,
+      elapsedMs: result.elapsedMs ?? null,
+      frameTimings: result.frameTimings ?? null,
+      estimatedCostUsd: result.estimatedCostUsd ?? null,
+      usage: result.usage ?? null,
       referencesUsed,
       warnings: resolvedMoveId !== 'base' && !baseReferenceAttached
         ? ['no base sheet was available as a reference — this row may not match the fighter\'s look; regenerate it after the base row exists']
@@ -562,6 +626,8 @@ export class CharacterCreationPipeline {
           lifetime: 110,
           hitbox: { x: -24, y: -16, width: 48, height: 32, damage: 60, hitstun: 18, blockstun: 12, knockback: { x: 4, y: 0 }, level: 'mid' },
         };
+    projectile.impact=existing?.impact??projectileImpact(projectile,prompt);
+    await repository.writeAsset(characterId,`effects/${projectileId}/impact.json`,Buffer.from(JSON.stringify(projectile.impact,null,2)),{contentType:'application/json',provider:'authored-companion',adapterId:'projectile-impact-contract'});
     const projectiles = [...(draft.projectiles ?? []).filter((entity) => entity.id !== projectileId), projectile];
     await repository.saveDraft(characterId, { ...draft, projectiles }, {
       provider: 'cms-tool',
@@ -571,7 +637,16 @@ export class CharacterCreationPipeline {
     return { asset, projectile };
   }
 
-  async extractRowFrames({ characterId, sourceAssetKey, moveId, spriteProfile, targetHeight, context = {} }) {
+  async extractRowFrames(request) {
+    const key = request.characterId;
+    const prior = this.extractionQueues.get(key) ?? Promise.resolve();
+    const pending = prior.catch(() => {}).then(() => this.extractRowFramesExclusive(request));
+    this.extractionQueues.set(key, pending);
+    try { return await pending; }
+    finally { if (this.extractionQueues.get(key) === pending) this.extractionQueues.delete(key); }
+  }
+
+  async extractRowFramesExclusive({ characterId, sourceAssetKey, moveId, spriteProfile, targetHeight, context = {} }) {
     const storage = this.registry.resolve(PipelinePort.ASSET_STORAGE);
     const packRoot = `characters/${characterId}/assets/fighter-pack`;
 
@@ -602,6 +677,8 @@ export class CharacterCreationPipeline {
     }
 
     const sourceBytes = await storage.getBytes(sourceAssetKey);
+    const sourceMetadata = await storage.getMetadata(sourceAssetKey);
+    const isVideo = sourceMetadata.provider === 'fal-video';
     const tempDir = await mkdtemp(path.join(os.tmpdir(), 'tf-extract-'));
     try {
       const inputPath = path.join(tempDir, 'source.png');
@@ -616,7 +693,8 @@ export class CharacterCreationPipeline {
       // Height-dynamic rows (jump/crouch) legitimately change height — skip per-frame
       // equalization so the squat/rise animation reads correctly.
       const profile = rowPromptProfile(moveId);
-      if (profile.heightDynamic) {
+      if (isVideo) args.push('--video-source');
+      if (profile.heightDynamic || isVideo) {
         args.push('--no-equalize-frames');
       } else {
         args.push('--equalize-frames');

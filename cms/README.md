@@ -8,6 +8,11 @@ around this storage contract.
 For the broader pluggable pipeline architecture, see
 `docs/CMS_PIPELINE_ARCHITECTURE.md`.
 
+For the new video/PNG-sequence animation compiler, layered Animation Lab, and
+resumable fal video generation, see [Animation clips](../docs/ANIMATION_CLIPS.md).
+This path supports arbitrary frame counts, acrobatics, morphing, transformations,
+and independently inspectable effects without changing the legacy image provider.
+
 ## Provider Contract
 
 CMS storage is object-store shaped:
@@ -160,8 +165,8 @@ shell loop later, it should be a separate sandboxed adapter with approvals.
 
 The Codex CLI provider chooses CMS functions. The functions themselves still use
 their configured adapters. For example, `generate_sprite_sheet` uses the local
-SVG placeholder when `IMAGE_GENERATOR_PROVIDER=local`; it needs
-`OPENAI_API_KEY` only when the image generator adapter is set to `openai`.
+SVG placeholder when `IMAGE_GENERATOR_PROVIDER=local`; API credentials are only
+needed for the selected hosted generator.
 
 ## Text Model Adapter
 
@@ -180,8 +185,9 @@ OPENAI_TEXT_MODEL=gpt-5.5
 
 ## Image Generator Adapter
 
-Source sprite-sheet generation can use the local deterministic SVG fallback or
-OpenAI Responses image generation:
+Source sprite-sheet generation can use the local deterministic SVG fallback,
+OpenAI Responses image generation, Codex image generation, MiniMax H3 motion
+generation, or one of the fast six-frame still-image providers:
 
 ```bash
 IMAGE_GENERATOR_PROVIDER=local
@@ -193,12 +199,93 @@ OPENAI_IMAGE_SIZE=1024x1024
 OPENAI_IMAGE_QUALITY=auto
 OPENAI_IMAGE_BACKGROUND=auto
 OPENAI_IMAGE_OUTPUT_FORMAT=png
+
+IMAGE_GENERATOR_PROVIDER=minimax-h3
+MINIMAX_API_KEY=...
+MINIMAX_H3_MODEL=MiniMax-H3
+MINIMAX_H3_RESOLUTION=768P
+MINIMAX_H3_DURATION=4
+MINIMAX_H3_POLL_INTERVAL_MS=5000
+MINIMAX_H3_TIMEOUT_MS=900000
+
+IMAGE_GENERATOR_PROVIDER=minimax-image
+MINIMAX_API_KEY=...
+
+IMAGE_GENERATOR_PROVIDER=gemini-fast
+GEMINI_API_KEY=...
+
+IMAGE_GENERATOR_PROVIDER=bfl-klein
+BFL_API_KEY=...
+
+IMAGE_GENERATOR_PROVIDER=fal
+FAL_KEY=...
+FAL_IMAGE_MODEL=fal-ai/flux-2/klein/4b/edit
 ```
 
 The local provider is useful for no-network smoke tests. The OpenAI provider
 calls `/v1/responses` with the hosted `image_generation` tool, forces image
 generation, and stores the returned image bytes through the same CMS asset
 repository path.
+
+The `minimax-h3` provider is deliberately row-only. It asks H3 for a short,
+locked-camera move clip, polls the asynchronous task, downloads the MP4, and
+uses ffmpeg to sample six evenly spaced frames into the existing 1x6 (or 2x3
+wide) sheet contract. The sheet is stored at the usual source path and the
+reviewable source clip is retained beside it as
+`source/<character>_<move>_h3.mp4`. Generation, post-processing, and total
+elapsed milliseconds are written into asset metadata and returned by the tool.
+
+`MiniMax-H3` is the default because it accepts identity reference images.
+`MiniMax-H3-Max` can be selected for a speed experiment, but H3 Max does not
+support reference-to-video; the adapter therefore omits identity references and
+emits a warning. Use OpenAI or Codex for character concepts, projectiles, and
+arena stills while H3 is selected for fighter motion rows.
+
+The `minimax-image`, `gemini-fast`, `bfl-klein`, and `fal` providers share a
+fast row workflow: six single-frame prompts are submitted concurrently, then
+ffmpeg scales, bottom-aligns, pads, and tiles them into a deterministic 1x6 or
+2x3 PNG. Prompts require authentic 2D arcade pixel art and explicitly reject
+3D/action-figure rendering; the compositor also rasterizes at low resolution
+and uses a nearest-neighbor upscale for crisp pixel clusters. The six original provider images are retained under
+`source/<character>_<move>_frames/` for inspection. `fal` is the model
+laboratory: change `FAL_IMAGE_MODEL` to benchmark another compatible fal model;
+`FAL_IMAGE_REFERENCE_FIELD=image_url` can opt a generic model into the first
+identity reference.
+
+Common optional tuning:
+
+```bash
+FAST_IMAGE_FRAME_CONCURRENCY=6
+FAST_IMAGE_FRAME_RETRIES=2
+FAST_IMAGE_REQUIRE_MAGENTA_BACKGROUND=true
+MINIMAX_IMAGE_FRAME_CONCURRENCY=3
+FFMPEG_BIN=ffmpeg
+GEMINI_IMAGE_MODEL=gemini-3.1-flash-image
+MINIMAX_IMAGE_MODEL=image-01
+BFL_IMAGE_MODEL=flux-2-klein-4b
+FAL_IMAGE_INFERENCE_STEPS=4
+```
+
+Run all configured providers against the same six-frame job and write PNGs plus
+JSON/Markdown timing results with:
+
+```bash
+doppler run -- npm run cms:image:benchmark -- \
+  --reference /absolute/path/to/fighter.png \
+  --move punch \
+  --prompt "A vaudeville boxer throws one crisp straight punch"
+```
+
+The default comparison set is `minimax-image,bfl-klein,fal`. Gemini remains
+available through `--providers gemini-fast` but is intentionally excluded from
+the default benchmark for now.
+
+The keyless adapter and real ffmpeg bridge can be checked with:
+
+```bash
+npm run cms:minimax:h3:smoke
+npm run cms:fast:image:smoke
+```
 
 ## Supabase Adapter
 

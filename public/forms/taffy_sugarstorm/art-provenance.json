@@ -1,0 +1,11 @@
+{
+  "generator": "built-in image_gen",
+  "sourceType": "generated-key-poses",
+  "notVideoGenerated": true,
+  "prompt": "Use case: stylized-concept. Asset type: original 16-bit arcade fighting game transformation sprites. Exactly 8 equal cells, FOUR columns TWO rows, landscape 1536x1024. Background 100% solid flat #FF00FF, absolutely no gradients/shadows/scenery/text/grid lines. Same character and same body scale in all cells, entire full body and every limb inside its cell with generous magenta margin on all sides. Side view facing RIGHT, feet aligned across row. Crisp chunky pixel clusters, restrained 32-color sprite palette, dark outlines, NOT 3D, NOT action figures. Row1: idle combat guard, low anticipation crouch, forward heavy punch, forward kick. Row2: forward cast palms, close grasp arms, throw followthrough, hurt recoil. No detached effects or opponents. Character: Taffy Riot transformed Sugarstorm form, tall elastic golden candy boxer, twisted caramel crown hair, dark teal cropped jacket, huge amber translucent-looking hard-candy gauntlets with opaque pixel shading, candy-striped long trousers and teal shoes. Dynamic rubber-hose long arms but bounded within cells, powerful adult fighter silhouette, not a toy. Consistent two arms costume and proportions across all eight poses.",
+  "cleanup": "Built-in image edit replaced gradient with magenta, deterministic chroma removal, shared nearest-neighbor scale and 48-color palette.",
+  "scale": 0.4461538461538462,
+  "warnings": [],
+  "status": "prototype-review",
+  "poseCount": 8
+}

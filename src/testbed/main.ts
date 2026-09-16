@@ -58,7 +58,7 @@ async function main(): Promise<void> {
       width: 800,
       height: 450,
     },
-    fps: { target: 60, forceSetTimeOut: true },
+    fps: { target: 60, forceSetTimeOut: false },
     scene,
   });
 

@@ -1,0 +1,310 @@
+{
+  "schemaVersion": 1,
+  "id": "vesper_signature",
+  "displayName": "Vesper \u00b7 video signature",
+  "kind": "attack",
+  "playback": "once",
+  "tickRate": 60,
+  "totalTicks": 48,
+  "canvas": {
+    "width": 170,
+    "height": 128
+  },
+  "anchor": {
+    "x": 53,
+    "y": 122
+  },
+  "rootMode": "baked",
+  "layers": [
+    {
+      "id": "body",
+      "role": "body",
+      "z": 0,
+      "blend": "normal",
+      "sheet": "layers/body.png",
+      "frames": [
+        {
+          "x": 0,
+          "y": 0,
+          "width": 170,
+          "height": 128,
+          "file": "sprites/body/body_001.png",
+          "durationTicks": 4,
+          "sourceFrame": 0,
+          "sourceTimeMs": 0.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 170,
+          "y": 0,
+          "width": 170,
+          "height": 128,
+          "file": "sprites/body/body_002.png",
+          "durationTicks": 4,
+          "sourceFrame": 12,
+          "sourceTimeMs": 500.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 340,
+          "y": 0,
+          "width": 170,
+          "height": 128,
+          "file": "sprites/body/body_003.png",
+          "durationTicks": 4,
+          "sourceFrame": 24,
+          "sourceTimeMs": 1000.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 510,
+          "y": 0,
+          "width": 170,
+          "height": 128,
+          "file": "sprites/body/body_004.png",
+          "durationTicks": 4,
+          "sourceFrame": 42,
+          "sourceTimeMs": 1750.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 680,
+          "y": 0,
+          "width": 170,
+          "height": 128,
+          "file": "sprites/body/body_005.png",
+          "durationTicks": 3,
+          "sourceFrame": 60,
+          "sourceTimeMs": 2500.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 850,
+          "y": 0,
+          "width": 170,
+          "height": 128,
+          "file": "sprites/body/body_006.png",
+          "durationTicks": 3,
+          "sourceFrame": 72,
+          "sourceTimeMs": 3000.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 1020,
+          "y": 0,
+          "width": 170,
+          "height": 128,
+          "file": "sprites/body/body_007.png",
+          "durationTicks": 6,
+          "sourceFrame": 84,
+          "sourceTimeMs": 3500.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 1190,
+          "y": 0,
+          "width": 170,
+          "height": 128,
+          "file": "sprites/body/body_008.png",
+          "durationTicks": 6,
+          "sourceFrame": 96,
+          "sourceTimeMs": 4000.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 0,
+          "y": 128,
+          "width": 170,
+          "height": 128,
+          "file": "sprites/body/body_009.png",
+          "durationTicks": 6,
+          "sourceFrame": 108,
+          "sourceTimeMs": 4500.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        },
+        {
+          "x": 170,
+          "y": 128,
+          "width": 170,
+          "height": 128,
+          "file": "sprites/body/body_010.png",
+          "durationTicks": 8,
+          "sourceFrame": 120,
+          "sourceTimeMs": 5000.0,
+          "rootMotion": {
+            "x": 0,
+            "y": 0
+          },
+          "sockets": {},
+          "empty": false
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "type": "activate",
+      "label": "Cast / extension begins",
+      "tick": 16
+    }
+  ],
+  "palette": [
+    "#dff6f3",
+    "#dcebf1",
+    "#b9ecf0",
+    "#93ebeb",
+    "#92dfe6",
+    "#6fe8e7",
+    "#9ed3e1",
+    "#7ed1e1",
+    "#91b2c7",
+    "#6ec4dd",
+    "#67a1c3",
+    "#797984",
+    "#4c729f",
+    "#4860a6",
+    "#3c5cab",
+    "#3463a8",
+    "#3359a8",
+    "#3255a7",
+    "#3d4b7e",
+    "#304e95",
+    "#2c4a95",
+    "#254a9b",
+    "#244a8a",
+    "#224388",
+    "#2b3d72",
+    "#1f3c79",
+    "#233570",
+    "#253050",
+    "#1a3973",
+    "#1a305f",
+    "#153874",
+    "#14326d",
+    "#133459",
+    "#132f58",
+    "#112c5e",
+    "#112a4d",
+    "#20234d",
+    "#142346",
+    "#10244f",
+    "#101f3a",
+    "#0a2348",
+    "#092235",
+    "#081d3a",
+    "#141636",
+    "#091732",
+    "#041630",
+    "#100b2a",
+    "#010b20"
+  ],
+  "intent": {
+    "topologyChanges": false,
+    "scaleChanges": false,
+    "paletteChanges": false
+  },
+  "qa": {
+    "status": "needs-review",
+    "checks": [
+      {
+        "id": "shared-scale",
+        "label": "Shared scale",
+        "status": "pass",
+        "detail": "One 0.266667\u00d7 transform; no silhouette fitting"
+      },
+      {
+        "id": "parts",
+        "label": "Disconnected parts",
+        "status": "pass",
+        "detail": "All foreground components retained"
+      },
+      {
+        "id": "clipping",
+        "label": "Source framing",
+        "status": "pass",
+        "detail": "0 source boundary contacts"
+      },
+      {
+        "id": "motion",
+        "label": "Pose diversity",
+        "status": "pass",
+        "detail": "10 distinct selected composites; not a motion-quality score"
+      },
+      {
+        "id": "review",
+        "label": "Art and gameplay",
+        "status": "warn",
+        "detail": "Human review required; morphology, loop seams and combat timing are not automatically approved"
+      }
+    ],
+    "warnings": []
+  },
+  "provenance": {
+    "method": "generated-video",
+    "provider": "fal",
+    "model": "kling-video/v3/standard/image-to-video",
+    "description": "Reviewed video-derived body motion. Fixed reference-foot anchor and scale; authored action timing. Long-range attached extension and collisions remain engine-driven. Prototype, not final sprite cleanup.",
+    "compiler": "animation-clip-v1",
+    "scale": 0.26666666666666666,
+    "sources": [
+      {
+        "sha256": "6c8028878593dd811a528286229455c349faaa15d0d2f8aab21076787ac1c9e1",
+        "frameCount": 121,
+        "video": "/Users/davidmendelovits/space/thousand_fighters/artifacts/animation-video/oddities/vesper-cast-v1/source.mp4",
+        "size": [
+          960,
+          960
+        ]
+      }
+    ]
+  },
+  "review": {
+    "contactSheet": "contact-sheet.png",
+    "preview": "preview.png"
+  }
+}

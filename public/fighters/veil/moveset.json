@@ -1,0 +1,664 @@
+[
+  {
+    "id": "rising_break",
+    "displayName": "Rising Break",
+    "description": "Hit-confirmed launcher; opens an air route at the cost of long recovery.",
+    "animation": "kick",
+    "inputLabel": "↓ + G · Launcher",
+    "trigger": {
+      "allowedStates": [
+        "idle",
+        "walk_forward",
+        "block",
+        "crouch",
+        "landing"
+      ],
+      "sequence": [
+        "down",
+        "lk"
+      ],
+      "window": 7
+    },
+    "visualTimeline": [
+      {
+        "frame": 0,
+        "duration": 9
+      },
+      {
+        "frame": 1,
+        "duration": 5
+      },
+      {
+        "frame": 2,
+        "duration": 28
+      }
+    ],
+    "phases": [
+      {
+        "name": "startup",
+        "frames": 9,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "set_velocity",
+              "vx": 2,
+              "relativeToFacing": true
+            }
+          }
+        ]
+      },
+      {
+        "name": "active",
+        "frames": 5,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "hitbox_active",
+              "hitbox": {
+                "x": 20,
+                "y": -125,
+                "width": 100,
+                "height": 80,
+                "damage": 62,
+                "hitstun": 32,
+                "blockstun": 12,
+                "knockback": {
+                  "x": 2,
+                  "y": -8
+                },
+                "launches": true
+              }
+            }
+          }
+        ],
+        "cancellable": true
+      },
+      {
+        "name": "recovery",
+        "frames": 28,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "hitbox_end"
+            }
+          },
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "set_velocity",
+              "vx": 0
+            }
+          }
+        ],
+        "cancellable": true
+      }
+    ],
+    "cancelInto": [
+      "sleeve_snare"
+    ],
+    "cancelOn": "hit"
+  },
+  {
+    "id": "sleeve_snare",
+    "displayName": "Till Death",
+    "description": "Extend, catch, reel in, then launch. Jump the grab or punish its recovery.",
+    "animation": "video_signature",
+    "trigger": {
+      "allowedStates": [
+        "idle",
+        "walk_forward",
+        "walk_back",
+        "crouch",
+        "block",
+        "landing"
+      ],
+      "sequence": [
+        "hp"
+      ],
+      "window": 7
+    },
+    "visualTimeline": [
+      {
+        "frame": 0,
+        "duration": 4
+      },
+      {
+        "frame": 1,
+        "duration": 4
+      },
+      {
+        "frame": 2,
+        "duration": 4
+      },
+      {
+        "frame": 3,
+        "duration": 4
+      },
+      {
+        "frame": 4,
+        "duration": 4
+      },
+      {
+        "frame": 5,
+        "duration": 4
+      },
+      {
+        "frame": 6,
+        "duration": 4
+      },
+      {
+        "frame": 7,
+        "duration": 4
+      },
+      {
+        "frame": 8,
+        "duration": 4
+      },
+      {
+        "frame": 9,
+        "duration": 6
+      },
+      {
+        "frame": 10,
+        "duration": 6
+      },
+      {
+        "frame": 11,
+        "duration": 8
+      },
+      {
+        "frame": 12,
+        "duration": 8
+      },
+      {
+        "frame": 13,
+        "duration": 8
+      }
+    ],
+    "phases": [
+      {
+        "name": "startup",
+        "frames": 12,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "set_velocity",
+              "vx": 0
+            }
+          }
+        ]
+      },
+      {
+        "name": "active",
+        "frames": 24,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "grab_check",
+              "grab": {
+                "hitbox": {
+                  "x": 30,
+                  "y": -96,
+                  "width": 28,
+                  "height": 40
+                },
+                "damage": 90,
+                "holdOffsetX": 44,
+                "holdDuration": 28,
+                "pullFrames": 16,
+                "releaseKnockback": {
+                  "x": 6,
+                  "y": -5
+                },
+                "releaseHitstun": 24,
+                "releaseLaunches": true,
+                "groundOnly": true
+              },
+              "keyframes": [
+                {
+                  "atFrame": 0,
+                  "x": 30
+                },
+                {
+                  "atFrame": 14,
+                  "x": 255
+                },
+                {
+                  "atFrame": 22,
+                  "x": 30
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "recovery",
+        "frames": 36,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "hitbox_end"
+            }
+          },
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "grab_end"
+            }
+          }
+        ]
+      }
+    ],
+    "extension": {
+      "kind": "ribbon",
+      "color": 7903942,
+      "accent": 14805503,
+      "thickness": 9
+    },
+    "inputLabel": "H"
+  },
+  {
+    "id": "hem_slash",
+    "displayName": "Unfinished Business",
+    "description": "The limb tip travels outward and retracts; reach is not an instant full-screen hitbox.",
+    "animation": "punch",
+    "trigger": {
+      "allowedStates": [
+        "idle",
+        "walk_forward",
+        "walk_back",
+        "crouch",
+        "block",
+        "landing"
+      ],
+      "sequence": [
+        "down",
+        "hp"
+      ],
+      "window": 7
+    },
+    "visualTimeline": [
+      {
+        "frame": 0,
+        "duration": 12
+      },
+      {
+        "frame": 1,
+        "duration": 24
+      },
+      {
+        "frame": 2,
+        "duration": 36
+      }
+    ],
+    "phases": [
+      {
+        "name": "startup",
+        "frames": 12,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "set_velocity",
+              "vx": 0
+            }
+          }
+        ]
+      },
+      {
+        "name": "active",
+        "frames": 24,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "hitbox_active",
+              "hitbox": {
+                "x": 30,
+                "y": -90,
+                "width": 28,
+                "height": 32,
+                "damage": 68,
+                "hitstun": 16,
+                "blockstun": 10,
+                "knockback": {
+                  "x": 7,
+                  "y": 0
+                },
+                "level": "mid"
+              },
+              "keyframes": [
+                {
+                  "atFrame": 0,
+                  "x": 30
+                },
+                {
+                  "atFrame": 14,
+                  "x": 290
+                },
+                {
+                  "atFrame": 22,
+                  "x": 30
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "recovery",
+        "frames": 36,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "hitbox_end"
+            }
+          },
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "grab_end"
+            }
+          }
+        ]
+      }
+    ],
+    "extension": {
+      "kind": "ribbon",
+      "color": 7903942,
+      "accent": 14805503,
+      "thickness": 9
+    },
+    "inputLabel": "↓ + H"
+  },
+  {
+    "id": "clinch",
+    "displayName": "Catch & Cast",
+    "description": "Close-range unblockable grab. The victim is held, then thrown; jump to evade.",
+    "animation": "throw",
+    "trigger": {
+      "allowedStates": [
+        "idle",
+        "walk_forward",
+        "walk_back",
+        "crouch",
+        "block",
+        "landing"
+      ],
+      "sequence": [
+        "grab"
+      ],
+      "window": 7
+    },
+    "visualTimeline": [
+      {
+        "frame": 0,
+        "duration": 7
+      },
+      {
+        "frame": 1,
+        "duration": 5
+      },
+      {
+        "frame": 2,
+        "duration": 44
+      }
+    ],
+    "phases": [
+      {
+        "name": "startup",
+        "frames": 7,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "set_velocity",
+              "vx": 0
+            }
+          }
+        ]
+      },
+      {
+        "name": "active",
+        "frames": 5,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "grab_check",
+              "grab": {
+                "hitbox": {
+                  "x": 20,
+                  "y": -104,
+                  "width": 50,
+                  "height": 88
+                },
+                "damage": 95,
+                "holdOffsetX": 44,
+                "holdDuration": 22,
+                "pullFrames": 5,
+                "releaseKnockback": {
+                  "x": 6,
+                  "y": -5
+                },
+                "releaseHitstun": 24,
+                "releaseLaunches": true,
+                "groundOnly": true
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "recovery",
+        "frames": 44,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "grab_end"
+            }
+          }
+        ]
+      }
+    ],
+    "inputLabel": "F + G · Grab"
+  },
+  {
+    "id": "punch",
+    "displayName": "Quick Check",
+    "description": "",
+    "animation": "punch",
+    "trigger": {
+      "allowedStates": [
+        "idle",
+        "walk_forward",
+        "walk_back",
+        "crouch",
+        "block",
+        "landing"
+      ],
+      "sequence": [
+        "lp"
+      ],
+      "window": 7
+    },
+    "visualTimeline": [
+      {
+        "frame": 0,
+        "duration": 5
+      },
+      {
+        "frame": 1,
+        "duration": 5
+      },
+      {
+        "frame": 2,
+        "duration": 10
+      }
+    ],
+    "phases": [
+      {
+        "name": "startup",
+        "frames": 5,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "set_velocity",
+              "vx": 0
+            }
+          }
+        ]
+      },
+      {
+        "name": "active",
+        "frames": 5,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "hitbox_active",
+              "hitbox": {
+                "x": 24,
+                "y": -90,
+                "width": 46,
+                "height": 32,
+                "damage": 36,
+                "hitstun": 16,
+                "blockstun": 10,
+                "knockback": {
+                  "x": 3,
+                  "y": 0
+                },
+                "level": "mid"
+              }
+            }
+          }
+        ],
+        "cancellable": true
+      },
+      {
+        "name": "recovery",
+        "frames": 10,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "hitbox_end"
+            }
+          }
+        ],
+        "cancellable": true
+      }
+    ],
+    "inputLabel": "F · Punch",
+    "cancelInto": [
+      "kick",
+      "rising_break"
+    ],
+    "cancelOn": "hit"
+  },
+  {
+    "id": "kick",
+    "displayName": "Low Sweep",
+    "description": "",
+    "animation": "kick",
+    "trigger": {
+      "allowedStates": [
+        "idle",
+        "walk_forward",
+        "walk_back",
+        "crouch",
+        "block",
+        "landing"
+      ],
+      "sequence": [
+        "lk"
+      ],
+      "window": 7
+    },
+    "visualTimeline": [
+      {
+        "frame": 0,
+        "duration": 8
+      },
+      {
+        "frame": 1,
+        "duration": 5
+      },
+      {
+        "frame": 2,
+        "duration": 15
+      }
+    ],
+    "phases": [
+      {
+        "name": "startup",
+        "frames": 8,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "set_velocity",
+              "vx": 0
+            }
+          }
+        ]
+      },
+      {
+        "name": "active",
+        "frames": 5,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "hitbox_active",
+              "hitbox": {
+                "x": 24,
+                "y": -40,
+                "width": 65,
+                "height": 32,
+                "damage": 48,
+                "hitstun": 32,
+                "blockstun": 10,
+                "knockback": {
+                  "x": 1,
+                  "y": 0
+                },
+                "level": "low"
+              }
+            }
+          }
+        ],
+        "cancellable": true
+      },
+      {
+        "name": "recovery",
+        "frames": 15,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "hitbox_end"
+            }
+          }
+        ],
+        "cancellable": true
+      }
+    ],
+    "inputLabel": "G · Kick",
+    "cancelInto": [
+      "hem_slash"
+    ],
+    "cancelOn": "hit"
+  }
+]

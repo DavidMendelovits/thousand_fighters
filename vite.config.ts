@@ -10,6 +10,9 @@ export default defineConfig({
     host: '127.0.0.1',
     port: 5173,
     proxy: {
+      '/cms-admin': { target: CMS_ADMIN_TARGET, changeOrigin: true },
+      '/styles.css': { target: CMS_ADMIN_TARGET, changeOrigin: true },
+      '/app.js': { target: CMS_ADMIN_TARGET, changeOrigin: true },
       '/api': {
         target: CMS_ADMIN_TARGET,
         changeOrigin: true,
@@ -22,6 +25,8 @@ export default defineConfig({
         main: 'index.html',
         testbed: 'testbed.html',
         gym: 'gym.html',
+        animationLab: 'animation-lab.html',
+        roster: 'roster.html',
       },
     },
   },

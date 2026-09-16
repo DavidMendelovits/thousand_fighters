@@ -80,4 +80,10 @@ export class InputBuffer {
   current(): RawInput {
     return this.history[this.history.length - 1]?.raw ?? emptyInput;
   }
+
+  clear(): void { this.history = []; this.currentFrame = 0; }
+  consumeButtons(): void {
+    const buttons=new Set(['lp','mp','hp','lk','mk','hk','grab']);
+    for(const entry of this.history)entry.tokens=entry.tokens.filter(t=>!buttons.has(t));
+  }
 }
