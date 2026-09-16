@@ -600,12 +600,16 @@ export class FighterPackQaAdapter {
     let worst = 0;
     for (const [sheetId, frames] of Object.entries(sheets)) {
       if (sheetId === 'base') continue;
-      const height = medianHeight(frames);
+      // Uniform video scale is anchored to the initial reference pose. A key
+      // raised above the head or a stretched limb is reach, not body growth.
+      // This checks calibration only; semantic camera drift needs visual QA.
+      const videoUniform=frames?.every(f=>f.normalizationMode==='video-uniform'&&f.normalizationReferenceHeight>0);
+      const height = videoUniform?frames[0].normalizationReferenceHeight:medianHeight(frames);
       if (!height) continue;
       const deviation = Math.abs(height - baseHeight) / baseHeight;
       worst = Math.max(worst, deviation);
       if (deviation > 0.15) {
-        problems.push(`${sheetId}: median silhouette ${height}px vs base ${baseHeight}px (${(deviation * 100).toFixed(0)}% off)`);
+        problems.push(`${sheetId}: ${videoUniform?'reference':'median silhouette'} ${height}px vs base ${baseHeight}px (${(deviation * 100).toFixed(0)}% off)`);
       }
     }
 
@@ -619,7 +623,7 @@ export class FighterPackQaAdapter {
     return {
       id: 'frame-height-consistency',
       status: 'pass',
-      message: `All move rows are within 15% of the base silhouette height (${baseHeight}px).`,
+      message: `Row scale calibration is within 15% of base (${baseHeight}px). Video rows use the reference pose, not extension height; visual drift still requires review.`,
     };
   }
 

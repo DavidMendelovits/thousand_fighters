@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "provider": "fal",
+  "model": "fal-ai/kling-video/v3/standard/image-to-video",
+  "mode": "image-to-video",
+  "createdAt": "2026-09-16T20:55:35.745Z",
+  "transportStatus": "downloading",
+  "qualityStatus": "unreviewed",
+  "request": {
+    "prompt": "Animate ONLY the single reference fighter, facing RIGHT, fixed side-view camera. Crisp 16-bit pixel art, identical costume, silhouette, palette and proportions. Solid flat #ff00ff background throughout, no floor, no shadows, no camera motion, no opponent, no text. Keep the entire actor, longest extensions and all props at least 15% away from EVERY camera edge through the whole motion; do not zoom in. Animate in place; the game engine supplies world movement. Action: get up — rise from low knockdown into ready stance. Interpret these six frame roles as six consecutive key moments of this video: frame 1 low grounded recovery, 2 plant support, 3 lift torso, 4 rising, 5 balance, 6 ready stance. CHARACTER BODY PASS ONLY: no explosions, muzzle flashes, impact bursts, detached projectiles or lingering trails. Those are separate runtime VFX/entities, not pixels baked into this body animation. Motion brief: A dockside prizefighter with too many arms and a strict no-hooks policy. The policy refers only to fishing equipment. Move: get up — rise from low knockdown into ready stance. Side-view fighting game sprite row. Magenta background, full body visible, generous gutters, no cropping.",
+    "duration": "5",
+    "orientation": null,
+    "audio": false,
+    "references": {
+      "image": {
+        "kind": "file",
+        "path": "/Users/davidmendelovits/space/thousand_fighters/artifacts/workbench-video-jobs/0a1d4e20-f40e-4f05-97fe-695a03b10429/reference.png",
+        "contentType": "image/png",
+        "bytes": 10533,
+        "sha256": "8a1ffb1a14875cf5a64ccf86d079cb9d320a645a9fd6f387b944805fe95e611a",
+        "width": 512,
+        "height": 512
+      }
+    },
+    "payloadSha256": "5210c6cfbc360dcde3a46e7fd4341c4714bed184f448ddcd919a193b0a0792e2"
+  },
+  "submissionAttempts": 1,
+  "task": {
+    "requestId": "01a0ac00-e98a-79a2-87f9-9360444408d5",
+    "model": "fal-ai/kling-video/v3/standard/image-to-video",
+    "statusUrl": "https://queue.fal.run/fal-ai/kling-video/requests/01a0ac00-e98a-79a2-87f9-9360444408d5/status",
+    "responseUrl": "https://queue.fal.run/fal-ai/kling-video/requests/01a0ac00-e98a-79a2-87f9-9360444408d5"
+  },
+  "updatedAt": "2026-09-16T20:55:36.230Z",
+  "remoteStatus": "COMPLETED",
+  "lastError": {
+    "at": "2026-09-16T20:55:36.230Z",
+    "kind": "Error",
+    "statusCode": 403,
+    "message": "Run failed after submission. Resume this directory; do not create a duplicate generation.",
+    "diagnostics": [
+      {
+        "type": "provider_error",
+        "location": [],
+        "message": "User is locked. Reason: TOP_UP."
+      }
+    ]
+  }
+}

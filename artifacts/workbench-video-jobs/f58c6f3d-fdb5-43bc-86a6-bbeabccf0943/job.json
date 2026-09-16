@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "provider": "fal",
+  "model": "fal-ai/kling-video/v3/standard/image-to-video",
+  "mode": "image-to-video",
+  "createdAt": "2026-09-16T20:55:35.807Z",
+  "transportStatus": "submitting",
+  "qualityStatus": "unreviewed",
+  "request": {
+    "prompt": "Animate ONLY the single reference fighter, facing RIGHT, fixed side-view camera. Crisp 16-bit pixel art, identical costume, silhouette, palette and proportions. Solid flat #ff00ff background throughout, no floor, no shadows, no camera motion, no opponent, no text. Keep the entire actor, longest extensions and all props at least 15% away from EVERY camera edge through the whole motion; do not zoom in. Animate in place; the game engine supplies world movement. Action: grab — this single fighter alone mimes a grab on empty air: reach out, close both hands on nothing, and hold the clench. NO second character, no opponent, no other body anywhere — only this one fighter. Interpret these six frame roles as six consecutive key moments of this video: ONLY this one fighter is in frame (no opponent, no second body): frames 1-2 = reach/lunge forward into empty air, frame 3 = hand extends forward toward nothing, frame 4 = hands clench shut on empty air (the grab mime, gripping an invisible target), frame 5 = pulling the clenched hands inward, frame 6 = holding the clench with both hands closed on nothing. CHARACTER BODY PASS ONLY: no explosions, muzzle flashes, impact bursts, detached projectiles or lingering trails. Those are separate runtime VFX/entities, not pixels baked into this body animation. Motion brief: A dockside prizefighter with too many arms and a strict no-hooks policy. The policy refers only to fishing equipment. Move: grab — this single fighter alone mimes a grab on empty air: reach out, close both hands on nothing, and hold the clench. NO second character, no opponent, no other body anywhere — only this one fighter. Side-view fighting game sprite row. Magenta background, full body visible, generous gutters, no cropping.",
+    "duration": "5",
+    "orientation": null,
+    "audio": false,
+    "references": {
+      "image": {
+        "kind": "file",
+        "path": "/Users/davidmendelovits/space/thousand_fighters/artifacts/workbench-video-jobs/f58c6f3d-fdb5-43bc-86a6-bbeabccf0943/reference.png",
+        "contentType": "image/png",
+        "bytes": 10533,
+        "sha256": "8a1ffb1a14875cf5a64ccf86d079cb9d320a645a9fd6f387b944805fe95e611a",
+        "width": 512,
+        "height": 512
+      }
+    },
+    "payloadSha256": "1c5d1eaace4e38c20f6bf38423ee89452dceb74e77b928fd2810c0c0b08215c9"
+  },
+  "submissionAttempts": 1,
+  "lastError": {
+    "at": "2026-09-16T20:55:36.089Z",
+    "kind": "Error",
+    "statusCode": 403,
+    "message": "Submission not confirmed. Inspect provider history before any new submission.",
+    "diagnostics": [
+      {
+        "type": "provider_error",
+        "location": [],
+        "message": "User is locked. Reason: Exhausted balance. Top up your balance at fal.ai/dashboard/billing."
+      }
+    ]
+  },
+  "updatedAt": "2026-09-16T20:55:36.089Z"
+}

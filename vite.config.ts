@@ -13,6 +13,7 @@ export default defineConfig({
       '/cms-admin': { target: CMS_ADMIN_TARGET, changeOrigin: true },
       '/styles.css': { target: CMS_ADMIN_TARGET, changeOrigin: true },
       '/app.js': { target: CMS_ADMIN_TARGET, changeOrigin: true },
+      '/moveInspector.js': { target: CMS_ADMIN_TARGET, changeOrigin: true },
       '/api': {
         target: CMS_ADMIN_TARGET,
         changeOrigin: true,

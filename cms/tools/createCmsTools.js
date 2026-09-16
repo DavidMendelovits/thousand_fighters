@@ -3,6 +3,7 @@ import { exportCharacterToRuntime } from '../export/exportCharacterToRuntime.js'
 import { build as buildAssetsIndex } from '../../scripts/build_assets_index.mjs';
 import { SHEET_IDS } from '../../shared/animationRows.js';
 import {validateCombatRules} from '../export/validateCombatRules.js';
+import {importPublishedCharacter} from '../import/importPublishedCharacter.js';
 import { validateCombos, validateProjectiles, validateProjectileReferences } from '../export/convertDraftToCharacterConfig.js';
 
 // Row ids an agent can generate, sourced from the registry so the tool schema
@@ -20,6 +21,11 @@ function assertRowId(moveId) {
 
 export function createCmsTools({ pipeline, repository, registry }) {
   const tools = [
+    {
+      name:'import_published_character',description:'Import one published fighter into the workbench, preserving its authored combat mechanics. Refuses to overwrite an existing draft. No paid generation.',
+      inputSchema:objectSchema({characterId:stringSchema('Existing published fighter id.')},['characterId']),
+      execute:async({characterId})=>({draft:await importPublishedCharacter({characterId,repository})}),
+    },
     {
       name: 'list_characters',
       description: 'List character records known to the CMS.',
@@ -285,12 +291,13 @@ export function createCmsTools({ pipeline, repository, registry }) {
       inputSchema: objectSchema({
         characterId: stringSchema('Character id.'),
         sourceAssetKey: stringSchema('CMS key of the source row sheet to extract from.'),
+        videoSampleTimes:{type:'array',items:{type:'number'},minItems:6,maxItems:6,description:'Optional six increasing seconds in the saved five-second video; first must be 0. Reuses saved video, no provider request.'},
         moveId: stringSchema(`Row id (one of: ${ROW_ID_LIST}).`),
         spriteProfile: stringSchema('Sprite profile used at generation time: standard (1x6 row) or wide (2x3 grid). Defaults to standard.'),
       }, ['characterId', 'sourceAssetKey', 'moveId']),
-      execute: async ({ characterId, sourceAssetKey, moveId, spriteProfile }) => {
+      execute: async ({ characterId, sourceAssetKey, moveId, spriteProfile, videoSampleTimes }) => {
         assertRowId(moveId);
-        return pipeline.extractRowFrames({ characterId, sourceAssetKey, moveId, spriteProfile: spriteProfile || undefined });
+        return pipeline.extractRowFrames({ characterId, sourceAssetKey, moveId, videoSampleTimes, spriteProfile: spriteProfile || undefined });
       },
     },
     {

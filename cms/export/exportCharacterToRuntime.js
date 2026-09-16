@@ -88,6 +88,14 @@ export async function exportCharacterToRuntime({ runtime, characterId, outputDir
     }
 
     const assetDirsToSync = ['sheets', 'sprites', 'projectiles'];
+    // Imported packs can declare a root-level atlas (e.g. poses.png), not
+    // only sheets/*.png. Keep fresh exports portable, not dependent on an
+    // older public directory happening to contain that atlas.
+    for(const fileName of new Set(Object.values(manifest?.sheets??{}))){
+      if(typeof fileName!=='string'||!/^[\w.-]+\.(png|webp)$/i.test(fileName))continue;
+      const key=`${assetRoot}/${fileName}`;
+      if(await storage.exists(key)){const dest=path.join(characterOutputDir,fileName);await writeFile(dest,await storage.getBytes(key));filesCopied.push(dest);}
+    }
     for (const subDir of assetDirsToSync) {
       const storagePrefix = `${assetRoot}/${subDir}`;
       const destDir = path.join(characterOutputDir, subDir);

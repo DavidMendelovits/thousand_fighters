@@ -286,7 +286,8 @@ function h3PromptFor(request) {
   ].filter(Boolean).join('\n');
 }
 
-export async function composeSpriteSheetWithFfmpeg({ videoBytes, task, duration, ffmpegBin = 'ffmpeg' }) {
+export async function composeSpriteSheetWithFfmpeg({ videoBytes, task, duration, sampleTimes, ffmpegBin = 'ffmpeg' }) {
+  if(sampleTimes!==undefined&&(!Array.isArray(sampleTimes)||sampleTimes.length!==6||sampleTimes[0]!==0||sampleTimes.some((t,i)=>!Number.isFinite(t)||t<0||t>Number(duration)-.05||(i>0&&t<=sampleTimes[i-1]))))throw new Error('Choose six increasing sample times, starting at 0 and ending before the video ends.');
   const tempDir = await mkdtemp(path.join(os.tmpdir(), 'tf-minimax-h3-'));
   try {
     const inputPath = path.join(tempDir, 'source.mp4');
@@ -302,7 +303,9 @@ export async function composeSpriteSheetWithFfmpeg({ videoBytes, task, duration,
     const rows = wide ? 2 : 1;
     const safeDuration = Math.max(1, Number(duration) || DEFAULT_DURATION_SECONDS);
     const filter = [
-      `fps=6/${safeDuration}`,
+      // Keep the actual reference frame at t=0. fps used a midpoint sample,
+      // sometimes already crouched, corrupting normalization's scale anchor.
+      sampleTimes?`select='${sampleTimes.map((t,i)=>`eq(selected_n,${i})*gte(t,${t})`).join('+')}'`:`select='eq(n,0)+gte(t-prev_selected_t,${safeDuration/6})'`,
       `scale=${pixelWidth}:${pixelHeight}:force_original_aspect_ratio=decrease:flags=area`,
       `pad=${pixelWidth}:${pixelHeight}:(ow-iw)/2:(oh-ih)/2:color=0xFF00FF`,
       `scale=${cellWidth}:${cellHeight}:flags=neighbor`,

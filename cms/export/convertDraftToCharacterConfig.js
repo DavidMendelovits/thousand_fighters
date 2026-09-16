@@ -51,6 +51,9 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
   return {
     id,
     displayName: draft.displayName ?? id,
+    ...(draft.rosterGroup?{rosterGroup:draft.rosterGroup}:{}),
+    ...(draft.concept?{concept:draft.concept}:{}),
+    ...(draft.pushboxWidth?{pushboxWidth:draft.pushboxWidth}:{}),
     stats: draft.combatStats ?? Object.fromEntries(['attack','defense','projectileAttack','projectileDefense','speed','weight','knockback','size'].filter(k=>typeof stats[k]==='number').map(k=>[k,stats[k]])),
     powerUps: draft.powerUps ?? [],
     forms: draft.forms ?? [],
@@ -65,11 +68,11 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
     pivotOffsetY: 0,
     sprite: buildSpriteConfig({ draft, frameData, manifest, scale }),
     // Measured hurtboxes first, then gym overrides win (D2).
-    hurtboxes: applyHurtboxOverrides(generateDefaultHurtboxes(frameData, scale), overrides.hurtboxes, scale),
+    hurtboxes: applyHurtboxOverrides(draft.geometryMode==='authored-runtime'?structuredClone(draft.hurtboxes):generateDefaultHurtboxes(frameData, scale), overrides.hurtboxes, scale),
     // Guard boxes are override-only — no measured/default pass. Fighters with no
     // gym-authored guardboxes get an empty map and fall back to the legacy
     // level/crouch logic in HitResolver (T17).
-    guardboxes: applyGuardboxOverrides({}, overrides.guardboxes, scale),
+    guardboxes: applyGuardboxOverrides(draft.geometryMode==='authored-runtime'?structuredClone(draft.guardboxes??{}):{}, overrides.guardboxes, scale),
     animations: {
       idle: 'idle',
       walk_forward: 'walk_forward',
@@ -87,7 +90,7 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
     moves: resolveProjectileEntities(
       applyComboChaining(
         (draft.moves ?? []).map((draftMove) =>
-          convertMove(draftMove, { frameData, scale, hitboxOverrides: overrides.hitboxes?.[draftMove.id] })),
+          convertMove(draftMove, { frameData, scale, preserveGeometry:draft.geometryMode==='authored-runtime',hitboxOverrides: overrides.hitboxes?.[draftMove.id] })),
         draft.combos,
       ),
       draft.projectiles,
@@ -450,6 +453,7 @@ function deriveSpriteScale(sprite, frameData) {
   const adjust = typeof sprite.scaleAdjust === 'number' && sprite.scaleAdjust > 0
     ? sprite.scaleAdjust
     : 1;
+  if(sprite.scaleMode==='authored-reference')return (sprite.scale??1)*adjust*(sprite.relativeHeight??1);
 
   const heights = (frameData?.frames?.base ?? [])
     .map((frame) => frame.silhouetteHeight)
@@ -514,6 +518,7 @@ function buildSpriteConfig({ draft, frameData, manifest, scale }) {
       knockdown: 4,
       getup: 2,
       dead: 4,
+      ...(sprite.stateFrames??{}),
     },
   };
 }
@@ -671,6 +676,7 @@ function convertMove(draftMove, context = {}) {
     cancelInto: draftMove.cancelInto ?? [],
     ...(draftMove.cancelOn ? {cancelOn:draftMove.cancelOn} : {}),
     ...(draftMove.cost ? {cost:draftMove.cost} : {}),
+    ...Object.fromEntries(['airOk','groundOk','endState','extension','description','inputLabel'].filter(k=>draftMove[k]!==undefined).map(k=>[k,structuredClone(draftMove[k])])),
   };
   if (Array.isArray(draftMove.visualTimeline) && draftMove.visualTimeline.length) {
     move.visualTimeline = draftMove.visualTimeline;
@@ -679,7 +685,7 @@ function convertMove(draftMove, context = {}) {
   // Carve disabled frames out of active windows BEFORE measuring geometry, so each
   // surviving sub-window gets its own geometry track.
   applyDisabledHitboxFrames(move, context.frameData?.frames?.[animation]);
-  applyMeasuredHitboxGeometry(move, context.frameData?.frames?.[animation], context.scale ?? 1);
+  if(!context.preserveGeometry)applyMeasuredHitboxGeometry(move, context.frameData?.frames?.[animation], context.scale ?? 1);
   // Gym geometry overrides win over the measured pass (D2/A4).
   applyHitboxOverrides(move, context.hitboxOverrides, context.scale ?? 1);
   return move;
@@ -975,6 +981,7 @@ function collectUnclosedHitboxIds(allPhases, targetPhaseIndex, moveId) {
  */
 function convertEvent(draftEvent, moveId, phaseIndex, eventIndex) {
   if (!draftEvent) return { type: 'hitbox_end' };
+  if(draftEvent.type==='spawn_effect')return {type:'spawn_effect',effect:structuredClone(draftEvent.effect),offsetX:draftEvent.offsetX??0,offsetY:draftEvent.offsetY??0,attached:Boolean(draftEvent.attached)};
   if(draftEvent.type==='transform')return {type:'transform',formId:draftEvent.formId};
   if(draftEvent.type==='revert_form')return {type:'revert_form'};
   if(draftEvent.type==='power_up')return {type:'power_up',power:draftEvent.power};

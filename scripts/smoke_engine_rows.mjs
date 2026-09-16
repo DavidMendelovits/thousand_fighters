@@ -55,9 +55,9 @@ test('owning only crouch does NOT redirect blockstun (per-row gate, not all-or-n
 });
 
 console.log('\n[B] resolveStateSheet — unmapped states always render base');
-test('idle / hitstun / landing / dead have no row mapping (stay base even if owned)', () => {
+test('idle / landing / dead have no row mapping (stay base even if owned)', () => {
   const ownsEverything = () => true;
-  for (const state of ['idle', 'hitstun', 'landing', 'getup', 'knockdown', 'dead', 'attack', 'juggle', 'grabbed']) {
+  for (const state of ['idle', 'landing', 'knockdown', 'dead', 'attack']) {
     assert.equal(resolveStateSheet(state, ownsEverything), 'base', `${state} must render base`);
   }
 });
@@ -68,8 +68,12 @@ test('walk states render their own row when owned, else base', () => {
   assert.equal(resolveStateSheet('walk_forward', ownsNothing), 'base');
   assert.equal(resolveStateSheet('walk_back', ownsNothing), 'base');
 });
-test('STATE_ROW_MAP covers exactly the five state-driven rows', () => {
-  assert.deepEqual([...new Set(Object.values(STATE_ROW_MAP))].sort(), ['block', 'crouch', 'jump', 'walk_back', 'walk_forward']);
+test('hurt / getup use owned rows with legacy fallback',()=>{
+  for(const state of ['hitstun','stunned','juggle','grabbed']){assert.equal(resolveStateSheet(state,ownsRows('hurt')),'hurt');assert.equal(resolveStateSheet(state,ownsNothing),'base');}
+  assert.equal(resolveStateSheet('getup',ownsRows('getup')),'getup');assert.equal(resolveStateSheet('getup',ownsNothing),'base');
+});
+test('STATE_ROW_MAP covers exactly the seven state-driven rows', () => {
+  assert.deepEqual([...new Set(Object.values(STATE_ROW_MAP))].sort(), ['block', 'crouch', 'getup', 'hurt', 'jump', 'walk_back', 'walk_forward']);
   // dash/grab/throw must NOT be state-mapped.
   for (const row of ['dash_forward', 'dash_back', 'grab', 'throw']) {
     assert.ok(!Object.values(STATE_ROW_MAP).includes(row), `${row} must not be state-mapped`);

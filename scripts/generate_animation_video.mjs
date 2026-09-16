@@ -125,10 +125,12 @@ export async function runVideoJob(options, { adapter, log = console.log } = {}) 
     // Only update a record that this invocation created or loaded. Avoid overwriting
     // another job when exclusive initial creation failed.
     if (job && error.code !== 'EEXIST') {
+      if(!job.task?.requestId&&[400,401,403,422].includes(error.statusCode))job.transportStatus='submission-rejected';
       if (job.remoteStatus === 'COMPLETED' && error.statusCode === 422) job.transportStatus = 'provider-rejected';
       job.lastError = { at: new Date().toISOString(), kind: error.name ?? 'Error', statusCode: error.statusCode ?? null,
         message: job.task?.requestId ? 'Run failed after submission. Resume this directory; do not create a duplicate generation.' : 'Submission not confirmed. Inspect provider history before any new submission.' };
       if (job.transportStatus === 'provider-rejected') job.lastError.message = 'Provider rejected this task. Resume only re-reads this result; corrected inputs require a deliberate new submission in a new output directory.';
+      if(job.transportStatus==='submission-rejected')job.lastError.message='Provider rejected the submission before issuing a task id. After correcting the cause, explicitly regenerate to create a new job.';
       if (error.diagnostics?.length) job.lastError.diagnostics = error.diagnostics;
       await checkpoint();
     }

@@ -17,12 +17,17 @@ import type { FighterState } from '../schema/types';
  * Out of scope here:
  * - grab/throw are move-triggered (MOVE_SHEETS), not state-driven — they never
  *   appear in this map.
- * - dash_forward/dash_back have no FighterState, so they cannot play; they are
- *   authorable rows only (documented gap).
+ * - dash_forward/dash_back are selected separately by Fighter from the dash
+ *   direction; air-dodge/wavedash reuse owned jump/crouch rows.
  */
 
 /** FighterState → the row id the engine plays when the fighter owns that row. */
 export const STATE_ROW_MAP: Partial<Record<FighterState, string>> = {
+  hitstun:'hurt',
+  stunned:'hurt',
+  juggle:'hurt',
+  grabbed:'hurt',
+  getup:'getup',
   jump_startup: 'jump',
   airborne: 'jump',
   crouch: 'crouch',
@@ -72,4 +77,9 @@ export function stateRowFrame(elapsed: number, frameCount: number, loop = false)
   if (frameCount <= 1) return 0;
   const advanced = Math.floor(Math.max(0, elapsed) / STATE_ROW_TICKS);
   return loop ? advanced % frameCount : Math.min(advanced, frameCount - 1);
+}
+
+/** Reactions complete within their actual gameplay lock, including a 6-tick interrupt. */
+export function timedStateRowFrame(elapsed:number,frameCount:number,duration:number):number {
+  return Math.min(Math.max(0,frameCount-1),Math.floor(Math.max(0,elapsed)*frameCount/Math.max(1,duration)));
 }

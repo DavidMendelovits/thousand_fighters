@@ -394,6 +394,15 @@ button:disabled {
 }
 
 .character-workbench > * { min-width: 0; }
+.move-inspector { border-top:1px solid var(--line); margin-top:14px; padding-top:12px; }
+.move-inspector summary { cursor:pointer; color:var(--accent); font-weight:650; }
+.move-inspector p { font-size:12px; line-height:1.6; }
+.move-inspector fieldset { min-width:0; border:1px solid var(--line); margin:12px 0; padding:10px; }
+.move-inspector label { display:block; font-size:12px; margin:8px 0; }
+.move-inspector input:not([type=checkbox]),.move-inspector select { width:100%; min-width:0; }
+.tune-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:8px; }
+.effect-preview { display:block; width:100%; height:auto; margin-top:10px; image-rendering:pixelated; background:#111922; }
+.frame-advantage { color:var(--accent-2); }
 
 .empty-state {
   min-height: 360px;
@@ -1480,9 +1489,8 @@ details[open] .dev-tools-summary {
   }
 
   .roster-panel {
-    position: sticky;
-    top: 0;
-    z-index: 2;
+    /* Keep long move editors unobstructed on a narrow screen. */
+    position: static;
   }
 
   .character-list {

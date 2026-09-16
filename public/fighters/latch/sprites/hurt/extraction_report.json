@@ -1,0 +1,317 @@
+{
+  "source": "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-extract-JGt62Z/source.png",
+  "moveId": "hurt",
+  "sourceSize": [
+    3072,
+    512
+  ],
+  "grid": [
+    1,
+    6
+  ],
+  "frameCount": 6,
+  "sourceBoundaryChecked": true,
+  "segmentation": "connected-components",
+  "medianSilhouetteHeight": 128,
+  "scaleApplied": 2.2109375,
+  "warnings": [
+    "row rescaled by 2.211 to match target silhouette height 283px (was 128px)",
+    "frame 2: 0.5% of opaque pixels remain near-magenta after despill"
+  ],
+  "frames": [
+    {
+      "file": "hurt_001.png",
+      "frameIndex": 1,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -116,
+        "y": -275,
+        "width": 301,
+        "height": 275
+      },
+      "attackBox": {
+        "x": 192,
+        "y": -124,
+        "width": 22,
+        "height": 53
+      },
+      "empty": false,
+      "width": 344,
+      "height": 293,
+      "anchor": {
+        "x": 126,
+        "y": 287
+      },
+      "reachX": 213,
+      "silhouetteHeight": 283
+    },
+    {
+      "file": "hurt_002.png",
+      "frameIndex": 2,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -102,
+        "y": -270,
+        "width": 440,
+        "height": 270
+      },
+      "attackBox": {
+        "x": 192,
+        "y": -230,
+        "width": 164,
+        "height": 88
+      },
+      "empty": false,
+      "width": 477,
+      "height": 293,
+      "anchor": {
+        "x": 117,
+        "y": 287
+      },
+      "reachX": 355,
+      "silhouetteHeight": 283
+    },
+    {
+      "file": "hurt_003.png",
+      "frameIndex": 3,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -215,
+        "y": -362,
+        "width": 604,
+        "height": 362
+      },
+      "attackBox": {
+        "x": 206,
+        "y": -433,
+        "width": 203,
+        "height": 406
+      },
+      "empty": false,
+      "width": 645,
+      "height": 443,
+      "anchor": {
+        "x": 232,
+        "y": 437
+      },
+      "reachX": 408,
+      "silhouetteHeight": 433
+    },
+    {
+      "file": "hurt_004.png",
+      "frameIndex": 4,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -222,
+        "y": -280,
+        "width": 306,
+        "height": 280
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 344,
+      "height": 293,
+      "anchor": {
+        "x": 232,
+        "y": 287
+      },
+      "reachX": 107,
+      "silhouetteHeight": 283
+    },
+    {
+      "file": "hurt_005.png",
+      "frameIndex": 5,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -134,
+        "y": -277,
+        "width": 276,
+        "height": 277
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 326,
+      "height": 293,
+      "anchor": {
+        "x": 161,
+        "y": 287
+      },
+      "reachX": 160,
+      "silhouetteHeight": 283
+    },
+    {
+      "file": "hurt_006.png",
+      "frameIndex": 6,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -102,
+        "y": -273,
+        "width": 453,
+        "height": 273
+      },
+      "attackBox": {
+        "x": 192,
+        "y": -212,
+        "width": 181,
+        "height": 88
+      },
+      "empty": false,
+      "width": 503,
+      "height": 293,
+      "anchor": {
+        "x": 126,
+        "y": 287
+      },
+      "reachX": 372,
+      "silhouetteHeight": 283
+    }
+  ],
+  "frameData": [
+    {
+      "file": "sprites/hurt/hurt_001.png",
+      "width": 344,
+      "height": 293,
+      "anchor": {
+        "x": 126,
+        "y": 287
+      },
+      "reachX": 213,
+      "silhouetteHeight": 283,
+      "hurtbox": {
+        "x": -116,
+        "y": -275,
+        "width": 301,
+        "height": 275
+      },
+      "attackBox": {
+        "x": 192,
+        "y": -124,
+        "width": 22,
+        "height": 53
+      },
+      "sourceClipped": false,
+      "normalizationMode": "video-uniform",
+      "normalizationReferenceHeight": 283
+    },
+    {
+      "file": "sprites/hurt/hurt_002.png",
+      "width": 477,
+      "height": 293,
+      "anchor": {
+        "x": 117,
+        "y": 287
+      },
+      "reachX": 355,
+      "silhouetteHeight": 283,
+      "hurtbox": {
+        "x": -102,
+        "y": -270,
+        "width": 440,
+        "height": 270
+      },
+      "attackBox": {
+        "x": 192,
+        "y": -230,
+        "width": 164,
+        "height": 88
+      },
+      "sourceClipped": false,
+      "normalizationMode": "video-uniform",
+      "normalizationReferenceHeight": 283
+    },
+    {
+      "file": "sprites/hurt/hurt_003.png",
+      "width": 645,
+      "height": 443,
+      "anchor": {
+        "x": 232,
+        "y": 437
+      },
+      "reachX": 408,
+      "silhouetteHeight": 433,
+      "hurtbox": {
+        "x": -215,
+        "y": -362,
+        "width": 604,
+        "height": 362
+      },
+      "attackBox": {
+        "x": 206,
+        "y": -433,
+        "width": 203,
+        "height": 406
+      },
+      "sourceClipped": false,
+      "normalizationMode": "video-uniform",
+      "normalizationReferenceHeight": 283
+    },
+    {
+      "file": "sprites/hurt/hurt_004.png",
+      "width": 344,
+      "height": 293,
+      "anchor": {
+        "x": 232,
+        "y": 287
+      },
+      "reachX": 107,
+      "silhouetteHeight": 283,
+      "hurtbox": {
+        "x": -222,
+        "y": -280,
+        "width": 306,
+        "height": 280
+      },
+      "attackBox": null,
+      "sourceClipped": false,
+      "normalizationMode": "video-uniform",
+      "normalizationReferenceHeight": 283
+    },
+    {
+      "file": "sprites/hurt/hurt_005.png",
+      "width": 326,
+      "height": 293,
+      "anchor": {
+        "x": 161,
+        "y": 287
+      },
+      "reachX": 160,
+      "silhouetteHeight": 283,
+      "hurtbox": {
+        "x": -134,
+        "y": -277,
+        "width": 276,
+        "height": 277
+      },
+      "attackBox": null,
+      "sourceClipped": false,
+      "normalizationMode": "video-uniform",
+      "normalizationReferenceHeight": 283
+    },
+    {
+      "file": "sprites/hurt/hurt_006.png",
+      "width": 503,
+      "height": 293,
+      "anchor": {
+        "x": 126,
+        "y": 287
+      },
+      "reachX": 372,
+      "silhouetteHeight": 283,
+      "hurtbox": {
+        "x": -102,
+        "y": -273,
+        "width": 453,
+        "height": 273
+      },
+      "attackBox": {
+        "x": 192,
+        "y": -212,
+        "width": 181,
+        "height": 88
+      },
+      "sourceClipped": false,
+      "normalizationMode": "video-uniform",
+      "normalizationReferenceHeight": 283
+    }
+  ]
+}

@@ -5,8 +5,12 @@ import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {runVideoJob} from '../../../scripts/generate_animation_video.mjs';
 import {composeSpriteSheetWithFfmpeg} from './minimaxH3SpriteSheetGeneratorAdapter.js';
+import {rowPromptProfile} from '../rowPromptProfiles.js';
 const exec=promisify(execFile);
 const inFlight = new Map();
+// A definitive HTTP rejection is different from an ambiguous lost response.
+// Only a later explicit Generate/Regen click may submit a replacement.
+export function isRejectedSubmission(job){return !job.task?.requestId&&[400,401,403,422].includes(job.lastError?.statusCode);}
 
 /** Same durable video transport as the CLI, now reachable through the authoring UI. */
 export async function generateWorkbenchVideoRow(request) {
@@ -23,7 +27,8 @@ async function generateExclusive({characterId,moveId,prompt,task,storage,reposit
   const referenceKey=`characters/${characterId}/assets/fighter-pack/sprites/base/base_001.png`;
   if(!await storage.exists(referenceKey))throw new Error('Generate and extract the base row before creating video motion.');
   const bytes=await storage.getBytes(referenceKey);
-  const motionPrompt=`Animate ONLY the single reference fighter, facing RIGHT, fixed side-view camera. Crisp 16-bit pixel art, identical costume, silhouette, palette and proportions. Solid flat #ff00ff background throughout, no floor, no shadows, no camera motion, no opponent, no text. Keep the entire actor, longest extensions and all props at least 15% away from EVERY camera edge through the whole motion; do not zoom in. Perform ONE ${moveId} action: anticipate, execute with a clear strongest contact pose in the middle, follow through, then recover to the initial ready stance. CHARACTER BODY PASS ONLY: no explosions, muzzle flashes, impact bursts, detached projectiles or lingering trails. Those are separate runtime VFX/entities, not pixels baked into this body animation. Motion brief: ${prompt}`;
+  const profile=rowPromptProfile(moveId);
+  const motionPrompt=`Animate ONLY the single reference fighter, facing RIGHT, fixed side-view camera. Crisp 16-bit pixel art, identical costume, silhouette, palette and proportions. Solid flat #ff00ff background throughout, no floor, no shadows, no camera motion, no opponent, no text. Keep the entire actor, longest extensions and all props at least 15% away from EVERY camera edge through the whole motion; do not zoom in. Animate in place; the game engine supplies world movement. Action: ${profile.description}. Interpret these six frame roles as six consecutive key moments of this video: ${profile.frameRoles}. CHARACTER BODY PASS ONLY: no explosions, muzzle flashes, impact bursts, detached projectiles or lingering trails. Those are separate runtime VFX/entities, not pixels baked into this body animation. Motion brief: ${prompt}`;
   const fingerprint=createHash('sha256').update(bytes).update(motionPrompt).update(task).digest('hex');
   const pointerKey=`characters/${characterId}/assets/jobs/${moveId}_video.json`;
   const previous = await storage.exists(pointerKey) ? await storage.getJson(pointerKey) : null;
@@ -33,7 +38,7 @@ async function generateExclusive({characterId,moveId,prompt,task,storage,reposit
     const candidate=path.join(jobsRoot,previous.jobId);
     // A missing/corrupt checkpoint is not permission to submit another paid job.
     const job=JSON.parse(await readFile(path.join(candidate,'job.json'),'utf8'));
-    if(job.transportStatus!=='downloaded'){directory=candidate;resume=true;}
+    if(job.transportStatus!=='downloaded'&&!isRejectedSubmission(job)){directory=candidate;resume=true;}
   }
   const started=Date.now();
   if(!directory){

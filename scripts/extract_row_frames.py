@@ -648,7 +648,10 @@ def extract_frames(
             attack_box = None
         else:
             pivot = None
-            if video_source and video_origin is not None:
+            # Locomotion is supplied by physics. Do not apply the camera-space
+            # jump/walk translation a second time through the sprite pivot.
+            locomotion = move_id in ('jump', 'walk_forward', 'walk_back', 'dash_forward', 'dash_back')
+            if video_source and video_origin is not None and not locomotion:
                 pivot = tuple((video_origin[axis] - source_bounds[i][axis]) * scale_applied for axis in (0, 1))
             frame, meta = normalize_frame(silhouette, pivot)
             residue = magenta_residue_ratio(frame)
@@ -683,6 +686,7 @@ def extract_frames(
             "hurtbox": hurtbox,
             "attackBox": attack_box,
             "sourceClipped": edge_touches[i],
+            **({"normalizationMode": "video-uniform", "normalizationReferenceHeight": round(median_height * scale_applied)} if video_source else {}),
         })
 
     assemble_sheet(frames, metas, output_dir / "sheet.png")

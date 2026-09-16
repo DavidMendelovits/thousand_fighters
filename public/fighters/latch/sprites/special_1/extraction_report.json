@@ -1,5 +1,5 @@
 {
-  "source": "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-extract-vXShyO/source.png",
+  "source": "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-extract-JPDndX/source.png",
   "moveId": "special_1",
   "sourceSize": [
     3072,
@@ -10,11 +10,12 @@
     6
   ],
   "frameCount": 6,
+  "sourceBoundaryChecked": true,
   "segmentation": "connected-components",
-  "medianSilhouetteHeight": 272,
-  "scaleApplied": 1.0404411764705883,
+  "medianSilhouetteHeight": 264,
+  "scaleApplied": 1.071969696969697,
   "warnings": [
-    "row rescaled by 1.040 to match target silhouette height 283px (was 272px)"
+    "row rescaled by 1.072 to match target silhouette height 283px (was 264px)"
   ],
   "frames": [
     {
@@ -22,20 +23,25 @@
       "frameIndex": 1,
       "edgeTouch": false,
       "hurtbox": {
-        "x": -119,
+        "x": -123,
         "y": -272,
-        "width": 292,
+        "width": 301,
         "height": 272
       },
-      "attackBox": null,
+      "attackBox": {
+        "x": 192,
+        "y": -103,
+        "width": 2,
+        "height": 26
+      },
       "empty": false,
-      "width": 324,
+      "width": 334,
       "height": 293,
       "anchor": {
-        "x": 132,
+        "x": 136,
         "y": 287
       },
-      "reachX": 187,
+      "reachX": 193,
       "silhouetteHeight": 283
     },
     {
@@ -43,245 +49,278 @@
       "frameIndex": 2,
       "edgeTouch": false,
       "hurtbox": {
-        "x": -105,
-        "y": -252,
-        "width": 266,
-        "height": 248
+        "x": -113,
+        "y": -257,
+        "width": 298,
+        "height": 261
       },
-      "attackBox": null,
+      "attackBox": {
+        "x": 192,
+        "y": -137,
+        "width": 11,
+        "height": 34
+      },
       "empty": false,
-      "width": 299,
-      "height": 272,
+      "width": 334,
+      "height": 280,
       "anchor": {
-        "x": 124,
-        "y": 266
+        "x": 127,
+        "y": 270
       },
-      "reachX": 170,
-      "silhouetteHeight": 258
+      "reachX": 202,
+      "silhouetteHeight": 270
     },
     {
       "file": "special_1_003.png",
       "frameIndex": 3,
       "edgeTouch": false,
       "hurtbox": {
-        "x": -197,
-        "y": -246,
-        "width": 352,
-        "height": 246
+        "x": -177,
+        "y": -247,
+        "width": 326,
+        "height": 256
       },
       "attackBox": null,
       "empty": false,
-      "width": 391,
-      "height": 264,
+      "width": 360,
+      "height": 276,
       "anchor": {
-        "x": 215,
-        "y": 258
+        "x": 196,
+        "y": 261
       },
-      "reachX": 171,
-      "silhouetteHeight": 254
+      "reachX": 159,
+      "silhouetteHeight": 266
     },
     {
       "file": "special_1_004.png",
       "frameIndex": 4,
       "edgeTouch": false,
       "hurtbox": {
-        "x": -108,
-        "y": -385,
-        "width": 320,
-        "height": 381
+        "x": -111,
+        "y": -392,
+        "width": 323,
+        "height": 396
       },
       "attackBox": {
         "x": 192,
-        "y": -408,
-        "width": 38,
-        "height": 92
+        "y": -420,
+        "width": 37,
+        "height": 103
       },
       "empty": false,
-      "width": 358,
-      "height": 418,
+      "width": 360,
+      "height": 434,
       "anchor": {
-        "x": 124,
-        "y": 412
+        "x": 127,
+        "y": 424
       },
-      "reachX": 229,
-      "silhouetteHeight": 404
+      "reachX": 228,
+      "silhouetteHeight": 424
     },
     {
       "file": "special_1_005.png",
       "frameIndex": 5,
       "edgeTouch": false,
       "hurtbox": {
-        "x": -109,
-        "y": -387,
-        "width": 319,
-        "height": 383
+        "x": -112,
+        "y": -391,
+        "width": 328,
+        "height": 395
       },
       "attackBox": {
         "x": 192,
-        "y": -408,
-        "width": 38,
-        "height": 92
+        "y": -412,
+        "width": 45,
+        "height": 94
       },
       "empty": false,
-      "width": 358,
-      "height": 418,
+      "width": 368,
+      "height": 426,
       "anchor": {
-        "x": 124,
-        "y": 412
+        "x": 127,
+        "y": 416
       },
-      "reachX": 229,
-      "silhouetteHeight": 404
+      "reachX": 236,
+      "silhouetteHeight": 416
     },
     {
       "file": "special_1_006.png",
       "frameIndex": 6,
       "edgeTouch": false,
       "hurtbox": {
-        "x": -104,
-        "y": -243,
-        "width": 311,
-        "height": 239
+        "x": -110,
+        "y": -255,
+        "width": 337,
+        "height": 264
       },
       "attackBox": {
         "x": 192,
-        "y": -204,
-        "width": 34,
-        "height": 46
+        "y": -274,
+        "width": 54,
+        "height": 141
       },
       "empty": false,
-      "width": 349,
-      "height": 264,
+      "width": 377,
+      "height": 293,
       "anchor": {
-        "x": 119,
-        "y": 258
+        "x": 127,
+        "y": 278
       },
-      "reachX": 225,
-      "silhouetteHeight": 250
+      "reachX": 245,
+      "silhouetteHeight": 283
     }
   ],
   "frameData": [
     {
       "file": "sprites/special_1/special_1_001.png",
-      "width": 324,
+      "width": 334,
       "height": 293,
       "anchor": {
-        "x": 132,
+        "x": 136,
         "y": 287
       },
-      "reachX": 187,
+      "reachX": 193,
       "silhouetteHeight": 283,
       "hurtbox": {
-        "x": -119,
+        "x": -123,
         "y": -272,
-        "width": 292,
+        "width": 301,
         "height": 272
       },
-      "attackBox": null
+      "attackBox": {
+        "x": 192,
+        "y": -103,
+        "width": 2,
+        "height": 26
+      },
+      "sourceClipped": false,
+      "normalizationMode": "video-uniform",
+      "normalizationReferenceHeight": 283
     },
     {
       "file": "sprites/special_1/special_1_002.png",
-      "width": 299,
-      "height": 272,
+      "width": 334,
+      "height": 280,
       "anchor": {
-        "x": 124,
-        "y": 266
+        "x": 127,
+        "y": 270
       },
-      "reachX": 170,
-      "silhouetteHeight": 258,
+      "reachX": 202,
+      "silhouetteHeight": 270,
       "hurtbox": {
-        "x": -105,
-        "y": -252,
-        "width": 266,
-        "height": 248
+        "x": -113,
+        "y": -257,
+        "width": 298,
+        "height": 261
       },
-      "attackBox": null
+      "attackBox": {
+        "x": 192,
+        "y": -137,
+        "width": 11,
+        "height": 34
+      },
+      "sourceClipped": false,
+      "normalizationMode": "video-uniform",
+      "normalizationReferenceHeight": 283
     },
     {
       "file": "sprites/special_1/special_1_003.png",
-      "width": 391,
-      "height": 264,
+      "width": 360,
+      "height": 276,
       "anchor": {
-        "x": 215,
-        "y": 258
+        "x": 196,
+        "y": 261
       },
-      "reachX": 171,
-      "silhouetteHeight": 254,
+      "reachX": 159,
+      "silhouetteHeight": 266,
       "hurtbox": {
-        "x": -197,
-        "y": -246,
-        "width": 352,
-        "height": 246
+        "x": -177,
+        "y": -247,
+        "width": 326,
+        "height": 256
       },
-      "attackBox": null
+      "attackBox": null,
+      "sourceClipped": false,
+      "normalizationMode": "video-uniform",
+      "normalizationReferenceHeight": 283
     },
     {
       "file": "sprites/special_1/special_1_004.png",
-      "width": 358,
-      "height": 418,
+      "width": 360,
+      "height": 434,
       "anchor": {
-        "x": 124,
-        "y": 412
+        "x": 127,
+        "y": 424
       },
-      "reachX": 229,
-      "silhouetteHeight": 404,
+      "reachX": 228,
+      "silhouetteHeight": 424,
       "hurtbox": {
-        "x": -108,
-        "y": -385,
-        "width": 320,
-        "height": 381
+        "x": -111,
+        "y": -392,
+        "width": 323,
+        "height": 396
       },
       "attackBox": {
         "x": 192,
-        "y": -408,
-        "width": 38,
-        "height": 92
-      }
+        "y": -420,
+        "width": 37,
+        "height": 103
+      },
+      "sourceClipped": false,
+      "normalizationMode": "video-uniform",
+      "normalizationReferenceHeight": 283
     },
     {
       "file": "sprites/special_1/special_1_005.png",
-      "width": 358,
-      "height": 418,
+      "width": 368,
+      "height": 426,
       "anchor": {
-        "x": 124,
-        "y": 412
+        "x": 127,
+        "y": 416
       },
-      "reachX": 229,
-      "silhouetteHeight": 404,
+      "reachX": 236,
+      "silhouetteHeight": 416,
       "hurtbox": {
-        "x": -109,
-        "y": -387,
-        "width": 319,
-        "height": 383
+        "x": -112,
+        "y": -391,
+        "width": 328,
+        "height": 395
       },
       "attackBox": {
         "x": 192,
-        "y": -408,
-        "width": 38,
-        "height": 92
-      }
+        "y": -412,
+        "width": 45,
+        "height": 94
+      },
+      "sourceClipped": false,
+      "normalizationMode": "video-uniform",
+      "normalizationReferenceHeight": 283
     },
     {
       "file": "sprites/special_1/special_1_006.png",
-      "width": 349,
-      "height": 264,
+      "width": 377,
+      "height": 293,
       "anchor": {
-        "x": 119,
-        "y": 258
+        "x": 127,
+        "y": 278
       },
-      "reachX": 225,
-      "silhouetteHeight": 250,
+      "reachX": 245,
+      "silhouetteHeight": 283,
       "hurtbox": {
-        "x": -104,
-        "y": -243,
-        "width": 311,
-        "height": 239
+        "x": -110,
+        "y": -255,
+        "width": 337,
+        "height": 264
       },
       "attackBox": {
         "x": 192,
-        "y": -204,
-        "width": 34,
-        "height": 46
-      }
+        "y": -274,
+        "width": 54,
+        "height": 141
+      },
+      "sourceClipped": false,
+      "normalizationMode": "video-uniform",
+      "normalizationReferenceHeight": 283
     }
   ]
 }

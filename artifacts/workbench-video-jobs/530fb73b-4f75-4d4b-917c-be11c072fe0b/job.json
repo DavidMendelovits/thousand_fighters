@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "provider": "fal",
+  "model": "fal-ai/kling-video/v3/standard/image-to-video",
+  "mode": "image-to-video",
+  "createdAt": "2026-09-16T20:51:55.523Z",
+  "transportStatus": "downloaded",
+  "qualityStatus": "unreviewed",
+  "request": {
+    "prompt": "Animate ONLY the single reference fighter, facing RIGHT, fixed side-view camera. Crisp 16-bit pixel art, identical costume, silhouette, palette and proportions. Solid flat #ff00ff background throughout, no floor, no shadows, no camera motion, no opponent, no text. Keep the entire actor, longest extensions and all props at least 15% away from EVERY camera edge through the whole motion; do not zoom in. Animate in place; the game engine supplies world movement. Action: block — raising into a fully settled, held defensive guard. Interpret these six frame roles as six consecutive key moments of this video: frame 1 = reacting, frames 2-3 = raising the guard, frames 4-5 = guard nearly up, frame 6 = fully settled defensive guard (the held pose the engine holds during blockstun). CHARACTER BODY PASS ONLY: no explosions, muzzle flashes, impact bursts, detached projectiles or lingering trails. Those are separate runtime VFX/entities, not pixels baked into this body animation. Motion brief: Squat violet hermit-crab locksmith with a huge purple spiral shell, brass padlock details, pale eyes, oversized brass key claw, small purple claw, two sturdy boot legs. Side-view crisp 16-bit pixel art, always facing right. Move: block — raising into a fully settled, held defensive guard. Side-view fighting game sprite row. Magenta background, full body visible, generous gutters, no cropping.",
+    "duration": "5",
+    "orientation": null,
+    "audio": false,
+    "references": {
+      "image": {
+        "kind": "file",
+        "path": "/Users/davidmendelovits/space/thousand_fighters/artifacts/workbench-video-jobs/530fb73b-4f75-4d4b-917c-be11c072fe0b/reference.png",
+        "contentType": "image/png",
+        "bytes": 33982,
+        "sha256": "e97a9c61f33f3a5e2ade7e67a9e419413729aecd155ad4c5865fa4999bf20f7d",
+        "width": 512,
+        "height": 512
+      }
+    },
+    "payloadSha256": "896b757667f9ad689dc817333413aca418d0d57daf0a00099e6186eac4084584"
+  },
+  "submissionAttempts": 1,
+  "task": {
+    "requestId": "01a0abfd-8d57-7862-abde-e1be7dd3482c",
+    "model": "fal-ai/kling-video/v3/standard/image-to-video",
+    "statusUrl": "https://queue.fal.run/fal-ai/kling-video/requests/01a0abfd-8d57-7862-abde-e1be7dd3482c/status",
+    "responseUrl": "https://queue.fal.run/fal-ai/kling-video/requests/01a0abfd-8d57-7862-abde-e1be7dd3482c"
+  },
+  "updatedAt": "2026-09-16T20:53:26.208Z",
+  "remoteStatus": "COMPLETED",
+  "output": {
+    "path": "source.mp4",
+    "contentType": "video/mp4",
+    "bytes": 7107914,
+    "sha256": "9f64a7900deb277ac46f32da4a1441f793db7bde0daa0df6e9f9b04c5cc7956b"
+  },
+  "completedAt": "2026-09-16T20:53:26.208Z"
+}

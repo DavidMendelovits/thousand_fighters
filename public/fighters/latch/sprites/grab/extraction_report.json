@@ -1,0 +1,316 @@
+{
+  "source": "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-extract-YkDM66/source.png",
+  "moveId": "grab",
+  "sourceSize": [
+    3072,
+    512
+  ],
+  "grid": [
+    1,
+    6
+  ],
+  "frameCount": 6,
+  "sourceBoundaryChecked": true,
+  "segmentation": "connected-components",
+  "medianSilhouetteHeight": 128,
+  "scaleApplied": 2.2109375,
+  "warnings": [
+    "row rescaled by 2.211 to match target silhouette height 283px (was 128px)"
+  ],
+  "frames": [
+    {
+      "file": "grab_001.png",
+      "frameIndex": 1,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -118,
+        "y": -275,
+        "width": 302,
+        "height": 275
+      },
+      "attackBox": {
+        "x": 192,
+        "y": -124,
+        "width": 20,
+        "height": 53
+      },
+      "empty": false,
+      "width": 344,
+      "height": 293,
+      "anchor": {
+        "x": 128,
+        "y": 287
+      },
+      "reachX": 211,
+      "silhouetteHeight": 283
+    },
+    {
+      "file": "grab_002.png",
+      "frameIndex": 2,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -152,
+        "y": -246,
+        "width": 306,
+        "height": 246
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 344,
+      "height": 275,
+      "anchor": {
+        "x": 163,
+        "y": 269
+      },
+      "reachX": 176,
+      "silhouetteHeight": 265
+    },
+    {
+      "file": "grab_003.png",
+      "frameIndex": 3,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -192,
+        "y": -274,
+        "width": 485,
+        "height": 283
+      },
+      "attackBox": {
+        "x": 192,
+        "y": -230,
+        "width": 162,
+        "height": 71
+      },
+      "empty": false,
+      "width": 574,
+      "height": 320,
+      "anchor": {
+        "x": 216,
+        "y": 305
+      },
+      "reachX": 353,
+      "silhouetteHeight": 310
+    },
+    {
+      "file": "grab_004.png",
+      "frameIndex": 4,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -192,
+        "y": -274,
+        "width": 479,
+        "height": 283
+      },
+      "attackBox": {
+        "x": 192,
+        "y": -230,
+        "width": 127,
+        "height": 71
+      },
+      "empty": false,
+      "width": 539,
+      "height": 320,
+      "anchor": {
+        "x": 216,
+        "y": 305
+      },
+      "reachX": 318,
+      "silhouetteHeight": 310
+    },
+    {
+      "file": "grab_005.png",
+      "frameIndex": 5,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -195,
+        "y": -277,
+        "width": 440,
+        "height": 286
+      },
+      "attackBox": {
+        "x": 192,
+        "y": -195,
+        "width": 74,
+        "height": 71
+      },
+      "empty": false,
+      "width": 486,
+      "height": 320,
+      "anchor": {
+        "x": 216,
+        "y": 305
+      },
+      "reachX": 265,
+      "silhouetteHeight": 310
+    },
+    {
+      "file": "grab_006.png",
+      "frameIndex": 6,
+      "edgeTouch": false,
+      "hurtbox": {
+        "x": -196,
+        "y": -274,
+        "width": 329,
+        "height": 274
+      },
+      "attackBox": null,
+      "empty": false,
+      "width": 362,
+      "height": 293,
+      "anchor": {
+        "x": 216,
+        "y": 287
+      },
+      "reachX": 141,
+      "silhouetteHeight": 283
+    }
+  ],
+  "frameData": [
+    {
+      "file": "sprites/grab/grab_001.png",
+      "width": 344,
+      "height": 293,
+      "anchor": {
+        "x": 128,
+        "y": 287
+      },
+      "reachX": 211,
+      "silhouetteHeight": 283,
+      "hurtbox": {
+        "x": -118,
+        "y": -275,
+        "width": 302,
+        "height": 275
+      },
+      "attackBox": {
+        "x": 192,
+        "y": -124,
+        "width": 20,
+        "height": 53
+      },
+      "sourceClipped": false,
+      "normalizationMode": "video-uniform",
+      "normalizationReferenceHeight": 283
+    },
+    {
+      "file": "sprites/grab/grab_002.png",
+      "width": 344,
+      "height": 275,
+      "anchor": {
+        "x": 163,
+        "y": 269
+      },
+      "reachX": 176,
+      "silhouetteHeight": 265,
+      "hurtbox": {
+        "x": -152,
+        "y": -246,
+        "width": 306,
+        "height": 246
+      },
+      "attackBox": null,
+      "sourceClipped": false,
+      "normalizationMode": "video-uniform",
+      "normalizationReferenceHeight": 283
+    },
+    {
+      "file": "sprites/grab/grab_003.png",
+      "width": 574,
+      "height": 320,
+      "anchor": {
+        "x": 216,
+        "y": 305
+      },
+      "reachX": 353,
+      "silhouetteHeight": 310,
+      "hurtbox": {
+        "x": -192,
+        "y": -274,
+        "width": 485,
+        "height": 283
+      },
+      "attackBox": {
+        "x": 192,
+        "y": -230,
+        "width": 162,
+        "height": 71
+      },
+      "sourceClipped": false,
+      "normalizationMode": "video-uniform",
+      "normalizationReferenceHeight": 283
+    },
+    {
+      "file": "sprites/grab/grab_004.png",
+      "width": 539,
+      "height": 320,
+      "anchor": {
+        "x": 216,
+        "y": 305
+      },
+      "reachX": 318,
+      "silhouetteHeight": 310,
+      "hurtbox": {
+        "x": -192,
+        "y": -274,
+        "width": 479,
+        "height": 283
+      },
+      "attackBox": {
+        "x": 192,
+        "y": -230,
+        "width": 127,
+        "height": 71
+      },
+      "sourceClipped": false,
+      "normalizationMode": "video-uniform",
+      "normalizationReferenceHeight": 283
+    },
+    {
+      "file": "sprites/grab/grab_005.png",
+      "width": 486,
+      "height": 320,
+      "anchor": {
+        "x": 216,
+        "y": 305
+      },
+      "reachX": 265,
+      "silhouetteHeight": 310,
+      "hurtbox": {
+        "x": -195,
+        "y": -277,
+        "width": 440,
+        "height": 286
+      },
+      "attackBox": {
+        "x": 192,
+        "y": -195,
+        "width": 74,
+        "height": 71
+      },
+      "sourceClipped": false,
+      "normalizationMode": "video-uniform",
+      "normalizationReferenceHeight": 283
+    },
+    {
+      "file": "sprites/grab/grab_006.png",
+      "width": 362,
+      "height": 293,
+      "anchor": {
+        "x": 216,
+        "y": 287
+      },
+      "reachX": 141,
+      "silhouetteHeight": 283,
+      "hurtbox": {
+        "x": -196,
+        "y": -274,
+        "width": 329,
+        "height": 274
+      },
+      "attackBox": null,
+      "sourceClipped": false,
+      "normalizationMode": "video-uniform",
+      "normalizationReferenceHeight": 283
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "provider": "fal",
+  "model": "fal-ai/kling-video/v3/standard/image-to-video",
+  "mode": "image-to-video",
+  "createdAt": "2026-09-16T20:51:55.554Z",
+  "transportStatus": "downloaded",
+  "qualityStatus": "unreviewed",
+  "request": {
+    "prompt": "Animate ONLY the single reference fighter, facing RIGHT, fixed side-view camera. Crisp 16-bit pixel art, identical costume, silhouette, palette and proportions. Solid flat #ff00ff background throughout, no floor, no shadows, no camera motion, no opponent, no text. Keep the entire actor, longest extensions and all props at least 15% away from EVERY camera edge through the whole motion; do not zoom in. Animate in place; the game engine supplies world movement. Action: grab — this single fighter alone mimes a grab on empty air: reach out, close both hands on nothing, and hold the clench. NO second character, no opponent, no other body anywhere — only this one fighter. Interpret these six frame roles as six consecutive key moments of this video: ONLY this one fighter is in frame (no opponent, no second body): frames 1-2 = reach/lunge forward into empty air, frame 3 = hand extends forward toward nothing, frame 4 = hands clench shut on empty air (the grab mime, gripping an invisible target), frame 5 = pulling the clenched hands inward, frame 6 = holding the clench with both hands closed on nothing. CHARACTER BODY PASS ONLY: no explosions, muzzle flashes, impact bursts, detached projectiles or lingering trails. Those are separate runtime VFX/entities, not pixels baked into this body animation. Motion brief: Squat violet hermit-crab locksmith with a huge purple spiral shell, brass padlock details, pale eyes, oversized brass key claw, small purple claw, two sturdy boot legs. Side-view crisp 16-bit pixel art, always facing right. Move: grab — this single fighter alone mimes a grab on empty air: reach out, close both hands on nothing, and hold the clench. NO second character, no opponent, no other body anywhere — only this one fighter. Side-view fighting game sprite row. Magenta background, full body visible, generous gutters, no cropping.",
+    "duration": "5",
+    "orientation": null,
+    "audio": false,
+    "references": {
+      "image": {
+        "kind": "file",
+        "path": "/Users/davidmendelovits/space/thousand_fighters/artifacts/workbench-video-jobs/03366ab1-8c91-4f5a-8d50-0abe76d79121/reference.png",
+        "contentType": "image/png",
+        "bytes": 33982,
+        "sha256": "e97a9c61f33f3a5e2ade7e67a9e419413729aecd155ad4c5865fa4999bf20f7d",
+        "width": 512,
+        "height": 512
+      }
+    },
+    "payloadSha256": "2d41d177186be46903fd6a6570289e99fdf355323c180afadef60868f3f0955e"
+  },
+  "submissionAttempts": 1,
+  "task": {
+    "requestId": "01a0abfd-8d5d-7241-8d01-b47af1634a9d",
+    "model": "fal-ai/kling-video/v3/standard/image-to-video",
+    "statusUrl": "https://queue.fal.run/fal-ai/kling-video/requests/01a0abfd-8d5d-7241-8d01-b47af1634a9d/status",
+    "responseUrl": "https://queue.fal.run/fal-ai/kling-video/requests/01a0abfd-8d5d-7241-8d01-b47af1634a9d"
+  },
+  "updatedAt": "2026-09-16T20:53:20.739Z",
+  "remoteStatus": "COMPLETED",
+  "output": {
+    "path": "source.mp4",
+    "contentType": "video/mp4",
+    "bytes": 6859506,
+    "sha256": "36580bdeb01b07a3a89f83d0502ccfde920c898f9c88b2482d84437570747d8e"
+  },
+  "completedAt": "2026-09-16T20:53:20.739Z"
+}

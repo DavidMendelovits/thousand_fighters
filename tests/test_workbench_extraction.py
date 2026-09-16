@@ -10,6 +10,21 @@ spec.loader.exec_module(extract)
 
 
 class VideoRowExtractionTests(unittest.TestCase):
+    def test_locomotion_pivot_does_not_apply_video_translation_twice(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / 'jump.png'
+            sheet = Image.new('RGBA', (200, 100), (255, 0, 255, 255))
+            draw = ImageDraw.Draw(sheet)
+            draw.rectangle((30, 50, 49, 79), fill=(80, 90, 140, 255))
+            draw.rectangle((140, 20, 159, 49), fill=(80, 90, 140, 255))
+            sheet.save(source)
+            report = extract.extract_frames(source, Path(directory) / 'frames', move_id='jump', rows=1, cols=2,
+                                            target_height=30, equalize_frames=False, video_source=True)
+            a,b = report['frameData']
+            self.assertEqual(a['anchor'], b['anchor'])
+            self.assertEqual(b['normalizationMode'], 'video-uniform')
+            self.assertEqual(b['normalizationReferenceHeight'], 30)
+
     def test_internal_video_border_is_flagged_before_padding(self):
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / 'source.png'

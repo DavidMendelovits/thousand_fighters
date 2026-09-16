@@ -44,6 +44,8 @@ export class CombatVisuals {
   draw(fighters: [Fighter, Fighter]): void {
     const g = this.graphics.clear();
     for(const impact of (this.scene as FighterScene)._combatImpacts??[]){
+      const owner=impact.ownerId?fighters.find(f=>f.id===impact.ownerId):undefined;
+      if(owner){impact.x=owner.x+(impact.offsetX??0)*owner.facing*owner.stats.size;impact.y=owner.y+(impact.offsetY??0)*owner.stats.size;}
       const {x,y,spec,blocked,age}=impact;const t=age/spec.durationTicks;
       const radius=spec.radius*(.45+t);const color=blocked?0xa6d7ff:spec.color;
       g.setAlpha(1);

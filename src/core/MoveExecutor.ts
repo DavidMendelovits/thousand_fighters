@@ -150,6 +150,13 @@ export class MoveExecutor {
         });
         break;
       }
+      case 'spawn_effect': {
+        const scene=fighter.scene;
+        scene._combatImpacts??=[];
+        scene._combatImpacts.push({x:fighter.x+event.offsetX*fighter.facing*fighter.stats.size,y:fighter.y+event.offsetY*fighter.stats.size,spec:event.effect,blocked:false,age:0,...(event.attached?{ownerId:fighter.id,offsetX:event.offsetX,offsetY:event.offsetY}:{})});
+        if(scene._combatImpacts.length>48)scene._combatImpacts.shift();
+        break;
+      }
       case 'play_sound': {
         const key = `${fighter.config.id}:${event.name}`;
         const resolvedKey = fighter.scene.cache.audio.has(key) ? key : event.name;

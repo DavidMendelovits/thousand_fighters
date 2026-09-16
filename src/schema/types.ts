@@ -121,6 +121,7 @@ export type HitboxKeyframe = {
 };
 
 export type MoveEvent =
+  | { type:'spawn_effect'; effect:ImpactSpec; offsetX:number; offsetY:number; attached?:boolean }
   | { type: 'power_up'; power: PowerUpSpec }
   | { type: 'transform'; formId: string }
   | { type: 'revert_form' }
@@ -310,5 +311,5 @@ export type FighterScene = Phaser.Scene & {
   projectiles: ProjectilePool;
   hitPauseFrames: number;
   _soundsPlayedThisFrame?: Set<string>;
-  _combatImpacts?: Array<{x:number;y:number;spec:ImpactSpec;blocked:boolean;age:number}>;
+  _combatImpacts?: Array<{x:number;y:number;spec:ImpactSpec;blocked:boolean;age:number;ownerId?:string;offsetX?:number;offsetY?:number}>;
 };

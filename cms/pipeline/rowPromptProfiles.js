@@ -35,6 +35,8 @@ const STABLE_HEIGHT_NOTE = 'Keep the character the exact same height and scale i
 
 /** @type {Record<string, RowPromptProfile>} */
 export const ROW_PROMPT_PROFILES = {
+  hurt:{description:'hurt reaction — a brief flinch, recoil, then recovery; no attacker visible',frameRoles:'frame 1 impact flinch, 2 recoil, 3 braced recoil, 4 stabilize, 5 recover, 6 ready stance',shortRoles:'One brief flinch and recover, no opponent or effects.',heightDynamic:true},
+  getup:{description:'get up — rise from low knockdown into ready stance',frameRoles:'frame 1 low grounded recovery, 2 plant support, 3 lift torso, 4 rising, 5 balance, 6 ready stance',shortRoles:'Rise from knockdown and settle into ready stance.',heightDynamic:true},
   base: {
     idle: true,
     description: 'base idle stance — subtle breathing/sway animation loop, facing right, neutral pose',

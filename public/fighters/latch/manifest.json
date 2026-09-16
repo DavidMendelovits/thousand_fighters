@@ -7,7 +7,14 @@
     "kick": "sheets/kick.png",
     "special_1": "sheets/special_1.png",
     "special_2": "sheets/special_2.png",
-    "punch": "sheets/punch.png"
+    "punch": "sheets/punch.png",
+    "walk_forward": "sheets/walk_forward.png",
+    "walk_back": "sheets/walk_back.png",
+    "jump": "sheets/jump.png",
+    "hurt": "sheets/hurt.png",
+    "grab": "sheets/grab.png",
+    "block": "sheets/block.png",
+    "getup": "sheets/getup.png"
   },
   "sprites": {
     "base": [
@@ -49,6 +56,62 @@
       "sprites/punch/punch_004.png",
       "sprites/punch/punch_005.png",
       "sprites/punch/punch_006.png"
+    ],
+    "walk_forward": [
+      "sprites/walk_forward/walk_forward_001.png",
+      "sprites/walk_forward/walk_forward_002.png",
+      "sprites/walk_forward/walk_forward_003.png",
+      "sprites/walk_forward/walk_forward_004.png",
+      "sprites/walk_forward/walk_forward_005.png",
+      "sprites/walk_forward/walk_forward_006.png"
+    ],
+    "walk_back": [
+      "sprites/walk_back/walk_back_001.png",
+      "sprites/walk_back/walk_back_002.png",
+      "sprites/walk_back/walk_back_003.png",
+      "sprites/walk_back/walk_back_004.png",
+      "sprites/walk_back/walk_back_005.png",
+      "sprites/walk_back/walk_back_006.png"
+    ],
+    "jump": [
+      "sprites/jump/jump_001.png",
+      "sprites/jump/jump_002.png",
+      "sprites/jump/jump_003.png",
+      "sprites/jump/jump_004.png",
+      "sprites/jump/jump_005.png",
+      "sprites/jump/jump_006.png"
+    ],
+    "hurt": [
+      "sprites/hurt/hurt_001.png",
+      "sprites/hurt/hurt_002.png",
+      "sprites/hurt/hurt_003.png",
+      "sprites/hurt/hurt_004.png",
+      "sprites/hurt/hurt_005.png",
+      "sprites/hurt/hurt_006.png"
+    ],
+    "grab": [
+      "sprites/grab/grab_001.png",
+      "sprites/grab/grab_002.png",
+      "sprites/grab/grab_003.png",
+      "sprites/grab/grab_004.png",
+      "sprites/grab/grab_005.png",
+      "sprites/grab/grab_006.png"
+    ],
+    "block": [
+      "sprites/block/block_001.png",
+      "sprites/block/block_002.png",
+      "sprites/block/block_003.png",
+      "sprites/block/block_004.png",
+      "sprites/block/block_005.png",
+      "sprites/block/block_006.png"
+    ],
+    "getup": [
+      "sprites/getup/getup_001.png",
+      "sprites/getup/getup_002.png",
+      "sprites/getup/getup_003.png",
+      "sprites/getup/getup_004.png",
+      "sprites/getup/getup_005.png",
+      "sprites/getup/getup_006.png"
     ]
   },
   "frameCounts": {
@@ -56,6 +119,13 @@
     "kick": 6,
     "special_1": 6,
     "special_2": 6,
-    "punch": 6
+    "punch": 6,
+    "walk_forward": 6,
+    "walk_back": 6,
+    "jump": 6,
+    "hurt": 6,
+    "grab": 6,
+    "block": 6,
+    "getup": 6
   }
 }

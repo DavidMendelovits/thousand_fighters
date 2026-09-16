@@ -53,6 +53,8 @@ export const ANIMATION_ROWS = [
   // base-frame walk shuffle otherwise — so existing fighters are unchanged.
   { id: 'walk_forward', label: 'Walk Forward', group: 'Movement', frameCount: 6, role: 'movement', moveAnimation: false },
   { id: 'walk_back', label: 'Walk Back', group: 'Movement', frameCount: 6, role: 'movement', moveAnimation: false },
+  { id: 'hurt', label: 'Hurt / recoil', group: 'Defense', frameCount: 6, role: 'defense', moveAnimation: false },
+  { id: 'getup', label: 'Recovery / get up', group: 'Defense', frameCount: 6, role: 'defense', moveAnimation: false },
 ];
 
 /** Ordered list of every row id. */

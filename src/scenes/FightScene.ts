@@ -5,6 +5,8 @@ import { collectProjectileAnimations } from '../core/projectileAssets';
 import { ComputerPlayer } from '../core/ComputerPlayer';
 import { Fighter } from '../core/Fighter';
 import { GameLoop } from '../core/GameLoop';
+import {ControlTelemetry} from '../core/ControlTelemetry';
+import {ControlTelemetryPanel} from '../ui/ControlTelemetryPanel';
 import { HitboxSystem } from '../core/HitboxSystem';
 import { InputReader } from '../core/InputReader';
 import { ProjectilePool } from '../core/ProjectilePool';
@@ -45,6 +47,8 @@ type FightSceneData = {
 type RoundWinner = 0 | 1 | 2;
 
 export class FightScene extends Phaser.Scene {
+  private controlTelemetry=new ControlTelemetry();
+  private controlPanel?:ControlTelemetryPanel;
   fighters!: [Fighter, Fighter];
   projectiles!: ProjectilePool;
   hitPauseFrames = 0;
@@ -401,6 +405,8 @@ export class FightScene extends Phaser.Scene {
       return;
     }
 
+    if(this.roundTimer>0&&!this.isRoundOver())this.controlTelemetry.record(this.fighters.map(f=>f.state),this.hitPauseFrames>0);
+
     if (this.hitPauseFrames > 0) {
       this.hitPauseFrames -= 1;
       return;
@@ -429,6 +435,8 @@ export class FightScene extends Phaser.Scene {
   }
 
   renderFrame(): void {
+    if(!this.controlPanel){this.controlPanel=new ControlTelemetryPanel(this.controlTelemetry);this.events.once('shutdown',()=>{this.controlPanel?.destroy();this.controlPanel=undefined;this.controlTelemetry.reset();});}
+    this.controlPanel.render();
     if (this.fighters) this.combatVisuals?.draw(this.fighters);
     this.renderHUD();
     if (this.debugMode) DebugOverlay.render(this);
@@ -979,6 +987,7 @@ export class FightScene extends Phaser.Scene {
         startMove: (player: 1 | 2, moveId: string) => boolean;
         setCpu: (enabled: boolean) => void;
         frame: () => number;
+        control: () => ReturnType<ControlTelemetry['snapshot']>;
         snapshot: () => unknown;
         training?: { reset: (x1: number, x2: number) => void; step: (ticks: number) => void; form:(player:1|2,id:string)=>boolean; power:(player:1|2,power:import('../schema/types').PowerUpSpec)=>boolean; damage:(player:1|2,amount:number)=>void };
       };
@@ -989,6 +998,7 @@ export class FightScene extends Phaser.Scene {
         this.singlePlayer = enabled;
       },
       frame: () => this.frameCounter,
+      control: () => this.controlTelemetry.snapshot(),
       snapshot: () => ({ frame: this.frameCounter, paused: this.isPaused, cpu: this.singlePlayer, impacts:this._combatImpacts.map(i=>({id:i.spec.id,kind:i.spec.kind,blocked:i.blocked,age:i.age})), fighters: this.fighters.map(f => ({ id: f.config.id, baseId:f.baseConfig.id, form:f.activeForm?.id,formTicks:f.formTicks,stats:f.stats,meter:f.meter,powers:f.powers.map(p=>({id:p.spec.id,remaining:p.remaining})),combo:{hits:f.combo.hits,damage:f.combo.damage,active:f.combo.active,juggle:f.combo.juggle},texture:f.body instanceof Phaser.GameObjects.Sprite?f.body.texture.key:null,moveIds:f.config.moves.map(m=>m.id),hurtbox:f.getHurtboxWorld(),x: f.x, y: f.y, vx: f.vx, vy: f.vy, health: f.health, state: f.state, frame: f.stateFrame, move: f.currentMove?.id, animation: f.currentMove?.animation, phase: f.movePhaseIndex, hold: f.grabHold?.remaining, heldBy: f.grabbedBy?.config.id, immunity: f.grabImmunity, stun: f.hitstun })), projectiles: this.projectiles.active.map(p=>({id:p.config.id,x:p.x,y:p.y,facing:p.facing,delay:p.delayRemaining})) }),
     };
     if (new URLSearchParams(window.location.search).get('training') === '1') {
@@ -997,6 +1007,7 @@ export class FightScene extends Phaser.Scene {
         power:(player,power)=>this.fighters[player-1].applyPowerUp(power),
         damage:(player,amount)=>{const f=this.fighters[player-1];f.health=Math.max(0,f.health-amount);if(!f.health)f.changeState('dead');f.refreshVisuals();},
         reset: (x1, x2) => {
+          this.controlTelemetry.reset();
           this.singlePlayer = false; this.isPaused = true; this.roundResolved = false; this.roundTimer = ROUND_FRAMES; this.hitPauseFrames = 0;
           this.projectiles.clear();
           InputReader.reset(this.input.keyboard!);

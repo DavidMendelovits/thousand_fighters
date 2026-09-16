@@ -1,5 +1,5 @@
 {
-  "source": "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-extract-C3weIe/source.png",
+  "source": "/var/folders/7m/jy6l7kt52sd0yjg6tv5c8qyc0000gn/T/tf-extract-DeTme2/source.png",
   "moveId": "base",
   "sourceSize": [
     2172,
@@ -10,6 +10,7 @@
     6
   ],
   "frameCount": 6,
+  "sourceBoundaryChecked": true,
   "segmentation": "connected-components",
   "medianSilhouetteHeight": 283,
   "scaleApplied": 1,
@@ -22,10 +23,10 @@
       "frameIndex": 1,
       "edgeTouch": false,
       "hurtbox": {
-        "x": -123,
-        "y": -273,
-        "width": 301,
-        "height": 273
+        "x": -122,
+        "y": -272,
+        "width": 298,
+        "height": 272
       },
       "attackBox": null,
       "empty": false,
@@ -64,10 +65,10 @@
       "frameIndex": 3,
       "edgeTouch": false,
       "hurtbox": {
-        "x": -111,
-        "y": -273,
-        "width": 284,
-        "height": 273
+        "x": -110,
+        "y": -272,
+        "width": 282,
+        "height": 272
       },
       "attackBox": null,
       "empty": false,
@@ -86,19 +87,19 @@
       "edgeTouch": false,
       "hurtbox": {
         "x": -108,
-        "y": -273,
-        "width": 283,
-        "height": 273
+        "y": -272,
+        "width": 280,
+        "height": 272
       },
       "attackBox": null,
       "empty": false,
       "width": 314,
       "height": 293,
       "anchor": {
-        "x": 121,
+        "x": 122,
         "y": 287
       },
-      "reachX": 188,
+      "reachX": 187,
       "silhouetteHeight": 283
     },
     {
@@ -106,10 +107,10 @@
       "frameIndex": 5,
       "edgeTouch": false,
       "hurtbox": {
-        "x": -120,
-        "y": -273,
-        "width": 296,
-        "height": 273
+        "x": -119,
+        "y": -272,
+        "width": 294,
+        "height": 272
       },
       "attackBox": null,
       "empty": false,
@@ -128,19 +129,19 @@
       "edgeTouch": false,
       "hurtbox": {
         "x": -122,
-        "y": -273,
-        "width": 297,
-        "height": 273
+        "y": -272,
+        "width": 295,
+        "height": 272
       },
       "attackBox": null,
       "empty": false,
       "width": 332,
       "height": 293,
       "anchor": {
-        "x": 136,
+        "x": 137,
         "y": 287
       },
-      "reachX": 191,
+      "reachX": 190,
       "silhouetteHeight": 283
     }
   ],
@@ -156,12 +157,13 @@
       "reachX": 193,
       "silhouetteHeight": 283,
       "hurtbox": {
-        "x": -123,
-        "y": -273,
-        "width": 301,
-        "height": 273
+        "x": -122,
+        "y": -272,
+        "width": 298,
+        "height": 272
       },
-      "attackBox": null
+      "attackBox": null,
+      "sourceClipped": false
     },
     {
       "file": "sprites/base/base_002.png",
@@ -179,7 +181,8 @@
         "width": 287,
         "height": 273
       },
-      "attackBox": null
+      "attackBox": null,
+      "sourceClipped": false
     },
     {
       "file": "sprites/base/base_003.png",
@@ -192,30 +195,32 @@
       "reachX": 189,
       "silhouetteHeight": 283,
       "hurtbox": {
-        "x": -111,
-        "y": -273,
-        "width": 284,
-        "height": 273
+        "x": -110,
+        "y": -272,
+        "width": 282,
+        "height": 272
       },
-      "attackBox": null
+      "attackBox": null,
+      "sourceClipped": false
     },
     {
       "file": "sprites/base/base_004.png",
       "width": 314,
       "height": 293,
       "anchor": {
-        "x": 121,
+        "x": 122,
         "y": 287
       },
-      "reachX": 188,
+      "reachX": 187,
       "silhouetteHeight": 283,
       "hurtbox": {
         "x": -108,
-        "y": -273,
-        "width": 283,
-        "height": 273
+        "y": -272,
+        "width": 280,
+        "height": 272
       },
-      "attackBox": null
+      "attackBox": null,
+      "sourceClipped": false
     },
     {
       "file": "sprites/base/base_005.png",
@@ -228,30 +233,32 @@
       "reachX": 192,
       "silhouetteHeight": 283,
       "hurtbox": {
-        "x": -120,
-        "y": -273,
-        "width": 296,
-        "height": 273
+        "x": -119,
+        "y": -272,
+        "width": 294,
+        "height": 272
       },
-      "attackBox": null
+      "attackBox": null,
+      "sourceClipped": false
     },
     {
       "file": "sprites/base/base_006.png",
       "width": 332,
       "height": 293,
       "anchor": {
-        "x": 136,
+        "x": 137,
         "y": 287
       },
-      "reachX": 191,
+      "reachX": 190,
       "silhouetteHeight": 283,
       "hurtbox": {
         "x": -122,
-        "y": -273,
-        "width": 297,
-        "height": 273
+        "y": -272,
+        "width": 295,
+        "height": 272
       },
-      "attackBox": null
+      "attackBox": null,
+      "sourceClipped": false
     }
   ]
 }

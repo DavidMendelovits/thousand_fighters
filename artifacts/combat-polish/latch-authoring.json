@@ -1,0 +1,543 @@
+{
+  "schemaVersion": 1,
+  "id": "latch",
+  "displayName": "Latch",
+  "description": "A squat violet hermit-crab locksmith who locks down close range with a brass key claw, sweeping boots, and a thrown spare key.",
+  "stats": {
+    "walkForwardSpeed": 3.1,
+    "walkBackSpeed": 2.4,
+    "jumpVelocity": 13,
+    "jumpForwardVelocity": 4.2,
+    "jumpBackVelocity": 3.4,
+    "gravity": 0.8,
+    "maxFallSpeed": 12,
+    "maxHealth": 1050
+  },
+  "sprite": {
+    "basePath": "characters/latch",
+    "scale": 1,
+    "relativeHeight": 0.8,
+    "frameCounts": {
+      "base": 6,
+      "punch": 6,
+      "kick": 6,
+      "special_1": 6,
+      "special_2": 6
+    },
+    "scaleAdjust": 1
+  },
+  "moves": [
+    {
+      "id": "key_jab",
+      "displayName": "Key Jab",
+      "description": "A fast brass key-claw poke for starting close-range pressure.",
+      "animation": "punch",
+      "trigger": {
+        "sequence": [
+          "lp"
+        ]
+      },
+      "phases": [
+        {
+          "name": "startup",
+          "frames": 3,
+          "events": []
+        },
+        {
+          "name": "active",
+          "frames": 2,
+          "events": [
+            {
+              "frame": 0,
+              "event": {
+                "type": "hitbox_active",
+                "hitbox": {
+                  "x": 34,
+                  "y": -42,
+                  "width": 30,
+                  "height": 18,
+                  "damage": 55,
+                  "knockbackX": 4,
+                  "knockbackY": -1.5,
+                  "hitstun": 16
+                },
+                "projectile": null,
+                "projectileId": null,
+                "offsetX": null,
+                "offsetY": null
+              }
+            },
+            {
+              "frame": 1,
+              "event": {
+                "type": "hitbox_end",
+                "hitbox": null,
+                "projectile": null,
+                "projectileId": null,
+                "offsetX": null,
+                "offsetY": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "recovery",
+          "frames": 7,
+          "events": []
+        }
+      ],
+      "visualTimeline": [
+        {
+          "frame": 0,
+          "duration": 1
+        },
+        {
+          "frame": 1,
+          "duration": 1
+        },
+        {
+          "frame": 2,
+          "duration": 1
+        },
+        {
+          "frame": 3,
+          "duration": 2
+        },
+        {
+          "frame": 4,
+          "duration": 4
+        },
+        {
+          "frame": 5,
+          "duration": 3
+        }
+      ]
+    },
+    {
+      "id": "boot_sweep",
+      "displayName": "Boot Sweep",
+      "description": "A low teal-boot sweep that trips opponents into a vulnerable launch angle.",
+      "animation": "kick",
+      "trigger": {
+        "sequence": [
+          "lk"
+        ]
+      },
+      "phases": [
+        {
+          "name": "startup",
+          "frames": 5,
+          "events": []
+        },
+        {
+          "name": "active",
+          "frames": 3,
+          "events": [
+            {
+              "frame": 0,
+              "event": {
+                "type": "hitbox_active",
+                "hitbox": {
+                  "x": 25,
+                  "y": -62,
+                  "width": 42,
+                  "height": 14,
+                  "damage": 75,
+                  "knockbackX": 5.5,
+                  "knockbackY": -3,
+                  "hitstun": 22
+                },
+                "projectile": null,
+                "projectileId": null,
+                "offsetX": null,
+                "offsetY": null
+              }
+            },
+            {
+              "frame": 2,
+              "event": {
+                "type": "hitbox_end",
+                "hitbox": null,
+                "projectile": null,
+                "projectileId": null,
+                "offsetX": null,
+                "offsetY": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "recovery",
+          "frames": 10,
+          "events": []
+        }
+      ],
+      "visualTimeline": [
+        {
+          "frame": 0,
+          "duration": 1
+        },
+        {
+          "frame": 1,
+          "duration": 3
+        },
+        {
+          "frame": 2,
+          "duration": 1
+        },
+        {
+          "frame": 4,
+          "duration": 3
+        },
+        {
+          "frame": 4,
+          "duration": 5
+        },
+        {
+          "frame": 5,
+          "duration": 5
+        }
+      ]
+    },
+    {
+      "id": "vault_breaker",
+      "displayName": "Vault Breaker",
+      "description": "Latch rises with a crushing key-claw slam that launches a nearby opponent.",
+      "animation": "special_1",
+      "trigger": {
+        "sequence": [
+          "hp"
+        ]
+      },
+      "phases": [
+        {
+          "name": "startup",
+          "frames": 7,
+          "events": []
+        },
+        {
+          "name": "active",
+          "frames": 4,
+          "events": [
+            {
+              "frame": 0,
+              "event": {
+                "type": "hitbox_active",
+                "hitbox": {
+                  "x": 22,
+                  "y": -50,
+                  "width": 42,
+                  "height": 48,
+                  "damage": 115,
+                  "knockbackX": 6.5,
+                  "knockbackY": -8,
+                  "hitstun": 32
+                },
+                "projectile": null,
+                "projectileId": null,
+                "offsetX": null,
+                "offsetY": null
+              }
+            },
+            {
+              "frame": 3,
+              "event": {
+                "type": "hitbox_end",
+                "hitbox": null,
+                "projectile": null,
+                "projectileId": null,
+                "offsetX": null,
+                "offsetY": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "recovery",
+          "frames": 16,
+          "events": []
+        }
+      ],
+      "visualTimeline": [
+        {
+          "frame": 0,
+          "duration": 1
+        },
+        {
+          "frame": 1,
+          "duration": 5
+        },
+        {
+          "frame": 2,
+          "duration": 1
+        },
+        {
+          "frame": 3,
+          "duration": 4
+        },
+        {
+          "frame": 4,
+          "duration": 8
+        },
+        {
+          "frame": 5,
+          "duration": 8
+        }
+      ]
+    },
+    {
+      "id": "spare_key",
+      "displayName": "Spare Key",
+      "description": "Throws an independent spinning brass key to interrupt opponents from mid-range.",
+      "animation": "special_2",
+      "trigger": {
+        "sequence": [
+          "down",
+          "hp"
+        ]
+      },
+      "phases": [
+        {
+          "name": "startup",
+          "frames": 8,
+          "events": []
+        },
+        {
+          "name": "active",
+          "frames": 2,
+          "events": [
+            {
+              "frame": 0,
+              "event": {
+                "type": "spawn_projectile",
+                "hitbox": null,
+                "projectile": null,
+                "projectileId": "spare_key_projectile",
+                "offsetX": 31,
+                "offsetY": -65
+              }
+            },
+            {
+              "frame": 1,
+              "event": {
+                "type": "hitbox_end",
+                "hitbox": null,
+                "projectile": null,
+                "projectileId": null,
+                "offsetX": null,
+                "offsetY": null
+              }
+            },
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "spawn_effect",
+                "effect": {
+                  "id": "spare_key_authored_fx",
+                  "kind": "spark",
+                  "color": 16760166,
+                  "accent": 16777215,
+                  "durationTicks": 12,
+                  "radius": 30
+                },
+                "offsetX": 45,
+                "offsetY": -70,
+                "attached": false
+              }
+            }
+          ],
+          "cancellable": false
+        },
+        {
+          "name": "recovery",
+          "frames": 14,
+          "events": [],
+          "cancellable": false
+        }
+      ],
+      "cost": {
+        "meter": 0
+      },
+      "cancelInto": [],
+      "cancelOn": "hit",
+      "visualTimeline": [
+        {
+          "frame": 0,
+          "duration": 1
+        },
+        {
+          "frame": 1,
+          "duration": 6
+        },
+        {
+          "frame": 2,
+          "duration": 1
+        },
+        {
+          "frame": 4,
+          "duration": 2
+        },
+        {
+          "frame": 4,
+          "duration": 7
+        },
+        {
+          "frame": 5,
+          "duration": 7
+        }
+      ]
+    },
+    {
+      "id": "lock_clinch",
+      "displayName": "Lock Clinch",
+      "description": "A short key-claw capture with a shove release; punishable on whiff.",
+      "animation": "grab",
+      "trigger": {
+        "sequence": [
+          "grab"
+        ],
+        "allowedStates": [
+          "idle",
+          "walk_forward",
+          "walk_back",
+          "block"
+        ],
+        "window": 7
+      },
+      "visualTimeline": [
+        {
+          "frame": 0,
+          "duration": 2
+        },
+        {
+          "frame": 1,
+          "duration": 4
+        },
+        {
+          "frame": 3,
+          "duration": 3
+        },
+        {
+          "frame": 4,
+          "duration": 8
+        },
+        {
+          "frame": 5,
+          "duration": 14
+        }
+      ],
+      "phases": [
+        {
+          "name": "startup",
+          "frames": 6,
+          "events": []
+        },
+        {
+          "name": "active",
+          "frames": 3,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "grab_check",
+                "grab": {
+                  "hitbox": {
+                    "x": 12,
+                    "y": -90,
+                    "width": 52,
+                    "height": 70
+                  },
+                  "damage": 70,
+                  "holdOffsetX": 47,
+                  "holdOffsetY": 0,
+                  "holdDuration": 14,
+                  "pullFrames": 5,
+                  "releaseKnockback": {
+                    "x": 7,
+                    "y": -2
+                  },
+                  "releaseHitstun": 6,
+                  "groundOnly": true
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "recovery",
+          "frames": 22,
+          "events": [
+            {
+              "onFrame": 0,
+              "event": {
+                "type": "grab_end"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "combos": [
+    {
+      "id": "locksmiths_ladder",
+      "displayName": "Locksmith's Ladder",
+      "segments": [
+        "key_jab",
+        "boot_sweep",
+        "vault_breaker"
+      ]
+    }
+  ],
+  "projectiles": [
+    {
+      "id": "spare_key_projectile",
+      "width": 20,
+      "height": 12,
+      "speed": 7,
+      "velocity": {
+        "x": 7,
+        "y": 0,
+        "relativeToFacing": true
+      },
+      "lifetime": 55,
+      "hitbox": {
+        "x": 0,
+        "y": 0,
+        "width": 20,
+        "height": 12,
+        "damage": 65,
+        "hitstun": 18,
+        "blockstun": 11,
+        "knockback": {
+          "x": 4.5,
+          "y": -1
+        },
+        "level": "mid",
+        "stun": 6,
+        "hitstop": 1
+      },
+      "animation": "latch_spare_key_projectile",
+      "sourceKey": "characters/latch/assets/source/latch_spare_key_projectile_projectile.png",
+      "prompt": "One independent spinning brass spare key projectile, crisp 16-bit pixel art matching purple hermit crab Latch. A single horizontal golden key with dark outline, transparent or flat magenta background, no character, no hand, no text, no sparkles.",
+      "impact": {
+        "id": "spare_key_projectile_impact",
+        "kind": "spark",
+        "color": 16760166,
+        "accent": 16773308,
+        "durationTicks": 18,
+        "radius": 22
+      }
+    }
+  ],
+  "generation": {
+    "provider": "codex",
+    "adapterId": "codex-text-model",
+    "createdAt": "2026-09-16T15:58:21.681Z",
+    "promptRef": null,
+    "warnings": []
+  },
+  "lifecycle": "draft",
+  "updatedAt": "2026-09-16T21:17:21.756Z",
+  "artBrief": "Squat violet hermit-crab locksmith with a huge purple spiral shell, brass padlock details, pale eyes, oversized brass key claw, small purple claw, two sturdy boot legs. Side-view crisp 16-bit pixel art, always facing right."
+}

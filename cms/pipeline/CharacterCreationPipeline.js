@@ -18,6 +18,7 @@ import { MOVE_SHEET_IDS } from '../../shared/animationRows.js';
 import { rowPromptProfile } from './rowPromptProfiles.js';
 import { projectileImpact } from '../../shared/projectileImpact.js';
 import {generateWorkbenchVideoRow} from './adapters/workbenchVideoRow.js';
+import {composeSpriteSheetWithFfmpeg} from './adapters/minimaxH3SpriteSheetGeneratorAdapter.js';
 
 // Canonical inputs the engine's InputBuffer can actually match. A combo move
 // authored with anything else (a motion shorthand like "qcf", or an empty
@@ -646,7 +647,7 @@ export class CharacterCreationPipeline {
     finally { if (this.extractionQueues.get(key) === pending) this.extractionQueues.delete(key); }
   }
 
-  async extractRowFramesExclusive({ characterId, sourceAssetKey, moveId, spriteProfile, targetHeight, context = {} }) {
+  async extractRowFramesExclusive({ characterId, sourceAssetKey, moveId, spriteProfile, targetHeight, videoSampleTimes, context = {} }) {
     const storage = this.registry.resolve(PipelinePort.ASSET_STORAGE);
     const packRoot = `characters/${characterId}/assets/fighter-pack`;
 
@@ -676,9 +677,18 @@ export class CharacterCreationPipeline {
       }
     }
 
-    const sourceBytes = await storage.getBytes(sourceAssetKey);
+    let sourceBytes = await storage.getBytes(sourceAssetKey);
     const sourceMetadata = await storage.getMetadata(sourceAssetKey);
     const isVideo = sourceMetadata.provider === 'fal-video';
+    if(videoSampleTimes&&!isVideo)throw new Error('Sample times require an existing video-derived source.');
+    if(isVideo&&(sourceMetadata.videoSamplingVersion!==2||videoSampleTimes)){
+      const videoKey=`characters/${characterId}/assets/source/${characterId}_${moveId}_motion.mp4`;
+      if(await storage.exists(videoKey)){
+        sourceBytes=await composeSpriteSheetWithFfmpeg({videoBytes:await storage.getBytes(videoKey),task:spriteProfile==='wide'?'fighter-2x3-grid':'fighter-1x6-row',duration:5,sampleTimes:videoSampleTimes});
+        await storage.putBytes(sourceAssetKey,sourceBytes,{...sourceMetadata,videoSamplingVersion:2,videoSampleTimes:videoSampleTimes??null});
+      }else if(videoSampleTimes){throw new Error('Original source video is missing; sampling was not changed.');
+      }
+    }
     const tempDir = await mkdtemp(path.join(os.tmpdir(), 'tf-extract-'));
     try {
       const inputPath = path.join(tempDir, 'source.png');

@@ -20,7 +20,7 @@ import type {
   CharacterForm,
 } from '../schema/types';
 import { MOVE_SHEET_IDS } from '../../shared/animationRows.js';
-import { resolveStateSheet, stateRowFrame, isLoopingStateRow } from './animationRowPlayback';
+import { resolveStateSheet, stateRowFrame, isLoopingStateRow,timedStateRowFrame } from './animationRowPlayback';
 import { boxToWorld, type AABB } from '../util/aabb';
 import { interpolateHitboxGeometry } from './hitboxGeometry';
 import { selectTriggeredMove } from './moveSelection';
@@ -544,7 +544,9 @@ export class Fighter {
     for(const p of this.powers)if(p.remaining!==null)p.remaining--;
     this.powers=this.powers.filter(p=>p.remaining===null||p.remaining>0);
     if(this.formTicks!==null&&--this.formTicks<=0)this.exitForm();
-    this.grabImmunity = Math.max(0, this.grabImmunity - 1);
+    // Release protection is a window of usable control, not time spent
+    // knocked down. Otherwise a launcher consumes all protection before wakeup.
+    if(!['hitstun','stunned','juggle','grabbed','knockdown','getup','blockstun','dead'].includes(this.state))this.grabImmunity = Math.max(0, this.grabImmunity - 1);
     if (this.fusionFrames > 0) {
       this.fusionFrames -= 1;
     }
@@ -600,6 +602,12 @@ export class Fighter {
       actor.body.setOrigin(pose.facing === -1 ? 1 - originX : originX, originY);
       actor.body.setFlipX(pose.facing === -1);
       actor.body.setScale(sprite.scale*this.stats.size);
+      if((this.state==='knockdown'||this.state==='dead')&&this.grounded){
+        // Rotating around the feet can drive a long prop below the stage.
+        // Lift only the rendered sprite; physics and collision stay unchanged.
+        const below=actor.body.getBounds().bottom-pose.y;
+        if(below>0)actor.body.setY(pose.y-below);
+      }
       actor.body.clearTint();
       if (this.state === 'hitstun' || this.state === 'juggle') actor.body.setTint(0xffffff);
       if (this.state === 'stunned') actor.body.setTint(0xffef8a);
@@ -637,9 +645,11 @@ export class Fighter {
     const stateSheet = resolveStateSheet(this.state, (row) => (sprite?.frameCounts?.[row] ?? 0) > 0);
     if (stateSheet !== 'base') {
       const elapsed = Math.max(0, this.stateFrame - visualDelay);
+      const count=sprite?.frameCounts?.[stateSheet]??1;
+      const reaction=['hitstun','stunned','juggle'].includes(this.state);
       return {
         sheet: stateSheet,
-        frame: stateRowFrame(elapsed, sprite?.frameCounts?.[stateSheet] ?? 1, isLoopingStateRow(stateSheet)),
+        frame: reaction?timedStateRowFrame(elapsed,count,this.stateFrame+this.hitstun):this.state==='getup'?timedStateRowFrame(elapsed,count,25):stateRowFrame(elapsed,count,isLoopingStateRow(stateSheet)),
       };
     }
 

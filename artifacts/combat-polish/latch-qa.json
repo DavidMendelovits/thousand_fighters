@@ -1,0 +1,91 @@
+{
+  "status": "warning",
+  "characterId": "latch",
+  "normalizedKey": "characters/latch/assets/fighter-pack/manifest.json",
+  "generatedAt": "2026-09-16T21:04:19.162Z",
+  "summary": {
+    "errors": 0,
+    "warnings": 2,
+    "passed": 13,
+    "sheetsChecked": 12,
+    "framesChecked": 72,
+    "projectilesChecked": 0
+  },
+  "checks": [
+    {
+      "id": "manifest-exists",
+      "status": "pass",
+      "message": "manifest.json exists and is valid JSON."
+    },
+    {
+      "id": "manifest-schema",
+      "status": "pass",
+      "message": "manifest.json matches the canonical schema."
+    },
+    {
+      "id": "framedata-exists",
+      "status": "pass",
+      "message": "frameData.json exists, is valid JSON, and has all expected sheet keys (base, kick, special_1, special_2, punch, walk_forward, walk_back, jump, hurt, grab, block, getup)."
+    },
+    {
+      "id": "sheet-files-exist",
+      "status": "pass",
+      "message": "All 12 sheet files exist."
+    },
+    {
+      "id": "sprite-files-exist",
+      "status": "pass",
+      "message": "All 72 sprite files exist across 12 sheets."
+    },
+    {
+      "id": "frame-count-consistency",
+      "status": "pass",
+      "message": "Frame counts are consistent between manifest, frameData, and sprite files."
+    },
+    {
+      "id": "framedata-dimensions",
+      "status": "pass",
+      "message": "All 72 frames have valid dimensions and anchor positions."
+    },
+    {
+      "id": "source-boundaries",
+      "status": "pass",
+      "message": "No source clipping detected in extracted frames."
+    },
+    {
+      "id": "anchor-stability",
+      "status": "warning",
+      "message": "Anchor instability detected in 2 sheet(s): special_1: anchor Y standard deviation 69.3px exceeds 20% of mean frame height (66.7px) — possible misalignment.; jump: anchor Y standard deviation 128.5px exceeds 20% of mean frame height (76.6px) — possible misalignment.."
+    },
+    {
+      "id": "normalization-report-check",
+      "status": "warning",
+      "message": "normalization-report.json has 14 warning(s): base: frames equalized to silhouette height 283px per frame (row median was 283px); kick: row rescaled by 1.072 to match target silhouette height 283px (was 264px); special_1: row rescaled by 1.072 to match target silhouette height 283px (was 264px) ...."
+    },
+    {
+      "id": "projectile-assets",
+      "status": "pass",
+      "message": "No projectiles declared in manifest — check skipped."
+    },
+    {
+      "id": "authored-projectile-assets",
+      "status": "pass",
+      "message": "All 1 authored projectile sprites are present."
+    },
+    {
+      "id": "minimum-frame-count",
+      "status": "pass",
+      "message": "All sheets meet the minimum frame count requirements (12 sheets with 6+ frames)."
+    },
+    {
+      "id": "frame-height-consistency",
+      "status": "pass",
+      "message": "Row scale calibration is within 15% of base (283px). Video rows use the reference pose, not extension height; visual drift still requires review."
+    },
+    {
+      "id": "wide-reach-sanity",
+      "status": "pass",
+      "message": "Skipped: no wide-profile moves declared in the draft."
+    }
+  ]
+}

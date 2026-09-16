@@ -2,7 +2,8 @@
 // guarded by scripts/smoke_animation_rows.mjs — this browser file is served
 // behind a static server and can't import the Node module, so it keeps a
 // literal copy. 'projectiles' is a virtual tab (not a sprite row).
-const MOVE_ORDER = ['base', 'punch', 'kick', 'special_1', 'special_2', 'jump', 'crouch', 'dash_forward', 'dash_back', 'block', 'grab', 'throw', 'walk_forward', 'walk_back', 'projectiles'];
+import {moveContacts,moveGrabs,frameAdvantage,patchMove,REACTION_FIELDS} from './moveInspector.js';
+const MOVE_ORDER = ['base', 'punch', 'kick', 'special_1', 'special_2', 'jump', 'crouch', 'dash_forward', 'dash_back', 'block', 'grab', 'throw', 'walk_forward', 'walk_back', 'hurt', 'getup', 'projectiles'];
 
 // Where the Vite-served game (and the single-player testbed) lives. The testbed
 // reads this character's draft + assets back through the admin API via a Vite
@@ -202,8 +203,14 @@ const WORKBENCH_CTA_HANDLERS = {
 
 function handleWorkbenchClick(event) {
   if (event.target.closest('[data-save-authoring]')) { void saveAuthoring(); return; }
+  const tune=event.target.closest('[data-save-move]');
+  if(tune){void saveMoveInspector(tune.dataset.saveMove);return;}
+  const previewFx=event.target.closest('[data-preview-fx]');
+  if(previewFx){previewMoveEffect(previewFx.closest('[data-move-inspector]'));return;}
   const reextract = event.target.closest('[data-reextract]');
   if (reextract) { void reextractRow(reextract.dataset.reextract); return; }
+  const resample=event.target.closest('[data-resample]');
+  if(resample){const row=resample.dataset.resample;const input=document.querySelector(`[data-sample-times="${row}"]`);void reextractRow(row,input.value.split(',').map(v=>Number(v.trim())));return;}
   if(event.target.closest('[data-save-combat]')){void saveCombatRules();return;}
   const cta = event.target.closest('[id^="cta-"]');
   if (cta && WORKBENCH_CTA_HANDLERS[cta.id]) {
@@ -444,7 +451,7 @@ async function createDraft() {
 }
 
 // Sprite-row ids (the registry rows, no 'projectiles'). See MOVE_ORDER above.
-const MOVE_IDS = ['base', 'punch', 'kick', 'special_1', 'special_2', 'jump', 'crouch', 'dash_forward', 'dash_back', 'block', 'grab', 'throw', 'walk_forward', 'walk_back'];
+const MOVE_IDS = ['base', 'punch', 'kick', 'special_1', 'special_2', 'jump', 'crouch', 'dash_forward', 'dash_back', 'block', 'grab', 'throw', 'walk_forward', 'walk_back', 'hurt', 'getup'];
 
 // Source-sheet filename detection (`..._<rowId>_sheet.png`) built from MOVE_IDS,
 // longest-first so multi-token ids (special_1, dash_forward) win over any
@@ -535,6 +542,8 @@ const ROW_PROMPT_DESCRIPTIONS = {
   throw: 'throw — this single fighter alone mimes a throw on empty air: wind up the arms as if holding something, heave the empty hands up and forward, release into nothing, and recover. NO second character, no opponent, no thrown body — only this one fighter',
   walk_forward: 'walk forward — a seamless looping forward walk cycle, facing right, advancing',
   walk_back: 'walk backward — a seamless looping backward/retreating walk cycle, facing right, stepping back',
+  hurt:'hurt reaction — a brief flinch, recoil, then recovery; no attacker visible',
+  getup:'get up — rise from low knockdown into ready stance',
 };
 
 // The auto-built default prompt for a row. Carries the row's move identity so
@@ -1325,6 +1334,7 @@ function renderNewFighterWorkbench() {
       </div>
     </div>
     <section class="character-summary">
+      <details><summary>Import a published fighter</summary><p>Bring an existing runtime fighter into this workbench. Keeps its moves and collision geometry; never overwrites an existing draft. No generation cost.</p><form id="import-published-form"><label>Published fighter ID<input name="characterId" placeholder="brine" pattern="[a-z][a-z0-9_]*" required></label><button type="submit">Import published fighter</button><p role="status"></p></form></details>
       <form id="new-fighter-form" class="new-fighter-form">
         <label>
           Character ID
@@ -1360,6 +1370,10 @@ function renderNewFighterWorkbench() {
   `;
 
   document.getElementById('new-fighter-form').addEventListener('submit', onCreateNewFighter);
+  document.getElementById('import-published-form').addEventListener('submit',async event=>{
+    event.preventDefault();const form=event.currentTarget,id=form.elements.characterId.value.trim(),button=form.querySelector('button'),status=form.querySelector('[role="status"]');button.disabled=true;
+    try{await invokeTool('import_published_character',{characterId:id});await loadCharacters();navigateTo(`/roster/${id}`);}catch(error){status.textContent=error.message;}finally{button.disabled=false;}
+  });
   document.getElementById('new-fighter-ref').addEventListener('change', onNewFighterRefImage);
 }
 
@@ -1501,14 +1515,14 @@ async function saveAuthoring() {
   } catch (error) { status.textContent = error.message; }
 }
 
-async function reextractRow(moveId) {
+async function reextractRow(moveId,videoSampleTimes) {
   const characterId = state.currentCharacterId;
   const source = state.currentAssets.find(asset => asset.relativePath === `source/${characterId}_${moveId}_sheet.png`);
   if (!source || state.generatingMoves.has(moveId)) return;
   state.generatingMoves.add(moveId);
   setMoveCardLoading(moveId, true);
   try {
-    await invokeTool('extract_row_frames', {characterId, moveId, sourceAssetKey:source.key, spriteProfile:moveSpriteProfile(moveId)});
+    await invokeTool('extract_row_frames', {characterId, moveId, sourceAssetKey:source.key, spriteProfile:moveSpriteProfile(moveId),...(videoSampleTimes?{videoSampleTimes}:{})});
     await selectCharacter(characterId, {silent:true});
   } catch (error) { showError(error); }
   finally { state.generatingMoves.delete(moveId); setMoveCardLoading(moveId, false); }
@@ -1761,6 +1775,8 @@ function renderMoveCardTabs(group) {
        </a>`
     : '<span class="empty-inline">No source sheet generated for this move yet.</span>';
   const motionAsset=state.currentAssets.find(a=>a.relativePath?.includes(`_${group.id}_motion.mp4`));
+  const originalSheet=state.currentAssets.find(a=>a.relativePath===`source/${state.currentCharacterId}_${group.id}_sheet.png`);
+  const sampling=motionAsset?`<label>Video key moments (six seconds, comma-separated)<input data-sample-times="${escapeHtml(group.id)}" value="${escapeHtml((originalSheet?.metadata?.videoSampleTimes??[0,.84,1.68,2.52,3.36,4.2]).join(', '))}"></label><button data-resample="${escapeHtml(group.id)}" type="button">Resample saved video · no generation cost</button><p>First moment must be 0 to preserve reference scale. Choose full, unobstructed poses; never approve a clipped frame. Original MP4 is kept. Run QA afterward.</p>`:'';
   const promptPane = `
     <textarea class="move-prompt-input" data-move-prompt="${escapeHtml(group.id)}" rows="4" spellcheck="false">${escapeHtml(rowPromptFor(group.id))}</textarea>
     <div class="move-prompt-actions">
@@ -1781,7 +1797,7 @@ function renderMoveCardTabs(group) {
     ${pane('data', renderMoveData(group))}
     ${canGenerate ? pane('prompt', promptPane) : ''}
     ${pane('sounds', soundsPane)}
-    ${pane('source', (motionAsset?`<p>Video-derived motion · fal Kling. Six sampled poses; review before publishing.</p><video controls preload="metadata" style="width:100%;max-height:320px" src="${escapeHtml(motionAsset.apiUrl)}"></video>`:'')+sourcePane)}
+    ${pane('source', (motionAsset?`<p>Video-derived motion · fal Kling. Six sampled poses; review before publishing.</p><video controls preload="metadata" style="width:100%;max-height:320px" src="${escapeHtml(motionAsset.apiUrl)}"></video>${sampling}`:'')+sourcePane)}
   `;
 }
 
@@ -1920,9 +1936,63 @@ function renderMoveData(group) {
           ${summary.map(([label, value]) => `<span><b>${escapeHtml(label)}</b>${escapeHtml(value)}</span>`).join('')}
         </div>
         ${renderPhases(move)}
+        ${renderMoveInspector(move)}
       </section>
     `;
   }).join('');
+}
+
+function renderMoveInspector(move) {
+  const contacts=moveContacts(move,state.currentDraftData?.projectiles);
+  const advantage=frameAdvantage(move,state.currentDraftData?.projectiles);
+  const fx=move.phases?.flatMap(p=>p.events??[]).map(e=>e.event).find(e=>e.type==='spawn_effect'&&e.effect.id===`${move.id}_authored_fx`);
+  const field=(label,key,value,step=1)=>`<label><span>${escapeHtml(label)}</span><input type="number" data-tune="${key}" aria-label="${escapeHtml(move.displayName??move.id)} ${escapeHtml(label)}" step="${step}" value="${value??''}"></label>`;
+  const signed=v=>`${v>=0?'+':''}${v}f`;
+  return `<details class="move-inspector" data-move-inspector="${escapeHtml(move.id)}"><summary>Tune ${escapeHtml(move.displayName??move.id)}</summary>
+    <p>60 Hz · 6 frames = 100 ms. Save updates the draft; publish separately.</p>
+    <div class="tune-grid">${move.phases.map((p,i)=>field(`${p.name} frames`,`phase-${i}`,p.frames)).join('')}${field('Meter cost','meter',move.cost?.meter??0)}</div>
+    ${moveGrabs(move,state.currentDraftData?.projectiles).map((g,i)=>`<fieldset data-grab-contact="${i}"><legend>Grab ${i+1} · hold and release</legend><div class="tune-grid">${['damage','holdDuration','pullFrames','releaseHitstun'].map(k=>field(k,k,g[k]??0)).join('')}</div><p>Hold includes the pull. Release hitstun is additional, not part of the hold.</p></fieldset>`).join('')}
+    ${contacts.map((c,i)=>`<fieldset data-contact="${i}"><legend>${c.entityId?`Projectile ${escapeHtml(c.entityId)} · shared entity`:c.projectile?'Projectile contact':'Melee contact'} ${i+1}</legend><div class="tune-grid">${REACTION_FIELDS.map(k=>field(k,k,c.hitbox[k])).join('')}${field('Knockback X','knockbackX',c.hitbox.knockback?.x??c.hitbox.knockbackX??0,.1)}${field('Knockback Y','knockbackY',c.hitbox.knockback?.y??c.hitbox.knockbackY??0,.1)}</div><p>Blank stun uses hitstun. Blank hitstop uses the engine default; zero means no pause.</p></fieldset>`).join('')}
+    <p class="frame-advantage">${advantage?`Estimated advantage: hit ${signed(advantage.hit)} · block ${signed(advantage.block)}. ${advantage.projectile?'Projectile estimate assumes immediate contact; travel changes it.':'First active contact, no cancel.'}`:'Grab / utility move: no ordinary hit advantage.'} Spacing, collision timing and cancels must be tested in the arena.</p>
+    <label>Cancel into (move ids, comma-separated)<input data-tune="cancelInto" value="${escapeHtml((move.cancelInto??[]).join(', '))}"></label>
+    <label>Cancel condition<select data-tune="cancelOn">${['hit','contact','always'].map(v=>`<option ${v===(move.cancelOn??'hit')?'selected':''}>${v}</option>`).join('')}</select></label>
+    <p>Kit combo routes also add cancel links. Remove a route in the kit editor to remove its links.</p>
+    <fieldset><legend>Independent effect layer · no body collision</legend><label><input type="checkbox" data-fx="enabled" ${fx?'checked':''}> Spawn on active phase</label>
+    <div class="tune-grid"><label>Effect<select data-fx="kind">${['spark','ink','thread','electric','shards','spores','pressure','bind'].map(k=>`<option ${k===(fx?.effect.kind??'spark')?'selected':''}>${k}</option>`).join('')}</select></label>${[['Socket X','x',fx?.offsetX??45],['Socket Y','y',fx?.offsetY??-70],['Radius','radius',fx?.effect.radius??30],['Lifetime frames','durationTicks',fx?.effect.durationTicks??12]].map(([l,k,v])=>`<label>${l}<input type="number" data-fx="${k}" value="${v}"></label>`).join('')}
+    <label>Color<input type="color" data-fx="color" value="#${(fx?.effect.color??0xffbd66).toString(16).padStart(6,'0')}"></label><label>Accent<input type="color" data-fx="accent" value="#${(fx?.effect.accent??0xffffff).toString(16).padStart(6,'0')}"></label></div>
+    <label><input type="checkbox" data-fx="attached" ${fx?.attached?'checked':''}> Follow fighter socket (aura / attached burst)</label><button type="button" data-preview-fx>Preview effect bounds</button><canvas class="effect-preview" width="400" height="220" aria-label="Independent effect preview"></canvas><p>The cross is the fighter pivot. The dashed box is effect space, not a body hitbox. Opponent impact effects remain on the projectile.</p></fieldset>
+    <button type="button" data-save-move="${escapeHtml(move.id)}">Save move & effect</button><p role="status" class="move-save-status"></p></details>`;
+}
+
+function readEffectEditor(root){
+  const get=k=>root.querySelector(`[data-fx="${k}"]`);
+  return {kind:get('kind').value,...Object.fromEntries(['x','y','radius','durationTicks'].map(k=>[k,Number(get(k).value)])),color:parseInt(get('color').value.slice(1),16),accent:parseInt(get('accent').value.slice(1),16),attached:get('attached').checked};
+}
+async function saveMoveInspector(id){
+  const root=[...document.querySelectorAll('[data-move-inspector]')].find(e=>e.dataset.moveInspector===id),status=root.querySelector('.move-save-status');
+  try{
+    const move=state.currentDraftData.moves.find(m=>m.id===id),read=k=>root.querySelector(`[data-tune="${k}"]`).value;
+    let next=patchMove(state.currentDraftData,id,{phases:move.phases.map((_,i)=>Number(read(`phase-${i}`))),meter:Number(read('meter')),cancelInto:read('cancelInto').split(',').map(v=>v.trim()).filter(Boolean),cancelOn:read('cancelOn'),effect:root.querySelector('[data-fx="enabled"]').checked?readEffectEditor(root):null});
+    for(const contact of root.querySelectorAll('[data-contact]')){
+      const patch={index:Number(contact.dataset.contact)};
+      for(const input of contact.querySelectorAll('[data-tune]')){const key=input.dataset.tune;if(input.value===''){if(['stun','hitstop','blockstun'].includes(key))patch[key]=null;else throw new Error(`${key} is required.`);}else patch[key]=Number(input.value);}
+      next=patchMove(next,id,{contact:patch});
+    }
+    for(const grab of root.querySelectorAll('[data-grab-contact]'))next=patchMove(next,id,{grab:{index:Number(grab.dataset.grabContact),...Object.fromEntries([...grab.querySelectorAll('[data-tune]')].map(input=>[input.dataset.tune,Number(input.value)]))}});
+    await invokeTool('update_character_draft',{characterId:state.currentCharacterId,patch:{moves:next.moves,...(next.projectiles?{projectiles:next.projectiles}:{})},note:'Move inspector: timing, reaction, cancels and independent VFX'});
+    state.currentDraftData=next;
+    root.outerHTML=renderMoveInspector(next.moves.find(m=>m.id===id));
+    const saved=[...document.querySelectorAll('[data-move-inspector]')].find(e=>e.dataset.moveInspector===id);
+    saved.open=true;saved.querySelector('.move-save-status').textContent='Saved to draft. Run QA and publish to update the arena.';
+  }catch(error){status.textContent=error.message;}
+}
+function previewMoveEffect(root){
+  const canvas=root.querySelector('canvas'),ctx=canvas.getContext('2d'),e=readEffectEditor(root),scale=Math.min(.65,170/(Math.abs(e.x)+e.radius*1.7),90/(Math.abs(e.y)+e.radius*1.7));
+  ctx.fillStyle='#111922';ctx.fillRect(0,0,400,220);const px=200,py=180;
+  ctx.strokeStyle='#78948c';ctx.beginPath();ctx.moveTo(px-7,py);ctx.lineTo(px+7,py);ctx.moveTo(px,py-7);ctx.lineTo(px,py+7);ctx.stroke();
+  const x=px+e.x*scale,y=py+e.y*scale,r=e.radius*1.5*scale;ctx.setLineDash([3,3]);ctx.strokeRect(x-r,y-r,r*2,r*2);ctx.setLineDash([]);
+  for(let i=0;i<10;i++){const a=i*Math.PI/5;ctx.fillStyle=`#${(i%2?e.color:e.accent).toString(16).padStart(6,'0')}`;ctx.fillRect(Math.round(x+Math.cos(a)*r*.65),Math.round(y+Math.sin(a)*r*.65),5,5);}
+  ctx.fillStyle='#c6d9d0';ctx.font='12px monospace';ctx.fillText(`${e.kind} · ${(e.durationTicks/60).toFixed(2)}s · independent layer`,12,18);
 }
 
 function renderPhases(move) {
