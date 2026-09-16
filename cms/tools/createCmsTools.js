@@ -2,6 +2,7 @@ import { assetApiUrl, writeCharacterAssetUpload } from '../assets/uploadCharacte
 import { exportCharacterToRuntime } from '../export/exportCharacterToRuntime.js';
 import { build as buildAssetsIndex } from '../../scripts/build_assets_index.mjs';
 import { SHEET_IDS } from '../../shared/animationRows.js';
+import {validateCombatRules} from '../export/validateCombatRules.js';
 import { validateCombos, validateProjectiles, validateProjectileReferences } from '../export/convertDraftToCharacterConfig.js';
 
 // Row ids an agent can generate, sourced from the registry so the tool schema
@@ -75,7 +76,9 @@ export function createCmsTools({ pipeline, repository, registry }) {
       }, ['characterId', 'patch']),
       execute: async ({ characterId, patch, note }) => {
         const current = await repository.getDraft(characterId);
-        const draft = await repository.saveDraft(characterId, deepMerge(current, patch ?? {}), {
+        const merged=deepMerge(current,patch??{});
+        validateCombatRules(merged,characterId);
+        const draft = await repository.saveDraft(characterId, merged, {
           provider: 'cms-tool',
           adapterId: 'update-character-draft',
           note: note ?? null,
@@ -721,6 +724,16 @@ function withAssetApiUrl(result) {
       ...result.asset,
       apiUrl: assetApiUrl(result.asset.key),
     },
+    videoAsset: result.videoAsset
+      ? {
+          ...result.videoAsset,
+          apiUrl: assetApiUrl(result.videoAsset.key),
+      }
+      : result.videoAsset,
+    frameAssets: result.frameAssets?.map((frameAsset) => ({
+      ...frameAsset,
+      apiUrl: assetApiUrl(frameAsset.key),
+    })) ?? result.frameAssets,
   };
 }
 

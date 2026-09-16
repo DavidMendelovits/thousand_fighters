@@ -52,7 +52,11 @@ export class ComputerPlayer {
     }
 
     const raw = emptyRaw(this.previous);
-    if (self.state === 'attack' || self.state === 'hitstun' || self.state === 'blockstun' || self.state === 'grabbed' || self.state === 'juggle') {
+    if(self.config.rosterGroup==='oddities'&&self.state==='attack'&&self.hitThisMove){
+      const next=self.config.moves.find(m=>self.currentMove?.cancelInto?.includes(m.id));
+      if(next){const seq=next.trigger.sequence;return {...raw,down:seq.includes('down'),lp:seq.includes('lp'),lk:seq.includes('lk'),hp:seq.includes('hp')};}
+    }
+    if (self.state === 'attack' || self.state === 'hitstun' || self.state === 'stunned' || self.state === 'blockstun' || self.state === 'grabbed' || self.state === 'juggle') {
       return raw;
     }
 
@@ -60,6 +64,21 @@ export class ComputerPlayer {
     const distance = Math.abs(opponent.x - self.x);
     const forwardKey = self.facing === 1 ? 'right' : 'left';
     const backKey = self.facing === 1 ? 'left' : 'right';
+
+    if (self.config.rosterGroup === 'oddities') {
+      if (this.thinkCooldown > 0) return distance > 190 ? { ...raw, [forwardKey]: true } : raw;
+      this.thinkCooldown = 28;
+      const choice = Math.floor(frame / 47) % 6;
+      if(!self.activeForm&&self.baseConfig.forms?.length&&self.meter>=50&&self.health<self.config.maxHealth*.75)return {...raw,transform:true};
+      if(!self.powers.length&&self.meter>=25&&self.health<self.config.maxHealth*.4)return {...raw,power:true};
+      if(distance>240&&choice===2)return {...raw,[forwardKey]:true,dash:true};
+      if (distance < 78 && choice < 2) return { ...raw, lp: true, lk: true };
+      if (distance < 110 && choice === 2) return { ...raw, lp: true };
+      if (distance > 300 && !self.config.moves.some(m => m.phases.some(p => p.events.some(e => 'projectile' in e.event)))) return { ...raw, [forwardKey]: true };
+      if (self.config.id === 'meridian' && choice === 4) return { ...raw, [backKey]: true, hp: true };
+      if (self.config.id === 'meridian' && choice === 5) return { ...raw, up: true, hp: true };
+      return { ...raw, hp: true, down: choice % 2 === 1 };
+    }
 
     if (opponent.state === 'attack' && distance < 105) {
       return { ...raw, [backKey]: true, down: opponent.currentMove?.id === 'crouch_low_kick' };

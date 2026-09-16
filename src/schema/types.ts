@@ -19,6 +19,9 @@ export type InputToken =
   | 'grab';
 
 export type RawInput = {
+  dash?: boolean;
+  power?: boolean;
+  transform?: boolean;
   left: boolean;
   right: boolean;
   up: boolean;
@@ -47,6 +50,8 @@ export type MoveTrigger = {
 export type HitLevel = 'high' | 'mid' | 'low';
 
 export type Hitbox = {
+  hitstop?: number;
+  impact?: ImpactSpec;
   x: number;
   y: number;
   width: number;
@@ -62,6 +67,8 @@ export type Hitbox = {
   unblockable?: boolean;
   hitSpark?: string;
   hitSound?: string;
+  /** A real input-locking stun, distinct from ordinary recoil. */
+  stun?: number;
 };
 
 export type Hurtbox = {
@@ -92,6 +99,10 @@ export type GrabSpec = {
   releaseLaunches?: boolean;
   releaseKnockdown?: boolean;
   grabSound?: string;
+  groundOnly?: boolean;
+  /** Projectile cages can hold at contact instead of dragging to the caster. */
+  anchor?: 'attacker' | 'contact';
+  unblockable?: boolean;
 };
 
 /**
@@ -110,13 +121,17 @@ export type HitboxKeyframe = {
 };
 
 export type MoveEvent =
+  | { type: 'power_up'; power: PowerUpSpec }
+  | { type: 'transform'; formId: string }
+  | { type: 'revert_form' }
   | { type: 'hitbox_active'; hitbox: Hitbox; keyframes?: HitboxKeyframe[]; id?: string; actor?: FighterActorId }
   | { type: 'hitbox_end'; id?: string; actor?: FighterActorId }
-  | { type: 'grab_check'; grab: GrabSpec; id?: string; actor?: FighterActorId }
+  | { type: 'grab_check'; grab: GrabSpec; keyframes?: HitboxKeyframe[]; id?: string; actor?: FighterActorId }
   | { type: 'grab_end'; id?: string }
   | { type: 'spawn_projectile'; projectile: ProjectileConfig; offsetX: number; offsetY: number }
   | { type: 'spawn_projectile_at_target'; projectile: ProjectileConfig; offsetX: number; offsetY: number }
   | { type: 'spawn_projectile_from_sky'; projectile: ProjectileConfig; targetOffsetX: number; spawnOffsetY: number }
+  | { type: 'spawn_projectile_behind_target'; projectile: ProjectileConfig; distance: number; offsetY: number }
   | { type: 'set_velocity'; vx?: number; vy?: number; relativeToFacing?: boolean }
   | { type: 'teleport'; offsetX: number; offsetY: number }
   | { type: 'invulnerable'; duration: number; against?: (HitLevel | 'projectile')[] }
@@ -151,6 +166,7 @@ export type MoveVisualFrame = {
 };
 
 export type Move = {
+  cancelOn?: 'hit' | 'contact' | 'always';
   id: string;
   displayName: string;
   animation: string;
@@ -165,9 +181,15 @@ export type Move = {
   airOk?: boolean;
   groundOk?: boolean;
   cost?: { meter?: number };
+  description?: string;
+  inputLabel?: string;
+  /** Pixel-rendered attached extension; endpoints follow collision geometry. */
+  extension?: { kind: 'tentacle' | 'elastic' | 'ribbon' | 'root'; color: number; accent: number; thickness: number };
 };
 
 export type ProjectileConfig = {
+  /** Standalone contact effect, exported with the projectile rather than the caster. */
+  impact?: ImpactSpec;
   id: string;
   animation: string;
   width: number;
@@ -179,6 +201,9 @@ export type ProjectileConfig = {
   hitbox: Hitbox;
   pierces?: number;
   clashesWithProjectiles?: boolean;
+  grab?: GrabSpec;
+  delayFrames?: number;
+  visual?: { kind: 'needle' | 'orb' | 'cage' | 'wave' | 'scrap' | 'spore'; color: number; accent: number };
   spawnPolicy?: {
     maxActivePerOwner?: number;
     ifAlreadyActive?: 'block_spawn' | 'replace_oldest' | 'allow';
@@ -223,6 +248,9 @@ export type FighterActorConfig = {
 };
 
 export type FighterState =
+  | 'dash'
+  | 'air_dodge'
+  | 'wavedash'
   | 'idle'
   | 'walk_forward'
   | 'walk_back'
@@ -236,12 +264,19 @@ export type FighterState =
   | 'block'
   | 'blockstun'
   | 'grabbed'
+  | 'stunned'
   | 'knockdown'
   | 'getup'
   | 'juggle'
   | 'dead';
 
 export type CharacterConfig = {
+  stats?: Partial<CombatStats>;
+  powerUps?: PowerUpSpec[];
+  forms?: CharacterForm[];
+  selectable?: boolean;
+  parentId?: string;
+  comboRoutes?: Array<{name: string; moves: string[]; purpose: string}>;
   id: string;
   displayName: string;
   walkForwardSpeed: number;
@@ -255,14 +290,25 @@ export type CharacterConfig = {
   hurtboxes: Partial<Record<FighterState, Hurtbox>>;
   guardboxes?: Partial<Record<FighterState, Hurtbox>>;
   pivotOffsetY: number;
+  pushboxWidth?: number;
   sprite?: CharacterSpriteConfig;
   actors?: FighterActorConfig[];
   animations: Partial<Record<FighterState, string>>;
   moves: Move[];
+  rosterGroup?: string;
+  concept?: { role: string; biography: string; accent: string; tags: string[]; counterplay: string; artStatus: string };
 };
+
+/** Multipliers: 1 = neutral. Size scales both art and collision geometry. */
+export type CombatStats = { attack: number; defense: number; projectileAttack: number; projectileDefense: number; speed: number; knockback: number; weight: number; size: number };
+export type PowerUpSpec = { id: string; name: string; modifiers: Partial<CombatStats>; durationTicks: number | null; cost: number; color?: number };
+/** A complete, non-selectable combat character owned by its base fighter. */
+export type CharacterForm = { id: string; name: string; durationTicks: number | null; cost: number; config: CharacterConfig };
+export type ImpactSpec = { id: string; kind: 'spark' | 'ink' | 'thread' | 'electric' | 'shards' | 'spores' | 'pressure' | 'bind'; color: number; accent: number; durationTicks: number; radius: number };
 
 export type FighterScene = Phaser.Scene & {
   projectiles: ProjectilePool;
   hitPauseFrames: number;
   _soundsPlayedThisFrame?: Set<string>;
+  _combatImpacts?: Array<{x:number;y:number;spec:ImpactSpec;blocked:boolean;age:number}>;
 };

@@ -1,6 +1,9 @@
 # Pipeline: sprite-sprint → thousand_fighters
 
-sprite-sprint produces the raw AI-generated source sheet. thousand_fighters' normalize script turns it into a game-ready fighter pack. sprite-sprint supports two generation paths (image-gen and video); both output the same 5×6 sheet format.
+sprite-sprint or the CMS produces the raw AI-generated source sheet.
+thousand_fighters' normalize script turns it into a game-ready fighter pack.
+The CMS now supports MiniMax H3 motion-video rows directly; every path still
+converges on the same per-row sheet format before normalization.
 
 ## Architecture
 
@@ -63,6 +66,26 @@ Generates 5 separate Runway videos (one per move), extracts 6 key frames from ea
 - More dynamic poses with real weight and momentum
 - Slower (minutes per video)
 - Frame selection requires curation (existing v2 contact sheet + selection UI)
+
+The in-repo CMS can now run this path without the external sprite-sprint hop by
+setting `IMAGE_GENERATOR_PROVIDER=minimax-h3`. It generates one H3 clip for the
+requested move row, samples six frames with ffmpeg, stores the PNG at the normal
+source-sheet key, and retains the MP4 next to it for review. The current H3
+adapter performs even temporal sampling; a future curation pass can replace
+those six picks without changing the handoff contract.
+
+### Path C: Parallel still frames (fast comparison path)
+
+Set `IMAGE_GENERATOR_PROVIDER` to `minimax-image`, `gemini-fast`, `bfl-klein`,
+or `fal`. Rather than trusting one model call to draw a perfect contact sheet,
+the CMS sends six frame-specific prompts concurrently. It then uses ffmpeg to
+scale and bottom-align each result into fixed cells and tiles a deterministic
+1x6 row (or 2x3 wide grid). The raw frames remain available beside the sheet,
+which makes identity drift and bad poses easy to diagnose.
+
+`npm run cms:image:benchmark` runs the same row through every configured fast
+provider and stores their sheets plus timing/cost metadata under
+`artifacts/fast-image-benchmark/`.
 
 ### User Choice
 

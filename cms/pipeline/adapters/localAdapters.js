@@ -38,12 +38,12 @@ export function createLocalPlaceholderImageGenerator(overrides = {}) {
     async healthCheck() {
       return {
         status: 'error',
-        message: 'No image generator configured. Set IMAGE_GENERATOR_PROVIDER=codex or IMAGE_GENERATOR_PROVIDER=openai.',
+        message: 'No image generator configured. Set IMAGE_GENERATOR_PROVIDER to codex, openai, minimax-h3, minimax-image, gemini-fast, bfl-klein, or fal.',
       };
     },
     async generateImage() {
       throw new Error(
-        'No image generator configured. Set IMAGE_GENERATOR_PROVIDER=codex or IMAGE_GENERATOR_PROVIDER=openai.',
+        'No image generator configured. Set IMAGE_GENERATOR_PROVIDER to codex, openai, minimax-h3, minimax-image, gemini-fast, bfl-klein, or fal.',
       );
     },
   };

@@ -17,7 +17,7 @@ export class HitboxSystem {
     for (const active of attacker.getActiveHitboxesWorld()) {
       for (const hurtbox of hurtboxes) {
         if (boxesOverlap(active.world, hurtbox.world)) {
-          HitResolver.resolve(attacker, defender, active.hitbox, active.id);
+          HitResolver.resolve(attacker, defender, active.hitbox, active.id, { x: attacker.x, y: attacker.y, facing: attacker.facing, world: active.world });
         }
       }
     }
@@ -33,6 +33,7 @@ export class HitboxSystem {
 
   private static checkProjectiles(fighters: [Fighter, Fighter], projectiles: ProjectilePool): void {
     for (const projectile of projectiles.active) {
+      if (projectile.delayRemaining > 0 || projectile.piercesRemaining <= 0) continue;
       const defender = fighters.find((fighter) => fighter !== projectile.owner);
       if (!defender) continue;
 
@@ -45,7 +46,13 @@ export class HitboxSystem {
       if (defender.invulnerable?.against.includes('projectile')) continue;
       if (!projectiles.markHit(projectile, defender.id)) continue;
 
-      HitResolver.resolve(projectile.owner, defender, projectile.config.hitbox, `projectile:${projectile.uid}`);
+      const source = { x: projectile.x, y: projectile.y, facing: projectile.facing, world: projectileHitbox, projectile:true,stats:projectile.attackStats,impact:projectile.config.impact,ownerMoveSerial:projectile.ownerMoveSerial };
+      const grab = projectile.config.grab;
+      if (grab && (grab.unblockable || !HitResolver.isBlocking(defender, source, projectile.config.hitbox))) {
+        if(HitResolver.resolveGrab(projectile.owner, defender, grab, `projectile:${projectile.uid}`, true,projectile.attackStats,projectile.ownerMoveSerial))HitResolver.impact(projectile.owner.scene,defender,projectile.config.impact);
+      } else {
+        HitResolver.resolve(projectile.owner, defender, projectile.config.hitbox, `projectile:${projectile.uid}`, source);
+      }
     }
   }
 }

@@ -3,7 +3,9 @@ import { Fighter } from '../core/Fighter';
 import { HitboxSystem } from '../core/HitboxSystem';
 import { ProjectilePool } from '../core/ProjectilePool';
 import { InputReader } from '../core/InputReader';
+import { InputBuffer } from '../core/InputBuffer';
 import { GameLoop } from '../core/GameLoop';
+import { CombatVisuals, createCombatTextures } from '../core/CombatVisuals';
 import type { CharacterConfig, RawInput, SpriteSheetId } from '../schema/types';
 import type { AABB } from '../util/aabb';
 
@@ -70,11 +72,11 @@ export class TestbedScene extends Phaser.Scene {
   private player!: Fighter;
   private dummy!: Fighter;
   private debugGfx!: Phaser.GameObjects.Graphics;
+  private combatVisuals!: CombatVisuals;
   private dummyAnchorX = DUMMY_X;
 
   private mode: PlaybackMode = 'play';
   private dummyMode: DummyMode = 'post';
-  private slowAccumulator = 0;
   private stepQueued = 0;
   private frame = 0;
   private ready = false;
@@ -89,6 +91,10 @@ export class TestbedScene extends Phaser.Scene {
 
   preload(): void {
     const { config, frameUrls, projectileUrls } = this.payload;
+    for(const form of config.forms??[]) {
+      const sprite=form.config.sprite;
+      for(const [sheet,frames] of Object.entries(sprite?.frames??{}))frames?.forEach((frame,index)=>this.load.image(`${form.config.id}:${sheet}:${index}`,`${sprite!.basePath}/${frame.file}`));
+    }
     for (const sheet of Object.keys(frameUrls) as SpriteSheetId[]) {
       const urls = frameUrls[sheet] ?? [];
       urls.forEach((url, index) => {
@@ -103,10 +109,24 @@ export class TestbedScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.loop.reset();
+    if (this.input.keyboard) InputReader.reset(this.input.keyboard);
+    const clearTimingAndInput = (): void => {
+      this.loop.reset();
+      if (this.input.keyboard) InputReader.reset(this.input.keyboard);
+    };
+    this.game.events.on(Phaser.Core.Events.BLUR, clearTimingAndInput);
+    this.game.events.on(Phaser.Core.Events.FOCUS, clearTimingAndInput);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.game.events.off(Phaser.Core.Events.BLUR, clearTimingAndInput);
+      this.game.events.off(Phaser.Core.Events.FOCUS, clearTimingAndInput);
+    });
     this.cameras.main.setBackgroundColor('#141820');
     this.drawStage();
 
     this.projectiles = new ProjectilePool(this);
+    createCombatTextures(this,[this.payload.config,...(this.payload.config.forms??[]).map(f=>f.config)]);
+    this.combatVisuals=new CombatVisuals(this);
     this.player = new Fighter(this, this.payload.config, 1, { x: PLAYER_X, y: FLOOR_Y });
     this.dummy = new Fighter(this, this.payload.config, 2, { x: DUMMY_X, y: FLOOR_Y });
     this.fighters = [this.player, this.dummy];
@@ -124,20 +144,15 @@ export class TestbedScene extends Phaser.Scene {
   update(time: number): void {
     if (!this.ready) return;
 
-    if (this.mode === 'play') {
-      this.loop.update(time, () => this.fixedStep());
-    } else if (this.mode === 'slow') {
-      this.slowAccumulator += 1;
-      if (this.slowAccumulator >= SLOW_DIVISOR) {
-        this.slowAccumulator = 0;
-        this.fixedStep();
-      }
+    if (this.mode === 'play' || this.mode === 'slow') {
+      this.loop.update(time, () => this.fixedStep(), this.mode === 'slow' ? 1 / SLOW_DIVISOR : 1);
     } else if (this.stepQueued > 0) {
       this.stepQueued -= 1;
       this.fixedStep();
     }
 
     this.renderOverlay();
+    this.combatVisuals.draw(this.fighters);
     this.updateSnapshot();
   }
 
@@ -169,6 +184,7 @@ export class TestbedScene extends Phaser.Scene {
     this.dummy.update(NEUTRAL, this.player, this.projectiles);
 
     this.projectiles.update();
+    this.combatVisuals.tick();
     HitboxSystem.checkAll(this.fighters, this.projectiles);
 
     // Invincible dummy: keep it alive so you can keep landing moves.
@@ -299,7 +315,9 @@ export class TestbedScene extends Phaser.Scene {
 
   setMode(mode: PlaybackMode): void {
     this.mode = mode;
-    this.slowAccumulator = 0;
+    this.loop.reset();
+    this.stepQueued = 0;
+    if (this.input.keyboard) InputReader.reset(this.input.keyboard);
   }
 
   togglePause(): void {
@@ -323,11 +341,13 @@ export class TestbedScene extends Phaser.Scene {
 
   reset(): void {
     if (!this.ready) return;
+    this.loop.reset();
+    this.stepQueued = 0;
+    if (this.input.keyboard) InputReader.reset(this.input.keyboard);
     this.hitPauseFrames = 0;
     this.frame = 0;
     this.lastError = null;
-    for (const projectile of [...this.projectiles.active]) projectile.body.destroy();
-    this.projectiles.active.length = 0;
+    this.projectiles.clear();
 
     this.resetFighter(this.player, PLAYER_X);
     this.dummyAnchorX = DUMMY_X;
@@ -335,6 +355,9 @@ export class TestbedScene extends Phaser.Scene {
   }
 
   private resetFighter(fighter: Fighter, x: number): void {
+    fighter.resetAdvanced();
+    fighter.inputBuffer = new InputBuffer();
+    fighter.stateFrame = 0;
     fighter.x = x;
     fighter.y = FLOOR_Y;
     fighter.vx = 0;

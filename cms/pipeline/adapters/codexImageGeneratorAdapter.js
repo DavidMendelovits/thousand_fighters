@@ -3,6 +3,7 @@ import { mkdtemp, readdir, readFile, rm, stat, writeFile } from 'node:fs/promise
 import path from 'node:path';
 import os from 'node:os';
 import { rowPromptProfile } from '../rowPromptProfiles.js';
+import { pixelArtDirection } from './pixelArtDirection.js';
 
 const DEFAULT_CODEX_BIN = 'codex';
 const DEFAULT_TIMEOUT_MS = 180_000;
@@ -146,12 +147,13 @@ function extractDescription(codexOutput) {
 }
 
 function buildCodexPrompt(task, userPrompt, context, moveId, referenceCount = 0) {
+  const pixelStyle = pixelArtDirection();
   const referenceNote = referenceCount
     ? ` ${referenceCount} reference image(s) are attached — match their character identity, proportions, palette, outfit, and on-screen scale exactly; this is the same fighter.`
     : '';
 
   if (task === 'character-concept') {
-    return `Generate an image: a character turnaround sheet, 1x3 grid of three equal square panels. Left=front view, center=3/4 profile, right=back view. Full body, light gray #f0f0f0 background, no text. Character: ${userPrompt ?? 'a fighter'}${referenceNote}`;
+    return `${pixelStyle} Generate an image: a character turnaround sheet, 1x3 grid of three equal square panels. Left=front view, center=3/4 profile, right=back view. Full body, light gray #f0f0f0 background, no text. Character: ${userPrompt ?? 'a fighter'}${referenceNote}`;
   }
 
   if (task === 'fighter-1x6-row') {
@@ -159,21 +161,22 @@ function buildCodexPrompt(task, userPrompt, context, moveId, referenceCount = 0)
     const profile = rowPromptProfile(resolvedMoveId);
     const motionNote = profile.shortRoles;
     const scaleConstraint = profile.scaleNote ? ` ${profile.scaleNote}` : '';
-    return `Generate an image: a single-row fighting game sprite strip with exactly 6 frames for the "${resolvedMoveId}" move. Magenta #ff00ff background, full body visible, generous gutters, every limb visually connected to the body. Frames must never overlap: leave a wide band of pure magenta between neighbors — not a single pixel of one frame may cross into another frame's cell. Exactly one figure: only this single fighter appears in every frame — no second character, no opponent, no other body anywhere; the fighter mimes any contact action against empty magenta air.${scaleConstraint} ${motionNote} Character: ${userPrompt ?? 'a fighter'}${referenceNote}`;
+    return `${pixelStyle} Generate an image: a single-row fighting game sprite strip with exactly 6 frames for the "${resolvedMoveId}" move. Magenta #ff00ff background, full body visible, generous gutters, every limb visually connected to the body. Frames must never overlap: leave a wide band of pure magenta between neighbors — not a single pixel of one frame may cross into another frame's cell. Exactly one figure: only this single fighter appears in every frame — no second character, no opponent, no other body anywhere; the fighter mimes any contact action against empty magenta air.${scaleConstraint} ${motionNote} Character: ${userPrompt ?? 'a fighter'}${referenceNote}`;
   }
 
   if (task === 'fighter-2x3-grid') {
     const resolvedMoveId = moveId ?? context?.moveId ?? 'base';
-    return `Generate an image: a fighting game sprite sheet with exactly 2 rows and 3 columns (6 frames, left-to-right then top-to-bottom) for the "${resolvedMoveId}" move — a long-reach extending-limb attack. Wide cells; the extended limb stays connected to the body as one continuous silhouette. Frames must never overlap: leave a wide band of pure magenta between neighbors — not a single pixel of one frame may cross into another frame's cell. Frame roles: 1-2 startup, 3 extending, 4 full extension at maximum reach, 5 retraction, 6 recovery. Magenta #ff00ff background, full body visible, generous gutters, consistent scale and floor line. Character: ${userPrompt ?? 'a fighter'}${referenceNote}`;
+    return `${pixelStyle} Generate an image: a fighting game sprite sheet with exactly 2 rows and 3 columns (6 frames, left-to-right then top-to-bottom) for the "${resolvedMoveId}" move — a long-reach extending-limb attack. Wide cells; the extended limb stays connected to the body as one continuous silhouette. Frames must never overlap: leave a wide band of pure magenta between neighbors — not a single pixel of one frame may cross into another frame's cell. Frame roles: 1-2 startup, 3 extending, 4 full extension at maximum reach, 5 retraction, 6 recovery. Magenta #ff00ff background, full body visible, generous gutters, consistent scale and floor line. Character: ${userPrompt ?? 'a fighter'}${referenceNote}`;
   }
 
   if (task === 'projectile-sprite') {
-    return `Generate an image: a SINGLE fighting-game projectile sprite, centered, on a solid magenta #ff00ff background. One object only — no character, no frame strip, no grid, no text. Generous magenta margin on all sides so nothing touches the edge; the projectile points to the RIGHT (travel direction). Crisp readable silhouette. Projectile: ${userPrompt ?? 'an energy projectile'}${referenceNote}`;
+    return `${pixelStyle} Generate an image: a SINGLE fighting-game projectile sprite, centered, on a solid magenta #ff00ff background. One object only — no character, no frame strip, no grid, no text. Generous magenta margin on all sides so nothing touches the edge; the projectile points to the RIGHT (travel direction). Crisp readable silhouette. Projectile: ${userPrompt ?? 'an energy projectile'}${referenceNote}`;
   }
 
   if (task === 'arena-background') {
     return [
       'Generate an image using your image generation tool.',
+      pixelStyle,
       'Draw a 2D fighting game arena background.',
       'Wide 16:9 composition, flat ground plane, dramatic lighting.',
       'No characters, no UI, no text.',

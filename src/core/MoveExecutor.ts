@@ -3,6 +3,13 @@ import type { Move, MoveEvent } from '../schema/types';
 
 export class MoveExecutor {
   static start(fighter: Fighter, move: Move): void {
+    const cost=move.cost?.meter??0;
+    if(fighter.meter<cost)return;
+    fighter.meter-=cost;
+    fighter.inputBuffer.consumeButtons();
+    fighter.contactThisMove=false;
+    fighter.hitThisMove=false;
+    fighter.moveSerial=(fighter.moveSerial??0)+1;
     fighter.currentMove = move;
     fighter.movePhaseIndex = 0;
     fighter.movePhaseFrame = 0;
@@ -25,6 +32,7 @@ export class MoveExecutor {
     for (const { onFrame, event } of phase.events) {
       if (onFrame === fighter.movePhaseFrame) {
         this.handleEvent(fighter, event);
+        if(fighter.currentMove!==move)return;
       }
     }
 
@@ -43,6 +51,9 @@ export class MoveExecutor {
 
   static handleEvent(fighter: Fighter, event: MoveEvent): void {
     switch (event.type) {
+      case 'power_up': fighter.applyPowerUp(event.power); break;
+      case 'transform': fighter.enterForm(event.formId); break;
+      case 'revert_form': fighter.exitForm(); break;
       case 'hitbox_active':
         fighter.setActiveHitbox(event.id ?? 'default', event.hitbox, event.actor, event.keyframes);
         break;
@@ -50,7 +61,7 @@ export class MoveExecutor {
         fighter.clearActiveHitbox(event.id ?? 'default');
         break;
       case 'grab_check':
-        fighter.setActiveGrab(event.id ?? 'grab', event.grab, event.actor);
+        fighter.setActiveGrab(event.id ?? 'grab', event.grab, event.actor, event.keyframes);
         break;
       case 'grab_end':
         fighter.clearActiveGrab(event.id ?? 'grab');
@@ -70,6 +81,13 @@ export class MoveExecutor {
         if (target) {
           fighter.scene.projectiles.spawnAt(event.projectile, fighter, target.x + event.targetOffsetX, target.y + event.spawnOffsetY, fighter.facing);
         }
+        break;
+      }
+      case 'spawn_projectile_behind_target': {
+        const target = (fighter.scene as { fighters?: [Fighter, Fighter] }).fighters?.find((candidate) => candidate !== fighter);
+        if (target) fighter.scene.projectiles.spawnAt(event.projectile, fighter,
+          Math.max(30, Math.min(770, target.x + event.distance * fighter.facing)),
+          target.y + event.offsetY, fighter.facing === 1 ? -1 : 1);
         break;
       }
       case 'set_velocity':
@@ -161,6 +179,9 @@ export class MoveExecutor {
     if (!fighter.currentMove) return false;
     const phase = fighter.currentMove.phases[fighter.movePhaseIndex];
     if (!phase?.cancellable) return false;
+    if(fighter.currentMove.cancelOn==='hit'&&!fighter.hitThisMove)return false;
+    if(fighter.currentMove.cancelOn==='contact'&&!fighter.contactThisMove)return false;
+    if(fighter.meter<(newMove.cost?.meter??0))return false;
 
     const cancels = fighter.currentMove.cancelInto ?? [];
     const triggerCancel = newMove.trigger.cancelFrom?.includes(fighter.currentMove.id) ?? false;

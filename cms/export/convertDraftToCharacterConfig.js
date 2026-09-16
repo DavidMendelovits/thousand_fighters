@@ -8,6 +8,8 @@
  * @returns {object} CharacterConfig-shaped plain object
  */
 import { normalizeManifest } from '../pipeline/manifestSchema.js';
+import {projectileImpact} from '../../shared/projectileImpact.js';
+import {validateCombatRules} from './validateCombatRules.js';
 
 /**
  * Collision override layer (Character Gym, T10/D2).
@@ -37,6 +39,7 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
 
   const id = draft.id;
   if (!id) throw new Error('convertDraftToCharacterConfig: draft.id is required');
+  validateCombatRules(draft,id);
 
   const manifest = normalizeManifest(rawManifest, { id });
   const stats = draft.stats ?? {};
@@ -46,6 +49,9 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
   return {
     id,
     displayName: draft.displayName ?? id,
+    stats: draft.combatStats ?? Object.fromEntries(['attack','defense','projectileAttack','projectileDefense','speed','weight','knockback','size'].filter(k=>typeof stats[k]==='number').map(k=>[k,stats[k]])),
+    powerUps: draft.powerUps ?? [],
+    forms: draft.forms ?? [],
     walkForwardSpeed: stats.walkForwardSpeed ?? 2.8,
     walkBackSpeed: stats.walkBackSpeed ?? 1.8,
     jumpVelocity: stats.jumpVelocity ?? 10.2,
@@ -234,6 +240,9 @@ function projectileConfigFromEntity(entity) {
   if (typeof entity.pierces === 'number') config.pierces = entity.pierces;
   if (typeof entity.clashesWithProjectiles === 'boolean') config.clashesWithProjectiles = entity.clashesWithProjectiles;
   if (entity.spawnPolicy && typeof entity.spawnPolicy === 'object') config.spawnPolicy = entity.spawnPolicy;
+  config.impact=entity.impact??projectileImpact(entity,entity.prompt??'');
+  for(const key of ['grab','delayFrames','visual'])if(entity[key]!==undefined)config[key]=entity[key];
+  for(const key of ['stun','launches','knockdown','hitstop','chipDamage','unblockable'])if(hb[key]!==undefined)config.hitbox[key]=hb[key];
   return config;
 }
 
@@ -654,9 +663,12 @@ function convertMove(draftMove, context = {}) {
       allowedStates: draftMove.trigger?.allowedStates ?? ['idle', 'walk_forward', 'walk_back'],
       sequence: expandTriggerSequence(draftMove.trigger?.sequence ?? [], animation),
       window: draftMove.trigger?.window ?? 14,
+      ...(draftMove.trigger?.cancelFrom ? {cancelFrom:draftMove.trigger.cancelFrom} : {}),
     },
     phases,
     cancelInto: draftMove.cancelInto ?? [],
+    ...(draftMove.cancelOn ? {cancelOn:draftMove.cancelOn} : {}),
+    ...(draftMove.cost ? {cost:draftMove.cost} : {}),
   };
   if (Array.isArray(draftMove.visualTimeline) && draftMove.visualTimeline.length) {
     move.visualTimeline = draftMove.visualTimeline;
@@ -961,6 +973,9 @@ function collectUnclosedHitboxIds(allPhases, targetPhaseIndex, moveId) {
  */
 function convertEvent(draftEvent, moveId, phaseIndex, eventIndex) {
   if (!draftEvent) return { type: 'hitbox_end' };
+  if(draftEvent.type==='transform')return {type:'transform',formId:draftEvent.formId};
+  if(draftEvent.type==='revert_form')return {type:'revert_form'};
+  if(draftEvent.type==='power_up')return {type:'power_up',power:draftEvent.power};
 
   // Some drafts (older schema versions, lenient models) say `hitbox` instead
   // of `hitbox_active`. A hitbox payload makes the intent unambiguous.
@@ -1034,35 +1049,18 @@ function convertEvent(draftEvent, moveId, phaseIndex, eventIndex) {
 
   if (draftEvent.projectile) {
     const proj = draftEvent.projectile;
-    const hitboxDamage = proj.damage ?? 60;
+    const type=['spawn_projectile','spawn_projectile_at_target','spawn_projectile_from_sky','spawn_projectile_behind_target'].includes(draftEvent.type)?draftEvent.type:'spawn_projectile';
+    const projectile=projectileConfigFromEntity({...proj,id:proj.id??`${moveId}_projectile`,
+      speed:proj.speed??proj.speedX,
+      velocity:proj.velocity??{x:proj.speedX??proj.speed??6,y:proj.speedY??0,relativeToFacing:true},
+      hitbox:proj.hitbox??{damage:proj.damage??60,hitstun:proj.hitstun??18,blockstun:proj.blockstun??12,knockback:{x:proj.knockbackX??3,y:proj.knockbackY??0},level:proj.level??'mid'},
+    });
     return {
-      type: 'spawn_projectile',
+      ...draftEvent,
+      type,
       offsetX: draftEvent.offsetX ?? 40,
       offsetY: draftEvent.offsetY ?? -60,
-      projectile: {
-        id: proj.id ?? `${moveId}_projectile`,
-        animation: 'special_2',
-        width: 32,
-        height: 32,
-        speed: proj.speedX ?? proj.speed ?? 6,
-        velocity: {
-          x: proj.speedX ?? proj.speed ?? 6,
-          y: proj.speedY ?? 0,
-          relativeToFacing: true,
-        },
-        lifetime: proj.lifetime ?? 120,
-        hitbox: {
-          x: -16,
-          y: -16,
-          width: 32,
-          height: 32,
-          damage: hitboxDamage,
-          hitstun: proj.hitstun ?? 18,
-          blockstun: proj.blockstun ?? 12,
-          knockback: { x: proj.knockbackX ?? 3, y: proj.knockbackY ?? 0 },
-          level: proj.level ?? 'mid',
-        },
-      },
+      projectile,
     };
   }
 

@@ -31,7 +31,7 @@ test.describe('CMS admin platform', () => {
     });
     expect(normalizeResponse.ok()).toBeTruthy();
 
-    await page.goto('/');
+    await page.goto('/?standalone=1');
     await expect(page.getByRole('heading', { name: 'Character CMS' })).toBeVisible();
     await expect(page.locator('#system-status')).toContainText('thousand-fighters-cms');
     await page.locator('[data-ops-tab="pipeline"]').click();

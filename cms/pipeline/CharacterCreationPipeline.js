@@ -16,6 +16,7 @@ import {
 } from '../export/convertDraftToCharacterConfig.js';
 import { MOVE_SHEET_IDS } from '../../shared/animationRows.js';
 import { rowPromptProfile } from './rowPromptProfiles.js';
+import { projectileImpact } from '../../shared/projectileImpact.js';
 
 // Canonical inputs the engine's InputBuffer can actually match. A combo move
 // authored with anything else (a motion shorthand like "qcf", or an empty
@@ -190,7 +191,55 @@ export class CharacterCreationPipeline {
       adapterId: imageGenerator.id ?? 'imageGenerator',
       model: result.model ?? null,
       prompt,
+      generationMs: result.generationMs ?? null,
+      postprocessMs: result.postprocessMs ?? null,
+      elapsedMs: result.elapsedMs ?? null,
+      frameTimings: result.frameTimings ?? null,
+      estimatedCostUsd: result.estimatedCostUsd ?? null,
+      taskId: result.taskId ?? null,
+      usage: result.usage ?? null,
     });
+
+    let videoAsset = null;
+    if (result.videoBytes) {
+      videoAsset = await repository.writeAsset(
+        characterId,
+        `source/${characterId}_${resolvedMoveId}_h3.mp4`,
+        Buffer.from(result.videoBytes),
+        {
+          contentType: result.videoContentType ?? 'video/mp4',
+          provider: result.provider ?? imageGenerator.provider ?? 'unknown',
+          adapterId: imageGenerator.id ?? 'imageGenerator',
+          model: result.model ?? null,
+          prompt,
+          sourceTaskId: result.taskId ?? null,
+          generationMs: result.generationMs ?? null,
+          elapsedMs: result.elapsedMs ?? null,
+          usage: result.usage ?? null,
+        },
+      );
+    }
+
+    const frameAssets = [];
+    for (const frame of result.frameImages ?? []) {
+      const frameNumber = String(frame.frameNumber).padStart(2, '0');
+      const frameContentType = frame.contentType ?? 'image/png';
+      frameAssets.push(await repository.writeAsset(
+        characterId,
+        `source/${characterId}_${resolvedMoveId}_frames/frame_${frameNumber}${extensionForContentType(frameContentType)}`,
+        Buffer.from(frame.bytes),
+        {
+          contentType: frameContentType,
+          provider: result.provider ?? imageGenerator.provider ?? 'unknown',
+          adapterId: imageGenerator.id ?? 'imageGenerator',
+          model: result.model ?? null,
+          prompt,
+          frameNumber: frame.frameNumber,
+          sourceTaskId: frame.taskId ?? null,
+          elapsedMs: result.frameTimings?.find((timing) => timing.frameNumber === frame.frameNumber)?.elapsedMs ?? null,
+        },
+      ));
+    }
 
     // Non-base rows generated without the base sheet drift visually — surface
     // that so callers can warn or regenerate once the base row exists.
@@ -202,6 +251,14 @@ export class CharacterCreationPipeline {
       provider: result.provider ?? imageGenerator.provider ?? 'unknown',
       model: result.model ?? null,
       promptRef: result.promptRef ?? null,
+      videoAsset,
+      frameAssets,
+      generationMs: result.generationMs ?? null,
+      postprocessMs: result.postprocessMs ?? null,
+      elapsedMs: result.elapsedMs ?? null,
+      frameTimings: result.frameTimings ?? null,
+      estimatedCostUsd: result.estimatedCostUsd ?? null,
+      usage: result.usage ?? null,
       referencesUsed,
       warnings: resolvedMoveId !== 'base' && !baseReferenceAttached
         ? ['no base sheet was available as a reference — this row may not match the fighter\'s look; regenerate it after the base row exists']
@@ -562,6 +619,8 @@ export class CharacterCreationPipeline {
           lifetime: 110,
           hitbox: { x: -24, y: -16, width: 48, height: 32, damage: 60, hitstun: 18, blockstun: 12, knockback: { x: 4, y: 0 }, level: 'mid' },
         };
+    projectile.impact=existing?.impact??projectileImpact(projectile,prompt);
+    await repository.writeAsset(characterId,`effects/${projectileId}/impact.json`,Buffer.from(JSON.stringify(projectile.impact,null,2)),{contentType:'application/json',provider:'authored-companion',adapterId:'projectile-impact-contract'});
     const projectiles = [...(draft.projectiles ?? []).filter((entity) => entity.id !== projectileId), projectile];
     await repository.saveDraft(characterId, { ...draft, projectiles }, {
       provider: 'cms-tool',

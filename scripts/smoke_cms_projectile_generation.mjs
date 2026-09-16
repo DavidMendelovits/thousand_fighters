@@ -75,6 +75,9 @@ try {
     assert.equal(gen.asset.key, expectedKey, 'projectile sprite stored under its source key');
     assert.equal(await storage.exists(expectedKey), true, 'sprite asset exists');
     assert.equal(tasks[tasks.length - 1], 'projectile-sprite', 'used the projectile-sprite gen task');
+    const draft=await repository.getDraft(characterId);
+    assert.ok(draft.projectiles[0].impact?.id,'contact effect companion persisted on entity');
+    assert.equal(await storage.exists(`characters/${characterId}/assets/effects/fireball/impact.json`),true,'companion asset persisted');
   });
 
   await test('the entity is registered on draft.projectiles with animation + defaults', async () => {

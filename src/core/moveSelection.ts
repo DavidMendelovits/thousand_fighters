@@ -18,6 +18,8 @@ export interface MoveSelectionContext {
   state: import('../schema/types').FighterState;
   grounded: boolean;
   currentMove: Move | null;
+  contactThisMove?: boolean;
+  hitThisMove?: boolean;
 }
 
 /**
@@ -36,7 +38,14 @@ export function selectTriggeredMove(
   let best: Move | null = null;
   for (const move of moves) {
     const trigger = move.trigger;
-    if (!trigger.allowedStates.includes(ctx.state)) continue;
+    if (!forCancel && !trigger.allowedStates.includes(ctx.state==='dash'?'idle':ctx.state)) continue;
+    if (forCancel) {
+      const current=ctx.currentMove;
+      if(!current || !current.phases.some(p=>p.cancellable))continue;
+      if(!current.cancelInto?.includes(move.id) && !trigger.cancelFrom?.includes(current.id))continue;
+      if(current.cancelOn==='hit' && !ctx.hitThisMove)continue;
+      if(current.cancelOn==='contact' && !ctx.contactThisMove)continue;
+    }
     if (forCancel && trigger.cancelFrom && ctx.currentMove && !trigger.cancelFrom.includes(ctx.currentMove.id)) continue;
     if (!ctx.grounded && move.airOk !== true) continue;
     if (ctx.grounded && move.groundOk === false) continue;

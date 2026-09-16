@@ -9,6 +9,16 @@ const MOVE_ORDER = ['base', 'punch', 'kick', 'special_1', 'special_2', 'jump', '
 // proxy, so the game dev server (npm run dev) must be running alongside the CMS
 // admin server. Override with window.TESTBED_BASE_URL if your ports differ.
 const TESTBED_BASE_URL = window.TESTBED_BASE_URL || 'http://127.0.0.1:5173';
+const EMBEDDED=window.self!==window.top;
+const ROUTE_PREFIX=location.pathname.startsWith('/cms-admin')?'/cms-admin':'';
+if(EMBEDDED)document.body.classList.add('studio-embedded');
+window.addEventListener('message', event => {
+  if(event.origin !== location.origin || event.source !== window.parent || event.data?.type !== 'studio-workspace') return;
+  setOpsTab(event.data.workspace === 'pipeline' ? 'pipeline' : 'activity');
+  document.querySelector(event.data.workspace === 'pipeline'?'.ops-panel':'#character-workbench')?.scrollIntoView({block:'start'});
+});
+const animationLabLink = document.getElementById('animation-lab-link');
+if (animationLabLink) animationLabLink.href = `${TESTBED_BASE_URL}/animation-lab.html`;
 
 function openTestbed(characterId) {
   if (!characterId) return;
@@ -29,7 +39,7 @@ function openGym(characterId) {
 // ---------------------------------------------------------------------------
 
 function getCurrentRoute() {
-  const pathname = location.pathname;
+  const pathname = location.pathname.replace(/^\/cms-admin/,'');
   if (pathname === '/pipeline') return { page: 'pipeline' };
   if (pathname === '/roster') return { page: 'roster' };
   if (pathname === '/roster/new') return { page: 'roster', isNew: true };
@@ -39,7 +49,7 @@ function getCurrentRoute() {
 }
 
 function navigateTo(path) {
-  history.pushState(null, '', path);
+  history.pushState(null, '', `${ROUTE_PREFIX}${path}`);
   handleRouteChange();
 }
 
@@ -188,6 +198,7 @@ const WORKBENCH_CTA_HANDLERS = {
 };
 
 function handleWorkbenchClick(event) {
+  if(event.target.closest('[data-save-combat]')){void saveCombatRules();return;}
   const cta = event.target.closest('[id^="cta-"]');
   if (cta && WORKBENCH_CTA_HANDLERS[cta.id]) {
     WORKBENCH_CTA_HANDLERS[cta.id]();
@@ -372,7 +383,7 @@ async function selectCharacter(characterId, options = {}) {
   if (options.pushState !== false) {
     const targetPath = `/roster/${characterId}`;
     if (location.pathname !== targetPath) {
-      history.pushState(null, '', targetPath);
+      history.pushState(null, '', `${ROUTE_PREFIX}${targetPath}`);
     }
   }
 
@@ -395,6 +406,7 @@ async function selectCharacter(characterId, options = {}) {
   const assets = assetResult.assets.map((asset) =>
     asset.apiUrl ? { ...asset, apiUrl: withCacheBust(asset.apiUrl) } : asset);
   state.currentDraftData = draft;
+  if(EMBEDDED)window.parent.postMessage({type:'studio-character',characterId},location.origin);
   state.currentAssets = assets;
   state.qaReports[characterId] = qaReport;
   elements.characterId.value = draft.id;
@@ -513,8 +525,8 @@ const ROW_PROMPT_DESCRIPTIONS = {
   dash_forward: 'dash forward — an explosive forward burst that recovers to neutral',
   dash_back: 'dash back — an explosive backward hop/retreat that recovers to neutral',
   block: 'block — raising into a fully settled, held defensive guard',
-  grab: 'grab — reach out, grip the opponent, and hold',
-  throw: 'throw — wind up with the held opponent, release, and recover',
+  grab: 'grab — this single fighter alone mimes a grab on empty air: reach out, close both hands on nothing, and hold the clench. NO second character, no opponent, no other body anywhere — only this one fighter',
+  throw: 'throw — this single fighter alone mimes a throw on empty air: wind up the arms as if holding something, heave the empty hands up and forward, release into nothing, and recover. NO second character, no opponent, no thrown body — only this one fighter',
   walk_forward: 'walk forward — a seamless looping forward walk cycle, facing right, advancing',
   walk_back: 'walk backward — a seamless looping backward/retreating walk cycle, facing right, stepping back',
 };
@@ -591,6 +603,9 @@ async function generateMoveRow(moveId) {
       { characterId, prompt, moveId, spriteProfile },
       (event) => {
         if (event.type === 'stdout' || event.type === 'stderr') logMoveStream(moveId, event.data);
+        if ((event.type === 'status' || event.type === 'warning') && event.message) {
+          logMoveActivity(moveId, event.message, event.type === 'warning' ? 'error' : '');
+        }
       });
     state.sourceAssetKey = result.asset.key;
     showLatestAsset({ ...result.asset, apiUrl: result.asset.apiUrl ?? result.asset.url });
@@ -603,6 +618,18 @@ async function generateMoveRow(moveId) {
     for (const warning of result.warnings ?? []) {
       logMoveActivity(moveId, warning, 'error');
       log(`${moveId}: ${warning}`, 'error');
+    }
+    if (Number.isFinite(result.elapsedMs)) {
+      const generation = Number.isFinite(result.generationMs) ? formatElapsedMs(result.generationMs) : 'unknown';
+      const postprocess = Number.isFinite(result.postprocessMs) ? formatElapsedMs(result.postprocessMs) : 'unknown';
+      logMoveActivity(
+        moveId,
+        `Timing: ${formatElapsedMs(result.elapsedMs)} total (${generation} generation, ${postprocess} local post-process).`,
+        'pass',
+      );
+    }
+    if (Number.isFinite(result.estimatedCostUsd)) {
+      logMoveActivity(moveId, `Estimated provider cost: $${result.estimatedCostUsd.toFixed(4)}.`, 'pass');
     }
     log(`${moveId} row generated.`, 'pass');
 
@@ -647,6 +674,15 @@ async function generateMoveRow(moveId) {
     setMoveCardLoading(moveId, false);
     return null;
   }
+}
+
+function formatElapsedMs(milliseconds) {
+  if (milliseconds < 1_000) return `${Math.round(milliseconds)}ms`;
+  const seconds = milliseconds / 1_000;
+  if (seconds < 60) return `${seconds.toFixed(seconds < 10 ? 1 : 0)}s`;
+  const minutes = Math.floor(seconds / 60);
+  const remainder = Math.round(seconds % 60);
+  return `${minutes}m ${remainder}s`;
 }
 
 // The base row defines the fighter's look and scale, so it must exist before
@@ -1420,6 +1456,7 @@ function renderCharacterWorkbench(draft, assets) {
         ${renderAnimationBindings(draft.animations)}
       </div>
     </section>
+    <details class="combat-rules-editor"><summary>Advanced combat rules · stats, power-ups & hidden forms</summary><p>Multipliers use 1 as neutral. Forms contain a complete config with parentId and selectable:false. Save updates the draft; publish separately to ship it.</p><textarea id="advanced-combat-json" aria-label="Advanced combat JSON" rows="12">${escapeHtml(JSON.stringify({combatStats:draft.combatStats??{},powerUps:draft.powerUps??[],forms:draft.forms??[]},null,2))}</textarea><button type="button" data-save-combat>Save combat rules to draft</button><span id="combat-save-status" role="status"></span></details>
     ${renderConceptSection(conceptAsset)}
     <section class="move-board">
       ${moveGroups.map(renderMoveGroup).join('')}
@@ -1431,6 +1468,20 @@ function renderCharacterWorkbench(draft, assets) {
   // All workbench buttons are handled by the delegated click handler —
   // no per-render listener attachment.
   startAnimationPreviews();
+}
+
+async function saveCombatRules(){
+  const status=document.getElementById('combat-save-status');
+  try{
+    const patch=JSON.parse(document.getElementById('advanced-combat-json').value);
+    if(!patch||Array.isArray(patch)||typeof patch!=='object')throw new Error('Expected an object.');
+    const allowed=new Set(['combatStats','powerUps','forms']);
+    if(Object.keys(patch).some(k=>!allowed.has(k)))throw new Error('Only combatStats, powerUps and forms belong here.');
+    for(const [key,value] of Object.entries(patch.combatStats??{}))if(!['attack','defense','projectileAttack','projectileDefense','speed','weight','knockback','size'].includes(key)||typeof value!=='number'||!Number.isFinite(value)||value<=0)throw new Error('Stats require positive finite multipliers.');
+    for(const form of patch.forms??[])if(!form.id||form.config?.parentId!==state.currentCharacterId||form.config?.selectable!==false||!form.config?.sprite||!Array.isArray(form.config?.moves))throw new Error('Each form needs an id and a complete hidden character config owned by this fighter.');
+    const r=await fetch('/api/tools/update_character_draft',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({characterId:state.currentCharacterId,patch,note:'Advanced combat editor'})});
+    if(!r.ok)throw new Error((await r.json()).error??'Save failed');status.textContent='Saved to draft. Publish when ready.';
+  }catch(error){status.textContent=error.message;}
 }
 
 function renderEmptyWorkbench(message) {

@@ -327,7 +327,7 @@ test('light_punch move exists', () => {
 test('trigger fields added', () => {
   assert.deepEqual(lightPunch.trigger.allowedStates, ['idle', 'walk_forward', 'walk_back']);
   assert.deepEqual(lightPunch.trigger.sequence, ['lp']);
-  assert.equal(lightPunch.trigger.window, 6);
+  assert.equal(lightPunch.trigger.window, 14); // Accessible default; authored windows still win.
 });
 
 test('hitbox knockbackX/Y converted to knockback:{x,y}', () => {

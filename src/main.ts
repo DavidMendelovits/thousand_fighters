@@ -10,6 +10,8 @@ const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   parent: CANVAS_PARENT_ID,
   backgroundColor: '#141820',
+  pixelArt: true,
+  roundPixels: true,
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
@@ -18,7 +20,7 @@ const config: Phaser.Types.Core.GameConfig = {
   },
   fps: {
     target: 60,
-    forceSetTimeOut: true,
+    forceSetTimeOut: false,
   },
   scene: [FightScene],
 };

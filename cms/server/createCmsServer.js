@@ -245,11 +245,19 @@ async function chatAgentHealth(runtime) {
 }
 
 async function serveAdminAsset({ response, url, adminRoot }) {
-  const pathname = url.pathname.replace(/^\/admin/, '') || '/';
+  const embedded=url.pathname.startsWith('/cms-admin');
+  const pathname = url.pathname.replace(/^\/(?:cms-admin|admin)/, '') || '/';
+  const hasStudio=Boolean(process.env.GAME_BASE_URL)||['localhost','127.0.0.1','[::1]'].includes(url.hostname);
+  if(hasStudio && !embedded && !url.searchParams.has('standalone') && (pathname==='/'||pathname==='/roster'||pathname.startsWith('/roster/')||pathname==='/pipeline')){
+    const destination=new URL('/animation-lab.html',process.env.GAME_BASE_URL??'http://127.0.0.1:5173');
+    destination.searchParams.set('workspace',pathname==='/pipeline'?'pipeline':'characters');
+    if(pathname.startsWith('/roster/'))destination.searchParams.set('character',pathname.slice('/roster/'.length));
+    response.writeHead(302,{Location:destination.href});response.end();return;
+  }
 
   // 1. Hard redirects
   if (pathname === '/') {
-    response.writeHead(302, { Location: '/roster' });
+    response.writeHead(302, { Location: embedded?'/cms-admin/roster':'/roster?standalone=1' });
     response.end();
     return;
   }

@@ -173,12 +173,43 @@ OPENAI_IMAGE_RESPONSES_MODEL=gpt-5.5
 OPENAI_IMAGE_MODEL=gpt-image-2
 OPENAI_IMAGE_SIZE=1024x1024
 OPENAI_IMAGE_OUTPUT_FORMAT=png
+IMAGE_GENERATOR_PROVIDER=minimax-h3
+MINIMAX_API_KEY=...
+MINIMAX_H3_MODEL=MiniMax-H3
+MINIMAX_H3_RESOLUTION=768P
+MINIMAX_H3_DURATION=4
+IMAGE_GENERATOR_PROVIDER=minimax-image
+MINIMAX_API_KEY=...
+IMAGE_GENERATOR_PROVIDER=gemini-fast
+GEMINI_API_KEY=...
+IMAGE_GENERATOR_PROVIDER=bfl-klein
+BFL_API_KEY=...
+IMAGE_GENERATOR_PROVIDER=fal
+FAL_KEY=...
+FAL_IMAGE_MODEL=fal-ai/flux-2/klein/4b/edit
 ```
 
 The local provider still emits deterministic SVG source sheets for no-network
 pipeline checks. The OpenAI provider uses the Responses API hosted
 `image_generation` tool and returns PNG bytes through the same
 `imageGenerator.generateImage()` port.
+
+The MiniMax H3 adapter bridges video generation into that same image port for
+fighter rows. It submits a short H3 clip, polls `/v2/query/video_generation`,
+retains the source MP4, and uses ffmpeg to tile six sampled frames into the
+normalizer's existing 1x6 or 2x3 PNG contract. This keeps provider-specific
+asynchrony and video handling inside the adapter. It supports fighter motion
+rows only; still-image tasks remain the responsibility of an image model.
+
+The fast still-image adapters (`minimax-image`, `gemini-fast`, `bfl-klein`,
+and `fal`) implement the same port through a shared parallel-frame layer. Six
+single-pose requests run concurrently, then a local ffmpeg pass enforces cell
+dimensions, bottom alignment, magenta padding, and deterministic 1x6/2x3
+tiling. The assembled sheet and its six source frames are stored separately,
+so provider speed and consistency can be reviewed without changing the
+normalizer contract. `scripts/benchmark_fast_image_generators.mjs` runs the
+same job across configured providers and records wall time, provider timing,
+local composition time, per-frame latency, and estimated cost when known.
 
 ### Sprite Normalizer Adapter
 

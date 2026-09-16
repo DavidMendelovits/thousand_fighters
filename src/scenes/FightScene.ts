@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { roster } from '../characters/roster';
+import { CombatVisuals, createCombatTextures } from '../core/CombatVisuals';
 import { collectProjectileAnimations } from '../core/projectileAssets';
 import { ComputerPlayer } from '../core/ComputerPlayer';
 import { Fighter } from '../core/Fighter';
@@ -50,6 +51,9 @@ export class FightScene extends Phaser.Scene {
   _soundsPlayedThisFrame: Set<string> | undefined = undefined;
   roundTimer = ROUND_FRAMES;
   debugMode = true;
+  combatVisuals?: CombatVisuals;
+  combatStatus: Phaser.GameObjects.Text[]=[];
+  _combatImpacts: NonNullable<import('../schema/types').FighterScene['_combatImpacts']>=[];
   frameCounter = 0;
 
   readonly gameLoop = new GameLoop();
@@ -86,6 +90,7 @@ export class FightScene extends Phaser.Scene {
   }
 
   init(data: FightSceneData = {}): void {
+    this.gameLoop.reset();
     this.hasSceneData = Object.keys(data).length > 0;
     this.selectedP1Id = data.p1Id ?? roster[0]?.id ?? '';
     this.selectedP2Id = data.p2Id ?? roster[2]?.id ?? roster[1]?.id ?? roster[0]?.id ?? '';
@@ -141,8 +146,10 @@ export class FightScene extends Phaser.Scene {
       'purple_note_wave', 'foam_wave', 'juggling_balls', 'squeak_storm',
       'rubber_bat', 'red_note_wave', 'demi_laser', 'remote_spark', 'morph_flash',
     ]);
-    for (const character of roster) {
+    for (const character of roster.flatMap(c=>[c,...(c.forms??[]).map(f=>f.config)])) {
+      const procedural = new Set(character.moves.flatMap(m => m.phases.flatMap(p => p.events.flatMap(({event}) => 'projectile' in event && event.projectile.visual ? [event.projectile.animation] : []))));
       for (const animation of collectProjectileAnimations(character)) {
+        if (procedural.has(animation)) continue;
         if (queuedProjectileKeys.has(animation)) continue;
         queuedProjectileKeys.add(animation);
         this.load.image(animation, this.assetUrl(`/fighters/${character.id}/projectiles/${animation}.png`));
@@ -166,7 +173,7 @@ export class FightScene extends Phaser.Scene {
       }
     };
 
-    for (const character of roster) {
+    for (const character of roster.flatMap(c=>[c,...(c.forms??[]).map(f=>f.config)])) {
       if (character.sprite) preloadSpriteConfig(character.sprite, character.id);
       for (const actor of character.actors ?? []) {
         if (actor.sprite) preloadSpriteConfig(actor.sprite, `${character.id}:${actor.id}`);
@@ -209,6 +216,17 @@ export class FightScene extends Phaser.Scene {
   }
 
   create(): void {
+    if (this.input.keyboard) InputReader.reset(this.input.keyboard);
+    const clearTimingAndInput = (): void => {
+      this.gameLoop.reset();
+      if (this.input.keyboard) InputReader.reset(this.input.keyboard);
+    };
+    this.game.events.on(Phaser.Core.Events.BLUR, clearTimingAndInput);
+    this.game.events.on(Phaser.Core.Events.FOCUS, clearTimingAndInput);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.game.events.off(Phaser.Core.Events.BLUR, clearTimingAndInput);
+      this.game.events.off(Phaser.Core.Events.FOCUS, clearTimingAndInput);
+    });
     const params = new URLSearchParams(window.location.search);
     if (!this.hasSceneData && params.get('cpu') === 'off') this.singlePlayer = false;
     const p1FromQuery = params.get('p1');
@@ -229,13 +247,14 @@ export class FightScene extends Phaser.Scene {
     }
 
     this.createProjectileTextures();
+    createCombatTextures(this, roster.flatMap(c=>[c,...(c.forms??[]).map(f=>f.config)]));
     if (params.get('debug') === 'sprites') {
       this.createSpriteDebugView(params);
       return;
     }
     if (
       this.showCharacterSelect ||
-      params.get('select') === '1' ||
+      (!this.hasSceneData && params.get('select') === '1') ||
       (!this.hasSceneData && !p1FromQuery && !p2FromQuery && this.p1Rounds === 0 && this.p2Rounds === 0)
     ) {
       this.createCharacterSelectScreen();
@@ -250,6 +269,11 @@ export class FightScene extends Phaser.Scene {
       new Fighter(this, this.characterFromParam(this.selectedP1Id, roster[0]), 1, { x: 200, y: FLOOR_Y }),
       new Fighter(this, this.characterFromParam(this.selectedP2Id, roster[2]), 2, { x: 600, y: FLOOR_Y }),
     ];
+    this.combatVisuals = new CombatVisuals(this);
+    this._combatImpacts=[];
+    this.combatStatus=[this.add.text(24,84,'',{fontFamily:'monospace',fontSize:'10px',color:'#e3e8d7'}).setDepth(55),this.add.text(776,84,'',{fontFamily:'monospace',fontSize:'10px',color:'#e3e8d7',align:'right'}).setOrigin(1,0).setDepth(55)];
+    if (this.fighters.some(f => f.config.rosterGroup === 'oddities')) this.debugMode = false;
+    if (this.fighters.some(f => f.config.rosterGroup === 'oddities') && !arenaIdForBg) this.createOdditiesStage();
 
     this.hudGraphics = this.add.graphics().setDepth(50);
     this.debugGraphics = this.add.graphics().setDepth(60);
@@ -286,6 +310,7 @@ export class FightScene extends Phaser.Scene {
     this.createWinnerModal();
 
     DebugPanel.create(this);
+    if (!this.debugMode) DebugPanel.current()?.toggle();
 
     this.input.keyboard?.on('keydown-F1', () => {
       DebugPanel.current()?.toggle();
@@ -357,6 +382,7 @@ export class FightScene extends Phaser.Scene {
   update(time: number): void {
     if (!this.fighters) return;
     this.gameLoop.update(time, () => this.fixedUpdate());
+    this.renderFrame();
   }
 
   fixedUpdate(): void {
@@ -365,18 +391,15 @@ export class FightScene extends Phaser.Scene {
     this._soundsPlayedThisFrame?.clear();
 
     if (this.roundResolved) {
-      this.renderFrame();
       return;
     }
 
     if (this.isPaused) {
-      this.renderFrame();
       return;
     }
 
     if (this.hitPauseFrames > 0) {
       this.hitPauseFrames -= 1;
-      this.renderFrame();
       return;
     }
 
@@ -393,16 +416,17 @@ export class FightScene extends Phaser.Scene {
       this.fighters[1].update(input2, this.fighters[0], this.projectiles);
       this.resolveFighterSpacing();
       this.projectiles.update();
+      this.combatVisuals?.tick();
       HitboxSystem.checkAll(this.fighters, this.projectiles);
       this.roundTimer -= 1;
       this.frameCounter += 1;
       if (this.isRoundOver()) this.resolveRound();
     }
 
-    this.renderFrame();
   }
 
   renderFrame(): void {
+    if (this.fighters) this.combatVisuals?.draw(this.fighters);
     this.renderHUD();
     if (this.debugMode) DebugOverlay.render(this);
   }
@@ -410,6 +434,12 @@ export class FightScene extends Phaser.Scene {
   private renderHUD(): void {
     if (!this.fighters) return;
     const [p1, p2] = this.fighters;
+    [p1,p2].forEach((f,i)=>{
+      const victim=this.fighters[1-i];
+      const form=f.activeForm?`${f.activeForm.name} · ${f.formTicks===null?'UNTIL KO':Math.ceil(f.formTicks/60)+'s'}`:'BASE FORM';
+      const combo=victim.combo.displayTicks>0&&victim.combo.hits>1?`${victim.combo.hits} HITS · ${victim.combo.damage} DMG`:'';
+      this.combatStatus[i]?.setText([`${form}   METER ${Math.floor(f.meter)}`,f.powers.map(p=>`${p.spec.name} ${p.remaining===null?'KO':Math.ceil(p.remaining/60)+'s'}`).join(' / '),combo].filter(Boolean).join('\n'));
+    });
     const p1Ratio = Phaser.Math.Clamp(p1.health / p1.config.maxHealth, 0, 1);
     const p2Ratio = Phaser.Math.Clamp(p2.health / p2.config.maxHealth, 0, 1);
 
@@ -463,6 +493,8 @@ export class FightScene extends Phaser.Scene {
   }
 
   private setPaused(paused: boolean): void {
+    this.gameLoop.reset();
+    if (this.input.keyboard) InputReader.reset(this.input.keyboard);
     this.isPaused = paused;
     this.pauseModal.setVisible(paused);
     this.updatePauseModalText();
@@ -492,10 +524,10 @@ export class FightScene extends Phaser.Scene {
           'P1             WASD move, F/G/H attacks',
           'P2             Arrows move, J/K/L attacks',
           '',
-          'QCF + H/L      Projectile special',
-          'F, F + F/J     Dash special',
-          'F, D, DF + H/L Uppercut special',
-          'Down + G/K     Low attack',
+          'Shift / N      Dash (air + Down: wavedash)',
+          'E / O          Power-up (25 meter)',
+          'Q / U          Transform (authored forms)',
+          'Down + G/K     Launcher; F+G / J+K grab',
           '',
           'Debug moves    P1: 1/2/3/4   P2: 7/8/9/0',
         ].join('\n'),
@@ -677,98 +709,44 @@ export class FightScene extends Phaser.Scene {
   }
 
   private createCharacterSelectScreen(): void {
-    let p1Id = this.selectedP1Id;
-    let p2Id = this.selectedP2Id;
-    const cardBackgrounds: Array<{ characterId: string; player: 1 | 2; rect: Phaser.GameObjects.Rectangle }> = [];
-    const labelStyle: Phaser.Types.GameObjects.Text.TextStyle = {
-      color: '#dbe7ff',
-      fontFamily: 'monospace',
-      fontSize: '12px',
-      align: 'center',
-    };
-
-    this.add.rectangle(400, 225, 800, 450, 0x141820, 1);
-    this.add.rectangle(400, FLOOR_Y + 30, 800, 120, 0x20262f).setOrigin(0.5, 0);
-    this.add.rectangle(400, FLOOR_Y + 1, 800, 2, 0x9aa8bb);
-    this.add
-      .text(400, 28, 'CHARACTER SELECT', {
-        color: '#ffffff',
-        fontFamily: 'monospace',
-        fontSize: '24px',
-      })
-      .setOrigin(0.5, 0);
-    const helpText = this.add
-      .text(400, 60, 'Click a card in each row. CPU uses P2 when enabled.', {
-        color: '#8de6ff',
-        fontFamily: 'monospace',
-        fontSize: '12px',
-      })
-      .setOrigin(0.5, 0);
-
-    const updateCards = (): void => {
-      for (const card of cardBackgrounds) {
-        const selected = card.player === 1 ? card.characterId === p1Id : card.characterId === p2Id;
-        card.rect.setStrokeStyle(2, selected ? 0xfff0a3 : 0x485568, selected ? 1 : 0.85);
-        card.rect.setFillStyle(selected ? 0x24364b : 0x0b0e13, 1);
-      }
-      helpText.setText(`P1: ${this.characterFromParam(p1Id, roster[0]).displayName}     P2: ${this.characterFromParam(p2Id, roster[2]).displayName}     CPU: ${this.singlePlayer ? 'ON' : 'OFF'}`);
-    };
-
-    const createRow = (player: 1 | 2, y: number): void => {
-      this.add
-        .text(36, y + 44, `P${player}`, {
-          color: player === 1 ? '#ff9b8f' : '#8de6ff',
-          fontFamily: 'monospace',
-          fontSize: '18px',
-        })
-        .setOrigin(0, 0.5);
-      const spacing = roster.length > 1 ? Math.min(124, 704 / (roster.length - 1)) : 124;
-      const cardWidth = Math.min(112, Math.max(58, spacing - 8));
-      const cardHeight = 112;
-      const startX = 48;
-      roster.forEach((character, index) => {
-        const x = startX + index * spacing;
-        const rect = this.add.rectangle(x, y, cardWidth, cardHeight, 0x0b0e13, 1).setInteractive({ useHandCursor: true });
-        rect.on('pointerdown', () => {
-          if (player === 1) p1Id = character.id;
-          else p2Id = character.id;
-          updateCards();
-        });
-        cardBackgrounds.push({ characterId: character.id, player, rect });
-        const baseFrame = character.sprite ? this.debugFrameMeta(character.sprite, 'base', character.sprite.frameCounts.base ?? 1)[0] : null;
-        const previewScale = baseFrame ? Math.min(0.34, (cardWidth - 18) / Math.max(baseFrame.width, baseFrame.height), 76 / Math.max(baseFrame.width, baseFrame.height)) : 0.5;
-        this.add
-          .sprite(x, y + 34, `${character.id}:base:0`)
-          .setOrigin(0.5, 1)
-          .setScale(previewScale);
-        this.add.text(x, y - 48, character.displayName, { ...labelStyle, fontSize: '9px', wordWrap: { width: cardWidth + 6 } }).setOrigin(0.5, 0);
+    let p1Id = this.selectedP1Id, p2Id = this.selectedP2Id;
+    let player: 1 | 2 = 1, page = 0;
+    const pageSize = 10, pages = Math.ceil(roster.length / pageSize);
+    const cards = this.add.container(0, 0);
+    this.add.rectangle(400,225,800,450,0x10191d).setDepth(-1);
+    this.add.text(30,24,'CHOOSE YOUR ODDITY',{fontFamily:'monospace',fontSize:'24px',color:'#e8ecdc'});
+    const help = this.add.text(30,65,'',{fontFamily:'monospace',fontSize:'11px',color:'#b7d6c7'});
+    const pageText = this.add.text(400,352,'',{fontFamily:'monospace',fontSize:'11px',color:'#b7d6c7'}).setOrigin(.5);
+    const draw = (): void => {
+      cards.removeAll(true);
+      help.setText(`Selecting P${player}   /   P1: ${this.characterFromParam(p1Id,roster[0]).displayName}   vs   P2: ${this.characterFromParam(p2Id,roster[0]).displayName}`);
+      pageText.setText(`PAGE ${page+1} / ${pages}   ·   ${roster.length} FIGHTERS   ·   CPU ${this.singlePlayer?'ON':'OFF'}`);
+      roster.slice(page*pageSize,(page+1)*pageSize).forEach((c,i)=>{
+        const x=88+(i%5)*156,y=154+Math.floor(i/5)*117;
+        const chosen=c.id===(player===1?p1Id:p2Id);
+        const rect=this.add.rectangle(x,y,142,106,chosen?0x28453d:0x18282d).setStrokeStyle(2,chosen?0xc2ed9e:0x36514c).setInteractive({useHandCursor:true});
+        rect.on('pointerdown',()=>{if(player===1)p1Id=c.id;else p2Id=c.id;draw();});
+        cards.add(rect);
+        const meta=c.sprite?this.debugFrameMeta(c.sprite,'base',1)[0]:null;
+        const key=c.actors?.length?`${c.id}:${c.actors[0].id}:base:0`:`${c.id}:base:0`;
+        if(this.textures.exists(key)) {
+          const sprite=this.add.sprite(x,y+34,key);
+          if(meta) sprite.setOrigin(meta.anchor.x/meta.width,meta.anchor.y/meta.height).setScale(c.rosterGroup==='oddities'?.58:Math.min(.5,70/meta.height));
+          cards.add(sprite);
+        }
+        cards.add(this.add.text(x,y-46,c.displayName,{fontFamily:'monospace',fontSize:'10px',color:'#e4e9d8'}).setOrigin(.5,0));
+        if(c.id===p1Id||c.id===p2Id) cards.add(this.add.text(x-62,y+31,`${c.id===p1Id?'P1 ':''}${c.id===p2Id?'P2':''}`,{fontFamily:'monospace',fontSize:'10px',color:'#c2ed9e'}));
       });
     };
-
-    createRow(1, 152);
-    createRow(2, 292);
-
-    const startButton = this.createPauseButton(318, 406, 'START', () => {
-      this.scene.restart({
-        p1Id,
-        p2Id,
-        cpu: this.singlePlayer,
-        p1Rounds: 0,
-        p2Rounds: 0,
-        roundNumber: 1,
-      } satisfies FightSceneData);
-    });
-    const cpuButton = this.createPauseButton(436, 406, 'CPU', () => {
-      this.toggleCpu();
-      updateCards();
-    });
-    const backButton = this.createPauseButton(554, 406, 'DEFAULTS', () => {
-      p1Id = roster[0].id;
-      p2Id = roster[2].id;
-      updateCards();
-    });
-    this.add.container(0, 0, [...startButton, ...cpuButton, ...backButton]).setDepth(10);
-    updateCards();
+    this.add.container(0,0,[
+      ...this.createPauseButton(86,398,'P1',()=>{player=1;draw();}),
+      ...this.createPauseButton(208,398,'P2',()=>{player=2;draw();}),
+      ...this.createPauseButton(330,398,'NEXT',()=>{page=(page+1)%pages;draw();}),
+      ...this.createPauseButton(452,398,'CPU',()=>{this.singlePlayer=!this.singlePlayer;draw();}),
+      ...this.createPauseButton(574,398,'ROSTER',()=>{window.location.href='/roster.html';}),
+      ...this.createPauseButton(706,398,'FIGHT',()=>{this.scene.restart({p1Id,p2Id,cpu:this.singlePlayer,p1Rounds:0,p2Rounds:0,roundNumber:1} satisfies FightSceneData);}),
+    ]);
+    draw();
   }
 
   private createProjectileTextures(): void {
@@ -998,6 +976,8 @@ export class FightScene extends Phaser.Scene {
         startMove: (player: 1 | 2, moveId: string) => boolean;
         setCpu: (enabled: boolean) => void;
         frame: () => number;
+        snapshot: () => unknown;
+        training?: { reset: (x1: number, x2: number) => void; step: (ticks: number) => void; form:(player:1|2,id:string)=>boolean; power:(player:1|2,power:import('../schema/types').PowerUpSpec)=>boolean; damage:(player:1|2,amount:number)=>void };
       };
     };
     win.__stamptownDebug = {
@@ -1006,7 +986,45 @@ export class FightScene extends Phaser.Scene {
         this.singlePlayer = enabled;
       },
       frame: () => this.frameCounter,
+      snapshot: () => ({ frame: this.frameCounter, paused: this.isPaused, cpu: this.singlePlayer, impacts:this._combatImpacts.map(i=>({id:i.spec.id,kind:i.spec.kind,blocked:i.blocked,age:i.age})), fighters: this.fighters.map(f => ({ id: f.config.id, baseId:f.baseConfig.id, form:f.activeForm?.id,formTicks:f.formTicks,stats:f.stats,meter:f.meter,powers:f.powers.map(p=>({id:p.spec.id,remaining:p.remaining})),combo:{hits:f.combo.hits,damage:f.combo.damage,active:f.combo.active,juggle:f.combo.juggle},texture:f.body instanceof Phaser.GameObjects.Sprite?f.body.texture.key:null,moveIds:f.config.moves.map(m=>m.id),hurtbox:f.getHurtboxWorld(),x: f.x, y: f.y, vx: f.vx, vy: f.vy, health: f.health, state: f.state, frame: f.stateFrame, move: f.currentMove?.id, animation: f.currentMove?.animation, phase: f.movePhaseIndex, hold: f.grabHold?.remaining, heldBy: f.grabbedBy?.config.id, immunity: f.grabImmunity, stun: f.hitstun })), projectiles: this.projectiles.active.map(p=>({id:p.config.id,x:p.x,y:p.y,facing:p.facing,delay:p.delayRemaining})) }),
     };
+    if (new URLSearchParams(window.location.search).get('training') === '1') {
+      win.__stamptownDebug.training = {
+        form:(player,id)=>this.fighters[player-1].enterForm(id),
+        power:(player,power)=>this.fighters[player-1].applyPowerUp(power),
+        damage:(player,amount)=>{const f=this.fighters[player-1];f.health=Math.max(0,f.health-amount);if(!f.health)f.changeState('dead');f.refreshVisuals();},
+        reset: (x1, x2) => {
+          this.singlePlayer = false; this.isPaused = true; this.roundResolved = false; this.roundTimer = ROUND_FRAMES; this.hitPauseFrames = 0;
+          this.projectiles.clear();
+          InputReader.reset(this.input.keyboard!);
+          this._combatImpacts=[];
+          this.fighters.forEach((f,i) => { f.resetAdvanced(); f.changeState('idle'); f.x=i ? x2:x1; f.y=FLOOR_Y; f.vx=0; f.vy=0; f.grounded=true; f.facing=i ? -1:1; f.health=f.config.maxHealth; f.grabImmunity=0; f.invulnerable=null; f.armor=null; f.inputBuffer.clear(); f.refreshVisuals(); });
+        },
+        step: ticks => { this.isPaused=false; for(let i=0;i<Math.min(600,Math.max(0,ticks));i++) this.fixedUpdate(); this.isPaused=true; this.renderFrame(); },
+      };
+    }
+  }
+
+  private createOdditiesStage(): void {
+    const g = this.add.graphics().setDepth(-5);
+    g.fillStyle(0x0e2029).fillRect(0,80,800,308);
+    // Code-native stage geometry: a submerged industrial observatory.
+    g.fillStyle(0x17323b).fillRect(42,118,716,252);
+    for (let x=56;x<800;x+=116) {
+      g.fillStyle(0x213e43).fillRect(x,114,78,220);
+      g.fillStyle(0x31504d).fillRect(x+5,120,68,150);
+      g.fillStyle(0x294541).fillRect(x+5,193,68,7);
+      g.fillStyle(0x142c34).fillRect(x+35,120,6,216);
+      g.fillStyle(0x102830).fillRect(x+80,90,22,300);
+      g.fillStyle(0x49655a).fillRect(x+77,92,28,7);
+    }
+    g.fillStyle(0x18313b).fillRect(0,330,800,58);
+    for(let x=0;x<800;x+=48) { g.fillStyle(0x294047).fillRect(x,343,40,5); g.fillStyle(0x294047).fillRect(x+12,361,40,5); }
+    g.fillStyle(0x426258).fillRect(0,386,800,4);
+    this.add.text(400,110,'THE TIDELINE  /  EXHIBITION 01',{fontFamily:'monospace',fontSize:'10px',color:'#95b9a7',letterSpacing:2}).setOrigin(.5).setDepth(-4);
+    this.add.text(400,425,'F / G  STRIKE     H  SIGNATURE     ↓ + H  ALT     F + G  GRAB',{fontFamily:'monospace',fontSize:'10px',color:'#a3b7aa'}).setOrigin(.5).setDepth(20);
+    this.add.text(20,68,this.fighters[0].config.displayName.toUpperCase(),{fontFamily:'monospace',fontSize:'12px',color:'#f49d79'}).setDepth(50);
+    this.add.text(780,68,this.fighters[1].config.displayName.toUpperCase(),{fontFamily:'monospace',fontSize:'12px',color:'#89d8c6'}).setOrigin(1,0).setDepth(50);
   }
 
   private assetUrl(path: string): string {
@@ -1043,19 +1061,21 @@ export class FightScene extends Phaser.Scene {
     if (this.fighters.some((fighter) => fighter.state === 'grabbed')) return;
     const [leftFighter, rightFighter] =
       this.fighters[0].x <= this.fighters[1].x ? this.fighters : [this.fighters[1], this.fighters[0]];
-    const overlap = MIN_FIGHTER_DISTANCE - (rightFighter.x - leftFighter.x);
+    const minimumDistance = ((leftFighter.config.pushboxWidth ?? MIN_FIGHTER_DISTANCE)*leftFighter.stats.size + (rightFighter.config.pushboxWidth ?? MIN_FIGHTER_DISTANCE)*rightFighter.stats.size) / 2;
+    if (Math.abs(leftFighter.y - rightFighter.y) > 104) return;
+    const overlap = minimumDistance - (rightFighter.x - leftFighter.x);
     if (overlap <= 0) return;
 
     const midpoint = (leftFighter.x + rightFighter.x) / 2;
-    let leftX = midpoint - MIN_FIGHTER_DISTANCE / 2;
-    let rightX = midpoint + MIN_FIGHTER_DISTANCE / 2;
+    let leftX = midpoint - minimumDistance / 2;
+    let rightX = midpoint + minimumDistance / 2;
 
     if (leftX < STAGE_LEFT) {
       leftX = STAGE_LEFT;
-      rightX = STAGE_LEFT + MIN_FIGHTER_DISTANCE;
+      rightX = STAGE_LEFT + minimumDistance;
     } else if (rightX > STAGE_RIGHT) {
       rightX = STAGE_RIGHT;
-      leftX = STAGE_RIGHT - MIN_FIGHTER_DISTANCE;
+      leftX = STAGE_RIGHT - minimumDistance;
     }
 
     leftFighter.x = leftX;
