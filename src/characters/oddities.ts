@@ -41,7 +41,7 @@ const seamGround = projectile('seam_ground', 'cage', 0x66d8c7, { speed: 0, delay
   grab: grip({ anchor: 'contact', holdDuration: 40, damage: 65, releaseKnockback: { x: 3, y: 0 }, releaseLaunches: false }) });
 const seamSky = projectile('seam_sky', 'needle', 0xf5d881, { speed: 0, delayFrames: 22, width: 24, height: 78, velocity: { x: 0, y: 8 }, lifetime: 45,
   hitbox: hit({ x: -12, y: -36, width: 24, height: 72, damage: 80, knockback: { x: 3, y: 0 }, knockdown: true }) });
-const seamBehind = projectile('seam_behind', 'needle', 0x66d8c7, { delayFrames: 24, speed: 5, hitbox: hit({ x: -22, y: -14, width: 44, height: 28, damage: 40, stun: 42, knockback: { x: 0, y: 0 } }) });
+const seamBehind = projectile('seam_behind', 'needle', 0x66d8c7, { delayFrames: 24, speed: 5, hitbox: hit({ x: -22, y: -14, width: 44, height: 28, damage: 40, stun: 6, knockback: { x: 0, y: 0 } }) });
 
 type Brief = { id: string; name: string; role: string; biography: string; accent: string; tags: string[]; counterplay: string; speed: number; health: number; moves: Move[] };
 const briefs: Brief[] = [
@@ -54,14 +54,14 @@ const briefs: Brief[] = [
   { id: 'brine', name: 'Brine', role: 'Cephalopod reel-in grappler', accent: '#f5825b', speed: 2.8, health: 1080,
     biography: 'A dockside prizefighter with too many arms and a strict no-hooks policy. The policy refers only to fishing equipment.', tags: ['TENTACLE GRAB', 'REEL-IN', 'INK STUN'], counterplay: 'Jump the low tentacle capture. Block ink, then punish the long reel-in whiff.',
     moves: [extension('tidal_reach', 'Longshore Hook', ['hp'], 240, true, 'tentacle', 0xe95c3e, 0xffd58c),
-      cast('ink_bell', 'Blackwater Bell', ['down', 'hp'], forward(projectile('ink_bell', 'orb', 0x809dff, { speed: 4, hitbox: hit({ x: -20, y: -16, width: 40, height: 32, damage: 32, stun: 48, knockback: { x: 0, y: 0 } }) })), 'A slow ink globe stuns on hit, opening a reel-in opportunity.')] },
+      cast('ink_bell', 'Blackwater Bell', ['down', 'hp'], forward(projectile('ink_bell', 'orb', 0x809dff, { speed: 4, hitbox: hit({ x: -20, y: -16, width: 40, height: 32, damage: 32, stun: 8, knockback: { x: 0, y: 0 } }) })), 'A slow ink globe interrupts for 133 ms. Reeling in afterward is a pressure option, not a guaranteed capture.')] },
   { id: 'taffy', name: 'Taffy Riot', role: 'Elastic whiff-punisher', accent: '#ffd55e', speed: 3.7, health: 900,
     biography: 'A pulled-sugar boxer who escaped the confectionery by stretching through its keyhole. Every missed punch comes back eventually.', tags: ['STRETCH STRIKE', 'ELASTIC GRAB', 'LONG RECOVERY'], counterplay: 'Block the long fist; jump the wrap. Both have exposed recovery.',
     moves: [extension('sugar_straight', 'Quarter-mile Upper', ['hp'], 280, false, 'elastic', 0xe9b835, 0xffeaa2),
       extension('candy_wrap', 'Saltwater Tangle', ['down', 'hp'], 210, true, 'elastic', 0xe9b835, 0xffeaa2)] },
   { id: 'vesper', name: 'Sister Static', role: 'Bioluminescent stun zoner', accent: '#8cdcf4', speed: 2.9, health: 880,
     biography: 'A jellyfish oracle whose prayers arrive as electrical impulses. The abyss answers, usually at an inconvenient voltage.', tags: ['STUN ORB', 'FLOATING CAGE', 'FRAGILE'], counterplay: 'Slow projectiles permit jumps. Block the orb rather than trading with its stun.',
-    moves: [cast('vesper_sting', 'Silent Benediction', ['hp'], forward(projectile('vesper_sting', 'orb', 0x81dafa, { speed: 3.6, hitbox: hit({ x: -20, y: -16, width: 40, height: 32, damage: 28, stun: 54, knockback: { x: 0, y: 0 } }) })), 'An electrical globe briefly locks movement and attacks.'),
+    moves: [cast('vesper_sting', 'Silent Benediction', ['hp'], forward(projectile('vesper_sting', 'orb', 0x81dafa, { speed: 3.6, hitbox: hit({ x: -20, y: -16, width: 40, height: 32, damage: 28, stun: 12, knockback: { x: 0, y: 0 } }) })), 'An electrical globe interrupts movement and attacks for 200 ms.'),
       cast('vesper_cage', 'Choir of Medusae', ['down', 'hp'], forward(projectile('vesper_cage', 'cage', 0x93bfff, { speed: 2.8, width: 58, height: 60, grab: grip({ anchor: 'contact', holdDuration: 42, damage: 60, groundOnly: false, releaseLaunches: false }) })), 'A drifting jellyfish cage captures at contact, including airborne targets.')] },
   { id: 'vellum', name: 'Vellum', role: 'Paper-binding trapper', accent: '#e1c08e', speed: 3.3, health: 930,
     biography: 'A moth archivist who has eaten every forbidden book and remembers the dangerous parts. Late returns become binding contracts.', tags: ['PROJECTILE GRAB', 'PAPER CUT', 'AIR CATCH'], counterplay: 'Binding pages move slowly and disappear after one catch; interrupt the archivist to break the bind.',
@@ -87,7 +87,7 @@ const briefs: Brief[] = [
   { id: 'bellwether', name: 'Bellwether', role: 'Pressure-wave bruiser', accent: '#d7ba76', speed: 2.3, health: 1180,
     biography: 'A salvage diver who surfaced with a church bell for a head. It rings for ships that have not sunk yet.', tags: ['PRESSURE KNOCKBACK', 'SONIC STUN', 'HEAVY'], counterplay: 'The wide pressure wave is slow. Guard the toll, then use mobility to avoid the grab.',
     moves: [cast('pressure_front', 'Depth Charge', ['hp'], forward(projectile('pressure_front', 'wave', 0x8bd5d4, { speed: 3.8, width: 58, height: 80, hitbox: hit({ x: -28, y: -38, width: 56, height: 76, damage: 80, knockback: { x: 12, y: -3 }, launches: true }) })), 'A compressed water front launches and pushes the opponent far away.'),
-      cast('dead_toll', 'Dead Toll', ['down', 'hp'], forward(projectile('dead_toll', 'wave', 0xe3cc83, { speed: 6, width: 50, height: 60, hitbox: hit({ x: -24, y: -28, width: 48, height: 56, damage: 32, stun: 46, knockback: { x: 0, y: 0 } }) })), 'A ringing shockwave stuns without pushing, inviting a close grab.')] },
+      cast('dead_toll', 'Dead Toll', ['down', 'hp'], forward(projectile('dead_toll', 'wave', 0xe3cc83, { speed: 6, width: 50, height: 60, hitbox: hit({ x: -24, y: -28, width: 48, height: 56, damage: 32, stun: 10, knockback: { x: 0, y: 0 } }) })), 'A ringing shockwave interrupts for 167 ms without pushing. A follow-up grab can be escaped.' )] },
 ];
 
 export const ODDITIES_IDS = briefs.map(b => b.id);

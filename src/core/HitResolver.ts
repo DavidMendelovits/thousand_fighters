@@ -101,7 +101,9 @@ export class HitResolver {
       defender.vx = source.facing * 2;
     } else {
       const wasGrounded = defender.grounded;
-      defender.hitstun = Math.max(hitbox.hitstun, hitbox.stun ?? 0);
+      // Explicit stun is the complete lock duration, not a lower bound on
+      // recoil. A six-tick interrupt must not inherit a 20-tick hit reaction.
+      defender.hitstun = hitbox.stun ?? hitbox.hitstun;
       defender.health = Math.max(0, defender.health - damage);
       defender.vx = hitbox.knockback.x * source.facing * force;
       defender.vy = hitbox.knockback.y * Math.sqrt(force);
@@ -122,7 +124,7 @@ export class HitResolver {
         defender.changeState('hitstun');
       }
 
-      HitPause.trigger(attacker.scene,hitbox.hitstop??Math.min(9,Math.max(3,Math.round(damage/20))));
+      HitPause.trigger(attacker.scene,hitbox.hitstop??Math.min(4,Math.max(1,Math.round(damage/35))));
     }
     this.impact(attacker.scene,defender,source.impact??hitbox.impact,blocking);
 

@@ -171,6 +171,7 @@ def assign_components_to_cells(
     col_width: float,
     row_height: float,
     warnings: list[str],
+    independent_cells: bool = False,
 ) -> list[list[int]]:
     """Assign each component's pixels to the grid cell holding most of them.
 
@@ -191,6 +192,16 @@ def assign_components_to_cells(
         return row * cols + col
 
     for pixels in components:
+        if independent_cells:
+            # Video tiles are different moments, not one drawing. Never steal
+            # pixels from the adjacent moment, even when two blobs touch.
+            groups: dict[int, list[int]] = {}
+            for idx in pixels:
+                groups.setdefault(cell_of(idx), []).append(idx)
+            for cell, group in groups.items():
+                if len(group) >= MIN_COMPONENT_PX:
+                    cell_pixels[cell].extend(group)
+            continue
         if len(pixels) < MIN_COMPONENT_PX:
             continue  # compression noise / stray specks
 
@@ -506,7 +517,8 @@ def extract_frames(
     fg = foreground_mask(data, width, height, video_source)
     components = label_components(fg, width, height)
     cell_pixels = assign_components_to_cells(
-        components, width, rows, cols, col_width, row_height, warnings
+        components, width, rows, cols, col_width, row_height, warnings,
+        independent_cells=video_source,
     )
 
     silhouettes: list[Image.Image | None] = []
@@ -527,15 +539,21 @@ def extract_frames(
         source_bounds.append(local_bounds)
         if video_source and video_origin is None:
             video_origin = (local_bounds[0] + foot_anchor_x(keyed, alpha_bbox(keyed)), local_bounds[1] + keyed.height)
-        # Touching the sheet's outer border means the canvas truncated content.
+        # Each video cell is a complete camera frame. Internal sheet seams
+        # are source boundaries too; output padding cannot repair lost art.
+        left = (i % cols) * col_width if video_source else 0
+        top = (i // cols) * row_height if video_source else 0
+        right = left + col_width if video_source else width
+        bottom = top + row_height if video_source else height
+        margin = 2 if video_source else 0
         touches = (
-            bbox[0] <= 0 or bbox[2] >= width
-            or bbox[1] <= 0 or bbox[3] >= height
+            bbox[0] <= left + margin or bbox[2] >= right - margin
+            or bbox[1] <= top + margin or bbox[3] >= bottom - margin
         )
         edge_touches.append(touches)
         if touches:
             warnings.append(
-                f"frame {i + 1}: silhouette touches the sheet border — content may be truncated"
+                f"frame {i + 1}: silhouette touches the source {'video frame' if video_source else 'sheet'} border — content may be truncated; regenerate with more motion margin or separate VFX"
             )
         silhouettes.append(despill_edges(keyed))
 
@@ -576,7 +594,7 @@ def extract_frames(
             factor = row_target / sil_h
             new_w = max(1, round(s.width * factor))
             new_h = max(1, round(s.height * factor))
-            new_silhouettes.append(s.resize((new_w, new_h), Image.LANCZOS))
+            new_silhouettes.append(s.resize((new_w, new_h), Image.Resampling.NEAREST))
             any_changed = True
         silhouettes = new_silhouettes
         if any_changed:
@@ -591,7 +609,7 @@ def extract_frames(
         if abs(factor - 1.0) > RESCALE_TOLERANCE:
             scale_applied = factor
             silhouettes = [
-                s.resize((max(1, round(s.width * factor)), max(1, round(s.height * factor))), Image.Resampling.NEAREST if video_source else Image.LANCZOS)
+                s.resize((max(1, round(s.width * factor)), max(1, round(s.height * factor))), Image.Resampling.NEAREST)
                 if s is not None else None
                 for s in silhouettes
             ]
@@ -607,6 +625,7 @@ def extract_frames(
         "sourceSize": [width, height],
         "grid": [rows, cols],
         "frameCount": frame_count,
+        "sourceBoundaryChecked": True,
         "segmentation": "connected-components",
         "medianSilhouetteHeight": median_height,
         "scaleApplied": scale_applied,
@@ -663,6 +682,7 @@ def extract_frames(
             "silhouetteHeight": meta["silhouetteHeight"],
             "hurtbox": hurtbox,
             "attackBox": attack_box,
+            "sourceClipped": edge_touches[i],
         })
 
     assemble_sheet(frames, metas, output_dir / "sheet.png")

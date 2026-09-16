@@ -18,7 +18,7 @@ startup: 12 ticks, active: 24 ticks, recovery: 36 ticks at 60 Hz.
 
 ## Blackwater Bell
 
-↓ + H — A slow ink globe stuns on hit, opening a reel-in opportunity.
+↓ + H — A slow ink globe interrupts for 133 ms. Reeling in afterward is a pressure option, not a guaranteed capture.
 
 startup: 16 ticks, active: 6 ticks, recovery: 26 ticks at 60 Hz.
 

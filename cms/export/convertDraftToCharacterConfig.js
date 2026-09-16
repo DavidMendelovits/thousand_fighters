@@ -10,6 +10,7 @@
 import { normalizeManifest } from '../pipeline/manifestSchema.js';
 import {projectileImpact} from '../../shared/projectileImpact.js';
 import {validateCombatRules} from './validateCombatRules.js';
+import {validateSpriteBoundaries} from './validateSpriteBoundaries.js';
 
 /**
  * Collision override layer (Character Gym, T10/D2).
@@ -40,6 +41,7 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
   const id = draft.id;
   if (!id) throw new Error('convertDraftToCharacterConfig: draft.id is required');
   validateCombatRules(draft,id);
+  validateSpriteBoundaries(frameData);
 
   const manifest = normalizeManifest(rawManifest, { id });
   const stats = draft.stats ?? {};
@@ -1004,6 +1006,11 @@ function convertEvent(draftEvent, moveId, phaseIndex, eventIndex) {
         level: hb.level ?? 'mid',
       },
     };
+    // These are per-move mechanics, not generator hints. Preserve them for
+    // melee as well as projectile hitboxes (including explicit zero hitstop).
+    for (const key of ['stun','hitstop','chipDamage','unblockable','launches','knockdown','impact','hitSound','hitSpark']) {
+      if (hb[key] !== undefined) converted.hitbox[key] = hb[key];
+    }
     if (Array.isArray(draftEvent.keyframes) && draftEvent.keyframes.length) {
       converted.keyframes = draftEvent.keyframes
         .filter((kf) => kf && typeof kf.atFrame === 'number')

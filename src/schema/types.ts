@@ -67,7 +67,7 @@ export type Hitbox = {
   unblockable?: boolean;
   hitSpark?: string;
   hitSound?: string;
-  /** A real input-locking stun, distinct from ordinary recoil. */
+  /** Complete input-lock duration in 60 Hz ticks; overrides hitstun, not added to it. 6 = 100 ms. */
   stun?: number;
 };
 

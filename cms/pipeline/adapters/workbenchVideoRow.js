@@ -23,7 +23,7 @@ async function generateExclusive({characterId,moveId,prompt,task,storage,reposit
   const referenceKey=`characters/${characterId}/assets/fighter-pack/sprites/base/base_001.png`;
   if(!await storage.exists(referenceKey))throw new Error('Generate and extract the base row before creating video motion.');
   const bytes=await storage.getBytes(referenceKey);
-  const motionPrompt=`Animate ONLY the single reference fighter, facing RIGHT, fixed side-view camera. Crisp 16-bit pixel art, identical costume, silhouette, palette and proportions. Solid flat #ff00ff background throughout, no floor, no shadows, no camera motion, no opponent, no text. Keep the whole actor within the frame with generous margin. Perform ONE ${moveId} action: anticipate, execute with a clear strongest contact pose in the middle, follow through, then recover to the initial ready stance. Any fired projectile is separate, not a second character or a persistent part of the body. Motion brief: ${prompt}`;
+  const motionPrompt=`Animate ONLY the single reference fighter, facing RIGHT, fixed side-view camera. Crisp 16-bit pixel art, identical costume, silhouette, palette and proportions. Solid flat #ff00ff background throughout, no floor, no shadows, no camera motion, no opponent, no text. Keep the entire actor, longest extensions and all props at least 15% away from EVERY camera edge through the whole motion; do not zoom in. Perform ONE ${moveId} action: anticipate, execute with a clear strongest contact pose in the middle, follow through, then recover to the initial ready stance. CHARACTER BODY PASS ONLY: no explosions, muzzle flashes, impact bursts, detached projectiles or lingering trails. Those are separate runtime VFX/entities, not pixels baked into this body animation. Motion brief: ${prompt}`;
   const fingerprint=createHash('sha256').update(bytes).update(motionPrompt).update(task).digest('hex');
   const pointerKey=`characters/${characterId}/assets/jobs/${moveId}_video.json`;
   const previous = await storage.exists(pointerKey) ? await storage.getJson(pointerKey) : null;
@@ -42,7 +42,7 @@ async function generateExclusive({characterId,moveId,prompt,task,storage,reposit
     // A generated base can be larger than a native sprite. Downsample once,
     // then use integer enlargement and an invariant reference for the video.
     await exec('ffmpeg',['-hide_banner','-loglevel','error','-i',path.join(directory,'sprite.png'),'-vf','scale=160:160:force_original_aspect_ratio=decrease:flags=neighbor','-frames:v','1',path.join(directory,'small.png')]);
-    await exec('python3',['scripts/prepare_animation_reference.py',path.join(directory,'small.png'),'--output',path.join(directory,'reference.png')]);
+    await exec('python3',['scripts/prepare_animation_reference.py',path.join(directory,'small.png'),'--output',path.join(directory,'reference.png'),'--occupancy','0.4']);
     await repository.writeAsset(characterId,`jobs/${moveId}_video.json`,Buffer.from(JSON.stringify({jobId,fingerprint,provider:'fal',model:'kling-v3-standard',moveId})),{contentType:'application/json',provider:'fal'});
   }
   onProgress?.({type:'status',message:resume?'Resuming the existing video job; no new submission.':'Submitting a 5-second image-to-video job using the extracted base pose.'});

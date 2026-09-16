@@ -26,3 +26,20 @@ test('legacy CMS route leads to the same studio',async({page})=>{
   await expect(page).toHaveURL(/animation-lab.html\?workspace=characters&character=sir_chuckle/);
   await expect(page.frameLocator('#cms-frame').getByRole('heading',{name:'Sir Chuckle',exact:true})).toBeVisible();
 });
+
+test('size and reaction authoring explain units and reject an invalid height without saving',async({page},info)=>{
+  await page.goto(`${base}?workspace=characters&character=latch`);
+  const cms=page.frameLocator('#cms-frame');
+  await cms.getByText('Identity, movement & move definitions',{exact:true}).click();
+  const editor=cms.getByRole('textbox',{name:'Character authoring JSON'});
+  const value=JSON.parse(await editor.inputValue());
+  expect(value.sprite.relativeHeight).toBeGreaterThan(0);
+  await expect(cms.getByText(/6 ticks = 100 ms/)).toBeVisible();
+  value.sprite.relativeHeight=99;
+  await editor.fill(JSON.stringify(value,null,2));
+  await cms.getByRole('button',{name:'Save character definitions',exact:true}).click();
+  await expect(cms.locator('#authoring-save-status')).toContainText('relativeHeight must be between');
+  await editor.scrollIntoViewIfNeeded();
+  await page.screenshot({path:info.outputPath('size-timing-editor.png')});
+  // Client-side rejection: no invalid draft mutation and no paid generation.
+});

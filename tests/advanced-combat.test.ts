@@ -18,7 +18,7 @@ test('CMS export preserves form events, hit-confirm costs and projectile compani
   assert.equal(config.moves[0].cancelOn,'hit');assert.equal(config.moves[0].cost.meter,7);
   assert.equal(config.moves[0].phases[0].events[1].event.formId,'brine_abyssal');
   const p=config.moves[0].phases[1].events[0].event.projectile;
-  assert.equal(p.hitbox.stun,48);assert.equal(p.impact.kind,'ink');assert.equal(p.animation,'odd_ink_bell');
+  assert.equal(p.hitbox.stun,8);assert.equal(p.impact.kind,'ink');assert.equal(p.animation,'odd_ink_bell');
 });
 test('CMS rejects malformed or selectable forms and invalid power stats',()=>{
   const base=roster.find(f=>f.id==='brine');assert.doesNotThrow(()=>validateCombatRules(base));

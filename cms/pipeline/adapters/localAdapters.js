@@ -2,6 +2,7 @@ import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { normalizeManifest } from '../manifestSchema.js';
+import {validateSpriteBoundaries} from '../../export/validateSpriteBoundaries.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..', '..');
@@ -289,6 +290,11 @@ export function createLocalPublisher({ repository, storage } = {}) {
     async publishCharacter(request) {
       const characterId = required(request.characterId, 'characterId');
       const releaseId = request.releaseId ?? `local-${new Date().toISOString().replaceAll(':', '-')}`;
+
+      // Read current measurements, not a possibly stale QA report from before
+      // re-extraction. Never create a new release with known missing artwork.
+      const framesKey = `characters/${characterId}/assets/fighter-pack/frameData.json`;
+      if (await storage.exists(framesKey)) validateSpriteBoundaries(await storage.getJson(framesKey));
 
       // QA gate: require a current, non-failing QA report before publishing.
       const qaReport = typeof repository.getLatestQaReport === 'function'

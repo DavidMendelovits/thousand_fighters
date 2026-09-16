@@ -12,7 +12,7 @@ startup: 9 ticks, active: 5 ticks, recovery: 28 ticks at 60 Hz.
 
 ## Silent Benediction
 
-H — An electrical globe briefly locks movement and attacks.
+H — An electrical globe interrupts movement and attacks for 200 ms.
 
 startup: 16 ticks, active: 6 ticks, recovery: 26 ticks at 60 Hz.
 

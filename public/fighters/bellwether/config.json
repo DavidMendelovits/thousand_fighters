@@ -288,7 +288,7 @@
     {
       "id": "dead_toll",
       "displayName": "Dead Toll",
-      "description": "A ringing shockwave stuns without pushing, inviting a close grab.",
+      "description": "A ringing shockwave interrupts for 167 ms without pushing. A follow-up grab can be escaped.",
       "animation": "special_1",
       "trigger": {
         "allowedStates": [
@@ -361,7 +361,7 @@
                       "y": 0
                     },
                     "level": "mid",
-                    "stun": 46
+                    "stun": 10
                   },
                   "spawnPolicy": {
                     "maxActivePerOwner": 1,

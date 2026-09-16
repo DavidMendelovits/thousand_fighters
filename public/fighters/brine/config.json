@@ -314,7 +314,7 @@
     {
       "id": "ink_bell",
       "displayName": "Blackwater Bell",
-      "description": "A slow ink globe stuns on hit, opening a reel-in opportunity.",
+      "description": "A slow ink globe interrupts for 133 ms. Reeling in afterward is a pressure option, not a guaranteed capture.",
       "animation": "special_1",
       "trigger": {
         "allowedStates": [
@@ -387,7 +387,7 @@
                       "y": 0
                     },
                     "level": "mid",
-                    "stun": 48
+                    "stun": 8
                   },
                   "spawnPolicy": {
                     "maxActivePerOwner": 1,
@@ -1390,7 +1390,7 @@
           {
             "id": "form_breaker",
             "displayName": "Undertow Crown",
-            "description": "A slow ink globe stuns on hit, opening a reel-in opportunity.",
+            "description": "A slow ink globe interrupts for 133 ms. Reeling in afterward is a pressure option, not a guaranteed capture.",
             "animation": "special_1",
             "trigger": {
               "allowedStates": [
@@ -1721,7 +1721,7 @@
           {
             "id": "ink_bell",
             "displayName": "Blackwater Bell",
-            "description": "A slow ink globe stuns on hit, opening a reel-in opportunity.",
+            "description": "A slow ink globe interrupts for 133 ms. Reeling in afterward is a pressure option, not a guaranteed capture.",
             "animation": "special_1",
             "trigger": {
               "allowedStates": [
@@ -1794,7 +1794,7 @@
                             "y": 0
                           },
                           "level": "mid",
-                          "stun": 48
+                          "stun": 8
                         },
                         "spawnPolicy": {
                           "maxActivePerOwner": 1,

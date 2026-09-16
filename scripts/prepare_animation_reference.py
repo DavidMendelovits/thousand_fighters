@@ -14,9 +14,12 @@ def main():
     p.add_argument("--output",type=Path,required=True)
     p.add_argument("--size",type=int,default=512)
     p.add_argument("--background",default="#ff00ff")
+    p.add_argument("--occupancy",type=float,default=.65,help="Maximum body fraction of canvas; .4 reserves space for long attacks")
     args=p.parse_args()
     if args.size<300 or args.size>2048:
         p.error("size must be 300–2048")
+    if not .2 <= args.occupancy <= .8:
+        p.error("occupancy must be between 0.2 and 0.8")
     if args.output.exists():
         p.error("output exists; use a new filename")
     with Image.open(args.image) as image:
@@ -25,7 +28,7 @@ def main():
     if not bbox:
         p.error("reference is empty")
     sprite=sprite.crop(bbox)
-    available=round(args.size*.65)
+    available=round(args.size*args.occupancy)
     if max(sprite.size)>available:
         p.error("sprite exceeds motion-safe canvas; choose a larger --size instead of shrinking the art")
     scale=max(1,available//max(sprite.size))

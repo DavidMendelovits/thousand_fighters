@@ -151,7 +151,7 @@
     {
       "id": "vesper_sting",
       "displayName": "Silent Benediction",
-      "description": "An electrical globe briefly locks movement and attacks.",
+      "description": "An electrical globe interrupts movement and attacks for 200 ms.",
       "animation": "video_signature",
       "trigger": {
         "allowedStates": [
@@ -251,7 +251,7 @@
                       "y": 0
                     },
                     "level": "mid",
-                    "stun": 54
+                    "stun": 12
                   },
                   "spawnPolicy": {
                     "maxActivePerOwner": 1,

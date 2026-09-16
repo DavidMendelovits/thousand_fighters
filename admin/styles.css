@@ -388,8 +388,12 @@ button:disabled {
 
 .character-workbench {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   gap: 14px;
 }
+
+.character-workbench > * { min-width: 0; }
 
 .empty-state {
   min-height: 360px;

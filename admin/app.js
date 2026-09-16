@@ -1467,7 +1467,7 @@ function renderCharacterWorkbench(draft, assets) {
         ${renderAnimationBindings(draft.animations)}
       </div>
     </section>
-    <details class="combat-rules-editor"><summary>Identity, movement & move definitions</summary><p>Edit the actual draft without regenerating art. Coordinates are relative to the feet: negative Y is above the floor. Jump velocities are positive magnitudes. Publish separately to update the game.</p><textarea id="authoring-json" aria-label="Character authoring JSON" rows="16">${escapeHtml(JSON.stringify({artBrief:draft.artBrief??draft.description,stats:draft.stats??{},moves:draft.moves??[]},null,2))}</textarea><button type="button" data-save-authoring>Save character definitions</button><span id="authoring-save-status" role="status"></span></details>
+    <details class="combat-rules-editor"><summary>Identity, movement & move definitions</summary><p>Edit without regenerating art. Coordinates are relative to the feet: negative Y is above the floor; jump velocities are positive. Move phases and hitstun / blockstun / stun / hitstop use 60 Hz ticks: 6 ticks = 100 ms. Stun overrides hitstun; hitstop pauses the impact separately.</p><p>Size: sprite.relativeHeight (0.5–1.6; 1 ≈ 160 px tall) and sprite.scaleAdjust (0.25–4) set the authored render size and measured boxes. Advanced combat size scales art and collision together, including temporary power-ups. Pixel rendering stays nearest-neighbor; integer enlargement is crispest, not higher-detail. Publish separately to update the game.</p><textarea id="authoring-json" aria-label="Character authoring JSON" rows="16">${escapeHtml(JSON.stringify({artBrief:draft.artBrief??draft.description,stats:draft.stats??{},sprite:{relativeHeight:draft.sprite?.relativeHeight??1,scaleAdjust:draft.sprite?.scaleAdjust??1},moves:draft.moves??[]},null,2))}</textarea><button type="button" data-save-authoring>Save character definitions</button><span id="authoring-save-status" role="status"></span></details>
     <details class="combat-rules-editor"><summary>Advanced combat rules · stats, power-ups & hidden forms</summary><p>Multipliers use 1 as neutral. Forms contain a complete config with parentId and selectable:false. Save updates the draft; publish separately to ship it.</p><textarea id="advanced-combat-json" aria-label="Advanced combat JSON" rows="12">${escapeHtml(JSON.stringify({combatStats:draft.combatStats??{},powerUps:draft.powerUps??[],forms:draft.forms??[]},null,2))}</textarea><button type="button" data-save-combat>Save combat rules to draft</button><span id="combat-save-status" role="status"></span></details>
     ${renderConceptSection(conceptAsset)}
     <section class="move-board">
@@ -1487,9 +1487,13 @@ async function saveAuthoring() {
   const characterId = state.currentCharacterId;
   try {
     const patch = JSON.parse(document.getElementById('authoring-json').value);
-    if (!patch || Array.isArray(patch) || Object.keys(patch).some(key => !['artBrief','stats','moves'].includes(key))) throw new Error('Only artBrief, stats and moves belong here.');
+    if (!patch || Array.isArray(patch) || Object.keys(patch).some(key => !['artBrief','stats','sprite','moves'].includes(key))) throw new Error('Only artBrief, stats, sprite and moves belong here.');
     if (typeof patch.artBrief !== 'string' || !patch.artBrief.trim()) throw new Error('An art brief is required.');
     if (!patch.stats || Object.values(patch.stats).some(value => typeof value !== 'number' || !Number.isFinite(value))) throw new Error('Movement stats must be finite numbers.');
+    for (const [key,min,max] of [['relativeHeight',.5,1.6],['scaleAdjust',.25,4]]) {
+      const value=patch.sprite?.[key];
+      if(value!==undefined && (!Number.isFinite(value)||value<min||value>max)) throw new Error(`sprite.${key} must be between ${min} and ${max}`);
+    }
     if (!Array.isArray(patch.moves) || !patch.moves.length || patch.moves.some(move => !move.id || !move.animation || !move.trigger?.sequence?.length || !move.phases?.length)) throw new Error('Every move needs an id, animation, input sequence and phases.');
     await invokeTool('update_character_draft', {characterId, patch, note:'Workbench character definitions editor'});
     state.currentDraftData = {...state.currentDraftData, ...patch};
@@ -2198,13 +2202,18 @@ function summarizeMove(move) {
     .map((entry) => entry.event)
     .filter((event) => String(event?.type ?? '').startsWith('spawn_projectile'));
   const totalFrames = phases.reduce((sum, phase) => sum + (Number(phase.frames) || 0), 0);
-  const damage = hitboxes.reduce((sum, event) => sum + (Number(event.hitbox.damage) || 0), 0);
+  const reactions = [...hitboxes.map(event=>event.hitbox), ...projectiles.map(event=>event.projectile?.hitbox ?? state.currentDraftData?.projectiles?.find(p=>p.id===event.projectileId)?.hitbox)].filter(Boolean);
+  const damage = reactions.reduce((sum, hitbox) => sum + (Number(hitbox.damage) || 0), 0);
+  const timing = key => [...new Set(reactions.map(h=>key==='lock'?(h.stun??h.hitstun):h[key]).filter(v=>Number.isFinite(v)))].map(v=>`${v}f / ${Math.round(v*1000/60)} ms`).join(', ') || 'default';
   const trigger = move.trigger?.sequence?.join(' ') ?? 'none';
 
   return [
     ['Input', trigger],
     ['Frames', totalFrames > 0 ? `${totalFrames}f` : 'n/a'],
     ['Damage', damage > 0 ? String(damage) : 'n/a'],
+    ['Input lock', timing('lock')],
+    ['Blockstun', timing('blockstun')],
+    ['Hitstop', timing('hitstop')],
     ['Hitboxes', String(hitboxes.length)],
     ['Projectiles', String(projectiles.length)],
   ];

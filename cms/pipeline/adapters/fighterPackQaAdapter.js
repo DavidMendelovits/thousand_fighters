@@ -1,4 +1,5 @@
 import { normalizeManifest, validateManifestSchema } from '../manifestSchema.js';
+import {clippedSourceFrames} from '../../export/validateSpriteBoundaries.js';
 
 const EXPECTED_SHEETS = ['base', 'punch', 'kick', 'special_1', 'special_2'];
 const MIN_FRAME_COUNT = 4;
@@ -74,6 +75,10 @@ export class FighterPackQaAdapter {
 
     // Check 6: framedata-dimensions
     checks.push(this._checkFrameDataDimensions(frameData));
+    const clipped = clippedSourceFrames(frameData);
+    const unchecked = Object.values(frameData?.frames ?? {}).flat().some(frame => frame.sourceClipped === undefined);
+    checks.push({id:'source-boundaries', status:clipped.length?'error':unchecked?'warning':'pass',
+      message:clipped.length?`Source art reaches its capture boundary: ${clipped.join(', ')}. Regenerate with more motion margin or separate effects; transparent padding cannot restore missing pixels.`:unchecked?'Older frames have no source-boundary audit. Re-extract their original sources before certifying clipping-free art.':'No source clipping detected in extracted frames.'});
 
     // Check 7: anchor-stability
     checks.push(this._checkAnchorStability(frameData));

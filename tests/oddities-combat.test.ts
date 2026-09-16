@@ -35,6 +35,17 @@ test('stun is a distinct input-lock state and armor deaths resolve',()=>{
   const a=fake('a',100),d=fake('d',300,-1);HitResolver.resolve(a,d,{...hb,stun:48},'stun');assert.equal(d.state,'stunned');assert.equal(d.hitstun,48);assert.equal(d.vx,0);
   const armored=fake('armor',300);armored.health=10;armored.armor={hits:1};HitResolver.resolve(a,armored,hb,'armor');assert.equal(armored.state,'dead');
 });
+test('a 100ms interrupt overrides longer recoil and explicit hitstop is independent',()=>{
+  const a=fake('a',100),d=fake('d',300,-1);d.state='attack';
+  HitResolver.resolve(a,d,{...hb,stun:6,hitstop:0},'interrupt');
+  assert.equal(d.state,'stunned');assert.equal(d.hitstun,6);assert.equal(a.scene.hitPauseFrames,0);
+  const heavy=fake('heavy',300);HitResolver.resolve(a,heavy,{...hb,damage:300},'heavy');
+  assert.equal(heavy.hitstun,20);assert.equal(a.scene.hitPauseFrames,4);
+});
+test('shipped dedicated stuns are short per-move interrupts, not long disables',()=>{
+  const stuns=roster.flatMap(f=>f.moves.flatMap(m=>m.phases.flatMap(p=>p.events.map(({event}:any)=>event.projectile?.hitbox?.stun)))).filter(v=>v!==undefined);
+  assert.deepEqual(stuns.sort((a,b)=>a-b),[6,8,10,12]);
+});
 test('capture anchors and safety exclusions are explicit',()=>{
   const a=fake('a',100),d=fake('d',300);a.state='attack';
   const spec={hitbox:{x:0,y:-100,width:50,height:100},holdOffsetX:44,holdDuration:30,anchor:'contact' as const};

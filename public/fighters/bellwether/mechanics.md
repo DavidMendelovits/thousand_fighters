@@ -18,7 +18,7 @@ startup: 16 ticks, active: 6 ticks, recovery: 26 ticks at 60 Hz.
 
 ## Dead Toll
 
-↓ + H — A ringing shockwave stuns without pushing, inviting a close grab.
+↓ + H — A ringing shockwave interrupts for 167 ms without pushing. A follow-up grab can be escaped.
 
 startup: 16 ticks, active: 6 ticks, recovery: 26 ticks at 60 Hz.
 

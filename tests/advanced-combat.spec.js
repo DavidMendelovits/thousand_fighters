@@ -52,3 +52,25 @@ test('projectile contact produces its own authored impact, and cleanup is bounde
   expect(states.some(s=>s.impacts.some(i=>i.id==='ink_bell_impact'&&i.kind==='ink'))).toBe(true);
   expect(states.at(-1).impacts).toHaveLength(0);
 });
+
+test('ink interrupts an active move then returns control after eight simulation ticks',async({page})=>{
+  await arena(page);
+  const result=await page.evaluate(()=>{
+    const d=window.__stamptownDebug;d.training.reset(300,460);d.startMove(1,'ink_bell');
+    for(let i=0;i<80;i++){
+      if(d.snapshot().projectiles.some(p=>p.id==='ink_bell'&&p.x>380))break;
+      d.training.step(1);
+    }
+    d.startMove(2,'sky_needle');
+    let contact;
+    for(let i=0;i<20;i++){d.training.step(1);const victim=d.snapshot().fighters[1];if(victim.state==='stunned'){contact=victim;break;}}
+    const frames=[];
+    for(let i=0;i<12;i++){d.training.step(1);frames.push(d.snapshot().fighters[1]);}
+    return {contact,frames};
+  });
+  expect(result.contact?.stun).toBe(8);
+  expect(result.contact?.move).toBeUndefined();
+  // The one-tick hitstop is separate; control is back well before 200 ms.
+  expect(result.frames.at(-1).state).not.toBe('stunned');
+  expect(result.frames.filter(f=>f.state==='stunned').length).toBeLessThanOrEqual(8);
+});

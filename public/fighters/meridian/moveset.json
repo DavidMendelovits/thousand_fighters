@@ -510,7 +510,7 @@
                     "y": 0
                   },
                   "level": "mid",
-                  "stun": 42
+                  "stun": 6
                 },
                 "spawnPolicy": {
                   "maxActivePerOwner": 1,
