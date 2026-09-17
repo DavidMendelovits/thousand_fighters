@@ -1,10 +1,11 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { mkdir, readFile, rename, open, unlink, access } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
 import { FalVideoGeneratorAdapter, FAL_VIDEO_MODELS, videoPayload, publicHttpsUrl, assertMp4 } from '../cms/pipeline/adapters/falVideoGeneratorAdapter.js';
+import { emitAttempt } from '../cms/pipeline/generationAttemptTelemetry.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -42,7 +43,8 @@ export function parseVideoArgs(args) {
   return result;
 }
 
-export async function runVideoJob(options, { adapter, log = console.log } = {}) {
+export async function runVideoJob(options, { adapter, log = console.log, onGenerationAttempt } = {}) {
+  const invocationStartedAt = Date.now();
   if (options.help) { log(HELP); return; }
   adapter ??= new FalVideoGeneratorAdapter({ timeoutMs: options['timeout-ms'], pollIntervalMs: options['poll-ms'] });
   const directory = path.resolve(options.resume ?? options.output);
@@ -80,6 +82,7 @@ export async function runVideoJob(options, { adapter, log = console.log } = {}) 
         throw new Error('Output already contains source.mp4. Use a fresh output directory or resume its existing job.');
       } catch (error) { if (error.code !== 'ENOENT') throw error; }
       const references = {};
+      const inputPreparationStartedAt = Date.now();
       const image = await loadMedia(options.image, 'image', references, 'image');
       const endImage = options['end-image'] ? await loadMedia(options['end-image'], 'image', references, 'endImage') : undefined;
       const motion = options.motion ? await loadMedia(options.motion, 'video', references, 'motion') : undefined;
@@ -92,33 +95,53 @@ export async function runVideoJob(options, { adapter, log = console.log } = {}) 
         createdAt: new Date().toISOString(), transportStatus: 'submitting', qualityStatus: 'unreviewed',
         request: { prompt: options.prompt, duration: payload.duration ?? null, orientation: payload.character_orientation ?? null, audio: false, references, payloadSha256: sha256(JSON.stringify(payload)) },
         submissionAttempts: 1,
+        timings: { inputPreparationMs: Date.now() - inputPreparationStartedAt },
+        generationAttempt: { attemptId: randomUUID(), startedAt: new Date().toISOString(), status: 'running' },
       };
       // An existing job is never overwritten, even if the prior submit was uncertain.
       await durableWrite(jobPath, `${JSON.stringify(job, null, 2)}\n`, 'wx');
+      const submissionStartedAt = Date.now();
       job.task = await adapter.submit(request);
+      job.timings.submissionMs = Date.now() - submissionStartedAt;
       job.transportStatus = 'submitted';
       await checkpoint();
       log(`Submitted ${job.model}; request ${job.task.requestId}. Job persisted at ${jobPath}`);
     }
     if (job.remoteStatus !== 'COMPLETED') {
+      const pollingStartedAt = Date.now();
       await adapter.poll(job.task, { onStatus: async (status) => {
         job.remoteStatus = status;
         job.transportStatus = 'polling';
         await checkpoint();
         log(`fal: ${status}`);
       } });
+      job.timings = { ...(job.timings ?? {}), providerQueueAndGenerationMs: Date.now() - pollingStartedAt };
     }
     job.remoteStatus = 'COMPLETED';
     job.transportStatus = 'downloading';
     await checkpoint();
+    const resultLookupStartedAt = Date.now();
     const video = await adapter.result(job.task);
+    job.timings = { ...(job.timings ?? {}), resultLookupMs: Date.now() - resultLookupStartedAt };
+    const downloadStartedAt = Date.now();
     const bytes = await adapter.download(video);
+    job.timings.downloadMs = Date.now() - downloadStartedAt;
     await atomicWrite(videoPath, bytes);
     job.output = { path: 'source.mp4', contentType: 'video/mp4', bytes: bytes.length, sha256: sha256(bytes) };
     job.transportStatus = 'downloaded';
     job.completedAt = new Date().toISOString();
+    job.timings.transportInvocationMs = Date.now() - invocationStartedAt;
+    const activeDurationMs = (job.generationAttempt?.activeDurationMs ?? 0) + job.timings.transportInvocationMs;
+    job.generationAttempt = {
+      ...(job.generationAttempt ?? { attemptId: randomUUID(), startedAt: job.createdAt }),
+      completedAt: job.completedAt,
+      durationMs: activeDurationMs,
+      activeDurationMs,
+      status: 'succeeded',
+    };
     delete job.lastError;
     await checkpoint();
+    await emitAttempt({ onGenerationAttempt }, videoAttemptEvent(job));
     log(`Source video saved: ${videoPath}. Quality is unreviewed; run the offline compiler and review.`);
     return job;
   } catch (error) {
@@ -132,13 +155,50 @@ export async function runVideoJob(options, { adapter, log = console.log } = {}) 
       if (job.transportStatus === 'provider-rejected') job.lastError.message = 'Provider rejected this task. Resume only re-reads this result; corrected inputs require a deliberate new submission in a new output directory.';
       if(job.transportStatus==='submission-rejected')job.lastError.message='Provider rejected the submission before issuing a task id. After correcting the cause, explicitly regenerate to create a new job.';
       if (error.diagnostics?.length) job.lastError.diagnostics = error.diagnostics;
+      const completedAt = new Date().toISOString();
+      const activeDurationMs = (job.generationAttempt?.activeDurationMs ?? 0) + (Date.now() - invocationStartedAt);
+      job.generationAttempt = {
+        ...(job.generationAttempt ?? { attemptId: randomUUID(), startedAt: job.createdAt ?? completedAt }),
+        completedAt,
+        durationMs: activeDurationMs,
+        activeDurationMs,
+        status: 'failed',
+      };
       await checkpoint();
+      await emitAttempt({ onGenerationAttempt }, videoAttemptEvent(job, error));
     }
     throw error;
   } finally {
     await lock.close();
     await unlink(lockPath);
   }
+}
+
+function videoAttemptEvent(job, error) {
+  return {
+    schemaVersion: 1,
+    attemptId: job.generationAttempt.attemptId,
+    startedAt: job.generationAttempt.startedAt,
+    completedAt: job.generationAttempt.completedAt,
+    durationMs: job.generationAttempt.durationMs,
+    status: job.generationAttempt.status,
+    kind: 'video',
+    provider: job.provider,
+    model: job.model,
+    operation: job.mode,
+    characterId: null,
+    arenaId: null,
+    moveId: null,
+    projectileId: null,
+    frameNumber: null,
+    attemptNumber: job.submissionAttempts ?? 1,
+    referenceCount: Object.keys(job.request?.references ?? {}).length,
+    providerTaskId: job.task?.requestId ?? null,
+    stageTimings: job.timings ?? null,
+    usage: null,
+    estimatedCostUsd: null,
+    ...(error ? { error: { name: error.name ?? 'Error', statusCode: error.statusCode ?? null, message: job.lastError?.message ?? 'Video generation failed.' } } : {}),
+  };
 }
 
 async function loadMedia(value, type, references, label) {

@@ -4,8 +4,8 @@ import path from 'node:path';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {runVideoJob} from '../../../scripts/generate_animation_video.mjs';
-import {composeSpriteSheetWithFfmpeg} from './minimaxH3SpriteSheetGeneratorAdapter.js';
-import {rowPromptProfile} from '../rowPromptProfiles.js';
+import {motionProfile} from '../motionProfiles.js';
+import {installMotionRow} from '../motionRowArtifacts.js';
 const exec=promisify(execFile);
 const inFlight = new Map();
 // A definitive HTTP rejection is different from an ambiguous lost response.
@@ -22,13 +22,17 @@ export async function generateWorkbenchVideoRow(request) {
   finally { inFlight.delete(key); }
 }
 
-async function generateExclusive({characterId,moveId,prompt,task,storage,repository,onProgress}) {
+async function generateExclusive({characterId,moveId,prompt,task,storage,repository,onProgress,onGenerationAttempt}) {
+  const started=Date.now();
+  const stageTimings={};
   if(!process.env.FAL_KEY)throw new Error('FAL_KEY is required for video motion. No request was submitted.');
   const referenceKey=`characters/${characterId}/assets/fighter-pack/sprites/base/base_001.png`;
+  const referenceLoadStartedAt=Date.now();
   if(!await storage.exists(referenceKey))throw new Error('Generate and extract the base row before creating video motion.');
   const bytes=await storage.getBytes(referenceKey);
-  const profile=rowPromptProfile(moveId);
-  const motionPrompt=`Animate ONLY the single reference fighter, facing RIGHT, fixed side-view camera. Crisp 16-bit pixel art, identical costume, silhouette, palette and proportions. Solid flat #ff00ff background throughout, no floor, no shadows, no camera motion, no opponent, no text. Keep the entire actor, longest extensions and all props at least 15% away from EVERY camera edge through the whole motion; do not zoom in. Animate in place; the game engine supplies world movement. Action: ${profile.description}. Interpret these six frame roles as six consecutive key moments of this video: ${profile.frameRoles}. CHARACTER BODY PASS ONLY: no explosions, muzzle flashes, impact bursts, detached projectiles or lingering trails. Those are separate runtime VFX/entities, not pixels baked into this body animation. Motion brief: ${prompt}`;
+  stageTimings.referenceLoadMs=Date.now()-referenceLoadStartedAt;
+  const profile=motionProfile(moveId,prompt);
+  const motionPrompt=`Animate ONLY the reference fighter, always facing RIGHT, fixed side-view camera. Crisp expressive 2D pixel art, identical costume, silhouette, palette and proportions. Flat #ff00ff background, no floor shadow, no camera motion, no opponent or text. Keep the entire actor at least 15% from every edge. Animate in place; the engine supplies world movement. BODY PASS ONLY: projectiles and long extensions are separate game entities. ${profile.prompt}`;
   const fingerprint=createHash('sha256').update(bytes).update(motionPrompt).update(task).digest('hex');
   const pointerKey=`characters/${characterId}/assets/jobs/${moveId}_video.json`;
   const previous = await storage.exists(pointerKey) ? await storage.getJson(pointerKey) : null;
@@ -38,22 +42,45 @@ async function generateExclusive({characterId,moveId,prompt,task,storage,reposit
     const candidate=path.join(jobsRoot,previous.jobId);
     // A missing/corrupt checkpoint is not permission to submit another paid job.
     const job=JSON.parse(await readFile(path.join(candidate,'job.json'),'utf8'));
-    if(job.transportStatus!=='downloaded'&&!isRejectedSubmission(job)){directory=candidate;resume=true;}
+    if(!isRejectedSubmission(job)){directory=candidate;resume=true;}
   }
-  const started=Date.now();
   if(!directory){
+    const referencePreparationStartedAt=Date.now();
     const jobId=randomUUID();directory=path.join(jobsRoot,jobId);await mkdir(directory,{recursive:true});
     await writeFile(path.join(directory,'sprite.png'),bytes);
-    // A generated base can be larger than a native sprite. Downsample once,
-    // then use integer enlargement and an invariant reference for the video.
-    await exec('ffmpeg',['-hide_banner','-loglevel','error','-i',path.join(directory,'sprite.png'),'-vf','scale=160:160:force_original_aspect_ratio=decrease:flags=neighbor','-frames:v','1',path.join(directory,'small.png')]);
-    await exec('python3',['scripts/prepare_animation_reference.py',path.join(directory,'small.png'),'--output',path.join(directory,'reference.png'),'--occupancy','0.4']);
+    // Preserve the approved native sprite with integer enlargement and margins.
+    await exec('python3',['scripts/prepare_animation_reference.py',path.join(directory,'sprite.png'),'--output',path.join(directory,'reference.png'),'--size','768','--occupancy','0.6']);
+    stageTimings.referencePreparationMs=Date.now()-referencePreparationStartedAt;
+    const checkpointStartedAt=Date.now();
     await repository.writeAsset(characterId,`jobs/${moveId}_video.json`,Buffer.from(JSON.stringify({jobId,fingerprint,provider:'fal',model:'kling-v3-standard',moveId})),{contentType:'application/json',provider:'fal'});
+    stageTimings.jobCheckpointMs=Date.now()-checkpointStartedAt;
+  }else{
+    stageTimings.referencePreparationMs=0;
+    stageTimings.jobCheckpointMs=0;
   }
-  onProgress?.({type:'status',message:resume?'Resuming the existing video job; no new submission.':'Submitting a 5-second image-to-video job using the extracted base pose.'});
-  const job=await runVideoJob(resume?{resume:directory}:{provider:'fal',mode:'image-to-video',image:path.join(directory,'reference.png'),prompt:motionPrompt,duration:'5',output:directory},{log:message=>onProgress?.({type:'status',message})});
-  const generationMs=Date.now()-started;
+  onProgress?.({type:'status',message:resume?'Resuming the existing video job; no new submission.':'Generating a complete action video; variable-count frames require visual review.'});
+  const transportStartedAt=Date.now();
+  const job=await runVideoJob(
+    resume?{resume:directory}:{provider:'fal',mode:'image-to-video',image:path.join(directory,'reference.png'),prompt:motionPrompt,duration:profile.duration,output:directory},
+    {
+      log:message=>onProgress?.({type:'status',message}),
+      onGenerationAttempt:event=>onGenerationAttempt?.({...event,characterId,moveId,operation:'fighter-video-row'}),
+    },
+  );
+  stageTimings.videoTransportMs=Date.now()-transportStartedAt;
+  Object.assign(stageTimings, job.timings ?? {});
+  const videoReadStartedAt=Date.now();
   const videoBytes=await readFile(path.join(directory,'source.mp4'));
-  const sheet=await composeSpriteSheetWithFfmpeg({videoBytes,task,duration:5});
-  return {bytes:sheet,contentType:'image/png',provider:'fal-video',model:job.model,taskId:job.task?.requestId,videoBytes,videoContentType:'video/mp4',generationMs,elapsedMs:Date.now()-started,postprocessMs:Date.now()-started-generationMs};
+  stageTimings.videoReadMs=Date.now()-videoReadStartedAt;
+  const compositionStartedAt=Date.now();
+  const compiled=path.join(directory,'motion-v2');
+  let exists=false;try{await readFile(path.join(compiled,'motion.json'));exists=true;}catch{}
+  if(!exists)await exec('python3',['scripts/compile_character_motion.py',path.join(directory,'source.mp4'),'--reference',path.join(directory,'sprite.png'),'--output',compiled,'--action',moveId,'--frames',String(profile.frames),...(profile.loop?['--loop']:[])],{timeout:120000,maxBuffer:2*1024*1024});
+  const motionRow=await installMotionRow({characterId,directory:compiled,storage,repository});
+  const sheet=await readFile(path.join(compiled,'sheet.png'));
+  stageTimings.spriteCompositionMs=Date.now()-compositionStartedAt;
+  stageTimings.totalAdapterMs=Date.now()-started;
+  const generationMs=stageTimings.videoTransportMs;
+  const postprocessMs=stageTimings.spriteCompositionMs;
+  return {bytes:sheet,contentType:'image/png',provider:'fal-video',model:job.model,taskId:job.task?.requestId,videoBytes,videoContentType:'video/mp4',generationMs,elapsedMs:stageTimings.totalAdapterMs,postprocessMs,stageTimings,motionRow,framesReady:true};
 }

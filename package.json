@@ -4,6 +4,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "mobile:game": "vite --host 0.0.0.0 --port 5174",
+    "mobile:start": "npm --prefix mobile start",
+    "build:fight": "node scripts/build_fight_client.mjs",
     "cms:admin": "doppler run -- node scripts/cms_admin_server.mjs",
     "cms:import-fighters": "node scripts/import_existing_fighters_to_cms.mjs",
     "cms:smoke": "node scripts/smoke_cms_storage.mjs",

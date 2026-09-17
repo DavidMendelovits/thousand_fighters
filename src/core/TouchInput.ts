@@ -1,4 +1,4 @@
-export type TouchAttackButton = 'lp' | 'mp' | 'hp' | 'lk' | 'mk' | 'hk' | 'dash' | 'power' | 'transform';
+export type TouchAttackButton = 'lp' | 'mp' | 'hp' | 'lk' | 'mk' | 'hk' | 'dash' | 'power' | 'transform' | 'grab' | 'jump';
 
 type DirectionFlags = {
   left: boolean;
@@ -57,7 +57,7 @@ function sectorFor(angle: number): DirectionFlags {
 
 class TouchInputState {
   private direction: DirectionFlags = { ...NEUTRAL_DIRECTION };
-  private buttons: ButtonFlags = { lp: false, mp: false, hp: false, lk: false, mk: false, hk: false,dash:false,power:false,transform:false };
+  private buttons: ButtonFlags = { lp: false, mp: false, hp: false, lk: false, mk: false, hk: false,dash:false,power:false,transform:false,grab:false,jump:false };
   private pressed = new Set<TouchAttackButton>();
 
   setDirection(angle: number | null): void {
@@ -82,7 +82,7 @@ class TouchInputState {
   clearAll(): void {
     this.pressed.clear();
     this.direction = { ...NEUTRAL_DIRECTION };
-    this.buttons = { lp: false, mp: false, hp: false, lk: false, mk: false, hk: false,dash:false,power:false,transform:false };
+    this.buttons = { lp: false, mp: false, hp: false, lk: false, mk: false, hk: false,dash:false,power:false,transform:false,grab:false,jump:false };
   }
 
   snapshot(): TouchSnapshot {

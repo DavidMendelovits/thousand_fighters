@@ -94,7 +94,13 @@ export class ProjectilePool {
         projectile.body.setDisplaySize(projectile.config.width, projectile.config.height);
         projectile.body.setFlipX(projectile.facing === -1);
         if (projectile.config.visual) {
-          projectile.body.setAngle(projectile.config.visual.kind === 'scrap' ? projectile.age * 13 : 0);
+          const kind = projectile.config.visual.kind;
+          projectile.body.setAngle(kind === 'scrap' || kind === 'juggling-ball' ? projectile.age * 13 : 0);
+          if (kind === 'ink-fist') {
+            const droplet = projectile.age < 6;
+            projectile.body.setTexture(droplet ? `${projectile.config.animation}:drop` : projectile.config.animation);
+            projectile.body.setDisplaySize(projectile.config.width, projectile.config.height);
+          }
         }
       }
     }

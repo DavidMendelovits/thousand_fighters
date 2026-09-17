@@ -81,6 +81,7 @@ const result = await adapter.generateImage({
     base64: Buffer.from('reference').toString('base64'),
   }],
   onProgress: (event) => progress.push(event),
+  onGenerationAttempt: async (event) => progress.push({ type: 'attempt', event }),
 });
 
 assert.equal(result.provider, 'minimax-h3');
@@ -93,6 +94,10 @@ assert.deepEqual(result.videoBytes, fakeVideoBytes);
 assert.deepEqual(result.usage, { total_seconds: 4, output_seconds: 4, input_image_count: 1 });
 assert.ok(result.generationMs > 0);
 assert.ok(result.postprocessMs > 0);
+assert.ok(result.stageTimings.submissionMs > 0);
+assert.ok(result.stageTimings.queueAndGenerationMs > 0);
+assert.ok(result.stageTimings.downloadMs > 0);
+assert.ok(result.stageTimings.spriteCompositionMs > 0);
 assert.equal(queryCount, 2);
 
 const createRequest = requests[0];
@@ -110,6 +115,8 @@ assert.equal(createBody.content[1].role, 'reference_image');
 assert.match(createBody.content[1].image_url.url, /^data:image\/png;base64,/);
 assert.ok(progress.some((event) => event.stage === 'running'));
 assert.ok(progress.some((event) => event.type === 'complete'));
+assert.equal(progress.filter((event) => event.type === 'attempt').length, 1);
+assert.equal(progress.find((event) => event.type === 'attempt').event.status, 'succeeded');
 
 const factoryAdapter = createImageGeneratorAdapter({
   provider: 'minimax-h3',

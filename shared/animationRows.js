@@ -55,6 +55,8 @@ export const ANIMATION_ROWS = [
   { id: 'walk_back', label: 'Walk Back', group: 'Movement', frameCount: 6, role: 'movement', moveAnimation: false },
   { id: 'hurt', label: 'Hurt / recoil', group: 'Defense', frameCount: 6, role: 'defense', moveAnimation: false },
   { id: 'getup', label: 'Recovery / get up', group: 'Defense', frameCount: 6, role: 'defense', moveAnimation: false },
+  { id: 'idle', label: 'Animated idle', group: 'Base', frameCount: 20, role: 'base', moveAnimation: false },
+  { id: 'landing', label: 'Landing recovery', group: 'Movement', frameCount: 12, role: 'movement', moveAnimation: false },
 ];
 
 /** Ordered list of every row id. */

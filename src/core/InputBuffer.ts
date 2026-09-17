@@ -59,7 +59,7 @@ export class InputBuffer {
     if (this.history.length > this.maxHistory) this.history.shift();
   }
 
-  matchSequence(sequence: InputToken[], windowFrames = 15): boolean {
+  matchSequence(sequence: InputToken[], windowFrames = 15, activationFrames = 6): boolean {
     if (sequence.length === 0) return false;
 
     const recent = this.history.slice(-windowFrames);
@@ -69,7 +69,13 @@ export class InputBuffer {
       for (const token of entry.tokens) {
         if (token === sequence[seqIdx]) {
           seqIdx += 1;
-          if (seqIdx === sequence.length) return true;
+          // Motion recognition can be generous without keeping a completed
+          // attack queued for the entire motion window. Six simulation ticks
+          // permit deliberate recovery links without quarter-second ghost hits.
+          if (seqIdx === sequence.length) {
+            if (this.currentFrame - 1 - entry.frame < activationFrames) return true;
+            seqIdx = 0;
+          }
         }
       }
     }

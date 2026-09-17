@@ -6,6 +6,7 @@ import { promisify } from 'node:util';
 
 import { rowPromptProfile } from '../rowPromptProfiles.js';
 import { pixelArtDirection } from './pixelArtDirection.js';
+import { runGenerationAttempt } from '../generationAttemptTelemetry.js';
 
 const execFileAsync = promisify(execFile);
 const FRAME_COUNT = 6;
@@ -62,7 +63,16 @@ export class ParallelFrameSpriteGenerator {
       let result;
       for (let attempt = 0; attempt <= this.frameRetries; attempt += 1) {
         try {
-          result = await this.generateFrame(frameRequest);
+          const attemptRequest = { ...frameRequest, attemptNumber: attempt + 1 };
+          result = await runGenerationAttempt(attemptRequest, {
+            kind: 'image',
+            provider: this.provider,
+            model: this.model,
+            operation: request.task ?? 'sprite-frame',
+            frameNumber: index + 1,
+            attemptNumber: attempt + 1,
+            now: this.now,
+          }, () => this.generateFrame(attemptRequest));
           break;
         } catch (error) {
           if (attempt === this.frameRetries || !isRetryable(error)) throw error;
@@ -90,23 +100,41 @@ export class ParallelFrameSpriteGenerator {
         bytes,
         contentType: result.contentType ?? 'image/png',
         elapsedMs,
+        stageTimings: result.stageTimings ?? null,
         frameNumber: index + 1,
       };
     });
     const generationCompletedAt = this.now();
-
-    request.onProgress?.({ type: 'status', stage: 'compose', message: 'Aligning and tiling the six frames locally.' });
-    const sheetBytes = await this.composeFrameSheet({
-      frames,
-      task,
-      requireMagentaBackground: this.requireMagentaBackground,
-    });
-    const completedAt = this.now();
+    const frameTimings = frames.map(({ frameNumber, elapsedMs, taskId, stageTimings, generationAttemptId }) => ({
+      frameNumber, elapsedMs, taskId: taskId ?? null, generationAttemptId: generationAttemptId ?? null, stages: stageTimings,
+    }));
     const costValues = frames
       .map((frame) => frame.estimatedCostUsd)
       .filter((value) => value !== null && value !== undefined && value !== '')
       .map(Number)
       .filter(Number.isFinite);
+
+    request.onProgress?.({ type: 'status', stage: 'compose', message: 'Aligning and tiling the six frames locally.' });
+    let sheetBytes;
+    try {
+      sheetBytes = await this.composeFrameSheet({
+        frames,
+        task,
+        requireMagentaBackground: this.requireMagentaBackground,
+      });
+    } catch (error) {
+      const failedAt = this.now();
+      error.stageTimings = {
+        providerBatchMs: generationCompletedAt - startedAt,
+        spriteCompositionMs: failedAt - generationCompletedAt,
+        totalAdapterMs: failedAt - startedAt,
+        frames: frameTimings,
+      };
+      error.frameTimings = frameTimings;
+      error.estimatedCostUsd = costValues.length ? costValues.reduce((sum, value) => sum + value, 0) : null;
+      throw error;
+    }
+    const completedAt = this.now();
 
     return {
       provider: this.provider,
@@ -118,7 +146,13 @@ export class ParallelFrameSpriteGenerator {
       generationMs: generationCompletedAt - startedAt,
       postprocessMs: completedAt - generationCompletedAt,
       elapsedMs: completedAt - startedAt,
-      frameTimings: frames.map(({ frameNumber, elapsedMs, taskId }) => ({ frameNumber, elapsedMs, taskId: taskId ?? null })),
+      stageTimings: {
+        providerBatchMs: generationCompletedAt - startedAt,
+        spriteCompositionMs: completedAt - generationCompletedAt,
+        totalAdapterMs: completedAt - startedAt,
+        frames: frameTimings,
+      },
+      frameTimings,
       frameImages: frames.map(({ frameNumber, bytes, contentType, taskId }) => ({ frameNumber, bytes, contentType, taskId: taskId ?? null })),
       usage: mergeUsage(frames.map((frame) => frame.usage)),
       estimatedCostUsd: costValues.length ? costValues.reduce((sum, value) => sum + value, 0) : null,
@@ -127,14 +161,19 @@ export class ParallelFrameSpriteGenerator {
 
   async generateSingleImage(request) {
     const startedAt = this.now();
-    const result = await this.generateFrame({
+    const singleRequest = {
       ...request,
       prompt: stillPromptFor(request),
       frameIndex: 0,
       frameNumber: 1,
       frameCount: 1,
       aspectRatio: aspectRatioForTask(request.task),
-    });
+      attemptNumber: 1,
+    };
+    const result = await runGenerationAttempt(singleRequest, {
+      kind: 'image', provider: this.provider, model: this.model,
+      operation: request.task ?? 'image-generation', now: this.now,
+    }, () => this.generateFrame(singleRequest));
     const bytes = bytesFromResult(result);
     const completedAt = this.now();
     return {
@@ -147,6 +186,10 @@ export class ParallelFrameSpriteGenerator {
       generationMs: result.generationMs ?? result.elapsedMs ?? (completedAt - startedAt),
       postprocessMs: 0,
       elapsedMs: result.elapsedMs ?? (completedAt - startedAt),
+      stageTimings: result.stageTimings ?? {
+        providerRequestMs: result.elapsedMs ?? (completedAt - startedAt),
+        totalAdapterMs: result.elapsedMs ?? (completedAt - startedAt),
+      },
     };
   }
 }

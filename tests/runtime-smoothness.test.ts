@@ -124,3 +124,33 @@ test('keyboard focus reset does not fabricate an attack when timestamp returns t
   f.keyboard.addKey('F').reset();
   assert.equal(InputReader.read(1, f.keyboard).lp, false);
 });
+
+test('attack buffer allows six-tick recovery links but expires stale attacks', () => {
+  const f = keyboardFixture();
+  const buffer = new InputBuffer();
+  f.press('F'); f.release('F');
+  buffer.record(InputReader.read(1, f.keyboard), 1);
+  for (let tick = 0; tick < 5; tick++) buffer.record(InputReader.read(1, f.keyboard), 1);
+  assert.equal(buffer.matchSequence(['lp']), true);
+  buffer.record(InputReader.read(1, f.keyboard), 1);
+  assert.equal(buffer.matchSequence(['lp']), false);
+  f.press('F'); f.release('F');
+  buffer.record(InputReader.read(1, f.keyboard), 1);
+  assert.equal(buffer.matchSequence(['lp']), true);
+  buffer.consumeButtons();
+  assert.equal(buffer.matchSequence(['lp']), false);
+});
+
+test('motion window stays generous while the final attack must be fresh', () => {
+  const f = keyboardFixture();
+  const buffer = new InputBuffer();
+  f.press('S');
+  buffer.record(InputReader.read(1, f.keyboard), 1);
+  f.release('S');
+  for (let tick = 0; tick < 8; tick++) buffer.record(InputReader.read(1, f.keyboard), 1);
+  f.press('H'); f.release('H');
+  buffer.record(InputReader.read(1, f.keyboard), 1);
+  assert.equal(buffer.matchSequence(['down', 'hp'], 15), true);
+  for (let tick = 0; tick < 6; tick++) buffer.record(InputReader.read(1, f.keyboard), 1);
+  assert.equal(buffer.matchSequence(['hp'], 15), false);
+});

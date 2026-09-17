@@ -241,6 +241,12 @@ function handleWorkbenchClick(event) {
     generateMoveRow(genButton.dataset.genMove);
     return;
   }
+  const approveMotion=event.target.closest('[data-approve-motion]');
+  if(approveMotion){
+    const notes=prompt('Review notes: verify motion, facing, loop seam, body scale and contact timing.');
+    if(notes?.trim())invokeTool('approve_motion_row',{characterId:currentCharacterId(),action:approveMotion.dataset.approveMotion,notes}).then(()=>selectCharacter(currentCharacterId(),{silent:true})).catch(showError);
+    return;
+  }
 
   const activityButton = event.target.closest('[data-move-activity]');
   if (activityButton) {
@@ -451,7 +457,7 @@ async function createDraft() {
 }
 
 // Sprite-row ids (the registry rows, no 'projectiles'). See MOVE_ORDER above.
-const MOVE_IDS = ['base', 'punch', 'kick', 'special_1', 'special_2', 'jump', 'crouch', 'dash_forward', 'dash_back', 'block', 'grab', 'throw', 'walk_forward', 'walk_back', 'hurt', 'getup'];
+const MOVE_IDS = ['base', 'idle', 'landing', 'punch', 'kick', 'special_1', 'special_2', 'jump', 'crouch', 'dash_forward', 'dash_back', 'block', 'grab', 'throw', 'walk_forward', 'walk_back', 'hurt', 'getup'];
 
 // Source-sheet filename detection (`..._<rowId>_sheet.png`) built from MOVE_IDS,
 // longest-first so multi-token ids (special_1, dash_forward) win over any
@@ -616,7 +622,7 @@ async function generateMoveRow(moveId) {
   try {
     const prompt = rowPromptFor(moveId);
     const spriteProfile = moveSpriteProfile(moveId);
-    const generator=elements.characterWorkbench.querySelector(`[data-row-generator="${moveId}"]`)?.value??'image';
+    const generator=elements.characterWorkbench.querySelector(`[data-row-generator="${moveId}"]`)?.value??(moveId==='base'?'image':'video');
     const result = await invokeToolStreaming('generate_sprite_sheet',
       { characterId, prompt, moveId, spriteProfile, generator },
       (event) => {
@@ -646,6 +652,8 @@ async function generateMoveRow(moveId) {
         'pass',
       );
     }
+    const generationStages = formatStageTimings(result.stageTimings);
+    if (generationStages) logMoveActivity(moveId, `Stages: ${generationStages}.`, 'pass');
     if (Number.isFinite(result.estimatedCostUsd)) {
       logMoveActivity(moveId, `Estimated provider cost: $${result.estimatedCostUsd.toFixed(4)}.`, 'pass');
     }
@@ -654,7 +662,7 @@ async function generateMoveRow(moveId) {
     // Auto-extract individual frames from the row sheet
     try {
       logMoveActivity(moveId, 'Extracting individual frames...');
-      const extraction = await postJson('/api/tools/extract_row_frames', {
+      const extraction = result.framesReady ? {result:{warnings:[],stageTimings:{}}} : await postJson('/api/tools/extract_row_frames', {
         characterId, sourceAssetKey: result.asset.key, moveId, spriteProfile,
       });
       for (const warning of extraction.result?.warnings ?? []) {
@@ -662,7 +670,8 @@ async function generateMoveRow(moveId) {
         logMoveActivity(moveId, warning, severe ? 'error' : '');
         if (severe) log(`${moveId}: ${warning}`, 'error');
       }
-      logMoveActivity(moveId, 'Frames extracted.', 'pass');
+      const extractionStages = formatStageTimings(extraction.result?.stageTimings);
+      logMoveActivity(moveId, extractionStages ? `Frames extracted. Stages: ${extractionStages}.` : 'Frames extracted.', 'pass');
     } catch (extractErr) {
       logMoveActivity(moveId, `Frame extraction failed: ${extractErr.message}`, 'error');
       throw extractErr; // A source sheet alone is not a playable row.
@@ -703,9 +712,24 @@ function formatElapsedMs(milliseconds) {
   return `${minutes}m ${remainder}s`;
 }
 
+function formatStageTimings(stages, prefix = '') {
+  if (!stages || typeof stages !== 'object') return '';
+  const values = [];
+  for (const [key, value] of Object.entries(stages)) {
+    if (key === 'frames' || key === 'totalMs' || key === 'totalAdapterMs' || key === 'totalProviderMs') continue;
+    const label = `${prefix}${key.replace(/Ms$/, '').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()}`;
+    if (Number.isFinite(value)) values.push(`${label} ${formatElapsedMs(value)}`);
+    else if (value && typeof value === 'object' && !Array.isArray(value)) {
+      const nested = formatStageTimings(value, `${prefix}${key} `);
+      if (nested) values.push(nested);
+    }
+  }
+  return values.join(' · ');
+}
+
 // The base row defines the fighter's look and scale, so it must exist before
 // the other rows generate — they all attach it as a reference image. Once it
-// does, the four attack rows have no ordering dependency and run in parallel.
+// does, missing state and authored-move rows run in bounded batches.
 async function generateAllRows() {
   const characterId = currentCharacterId();
   if (!characterId) return;
@@ -718,17 +742,20 @@ async function generateAllRows() {
       return;
     }
   } else {
-    log('Base sheet already exists — generating the four attack rows in parallel against it. Regenerate the base row from its card if you want a fresh look.');
+    log('Base sheet already exists — generating missing motion rows against it. Regenerate the base row from its card if you want a fresh look.');
   }
 
-  const attackRows = MOVE_IDS.filter((id) => id !== 'base');
-  const results = await Promise.all(attackRows.map((id) => generateMoveRow(id)));
-  const failed = attackRows.filter((id, index) => !results[index]);
-  if (failed.length) {
-    log(`Some rows failed: ${failed.join(', ')} — regenerate them from their move cards.`, 'error');
-  } else {
-    log('All sprite rows generated.', 'pass');
+  const rows=[...new Set(['idle','walk_forward','walk_back','jump','landing','crouch','block','hurt','getup',...(state.currentDraftData?.moves??[]).map(m=>m.animation)])];
+  const pending=rows.filter(id=>state.currentDraftData?.motionRows?.[id]?.status!=='approved');
+  if(!confirm(`Generate ${pending.length} action videos (paid API calls, up to two at a time)? Every row needs visual approval before publishing.`))return;
+  await invokeTool('update_character_draft',{characterId,patch:{requireMotionCoverage:true},note:'Require complete reviewed motion before publishing'});
+  for(let i=0;i<pending.length;i+=2){
+    const batch=pending.slice(i,i+2);
+    for(const id of batch){state.rowGenerators[`${characterId}:${id}`]='video';const select=elements.characterWorkbench.querySelector(`[data-row-generator="${id}"]`);if(select)select.value='video';}
+    const results=await Promise.all(batch.map(id=>generateMoveRow(id)));
+    if(results.some(result=>!result)){log('Motion batch stopped after a failure. Completed rows are preserved; inspect the failed job before resuming.','error');return;}
   }
+  log('Motion candidates generated. Review and approve each row; generation alone is not completion.','pass');
 }
 
 async function generateSheet() {
@@ -1183,7 +1210,7 @@ function renderNextStepBanner(stage) {
         <div>
           <div class="next-step-label">Next Step</div>
           <p class="next-step-title">Generate Sprite Rows</p>
-          <p class="next-step-detail">The base row generates first to lock the look and scale, then the four attack rows generate in parallel against it.</p>
+          <p class="next-step-detail">The base locks the look and scale. Movement, reactions, and each authored move then get video motion candidates, two at a time. Review each candidate before publishing.</p>
         </div>
         <button id="cta-generate-sheet" class="next-step-action" type="button">Generate All Rows</button>
       </div>
@@ -1453,7 +1480,7 @@ function renderCharacterWorkbench(draft, assets) {
     `${draft.moves?.length ?? 0} moves`,
     `${assetCounts.frames} frames`,
     `${assetCounts.sheets} sheets`,
-    `${assetCounts.projectiles} projectiles`,
+    `${draft.projectiles?.length ?? assetCounts.projectiles} projectiles`,
   ];
 
   const stage = detectCharacterStage(draft, assets);
@@ -1693,7 +1720,7 @@ function renderProjectileEntity(entity) {
 
 function renderMoveGroup(group) {
   const source = state.currentAssets.find(asset => asset.relativePath === `source/${state.currentCharacterId}_${group.id}_sheet.png`);
-  const generator = state.rowGenerators[`${state.currentCharacterId}:${group.id}`] ?? (source?.metadata?.provider === 'fal-video' ? 'video' : 'image');
+  const generator = state.rowGenerators[`${state.currentCharacterId}:${group.id}`] ?? (group.id==='base'?'image':'video');
   const primaryFrames = groupPrimaryFrames(group);
   const previewFrames = group.id === 'projectiles' && primaryFrames.length === 0
     ? group.projectiles
@@ -1704,7 +1731,7 @@ function renderMoveGroup(group) {
     state.previewFrames.set(animationId, previewFrames.map((asset) => asset.apiUrl));
   }
 
-  const canGenerate = MOVE_IDS.includes(group.id);
+  const canGenerate = MOVE_IDS.includes(group.id) || group.moves.length > 0;
   const hasFrames = groupAssetCount(group) > 0;
   const isLoading = state.generatingMoves.has(group.id);
   const activityEntries = state.moveActivity[group.id] ?? [];
@@ -1727,6 +1754,7 @@ function renderMoveGroup(group) {
           ${canGenerate?`<select data-row-generator="${escapeHtml(group.id)}" aria-label="${escapeHtml(group.id)} generation method"><option value="image" ${generator==='image'?'selected':''}>Image poses</option><option value="video" ${generator==='video'?'selected':''} ${group.id==='base'?'disabled':''}>Video motion · fal</option></select>`:''}
           ${activityButton}
           ${generateButton}
+          ${state.currentDraftData?.motionRows?.[group.id] ? `<span>${escapeHtml(state.currentDraftData.motionRows[group.id].status)}</span><button type="button" data-approve-motion="${escapeHtml(group.id)}">Approve motion</button>` : ''}
           ${hasFrames && canGenerate ? `<button type="button" data-reextract="${escapeHtml(group.id)}" title="Rebuild transparent frames from the existing source, without a paid generation" ${isLoading?'disabled':''}>Re-extract</button>` : ''}
           <span class="frame-count">${escapeHtml(groupAssetCount(group))} assets</span>
         </div>

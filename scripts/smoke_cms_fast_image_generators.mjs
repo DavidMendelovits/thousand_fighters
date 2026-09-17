@@ -47,7 +47,11 @@ try {
     }
   }
   const parallel = new FakeParallelAdapter();
-  const sheet = await parallel.generateImage({ task: 'fighter-1x6-row', moveId: 'punch', prompt: 'A boxer.' });
+  const attempts = [];
+  const sheet = await parallel.generateImage({
+    task: 'fighter-1x6-row', moveId: 'punch', prompt: 'A boxer.',
+    onGenerationAttempt: async (event) => { attempts.push(event); },
+  });
   assert.equal(parallel.maxActive, 6);
   assert.equal(parallel.prompts.length, 6);
   parallel.prompts.forEach((prompt, index) => {
@@ -58,6 +62,48 @@ try {
     assert.match(prompt, /NO 3D, CGI, action figure/i);
   });
   assert.equal(sheet.frameImages.length, 6);
+  assert.equal(attempts.length, 6, 'every external frame attempt emits telemetry');
+  assert.ok(attempts.every((attempt) => attempt.status === 'succeeded' && attempt.durationMs >= 0));
+  assert.ok(sheet.stageTimings.providerBatchMs >= 0);
+  assert.ok(sheet.stageTimings.spriteCompositionMs >= 0);
+  assert.equal(sheet.stageTimings.frames.length, 6);
+
+  class FailingSingleAdapter extends ParallelFrameSpriteGenerator {
+    constructor() { super(); this.provider = 'fake-external'; this.model = 'failure-model'; }
+    async generateFrame() { const error = new Error('provider rejected input'); error.statusCode = 422; throw error; }
+  }
+  const failedAttempts = [];
+  await assert.rejects(
+    () => new FailingSingleAdapter().generateImage({
+      task: 'projectile-sprite', prompt: 'A projectile.',
+      onGenerationAttempt: async (event) => { failedAttempts.push(event); },
+    }),
+    /provider rejected input/,
+  );
+  assert.equal(failedAttempts.length, 1, 'failed external calls emit telemetry too');
+  assert.equal(failedAttempts[0].status, 'failed');
+
+  class RetryingParallelAdapter extends ParallelFrameSpriteGenerator {
+    constructor() { super({ frameRetries: 1, frameRetryDelayMs: 1 }); this.provider = 'fake-external'; this.model = 'retry-model'; this.calls = new Map(); }
+    async generateFrame(request) {
+      const count = (this.calls.get(request.frameNumber) ?? 0) + 1;
+      this.calls.set(request.frameNumber, count);
+      if (request.frameNumber === 1 && count === 1) {
+        const error = new Error('temporary throttle'); error.statusCode = 429; throw error;
+      }
+      return { bytes: imageBytes, contentType: 'image/png', elapsedMs: 1, taskId: `retry-${request.frameNumber}-${count}` };
+    }
+  }
+  const retryAttempts = [];
+  await new RetryingParallelAdapter().generateImage({
+    task: 'fighter-1x6-row', moveId: 'punch', prompt: 'A boxer.',
+    onGenerationAttempt: async (event) => { retryAttempts.push(event); },
+  });
+  assert.equal(retryAttempts.length, 7, 'a retried frame creates a second attempt record');
+  assert.deepEqual(
+    retryAttempts.filter((attempt) => attempt.frameNumber === 1).map((attempt) => [attempt.attemptNumber, attempt.status]),
+    [[1, 'failed'], [2, 'succeeded']],
+  );
   const sheetPath = path.join(temporaryDirectory, 'sheet.png');
   await import('node:fs/promises').then(({ writeFile }) => writeFile(sheetPath, sheet.bytes));
   const { stdout } = await execFileAsync('ffprobe', ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height', '-of', 'csv=s=x:p=0', sheetPath]);
@@ -94,6 +140,7 @@ try {
   } });
   const minimaxFrame = await minimax.generateFrame({ prompt: 'frame', aspectRatio: '1:1', referenceImages: [{ base64: imageBase64, contentType: 'image/png' }] });
   assert.deepEqual(minimaxFrame.bytes, imageBytes);
+  assert.ok(minimaxFrame.stageTimings.apiRequestAndGenerationMs >= 0);
   assert.equal(minimaxRequests[0].model, 'image-01');
   assert.match(minimaxRequests[0].subject_reference[0].image_file, /^data:image\/png;base64,/);
 
@@ -104,7 +151,9 @@ try {
     if (url === 'https://bfl.test/frame.png') return new Response(imageBytes, { status: 200, headers: { 'content-type': 'image/png' } });
     throw new Error(`Unexpected BFL URL ${url}`);
   } });
-  assert.deepEqual((await bfl.generateFrame({ prompt: 'frame', referenceImages: [] })).bytes, imageBytes);
+  const bflFrame = await bfl.generateFrame({ prompt: 'frame', referenceImages: [] });
+  assert.deepEqual(bflFrame.bytes, imageBytes);
+  assert.ok(bflFrame.stageTimings.queueAndGenerationMs >= 0);
   assert.equal(bflPolls, 1);
 
   const fal = new FalImageGeneratorAdapter({ apiKey: 'test', sleep: async () => {}, fetch: async (url) => {
@@ -114,7 +163,9 @@ try {
     if (url === 'https://fal.test/frame.png') return new Response(imageBytes, { status: 200, headers: { 'content-type': 'image/png' } });
     throw new Error(`Unexpected fal URL ${url}`);
   } });
-  assert.deepEqual((await fal.generateFrame({ prompt: 'frame', referenceImages: [] })).bytes, imageBytes);
+  const falFrame = await fal.generateFrame({ prompt: 'frame', referenceImages: [] });
+  assert.deepEqual(falFrame.bytes, imageBytes);
+  assert.ok(falFrame.stageTimings.downloadMs >= 0);
   assert.equal(payloadForModel({ model: 'fal-ai/instant-character', prompt: 'x', references: [{ base64: imageBase64, contentType: 'image/png' }] }).image_url.startsWith('data:image/png;base64,'), true);
   assert.equal(payloadForModel({ model: 'fal-ai/flux-2/klein/4b/edit', prompt: 'x', references: [{ base64: imageBase64, contentType: 'image/png' }], inferenceSteps: 4 }).image_urls.length, 1);
 

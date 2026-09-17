@@ -10,6 +10,7 @@ import { mkdir, readdir, copyFile, writeFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { convertDraftToCharacterConfig } from './convertDraftToCharacterConfig.js';
+import { assertMotionCoverage } from '../pipeline/motionRowArtifacts.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -43,6 +44,7 @@ export async function exportCharacterToRuntime({ runtime, characterId, outputDir
   if (!draft) {
     throw new Error(`exportCharacterToRuntime: No draft found for character "${characterId}"`);
   }
+  assertMotionCoverage(draft);
 
   // Read fighter pack data
   const assetRoot = `characters/${characterId}/assets/fighter-pack`;

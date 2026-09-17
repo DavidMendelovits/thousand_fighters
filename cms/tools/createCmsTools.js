@@ -4,6 +4,7 @@ import { build as buildAssetsIndex } from '../../scripts/build_assets_index.mjs'
 import { SHEET_IDS } from '../../shared/animationRows.js';
 import {validateCombatRules} from '../export/validateCombatRules.js';
 import {importPublishedCharacter} from '../import/importPublishedCharacter.js';
+import {approveMotionRow} from '../pipeline/motionRowArtifacts.js';
 import { validateCombos, validateProjectiles, validateProjectileReferences } from '../export/convertDraftToCharacterConfig.js';
 
 // Row ids an agent can generate, sourced from the registry so the tool schema
@@ -108,7 +109,14 @@ export function createCmsTools({ pipeline, repository, registry }) {
         },
       }, ['characterId', 'prompt']),
       execute: async ({ characterId, prompt, moveId, spriteProfile, generator, referenceAssetKeys, context }) => {
-        assertRowId(moveId);
+        if (moveId && !ROW_ID_SET.has(moveId)) {
+          let custom = false;
+          if (generator === 'video' && /^[a-z][a-z0-9_-]*$/.test(moveId)) {
+            const draft = await repository.getDraft(characterId);
+            custom = (draft.moves ?? []).some(move => move.animation === moveId);
+          }
+          if (!custom) assertRowId(moveId);
+        }
         const result = await pipeline.generateSpriteSheet({
           characterId,
           prompt,
@@ -120,6 +128,12 @@ export function createCmsTools({ pipeline, repository, registry }) {
         });
         return withAssetApiUrl(result);
       },
+    },
+    {
+      name: 'approve_motion_row',
+      description: 'Approve a compiled motion row after inspecting its animation and loop/contact timing. Requires explicit review notes; does not generate or publish.',
+      inputSchema: objectSchema({characterId:stringSchema('Character id'),action:stringSchema('Reviewed animation row'),notes:stringSchema('What was visually checked')},['characterId','action','notes']),
+      execute: async ({characterId,action,notes}) => ({row:await approveMotionRow({repository,characterId,action,notes})}),
     },
     {
       name: 'define_combo',
@@ -296,7 +310,12 @@ export function createCmsTools({ pipeline, repository, registry }) {
         spriteProfile: stringSchema('Sprite profile used at generation time: standard (1x6 row) or wide (2x3 grid). Defaults to standard.'),
       }, ['characterId', 'sourceAssetKey', 'moveId']),
       execute: async ({ characterId, sourceAssetKey, moveId, spriteProfile, videoSampleTimes }) => {
-        assertRowId(moveId);
+        if (moveId && !ROW_ID_SET.has(moveId)) {
+          let draft;
+          try { draft = await repository.getDraft(characterId); }
+          catch (error) { if (error.code !== 'ENOENT') throw error; }
+          if (!(/^[a-z][a-z0-9_-]*$/.test(moveId) && draft?.motionRows?.[moveId])) assertRowId(moveId);
+        }
         return pipeline.extractRowFrames({ characterId, sourceAssetKey, moveId, videoSampleTimes, spriteProfile: spriteProfile || undefined });
       },
     },

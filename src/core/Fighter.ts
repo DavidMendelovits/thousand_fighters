@@ -310,6 +310,9 @@ export class Fighter {
       this.movementTicks--;
       if(this.state==='wavedash')this.vx*=.88;
       if(this.movementTicks<=0){this.changeState(this.grounded?'idle':'airborne');return;}
+      // Keep the opening commitment, then allow a grounded dash to flow into
+      // a jump or attack. Air dodges retain their existing landing commitment.
+      if(this.state==='dash'&&this.stateFrame>=4&&input.up){this.startJump(input);return;}
       if(this.state==='dash'&&this.stateFrame>=4){const m=this.findTriggeredMove(false);if(m){MoveExecutor.start(this,m);return;}}
       return;
     }
@@ -649,7 +652,7 @@ export class Fighter {
       const reaction=['hitstun','stunned','juggle'].includes(this.state);
       return {
         sheet: stateSheet,
-        frame: reaction?timedStateRowFrame(elapsed,count,this.stateFrame+this.hitstun):this.state==='getup'?timedStateRowFrame(elapsed,count,25):stateRowFrame(elapsed,count,isLoopingStateRow(stateSheet)),
+        frame: reaction?timedStateRowFrame(elapsed,count,this.stateFrame+this.hitstun):this.state==='getup'?timedStateRowFrame(elapsed,count,25):stateRowFrame(elapsed,count,sprite?.rowPlayback?.[stateSheet]?.loop??isLoopingStateRow(stateSheet),sprite?.rowPlayback?.[stateSheet]?.ticksPerFrame),
       };
     }
 

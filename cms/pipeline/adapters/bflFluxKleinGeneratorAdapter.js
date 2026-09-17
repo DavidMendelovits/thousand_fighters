@@ -45,24 +45,31 @@ export class BflFluxKleinGeneratorAdapter extends ParallelFrameSpriteGenerator {
     references.forEach((image, index) => {
       payload[index === 0 ? 'input_image' : `input_image_${index + 1}`] = dataUrlForImage(image);
     });
+    const submissionStartedAt = this.now();
     const response = await this.fetch(`${this.baseUrl.replace(/\/$/, '')}/v1/${this.model}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-key': this.apiKey },
       body: JSON.stringify(payload),
     });
     const created = await responseJson(response, 'BFL');
+    const submissionMs = this.now() - submissionStartedAt;
     if (!created.polling_url && !created.id) throw new Error('BFL did not return an id or polling_url.');
     const pollingUrl = created.polling_url ?? `${this.baseUrl.replace(/\/$/, '')}/v1/get_result?id=${encodeURIComponent(created.id)}`;
+    const queueStartedAt = this.now();
     const completed = await this.waitForResult(pollingUrl);
+    const queueAndGenerationMs = this.now() - queueStartedAt;
     const imageUrl = completed.result?.sample ?? completed.sample;
     if (!imageUrl) throw new Error('BFL completed without returning result.sample.');
+    const downloadStartedAt = this.now();
     const downloaded = await downloadImage(this.fetch, imageUrl, 'BFL');
+    const downloadMs = this.now() - downloadStartedAt;
     return {
       ...downloaded,
       provider: this.provider,
       model: this.model,
       taskId: created.id ?? completed.id ?? null,
       elapsedMs: this.now() - startedAt,
+      stageTimings: { submissionMs, queueAndGenerationMs, downloadMs, totalProviderMs: this.now() - startedAt },
       usage: completed.usage ?? null,
       estimatedCostUsd: this.costPerImageUsd,
     };

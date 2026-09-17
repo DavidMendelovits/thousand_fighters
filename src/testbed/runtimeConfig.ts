@@ -60,13 +60,15 @@ export async function loadTestbedConfig(characterId: string): Promise<TestbedCon
   for (const animation of collectProjectileAnimations(config)) {
     const asset = findProjectileAsset(byRelativePath, animation);
     if (asset) projectileUrls[animation] = asset.apiUrl;
-    else warnings.push(`projectile "${animation}": sprite not found in assets (renders as a box until generated).`);
+    else if (!config.moves.some(move => move.phases.some(phase => phase.events.some(({event}) => 'projectile' in event && event.projectile.animation === animation && event.projectile.visual)))) warnings.push(`projectile "${animation}": sprite not found in assets (renders as a box until generated).`);
   }
 
   const frameUrls: Partial<Record<SpriteSheetId, string[]>> = {};
   const frameCounts = config.sprite.frameCounts ?? {};
   let resolvedCount = 0;
-  for (const sheet of SHEET_IDS) {
+  // Authored characters may own rows beyond the generation registry (ink,
+  // cable, video_signature...). Preview the same frames the live game loads.
+  for (const sheet of new Set([...SHEET_IDS, ...Object.keys(frameCounts)])) {
     const count = frameCounts[sheet] ?? 0;
     if (!count) continue;
 

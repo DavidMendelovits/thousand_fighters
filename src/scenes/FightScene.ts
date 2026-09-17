@@ -14,6 +14,8 @@ import { TouchInput } from '../core/TouchInput';
 import type { CharacterConfig, CharacterSpriteConfig, SpriteFrameMeta, SpriteSheetId } from '../schema/types';
 import { LayoutShell } from '../ui/LayoutShell';
 import { prefersTouchControls } from '../util/device';
+import { isFightOnly } from '../util/fightOnly';
+import { MobileMatchMenu } from '../ui/MobileMatchMenu';
 import { DebugOverlay } from './DebugOverlay';
 import { DebugPanel } from './DebugPanel';
 
@@ -47,6 +49,7 @@ type FightSceneData = {
 type RoundWinner = 0 | 1 | 2;
 
 export class FightScene extends Phaser.Scene {
+  private mobileMenu?: MobileMatchMenu;
   private controlTelemetry=new ControlTelemetry();
   private controlPanel?:ControlTelemetryPanel;
   fighters!: [Fighter, Fighter];
@@ -114,6 +117,11 @@ export class FightScene extends Phaser.Scene {
 
   preload(): void {
     const arenaParams = new URLSearchParams(window.location.search);
+    // A native match needs two fighters, not the entire publishing catalog.
+    // The web character-select screen still loads the full set of portraits.
+    const requested = this.hasSceneData ? [this.selectedP1Id, this.selectedP2Id] : [arenaParams.get('p1'), arenaParams.get('p2')];
+    const matchRoster = isFightOnly() && !this.showCharacterSelect && requested.every(id => roster.some(c => c.id === id))
+      ? roster.filter(c => requested.includes(c.id)) : roster;
     const arenaId = arenaParams.get('arena');
     if (arenaId) {
       this.load.image(`arena_${arenaId}`, this.assetUrl(`/arenas/${arenaId}/background.png`));
@@ -150,7 +158,7 @@ export class FightScene extends Phaser.Scene {
       'purple_note_wave', 'foam_wave', 'juggling_balls', 'squeak_storm',
       'rubber_bat', 'red_note_wave', 'demi_laser', 'remote_spark', 'morph_flash',
     ]);
-    for (const character of roster.flatMap(c=>[c,...(c.forms??[]).map(f=>f.config)])) {
+    for (const character of matchRoster.flatMap(c=>[c,...(c.forms??[]).map(f=>f.config)])) {
       const procedural = new Set(character.moves.flatMap(m => m.phases.flatMap(p => p.events.flatMap(({event}) => 'projectile' in event && event.projectile.visual ? [event.projectile.animation] : []))));
       for (const animation of collectProjectileAnimations(character)) {
         if (procedural.has(animation)) continue;
@@ -177,7 +185,7 @@ export class FightScene extends Phaser.Scene {
       }
     };
 
-    for (const character of roster.flatMap(c=>[c,...(c.forms??[]).map(f=>f.config)])) {
+    for (const character of matchRoster.flatMap(c=>[c,...(c.forms??[]).map(f=>f.config)])) {
       if (character.sprite) preloadSpriteConfig(character.sprite, character.id);
       for (const actor of character.actors ?? []) {
         if (actor.sprite) preloadSpriteConfig(actor.sprite, `${character.id}:${actor.id}`);
@@ -353,6 +361,21 @@ export class FightScene extends Phaser.Scene {
 
     this.installDebugHooks();
     this.installTouchHooks();
+    if (isFightOnly()) {
+      this.mobileMenu = new MobileMatchMenu();
+      const suspend = () => { if (!this.roundResolved) this.setPaused(true); };
+      const hidden = () => { if (document.hidden) suspend(); };
+      window.addEventListener('tf:suspend', suspend);
+      document.addEventListener('visibilitychange', hidden);
+      this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+        this.mobileMenu?.destroy(); this.mobileMenu = undefined;
+        window.removeEventListener('tf:suspend', suspend);
+        document.removeEventListener('visibilitychange', hidden);
+      });
+      // One lifecycle message, never a per-frame native input bridge.
+      (window as typeof window & { ReactNativeWebView?: { postMessage: (message: string) => void } })
+        .ReactNativeWebView?.postMessage(JSON.stringify({ type: 'fight-ready' }));
+    }
 
     const debugMove = params.get('move');
     const debugPlayer = params.get('player') === '2' ? 2 : 1;
@@ -366,9 +389,10 @@ export class FightScene extends Phaser.Scene {
   private installTouchHooks(): void {
     const shell = LayoutShell.current();
     if (!shell) return;
-    shell.controls.setPauseHandler(() => {
-      if (this.roundResolved) return;
-      this.setPaused(!this.isPaused);
+    shell.controls.setPauseHandler((paused) => {
+      const previous = this.isPaused;
+      if (!this.roundResolved) this.setPaused(paused ?? !this.isPaused);
+      return previous;
     });
     const unsubscribe = shell.onChange(({ orientation }) => {
       TouchInput.clearAll();
@@ -380,7 +404,7 @@ export class FightScene extends Phaser.Scene {
     });
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       unsubscribe();
-      shell.controls.setPauseHandler(() => {});
+      shell.controls.setPauseHandler(() => false);
       shell.controls.releaseAll();
       TouchInput.clearAll();
     });
@@ -435,8 +459,27 @@ export class FightScene extends Phaser.Scene {
   }
 
   renderFrame(): void {
-    if(!this.controlPanel){this.controlPanel=new ControlTelemetryPanel(this.controlTelemetry);this.events.once('shutdown',()=>{this.controlPanel?.destroy();this.controlPanel=undefined;this.controlTelemetry.reset();});}
-    this.controlPanel.render();
+    if (this.mobileMenu) {
+      this.pauseModal.setVisible(false);
+      this.winnerModal.setVisible(false);
+      const select = () => {
+        const bridge = (window as typeof window & { ReactNativeWebView?: { postMessage: (message: string) => void } }).ReactNativeWebView;
+        if (bridge) bridge.postMessage(JSON.stringify({ type: 'select-fighter' }));
+        else this.openCharacterSelect();
+      };
+      if (this.roundResolved) this.mobileMenu.render(`round-${this.roundNumber}`, this.winnerTitleText.text, this.winnerBodyText.text, [
+        { label: this.winnerActionText.text, run: () => this.advanceAfterRound() },
+        { label: 'CHOOSE FIGHTERS', run: select },
+      ]);
+      else if (this.isPaused) this.mobileMenu.render('paused', 'PAUSED', 'Take a breath. Your opponent can wait.', [
+        { label: 'RESUME', run: () => this.setPaused(false) },
+        { label: 'RESTART ROUND', run: () => this.restartCurrentRound() },
+        { label: 'CHOOSE FIGHTERS', run: select },
+      ]);
+      else this.mobileMenu.render('', '', '', []);
+    }
+    if(!isFightOnly()&&!this.controlPanel){this.controlPanel=new ControlTelemetryPanel(this.controlTelemetry);this.events.once('shutdown',()=>{this.controlPanel?.destroy();this.controlPanel=undefined;this.controlTelemetry.reset();});}
+    this.controlPanel?.render();
     if (this.fighters) this.combatVisuals?.draw(this.fighters);
     this.renderHUD();
     if (this.debugMode) DebugOverlay.render(this);
@@ -505,6 +548,7 @@ export class FightScene extends Phaser.Scene {
 
   private setPaused(paused: boolean): void {
     this.gameLoop.reset();
+    LayoutShell.current()?.controls.releaseAll();
     if (this.input.keyboard) InputReader.reset(this.input.keyboard);
     this.isPaused = paused;
     this.pauseModal.setVisible(paused);
@@ -550,6 +594,18 @@ export class FightScene extends Phaser.Scene {
         },
       )
       .setOrigin(0, 0);
+
+    if (prefersTouchControls()) controls.setText([
+      'MOVE       Left pad; hold away to guard',
+      'ATTACK     Punch / Kick / Special',
+      'GRAB       One button, close range',
+      'LAUNCH     Down + Kick',
+      'VARIANTS   Direction + Special',
+      'DODGE      Jump, then Down + Dash',
+      'METER      Boost / Form',
+      '',
+      'CONTROLS   Resize, mirror, or change contrast',
+    ].join('\n'));
 
     const resumeButton = this.createPauseButton(228, 366, 'RESUME', () => this.setPaused(false));
     const restartButton = this.createPauseButton(342, 366, 'RESTART', () => this.restartCurrentRound());
@@ -754,7 +810,7 @@ export class FightScene extends Phaser.Scene {
       ...this.createPauseButton(208,398,'P2',()=>{player=2;draw();}),
       ...this.createPauseButton(330,398,'NEXT',()=>{page=(page+1)%pages;draw();}),
       ...this.createPauseButton(452,398,'CPU',()=>{this.singlePlayer=!this.singlePlayer;draw();}),
-      ...this.createPauseButton(574,398,'ROSTER',()=>{window.location.href='/roster.html';}),
+      ...this.createPauseButton(574,398,isFightOnly()?'BACK':'ROSTER',()=>{if(isFightOnly())this.scene.restart({p1Id:this.selectedP1Id,p2Id:this.selectedP2Id,cpu:this.singlePlayer});else window.location.href='/roster.html';}),
       ...this.createPauseButton(706,398,'FIGHT',()=>{this.scene.restart({p1Id,p2Id,cpu:this.singlePlayer,p1Rounds:0,p2Rounds:0,roundNumber:1} satisfies FightSceneData);}),
     ]);
     draw();
@@ -1036,7 +1092,7 @@ export class FightScene extends Phaser.Scene {
     for(let x=0;x<800;x+=48) { g.fillStyle(0x294047).fillRect(x,343,40,5); g.fillStyle(0x294047).fillRect(x+12,361,40,5); }
     g.fillStyle(0x426258).fillRect(0,386,800,4);
     this.add.text(400,110,'THE TIDELINE  /  EXHIBITION 01',{fontFamily:'monospace',fontSize:'10px',color:'#95b9a7',letterSpacing:2}).setOrigin(.5).setDepth(-4);
-    this.add.text(400,425,'F / G  STRIKE     H  SIGNATURE     ↓ + H  ALT     F + G  GRAB',{fontFamily:'monospace',fontSize:'10px',color:'#a3b7aa'}).setOrigin(.5).setDepth(20);
+    this.add.text(400,425,prefersTouchControls()?'HOLD AWAY TO GUARD    ·    DIRECTION + SPECIAL FOR VARIANTS':'F / G  STRIKE     H  SIGNATURE     ↓ + H  ALT     F + G  GRAB',{fontFamily:'monospace',fontSize:'10px',color:'#a3b7aa'}).setOrigin(.5).setDepth(20);
     this.add.text(20,68,this.fighters[0].config.displayName.toUpperCase(),{fontFamily:'monospace',fontSize:'12px',color:'#f49d79'}).setDepth(50);
     this.add.text(780,68,this.fighters[1].config.displayName.toUpperCase(),{fontFamily:'monospace',fontSize:'12px',color:'#89d8c6'}).setOrigin(1,0).setDepth(50);
   }

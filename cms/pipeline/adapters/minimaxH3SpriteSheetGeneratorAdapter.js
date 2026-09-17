@@ -6,6 +6,7 @@ import { promisify } from 'node:util';
 
 import { rowPromptProfile } from '../rowPromptProfiles.js';
 import { pixelArtDirection } from './pixelArtDirection.js';
+import { runGenerationAttempt } from '../generationAttemptTelemetry.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -95,6 +96,13 @@ export class MinimaxH3SpriteSheetGeneratorAdapter {
   }
 
   async generateImage(request = {}) {
+    return runGenerationAttempt(request, {
+      kind: 'video', provider: this.provider, model: this.model,
+      operation: request.task ?? 'sprite-video', now: this.now,
+    }, () => this.generateImageUntracked(request));
+  }
+
+  async generateImageUntracked(request = {}) {
     if (!this.apiKey) {
       const error = new Error('MINIMAX_API_KEY is required for MiniMax H3 sprite generation.');
       error.statusCode = 503;
@@ -137,33 +145,41 @@ export class MinimaxH3SpriteSheetGeneratorAdapter {
     });
     request.onProgress?.({ type: 'status', stage: 'submit', message: 'Submitting MiniMax H3 video generation.' });
 
+    const submissionStartedAt = this.now();
     const createResult = await this.requestJson('/v2/video_generation', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
+    const submissionMs = this.now() - submissionStartedAt;
     const taskId = createResult.task_id;
     if (!taskId) throw new Error('MiniMax H3 did not return a task_id.');
 
     request.onProgress?.({ type: 'status', stage: 'queued', taskId, message: `MiniMax H3 task ${taskId} queued.` });
+    const queueStartedAt = this.now();
     const completedTask = await this.waitForTask(taskId, request.onProgress);
+    const queueAndGenerationMs = this.now() - queueStartedAt;
     const generationCompletedAt = this.now();
     const videoUrl = completedTask.content?.url;
     if (!videoUrl) throw new Error(`MiniMax H3 task ${taskId} succeeded without a video URL.`);
 
     request.onProgress?.({ type: 'status', stage: 'download', taskId, message: 'Downloading H3 source video.' });
+    const downloadStartedAt = this.now();
     const videoResponse = await this.fetch(videoUrl);
     if (!videoResponse.ok) {
       throw httpError(`MiniMax H3 video download failed with ${videoResponse.status}`, videoResponse.status);
     }
     const videoBytes = Buffer.from(await videoResponse.arrayBuffer());
+    const downloadMs = this.now() - downloadStartedAt;
 
     request.onProgress?.({ type: 'status', stage: 'compose', taskId, message: 'Sampling six frames and composing the sprite sheet.' });
+    const compositionStartedAt = this.now();
     const sheetBytes = await this.composeSpriteSheet({
       videoBytes,
       task,
       duration: completedTask.duration ?? this.duration,
     });
     const completedAt = this.now();
+    const spriteCompositionMs = completedAt - compositionStartedAt;
 
     request.onProgress?.({ type: 'complete', taskId, elapsedMs: completedAt - startedAt });
     return {
@@ -180,6 +196,7 @@ export class MinimaxH3SpriteSheetGeneratorAdapter {
       generationMs: generationCompletedAt - startedAt,
       postprocessMs: completedAt - generationCompletedAt,
       elapsedMs: completedAt - startedAt,
+      stageTimings: { submissionMs, queueAndGenerationMs, downloadMs, spriteCompositionMs, totalAdapterMs: completedAt - startedAt },
       usage: completedTask.usage ?? null,
       ratio: completedTask.ratio ?? ratio,
       resolution: completedTask.resolution ?? this.resolution,

@@ -84,7 +84,7 @@ export class InputReader {
       state.dash=state.dash||touchPressed.has('dash');state.power=state.power||touchPressed.has('power');state.transform=state.transform||touchPressed.has('transform');
       state.left = state.left || touch.left;
       state.right = state.right || touch.right;
-      state.up = state.up || touch.up;
+      state.up = state.up || touch.up || touch.jump || touchPressed.has('jump');
       state.down = state.down || touch.down;
       state.lp = state.lp || touch.lp || touchPressed.has('lp');
       state.mp = state.mp || touch.mp || touchPressed.has('mp');
@@ -92,10 +92,16 @@ export class InputReader {
       state.lk = state.lk || touch.lk || touchPressed.has('lk');
       state.mk = state.mk || touch.mk || touchPressed.has('mk');
       state.hk = state.hk || touch.hk || touchPressed.has('hk');
+      if (touchPressed.has('grab')) {
+        state.lp = true;
+        state.lk = true;
+      }
     }
 
     const wasHeld = (button: 'lp' | 'mp' | 'hp' | 'lk' | 'mk' | 'hk'): boolean =>
-      !pressed.has(map[button]) && !touchPressed.has(button) && (prev?.[button] ?? false);
+      !pressed.has(map[button]) && !touchPressed.has(button)
+      && !((button === 'lp' || button === 'lk') && touchPressed.has('grab'))
+      && (prev?.[button] ?? false);
     const raw: RawInput = {
       ...state,
       lpPrev: wasHeld('lp'),

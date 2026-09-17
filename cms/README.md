@@ -276,6 +276,25 @@ doppler run -- npm run cms:image:benchmark -- \
   --prompt "A vaudeville boxer throws one crisp straight punch"
 ```
 
+Every workbench row generation also writes a durable benchmark JSON asset under
+`characters/<id>/assets/benchmarks/<move>/`. It records reference loading,
+provider wall time, provider-specific submission/queue/download stages, local
+composition, artifact persistence, frame timings, estimated cost, and total
+elapsed time. Frame extraction writes a companion record under
+`fighter-pack/benchmarks/extraction/<move>/`. The workbench activity log shows
+the same stage breakdown immediately after each operation, so normal authoring
+runs continuously build the benchmark dataset without a separate profiling mode.
+
+In addition, every external image/video request emits one immutable attempt
+record under `benchmarks/generation-attempts/YYYY-MM-DD/<attempt-id>-<observation>.json`.
+Attempts are recorded independently from final assets, including provider
+failures, contract-rejected output, and each retry of an individual frame. The
+record includes provider/model, operation, character/move/projectile/arena
+context, attempt and frame numbers, start/end/wall time, provider task id,
+stage timings, usage, estimated cost, and sanitized error details. A failed
+benchmark write is surfaced as a warning but never converts a successfully
+generated asset into a failed generation.
+
 The default comparison set is `minimax-image,bfl-klein,fal`. Gemini remains
 available through `--providers gemini-fast` but is intentionally excluded from
 the default benchmark for now.

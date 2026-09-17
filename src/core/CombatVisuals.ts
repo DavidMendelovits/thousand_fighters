@@ -21,6 +21,18 @@ export function createCombatTextures(scene: Phaser.Scene, configs: CharacterConf
       for (let n = 0; n < 3; n++) { pixel(4 + n * 7, 5 + n * 2, 3, 22 - n * 4, color); pixel(7 + n * 7, 9 + n * 2, 3, 14 - n * 4, accent); }
     } else if (kind === 'scrap') {
       pixel(7, 6, 18, 22, 0x172332); pixel(9, 8, 14, 18, color); pixel(3, 13, 26, 6, color); pixel(13, 12, 6, 8, accent);
+    } else if (kind === 'juggling-ball') {
+      pixel(8, 3, 16, 26, 0x172332); pixel(3, 8, 26, 16, 0x172332);
+      pixel(7, 7, 18, 18, color); pixel(11, 4, 10, 24, color); pixel(4, 11, 24, 10, color);
+      pixel(16, 5, 5, 22, accent); pixel(6, 16, 21, 5, accent); pixel(9, 7, 5, 4, 0xffffff);
+    } else if (kind === 'ink-fist') {
+      // Separate ink droplet texture: it visibly resolves into the fist in flight.
+      pixel(11, 7, 10, 19, color); pixel(7, 13, 18, 10, color); pixel(14, 2, 4, 10, color);
+      pixel(12, 11, 4, 7, accent);
+      g.generateTexture(`${p.animation}:drop`, 32, 32); g.clear();
+      pixel(3, 14, 14, 12, color); pixel(12, 7, 17, 19, color);
+      for (let n=0;n<3;n++) { pixel(14+n*5, 5, 4, 12, color); pixel(15+n*5, 7, 2, 7, accent); }
+      pixel(13, 19, 11, 5, accent); pixel(3, 18, 8, 3, accent);
     } else if (kind === 'spore') {
       pixel(13, 10, 6, 21, color); pixel(5, 6, 22, 8, color); pixel(9, 3, 14, 5, accent);
       pixel(4, 23, 10, 3, color); pixel(18, 18, 10, 3, color);
@@ -93,9 +105,15 @@ export class CombatVisuals {
           g.fillStyle(0xf68a35).fillRect(ex - 9, ey - 9, 20, 20);
           g.fillStyle(accent).fillRect(ex - 5, ey - 7, 8, 3);
         }
+        if (ext?.kind === 'mic-cable') {
+          g.fillStyle(0x10151e).fillRect(ex - 14, ey - 4, 19, 8);
+          g.fillStyle(0x7f8b9d).fillRect(ex - 1, ey - 8, 14, 16);
+          g.fillStyle(0xdbe5eb).fillRect(ex + 1, ey - 6, 10, 4);
+          for (let n=0;n<3;n++) g.fillStyle(0x263441).fillRect(ex + 1, ey - 2+n*3, 10, 1);
+        }
       }
       if (f.state === 'grabbed') {
-        const color = Number.parseInt(f.grabbedBy?.config.concept?.accent.slice(1) ?? 'efc475', 16);
+        const color = f.grabbedBy?.currentMove?.extension?.color ?? Number.parseInt(f.grabbedBy?.config.concept?.accent.slice(1) ?? 'efc475', 16);
         for (let n = 0; n < 3; n++) {
           g.lineStyle(3, color).strokeEllipse(Math.round(f.x), Math.round(f.y - 42 - n * 20), 58, 15);
         }

@@ -24,6 +24,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: 'index.html',
+        fight: 'fight.html',
         testbed: 'testbed.html',
         gym: 'gym.html',
         animationLab: 'animation-lab.html',

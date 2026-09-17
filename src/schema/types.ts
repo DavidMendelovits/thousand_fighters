@@ -185,7 +185,7 @@ export type Move = {
   description?: string;
   inputLabel?: string;
   /** Pixel-rendered attached extension; endpoints follow collision geometry. */
-  extension?: { kind: 'tentacle' | 'elastic' | 'ribbon' | 'root'; color: number; accent: number; thickness: number };
+  extension?: { kind: 'tentacle' | 'elastic' | 'ribbon' | 'root' | 'mic-cable'; color: number; accent: number; thickness: number };
 };
 
 export type ProjectileConfig = {
@@ -204,7 +204,7 @@ export type ProjectileConfig = {
   clashesWithProjectiles?: boolean;
   grab?: GrabSpec;
   delayFrames?: number;
-  visual?: { kind: 'needle' | 'orb' | 'cage' | 'wave' | 'scrap' | 'spore'; color: number; accent: number };
+  visual?: { kind: 'needle' | 'orb' | 'cage' | 'wave' | 'scrap' | 'spore' | 'juggling-ball' | 'ink-fist'; color: number; accent: number };
   spawnPolicy?: {
     maxActivePerOwner?: number;
     ifAlreadyActive?: 'block_spawn' | 'replace_oldest' | 'allow';
@@ -225,6 +225,7 @@ export type SpriteFrameMeta = {
 };
 
 export type CharacterSpriteConfig = {
+  rowPlayback?: Record<string, { ticksPerFrame: number; loop?: boolean }>;
   basePath: string;
   frameWidth?: number;
   frameHeight?: number;
