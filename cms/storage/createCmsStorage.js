@@ -3,8 +3,13 @@ import { CachedCmsStorage } from './CachedCmsStorage.js';
 import { FileCmsStorage } from './FileCmsStorage.js';
 import { R2CmsStorage } from './R2CmsStorage.js';
 import { SupabaseCmsStorage } from './SupabaseCmsStorage.js';
+import { withLineage } from './LineageStore.js';
 
 export function createCmsStorage(options = {}) {
+  return withLineage(createStorageAdapter(options));
+}
+
+function createStorageAdapter(options = {}) {
   const provider = options.provider ?? process.env.CMS_STORAGE_PROVIDER ?? 'file';
 
   if (provider === 'file') {
@@ -32,7 +37,7 @@ export function createCmsStorage(options = {}) {
       rootDir: options.cacheRootDir ?? process.env.CMS_CACHE_ROOT ?? path.join(process.cwd(), '.cache', 'cms-data'),
       publicBaseUrl: options.cachePublicBaseUrl ?? process.env.CMS_CACHE_PUBLIC_BASE_URL ?? null,
     });
-    const remote = options.remote ?? createCmsStorage({
+    const remote = options.remote ?? createStorageAdapter({
       ...(options.remoteOptions ?? {}),
       provider: remoteProvider,
     });

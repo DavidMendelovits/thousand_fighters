@@ -54,6 +54,7 @@ export class MinimaxImage01GeneratorAdapter extends ParallelFrameSpriteGenerator
       body: JSON.stringify(payload),
     });
     const value = await responseJson(response, 'MiniMax Image-01');
+    const apiRequestAndGenerationMs = this.now() - startedAt;
     const base64 = Array.isArray(value.data?.image_base64) ? value.data.image_base64[0] : value.data?.image_base64;
     if (base64) {
       return {
@@ -62,6 +63,7 @@ export class MinimaxImage01GeneratorAdapter extends ParallelFrameSpriteGenerator
         bytes: Buffer.from(base64, 'base64'),
         contentType: 'image/png',
         elapsedMs: this.now() - startedAt,
+        stageTimings: { apiRequestAndGenerationMs, downloadMs: 0, totalProviderMs: this.now() - startedAt },
         taskId: value.id ?? value.trace_id ?? null,
         usage: value.usage ?? null,
         estimatedCostUsd: this.costPerImageUsd,
@@ -69,14 +71,18 @@ export class MinimaxImage01GeneratorAdapter extends ParallelFrameSpriteGenerator
     }
     const imageUrl = value.data?.image_urls?.[0];
     if (!imageUrl) throw new Error('MiniMax Image-01 completed without returning image data.');
+    const downloadStartedAt = this.now();
     const imageResponse = await this.fetch(imageUrl);
     if (!imageResponse.ok) throw new Error(`MiniMax Image-01 download failed with status ${imageResponse.status}.`);
+    const bytes = Buffer.from(await imageResponse.arrayBuffer());
+    const downloadMs = this.now() - downloadStartedAt;
     return {
       provider: this.provider,
       model: this.model,
-      bytes: Buffer.from(await imageResponse.arrayBuffer()),
+      bytes,
       contentType: imageResponse.headers.get('content-type')?.split(';')[0] ?? 'image/png',
       elapsedMs: this.now() - startedAt,
+      stageTimings: { apiRequestAndGenerationMs, downloadMs, totalProviderMs: this.now() - startedAt },
       taskId: value.id ?? value.trace_id ?? null,
       usage: value.usage ?? null,
       estimatedCostUsd: this.costPerImageUsd,

@@ -128,7 +128,7 @@ export class TestbedScene extends Phaser.Scene {
     createCombatTextures(this,[this.payload.config,...(this.payload.config.forms??[]).map(f=>f.config)]);
     this.combatVisuals=new CombatVisuals(this);
     this.player = new Fighter(this, this.payload.config, 1, { x: PLAYER_X, y: FLOOR_Y });
-    this.dummy = new Fighter(this, this.payload.config, 2, { x: DUMMY_X, y: FLOOR_Y });
+    this.dummy = new Fighter(this, this.payload.config, 2, { x: this.dummyAnchorX, y: FLOOR_Y });
     this.fighters = [this.player, this.dummy];
 
     this.debugGfx = this.add.graphics().setDepth(60);
@@ -331,12 +331,12 @@ export class TestbedScene extends Phaser.Scene {
 
   setDummyMode(mode: DummyMode): void {
     this.dummyMode = mode;
-    if (mode === 'post') this.pinDummy();
+    if (mode === 'post' && this.ready) this.pinDummy();
   }
 
   setDummyDistance(distance: number): void {
-    this.dummyAnchorX = Phaser.Math.Clamp(this.player.x + distance, 96, 704);
-    this.dummy.x = this.dummyAnchorX;
+    this.dummyAnchorX = Phaser.Math.Clamp((this.player?.x ?? PLAYER_X) + distance, 96, 704);
+    if(this.dummy)this.dummy.x = this.dummyAnchorX;
   }
 
   reset(): void {

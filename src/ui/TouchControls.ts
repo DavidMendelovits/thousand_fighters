@@ -7,15 +7,12 @@ type DpadBinding = { kind: 'dpad'; element: HTMLElement };
 type Binding = ButtonBinding | DpadBinding;
 
 const ATTACK_BUTTONS: ReadonlyArray<{ name: TouchAttackButton; label: string; kind: 'punch' | 'kick' }> = [
-  { name: 'lp', label: 'LP', kind: 'punch' },
-  { name: 'mp', label: 'MP', kind: 'punch' },
-  { name: 'hp', label: 'HP', kind: 'punch' },
-  { name: 'lk', label: 'LK', kind: 'kick' },
-  { name: 'mk', label: 'MK', kind: 'kick' },
-  { name: 'hk', label: 'HK', kind: 'kick' },
+  { name: 'jump', label: 'JUMP', kind: 'kick' },
   { name: 'dash', label: 'DASH', kind: 'kick' },
-  { name: 'power', label: 'POWER', kind: 'punch' },
-  { name: 'transform', label: 'FORM', kind: 'punch' },
+  { name: 'grab', label: 'GRAB', kind: 'kick' },
+  { name: 'lp', label: 'PUNCH', kind: 'punch' },
+  { name: 'lk', label: 'KICK', kind: 'punch' },
+  { name: 'hp', label: 'SPECIAL', kind: 'punch' },
 ];
 
 const DPAD_NUB_TRAVEL = 0.7;
@@ -28,7 +25,7 @@ export class TouchControls {
   private attacksRoot!: HTMLElement;
   private pauseButton!: HTMLButtonElement;
   private bindings = new Map<number, Binding>();
-  private onPause: () => void = () => {};
+  private onPause: (paused?: boolean) => boolean = () => false;
 
   constructor(host: HTMLElement) {
     this.root = host;
@@ -36,9 +33,10 @@ export class TouchControls {
     this.root.dataset.layout = 'hidden';
     this.build();
     this.attachListeners();
+    this.buildSettings();
   }
 
-  setPauseHandler(handler: () => void): void {
+  setPauseHandler(handler: (paused?: boolean) => boolean): void {
     this.onPause = handler;
   }
 
@@ -61,6 +59,7 @@ export class TouchControls {
     }
     this.bindings.clear();
     this.resetNub();
+    TouchInput.clearAll();
   }
 
   private build(): void {
@@ -82,6 +81,10 @@ export class TouchControls {
     this.dpadNub = document.createElement('div');
     this.dpadNub.className = 'tf-dpad-nub';
     this.dpadRing.appendChild(this.dpadNub);
+    const guide = document.createElement('span');
+    guide.className = 'tf-pad-guide';
+    guide.textContent = 'MOVE · AWAY TO GUARD';
+    dpadWrap.appendChild(guide);
     dpadWrap.appendChild(this.dpadRing);
 
     const attacksWrap = document.createElement('div');
@@ -98,6 +101,21 @@ export class TouchControls {
     }
 
     this.root.replaceChildren(pauseWrap, dpadWrap, attacksWrap);
+    const utility = document.createElement('div');
+    utility.className = 'tf-touch-utility';
+    for (const [name, label] of [['power', 'BOOST'], ['transform', 'FORM']] as const) {
+      const button = document.createElement('button');
+      button.textContent = label;
+      button.setAttribute('aria-label', label);
+      button.className = 'tf-utility-btn';
+      button.dataset.button = name;
+      button.addEventListener('pointerdown', e => this.onButtonDown(e, button, name));
+      for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+        button.addEventListener(type, e => this.onPointerEnd(e as PointerEvent, button));
+      }
+      utility.append(button);
+    }
+    this.root.append(utility);
   }
 
   private attachListeners(): void {
@@ -139,8 +157,11 @@ export class TouchControls {
     if (!binding) return;
     if (binding.kind !== 'button' || binding.element !== element) return;
     this.bindings.delete(event.pointerId);
-    element.classList.remove('is-pressed');
-    TouchInput.setButton(binding.name, false);
+    // A second finger on one action must not release the first finger's hold.
+    if (![...this.bindings.values()].some(b => b.kind === 'button' && b.name === binding.name)) {
+      element.classList.remove('is-pressed');
+      TouchInput.setButton(binding.name, false);
+    }
     try {
       element.releasePointerCapture(event.pointerId);
     } catch {
@@ -151,6 +172,7 @@ export class TouchControls {
   private onDpadDown(event: PointerEvent): void {
     event.preventDefault();
     if (this.bindings.has(event.pointerId)) return;
+    if ([...this.bindings.values()].some(binding => binding.kind === 'dpad')) return;
     try {
       this.dpadRing.setPointerCapture(event.pointerId);
     } catch {
@@ -208,5 +230,43 @@ export class TouchControls {
 
   private resetNub(): void {
     this.dpadNub.style.transform = 'translate(-50%, -50%)';
+  }
+
+  private buildSettings(): void {
+    const settings = document.createElement('button');
+    settings.className = 'tf-settings-btn';
+    settings.textContent = 'CONTROLS';
+    settings.setAttribute('aria-label', 'Control settings');
+    this.root.querySelector('.tf-controls-pause')!.prepend(settings);
+    const dialog = document.createElement('dialog');
+    dialog.className = 'tf-control-settings';
+    dialog.innerHTML = `<h2>YOUR THUMBS. YOUR RULES.</h2>
+      <p>Move with the pad. Hold away to guard. Tap attacks to chain moves after a hit.</p>
+      <p>Down + Kick: launcher. Direction + Special: alternate attacks.<br>Jump, then Down + Dash: air dodge into wavedash.<br>Boost and Form spend meter; they are not free attacks.</p>
+      <label>Layout <select name="hand" aria-label="Layout"><option value="right">Movement left / attacks right</option><option value="left">Movement right / attacks left</option></select></label>
+      <label>Button size <select name="size" aria-label="Button size"><option value="regular">Regular</option><option value="large">Large</option></select></label>
+      <label>Contrast <select name="contrast" aria-label="Contrast"><option value="normal">Normal</option><option value="high">High contrast</option></select></label>
+      <button class="tf-settings-done">SAVE & RETURN</button>`;
+    this.root.append(dialog);
+    const apply = () => {
+      for (const key of ['hand', 'size', 'contrast']) {
+        const select = dialog.querySelector<HTMLSelectElement>(`[name="${key}"]`)!;
+        this.root.dataset[key] = select.value;
+        try { localStorage.setItem(`tf.controls.${key}`, select.value); } catch { /* private mode */ }
+      }
+    };
+    for (const select of dialog.querySelectorAll('select')) {
+      try { const saved = localStorage.getItem(`tf.controls.${select.name}`); if (saved && [...select.options].some(o => o.value === saved)) select.value = saved; } catch { /* private mode */ }
+      select.addEventListener('change', apply);
+    }
+    apply();
+    let wasPaused = false;
+    settings.addEventListener('click', () => {
+      this.releaseAll();
+      wasPaused = this.onPause(true);
+      dialog.showModal();
+    });
+    dialog.querySelector('button')!.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('close', () => { this.releaseAll(); this.onPause(wasPaused); });
   }
 }

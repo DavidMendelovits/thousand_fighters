@@ -16,7 +16,7 @@ export function validateCombatRules(draft, parentId=draft.id) {
       if(grab){for(const k of ['holdDuration','pullFrames','releaseHitstun']){const v=grab[k];if(v!==undefined&&(!Number.isInteger(v)||v<0||v>180||(k==='holdDuration'&&v===0)))throw new Error('Invalid grab timer (0–180 ticks; hold must be positive)');}if((grab.pullFrames??0)>(grab.holdDuration??0))throw new Error('Grab pull cannot exceed hold duration');}
       if(event?.type!=='spawn_effect')continue;
       const fx=event.effect;
-      if(!fx?.id||!['spark','ink','thread','electric','shards','spores','pressure','bind'].includes(fx.kind)) throw new Error('Independent effect requires an id and supported kind');
+      if(!fx?.id||!['spark','ink','watercolor','thread','electric','shards','spores','pressure','bind'].includes(fx.kind)) throw new Error('Independent effect requires an id and supported kind');
       if(!Number.isInteger(fx.durationTicks)||fx.durationTicks<1||fx.durationTicks>180||!Number.isFinite(fx.radius)||fx.radius<1||fx.radius>250) throw new Error('Effect lifetime must be 1–180 ticks and radius 1–250');
       if(![fx.color,fx.accent].every(v=>Number.isInteger(v)&&v>=0&&v<=0xffffff)||![event.offsetX,event.offsetY].every(v=>Number.isFinite(v)&&Math.abs(v)<=500)) throw new Error('Invalid effect colors or socket coordinates');
     }

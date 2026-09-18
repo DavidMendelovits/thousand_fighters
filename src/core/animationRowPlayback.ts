@@ -23,6 +23,8 @@ import type { FighterState } from '../schema/types';
 
 /** FighterState → the row id the engine plays when the fighter owns that row. */
 export const STATE_ROW_MAP: Partial<Record<FighterState, string>> = {
+  idle:'idle',
+  landing:'landing',
   hitstun:'hurt',
   stunned:'hurt',
   juggle:'hurt',
@@ -43,7 +45,7 @@ export const STATE_ROW_MAP: Partial<Record<FighterState, string>> = {
  * as the fighter holds the direction; jump/crouch/block settle on a held pose.
  * `stateRowFrame` reads this to pick modulo vs. clamp-and-hold.
  */
-const LOOPING_STATE_ROWS = new Set<string>(['walk_forward', 'walk_back']);
+const LOOPING_STATE_ROWS = new Set<string>(['idle', 'walk_forward', 'walk_back']);
 
 /** True when the row's state playback should loop (walk) vs. hold its last frame. */
 export function isLoopingStateRow(rowId: string): boolean {
@@ -73,9 +75,9 @@ export const STATE_ROW_TICKS = 6;
  * modulo so the cycle repeats while the state persists. `elapsed` is the
  * (visual-delay-adjusted) state frame; `loop` defaults to false (hold).
  */
-export function stateRowFrame(elapsed: number, frameCount: number, loop = false): number {
+export function stateRowFrame(elapsed: number, frameCount: number, loop = false, ticksPerFrame = STATE_ROW_TICKS): number {
   if (frameCount <= 1) return 0;
-  const advanced = Math.floor(Math.max(0, elapsed) / STATE_ROW_TICKS);
+  const advanced = Math.floor(Math.max(0, elapsed) / Math.max(1,ticksPerFrame));
   return loop ? advanced % frameCount : Math.min(advanced, frameCount - 1);
 }
 

@@ -24,6 +24,7 @@ export async function importExistingFightersToCms(options = {}) {
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
     .filter((name) => !name.startsWith('_'))
+    .filter((name) => !options.fighterIds || options.fighterIds.includes(name))
     .sort();
 
   const imported = [];
@@ -43,7 +44,7 @@ export async function importExistingFightersToCms(options = {}) {
       files,
       publicPath: `/fighters/${fighterId}`,
       repository,
-      runtimeConfig: runtimeConfigs.get(fighterId),
+      runtimeConfig: await readJsonIfPresent(path.join(fighterRoot, 'config.json')) ?? runtimeConfigs.get(fighterId),
       importedAt,
     }));
   }

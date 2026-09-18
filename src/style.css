@@ -268,3 +268,82 @@ html[data-orientation='portrait'][data-touch='1'] #game-controls {
   width: clamp(56px, 14vmin, 80px);
   height: clamp(56px, 14vmin, 80px);
 }
+
+/* A thumb deck, not an overlay on the fighters. Shared by mobile web and Expo. */
+html[data-touch='1'] #game { display: grid; grid-template-rows: minmax(0, 1fr) 154px; }
+html[data-touch='1'] #game-controls {
+  display: block; position: relative; inset: auto; width: 100%; height: 154px;
+  background: #121c20; border-top: 1px solid #344b50; box-sizing: border-box;
+  --button-size: 54px; --touch-alpha: .9;
+}
+html[data-touch='1'] #game-canvas-wrap { width: 100%; height: 100%; max-height: none; aspect-ratio: auto; }
+.tf-controls[data-layout] .tf-controls-dpad {
+  position: absolute; left: max(24px, env(safe-area-inset-left)); bottom: 10px;
+  display: flex; flex-direction: column; gap: 5px; align-items: center;
+}
+.tf-controls[data-layout] .tf-dpad-ring { width: 112px; height: 112px; border-color: #83aaab; }
+.tf-pad-guide { font: 9px monospace; letter-spacing: 1px; color: #a0bcba; white-space: nowrap; }
+.tf-controls[data-layout] .tf-controls-attacks {
+  position: absolute; right: max(24px, env(safe-area-inset-right)); bottom: 12px;
+  display: grid; grid-template-columns: repeat(3, var(--button-size)); gap: 8px;
+}
+.tf-controls[data-layout] .tf-attack-btn {
+  width: var(--button-size); height: var(--button-size); font-size: 10px;
+  letter-spacing: .2px; border-radius: 18px; border-width: 1px;
+  background: #24373d; border-color: #658b93; color: #e7eee4;
+}
+.tf-controls[data-layout] .tf-attack-punch { background: #af6337; border-color: #edb981; }
+.tf-controls[data-layout] .tf-attack-btn.is-pressed,
+.tf-utility-btn.is-pressed { background: #e4efc0; color: #10191d; transform: translateY(2px); }
+.tf-controls[data-layout] .tf-controls-pause { position: fixed; top: max(8px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right)); display: flex; gap: 8px; z-index: 30; }
+.tf-pause-btn { min-width: 44px; min-height: 44px; }
+.tf-settings-btn, .tf-utility-btn {
+  min-height: 44px; min-width: 48px; padding: 8px; border: 1px solid #658b93;
+  background: #19292f; color: #e7eee4; font: bold 10px monospace; border-radius: 8px;
+}
+.tf-touch-utility { position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); display: flex; gap: 8px; }
+.tf-controls[data-hand='left'] .tf-controls-dpad { left: auto; right: max(24px, env(safe-area-inset-right)); }
+.tf-controls[data-hand='left'] .tf-controls-attacks { right: auto; left: max(24px, env(safe-area-inset-left)); }
+html[data-touch='1'] #game-controls[data-size='large'] { --button-size: 60px; }
+.tf-controls[data-contrast='high'] button { border: 2px solid white; color: white; background: #17222b; }
+.tf-control-settings {
+  pointer-events: auto; color: #e7eee4; background: #15252a; border: 1px solid #83aaab;
+  border-radius: 16px; max-width: 540px; width: calc(100% - 64px); max-height: 78dvh;
+  padding: 20px; font: 13px/1.5 system-ui; touch-action: auto;
+}
+.tf-control-settings::backdrop { background: #050b10dc; }
+.tf-control-settings h2 { font: bold 20px monospace; margin: 0 0 12px; }
+.tf-control-settings label { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; gap: 16px; }
+.tf-control-settings select { min-height: 44px; max-width: 70%; background: #24373d; color: white; border: 1px solid #658b93; padding: 6px; }
+.tf-settings-done { width: 100%; min-height: 48px; background: #d2e8a7; color: #17222b; border: 0; border-radius: 8px; font-weight: bold; margin-top: 12px; }
+@media (orientation: portrait) {
+  html[data-touch='1'] #game { grid-template-rows: minmax(220px, 1fr) 280px; }
+  html[data-touch='1'] #game-controls { height: 280px; padding: 0; }
+  .tf-controls[data-layout] .tf-controls-dpad { left: 14px; bottom: 88px; }
+  .tf-controls[data-layout] .tf-controls-attacks { right: 14px; bottom: 88px; gap: 6px; }
+  .tf-touch-utility { bottom: max(24px, env(safe-area-inset-bottom)); }
+  .tf-controls[data-hand='left'] .tf-controls-dpad { left: auto; right: 14px; }
+  .tf-controls[data-hand='left'] .tf-controls-attacks { right: auto; left: 14px; }
+}
+@media (max-width: 380px) { html[data-touch='1'] #game-controls { --button-size: 48px; } html[data-touch='1'] #game-controls[data-size='large'] { --button-size: 52px; } }
+@media (orientation: landscape) {
+  /* Side rails use the phone's extra width; thumbs never cover the arena. */
+  html[data-touch='1'] #game { display: block; }
+  html[data-touch='1'] #game-canvas-wrap { position: absolute; left: 148px; width: calc(100% - 296px); height: 100%; }
+  html[data-touch='1'] #game-controls { position: absolute; inset: 0; height: 100%; background: transparent; border: 0; }
+  .tf-controls[data-layout] .tf-controls-attacks { grid-template-columns: repeat(2, var(--button-size)); right: 12px; }
+  .tf-controls[data-layout] .tf-controls-dpad { left: 12px; }
+  .tf-controls[data-hand='left'] .tf-controls-attacks { left: 12px; right: auto; }
+  .tf-controls[data-hand='left'] .tf-controls-dpad { right: 12px; left: auto; }
+  .tf-touch-utility { left: 74px; top: 12px; bottom: auto; }
+  .tf-pad-guide { font-size: 8px; letter-spacing: .3px; }
+}
+.tf-match-menu {
+  position: fixed; z-index: 40; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: min(360px, calc(100% - 48px)); max-height: 86dvh; overflow: auto;
+  box-sizing: border-box; background: #15252af7; border: 1px solid #d2e8a7;
+  padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 8px 50px #000b;
+}
+.tf-match-menu h2 { font-size: 18px; color: #e7eee4; }
+.tf-match-menu p { color: #a0bcba; font: 12px/1.5 system-ui; white-space: pre-line; }
+.tf-match-menu button { display: block; width: 100%; min-height: 44px; margin-top: 8px; background: #d2e8a7; color: #15252a; border: 0; border-radius: 8px; font-weight: bold; cursor: pointer; }

@@ -57,6 +57,7 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
     stats: draft.combatStats ?? Object.fromEntries(['attack','defense','projectileAttack','projectileDefense','speed','weight','knockback','size'].filter(k=>typeof stats[k]==='number').map(k=>[k,stats[k]])),
     powerUps: draft.powerUps ?? [],
     forms: draft.forms ?? [],
+    comboRoutes: draft.comboRoutes ?? [],
     walkForwardSpeed: stats.walkForwardSpeed ?? 2.8,
     walkBackSpeed: stats.walkBackSpeed ?? 1.8,
     jumpVelocity: Math.abs(stats.jumpVelocity ?? 10.2),
@@ -505,6 +506,7 @@ function buildSpriteConfig({ draft, frameData, manifest, scale }) {
     frameCounts,
     sheets,
     frames: frameData?.frames ?? undefined,
+    rowPlayback: sprite.rowPlayback ?? {},
     stateFrames: {
       idle: [0, 1],
       walk_forward: [1, 0],

@@ -185,7 +185,7 @@ export type Move = {
   description?: string;
   inputLabel?: string;
   /** Pixel-rendered attached extension; endpoints follow collision geometry. */
-  extension?: { kind: 'tentacle' | 'elastic' | 'ribbon' | 'root'; color: number; accent: number; thickness: number };
+  extension?: { kind: 'tentacle' | 'elastic' | 'ribbon' | 'root' | 'mic-cable' | 'paint-ribbon'; color: number; accent: number; thickness: number };
 };
 
 export type ProjectileConfig = {
@@ -204,7 +204,7 @@ export type ProjectileConfig = {
   clashesWithProjectiles?: boolean;
   grab?: GrabSpec;
   delayFrames?: number;
-  visual?: { kind: 'needle' | 'orb' | 'cage' | 'wave' | 'scrap' | 'spore'; color: number; accent: number };
+  visual?: { kind: 'needle' | 'orb' | 'cage' | 'wave' | 'scrap' | 'spore' | 'juggling-ball' | 'ink-fist' | 'paint-orb' | 'paint-wave' | 'paint-fist'; color: number; accent: number };
   spawnPolicy?: {
     maxActivePerOwner?: number;
     ifAlreadyActive?: 'block_spawn' | 'replace_oldest' | 'allow';
@@ -225,6 +225,7 @@ export type SpriteFrameMeta = {
 };
 
 export type CharacterSpriteConfig = {
+  rowPlayback?: Record<string, { ticksPerFrame: number; loop?: boolean }>;
   basePath: string;
   frameWidth?: number;
   frameHeight?: number;
@@ -305,7 +306,7 @@ export type CombatStats = { attack: number; defense: number; projectileAttack: n
 export type PowerUpSpec = { id: string; name: string; modifiers: Partial<CombatStats>; durationTicks: number | null; cost: number; color?: number };
 /** A complete, non-selectable combat character owned by its base fighter. */
 export type CharacterForm = { id: string; name: string; durationTicks: number | null; cost: number; config: CharacterConfig };
-export type ImpactSpec = { id: string; kind: 'spark' | 'ink' | 'thread' | 'electric' | 'shards' | 'spores' | 'pressure' | 'bind'; color: number; accent: number; durationTicks: number; radius: number };
+export type ImpactSpec = { id: string; kind: 'spark' | 'ink' | 'watercolor' | 'thread' | 'electric' | 'shards' | 'spores' | 'pressure' | 'bind'; color: number; accent: number; durationTicks: number; radius: number };
 
 export type FighterScene = Phaser.Scene & {
   projectiles: ProjectilePool;
