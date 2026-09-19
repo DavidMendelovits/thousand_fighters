@@ -36,23 +36,30 @@ export function selectTriggeredMove(
   forCancel: boolean,
 ): Move | null {
   let best: Move | null = null;
+  let bestFrame = Infinity;
   for (const move of moves) {
     const trigger = move.trigger;
+    if(!forCancel && trigger.cancelOnly)continue;
     if (!forCancel && !trigger.allowedStates.includes(ctx.state==='dash'?'idle':ctx.state)) continue;
     if (forCancel) {
       const current=ctx.currentMove;
       if(!current || !current.phases.some(p=>p.cancellable))continue;
       if(!current.cancelInto?.includes(move.id) && !trigger.cancelFrom?.includes(current.id))continue;
-      if(current.cancelOn==='hit' && !ctx.hitThisMove)continue;
-      if(current.cancelOn==='contact' && !ctx.contactThisMove)continue;
+      const condition=trigger.cancelOn??current.cancelOn;
+      if(condition==='hit' && !ctx.hitThisMove)continue;
+      if(condition==='contact' && !ctx.contactThisMove)continue;
     }
     if (forCancel && trigger.cancelFrom && ctx.currentMove && !trigger.cancelFrom.includes(ctx.currentMove.id)) continue;
     if (!ctx.grounded && move.airOk !== true) continue;
     if (ctx.grounded && move.groundOk === false) continue;
-    if (!buffer.matchSequence(trigger.sequence, trigger.window ?? 15)) continue;
+    const matched=buffer.matchCommand(trigger.sequence,trigger.window??15,trigger.activationFrames??6,trigger.directions);
+    if (matched===null) continue;
     // Prefer the longest sequence; keep array order for tie-breaks (strictly-greater).
-    if (best === null || trigger.sequence.length > best.trigger.sequence.length) {
+    const score=trigger.sequence.length+(trigger.directions?1:0)+(forCancel&&trigger.cancelOnly?100:0);
+    const bestScore=best?best.trigger.sequence.length+(best.trigger.directions?1:0)+(forCancel&&best.trigger.cancelOnly?100:0):-1;
+    if (best === null || score>bestScore || (score===bestScore&&trigger.cancelOnly&&matched<bestFrame)) {
       best = move;
+      bestFrame=matched;
     }
   }
   return best;

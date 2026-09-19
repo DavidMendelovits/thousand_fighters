@@ -17,7 +17,8 @@ export class HitboxSystem {
     for (const active of attacker.getActiveHitboxesWorld()) {
       for (const hurtbox of hurtboxes) {
         if (boxesOverlap(active.world, hurtbox.world)) {
-          HitResolver.resolve(attacker, defender, active.hitbox, active.id, { x: attacker.x, y: attacker.y, facing: attacker.facing, world: active.world });
+          const origin=attacker.controlledSummon?.actor===active.actorId?attacker.controlledSummon:attacker;
+          HitResolver.resolve(attacker, defender, active.hitbox, active.id, { x: origin.x, y: origin.y, facing: origin.facing, world: active.world });
         }
       }
     }
@@ -25,7 +26,8 @@ export class HitboxSystem {
     for (const active of attacker.getActiveGrabsWorld()) {
       for (const hurtbox of hurtboxes) {
         if (boxesOverlap(active.world, hurtbox.world)) {
-          HitResolver.resolveGrab(attacker, defender, active.grab, active.id);
+          const origin=attacker.controlledSummon?.actor===active.actorId?attacker.controlledSummon:attacker;
+          HitResolver.resolveGrab(attacker, defender, active.grab, active.id,false,undefined,undefined,origin.facing);
         }
       }
     }

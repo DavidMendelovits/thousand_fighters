@@ -59,8 +59,12 @@ export class InputBuffer {
     if (this.history.length > this.maxHistory) this.history.shift();
   }
 
-  matchSequence(sequence: InputToken[], windowFrames = 15): boolean {
-    if (sequence.length === 0) return false;
+  matchSequence(sequence: InputToken[], windowFrames = 15, activationFrames = 6): boolean {
+    return this.matchCommand(sequence,windowFrames,activationFrames)!==null;
+  }
+
+  matchCommand(sequence: InputToken[], windowFrames = 15, activationFrames = 6, directions?: InputToken[]): number | null {
+    if (sequence.length === 0) return null;
 
     const recent = this.history.slice(-windowFrames);
     let seqIdx = 0;
@@ -69,12 +73,23 @@ export class InputBuffer {
       for (const token of entry.tokens) {
         if (token === sequence[seqIdx]) {
           seqIdx += 1;
-          if (seqIdx === sequence.length) return true;
+          // Motion recognition can be generous without keeping a completed
+          // attack queued for the entire motion window. Six simulation ticks
+          // permit deliberate recovery links without quarter-second ghost hits.
+          if (seqIdx === sequence.length) {
+            if (this.currentFrame - 1 - entry.frame < activationFrames && (!directions || directions.includes(entry.tokens[0]))) return entry.frame;
+            seqIdx = 0;
+          }
         }
       }
     }
 
-    return false;
+    return null;
+  }
+
+  consumeThrough(frame: number): void {
+    const buttons=new Set(['lp','mp','hp','lk','mk','hk','grab']);
+    for(const entry of this.history)if(entry.frame<=frame)entry.tokens=entry.tokens.filter(t=>!buttons.has(t));
   }
 
   current(): RawInput {

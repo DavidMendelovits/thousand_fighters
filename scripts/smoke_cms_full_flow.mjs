@@ -33,6 +33,7 @@ try {
     textModelOptions: { provider: 'mock' },
     imageGeneratorOptions: { provider: 'mock' },
     soundGeneratorOptions: { provider: 'mock' },
+    spriteNormalizerOptions: { provider: 'local' },
   });
   const { pipeline, repository, storage } = runtime;
 
@@ -42,6 +43,12 @@ try {
     brief: 'A fighter that proves the whole pipeline hangs together.',
   });
   assert.equal(draft.id, CHARACTER_ID);
+
+  // The real QA gate requires art for every authored projectile. Keep this
+  // fixture complete rather than bypassing that production gate.
+  for (const projectile of draft.projectiles ?? []) {
+    await pipeline.generateProjectile({ characterId: CHARACTER_ID, projectileId: projectile.id, prompt: 'A mock projectile for the keyless full-flow fixture.' });
+  }
 
   // 2. Per-move sprite row generation
   const sheet = await pipeline.generateSpriteSheet({

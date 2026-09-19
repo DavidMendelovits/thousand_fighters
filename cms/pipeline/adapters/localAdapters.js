@@ -97,7 +97,8 @@ export function createLocalSpriteNormalizer({ storage, fixtureFighterId = 'janit
     async normalizeFighterPack(request) {
       const characterId = required(request.characterId, 'characterId');
       const sourceAssetKey = required(request.sourceAssetKey, 'sourceAssetKey');
-      const normalizedRootKey = `characters/${characterId}/assets/fighter-pack`;
+      const activeDraft = await storage.exists(`characters/${characterId}/draft/content.json`) ? await storage.getJson(`characters/${characterId}/draft/content.json`) : null;
+      const normalizedRootKey = activeDraft?.assets?.rootKey ?? `characters/${characterId}/assets/fighter-pack`;
       const normalizedKey = `${normalizedRootKey}/manifest.json`;
       const frameDataKey = `${normalizedRootKey}/frameData.json`;
       const reportKey = `${normalizedRootKey}/normalization-report.json`;
@@ -293,7 +294,7 @@ export function createLocalPublisher({ repository, storage } = {}) {
 
       // Read current measurements, not a possibly stale QA report from before
       // re-extraction. Never create a new release with known missing artwork.
-      const framesKey = `characters/${characterId}/assets/fighter-pack/frameData.json`;
+      const framesKey = `${(await repository.getDraft(characterId)).assets?.rootKey ?? `characters/${characterId}/assets/fighter-pack`}/frameData.json`;
       if (await storage.exists(framesKey)) validateSpriteBoundaries(await storage.getJson(framesKey));
 
       // QA gate: require a current, non-failing QA report before publishing.

@@ -53,9 +53,11 @@ type GrabHold = {
   offsetY: number;
   remaining: number;
   requiresAttack?: boolean;
+  actorGrip?: { actor: FighterActorId; socketX: number; socketY: number; lift: number; swing: number; duration: number; fromX: number; fromY: number; torsoY: number; facing: 1|-1 };
   anchor?: { x: number; y: number; facing: 1 | -1 };
   pull: { fromX: number; frames: number; elapsed: number } | null;
   release: {
+    facing?: 1 | -1;
     knockback: { x: number; y: number };
     hitstun: number;
     launches: boolean;
@@ -87,6 +89,7 @@ type FighterActorRuntime = {
 };
 
 export class Fighter {
+  controlledSummon: {actor:string; remaining:number; speed:number; x:number; y:number; facing:1|-1} | null = null;
   id: string;
   config: CharacterConfig;
   readonly baseConfig: CharacterConfig;
@@ -180,6 +183,7 @@ export class Fighter {
   update(input: RawInput, opponent: Fighter, projectiles: ProjectilePool): void {
     void projectiles;
     if (this.state === 'dead') {
+      if(this.config.poseStyle==='fluid')this.stateFrame++;
       this.syncVisuals();
       return;
     }
@@ -188,6 +192,7 @@ export class Fighter {
     this.simulationTick++;
     this.inputBuffer.record(input, this.facing);
     this.autoFace(opponent);
+    this.tickControlledSummon(input, opponent);
     this.runState(input);
     this.applyPhysics();
     this.combo.tick(['hitstun','juggle','stunned','grabbed'].includes(this.state));
@@ -198,6 +203,8 @@ export class Fighter {
   }
 
   changeState(next: FighterState): void {
+    if(['hitstun','blockstun','juggle','stunned','grabbed','knockdown','dead'].includes(next))this.recallSummon(false);
+    if(['hitstun','blockstun','juggle','stunned','grabbed','knockdown','dead'].includes(next))this.inputBuffer.consumeButtons();
     if(next==='dead') {this.powers=[];if(this.activeForm)this.exitForm(false);}
     if (this.state === next) return;
     if (this.state === 'grabbed' && next !== 'grabbed') {
@@ -264,7 +271,7 @@ export class Fighter {
   debugStartMove(moveId: string): boolean {
     if (this.state === 'dead') return false;
     const move = this.config.moves.find((candidate) => candidate.id === moveId);
-    if (!move) return false;
+    if (!move || (move.controlledActor??null)!==(this.controlledSummon?.actor??null)) return false;
     MoveExecutor.start(this, move);
     this.syncVisuals();
     return true;
@@ -275,6 +282,13 @@ export class Fighter {
       const cancel = this.findTriggeredMove(true);
       if (cancel && MoveExecutor.tryCancel(this, cancel)) return;
       MoveExecutor.tick(this);
+      return;
+    }
+
+    if(this.controlledSummon){
+      this.vx=0;
+      const move=this.findTriggeredMove(false);
+      if(move)MoveExecutor.start(this,move);
       return;
     }
 
@@ -310,6 +324,9 @@ export class Fighter {
       this.movementTicks--;
       if(this.state==='wavedash')this.vx*=.88;
       if(this.movementTicks<=0){this.changeState(this.grounded?'idle':'airborne');return;}
+      // Keep the opening commitment, then allow a grounded dash to flow into
+      // a jump or attack. Air dodges retain their existing landing commitment.
+      if(this.state==='dash'&&this.stateFrame>=4&&input.up){this.startJump(input);return;}
       if(this.state==='dash'&&this.stateFrame>=4){const m=this.findTriggeredMove(false);if(m){MoveExecutor.start(this,m);return;}}
       return;
     }
@@ -385,11 +402,43 @@ export class Fighter {
   }
 
   private findTriggeredMove(forCancel: boolean): Move | null {
-    return selectTriggeredMove(this.config.moves.filter(m=>this.meter>=(m.cost?.meter??0)), this.inputBuffer, this, forCancel);
+    return selectTriggeredMove(this.config.moves.filter(m=>this.meter>=(m.cost?.meter??0) && (this.controlledSummon ? m.controlledActor===this.controlledSummon.actor : !m.controlledActor)), this.inputBuffer, this, forCancel);
+  }
+
+  summonControl(spec:{actor:string;duration:number;speed:number;offsetX:number;offsetY:number}):void {
+    if(!this.actors.get(spec.actor)?.config.summon || this.controlledSummon)return;
+    this.controlledSummon={actor:spec.actor,remaining:Math.max(1,spec.duration),speed:spec.speed,x:this.x+spec.offsetX*this.facing,y:this.y+spec.offsetY,facing:this.facing};
+    this.vx=0;this.inputBuffer.clear();
+  }
+
+  recallSummon(endMove=true):void {
+    if(!this.controlledSummon)return;
+    // A KO can stop simulation before the victim gets its next update.
+    for(const victim of (this.scene as FighterScene).fighters??[]){
+      if(victim.grabbedBy===this && victim.grabHold?.actorGrip)victim.releaseGrab(false);
+    }
+    this.controlledSummon=null;
+    this.activeHitboxes.clear();this.activeGrabs.clear();this.inputBuffer.clear();
+    if(endMove && this.currentMove?.controlledActor)this.changeState('idle');
+  }
+
+  private tickControlledSummon(input:RawInput,opponent:Fighter):void {
+    const summon=this.controlledSummon;
+    if(!summon)return;
+    if(--summon.remaining<=0){this.recallSummon();return;}
+    if(opponent.grabbedBy!==this)summon.facing=opponent.x>=summon.x?1:-1;
+    // A separate world-space entity: the body never slides along with it.
+    const dx=Number(input.right)-Number(input.left),dy=Number(input.down)-Number(input.up);
+    const length=Math.max(1,Math.hypot(dx,dy));
+    if(!this.currentMove){
+      summon.x=Math.max(STAGE_LEFT,Math.min(STAGE_RIGHT,summon.x+dx*summon.speed/length));
+      summon.y=Math.max(FLOOR_Y-190,Math.min(FLOOR_Y,summon.y+dy*summon.speed/length));
+    }
+    this.vx=0;
   }
 
   get stats(){return effectiveStats(this.config.stats,this.powers.map(p=>p.spec));}
-  resetAdvanced():void {this.exitForm();this.powers=[];this.meter=60;this.combo.reset();this.airDodgeUsed=false;this.movementTicks=0;this.lastDirection=null;this.priorHorizontal=0;}
+  resetAdvanced():void {this.recallSummon();this.exitForm();this.powers=[];this.meter=60;this.combo.reset();this.airDodgeUsed=false;this.movementTicks=0;this.lastDirection=null;this.priorHorizontal=0;}
   applyPowerUp(spec:PowerUpSpec):boolean {
     if(this.state==='dead'||this.meter<spec.cost)return false;
     this.meter-=spec.cost;
@@ -438,6 +487,22 @@ export class Fighter {
       return;
     }
 
+    if(hold.actorGrip){
+      const grip=hold.actorGrip, summon=grabber.controlledSummon;
+      if(!summon || summon.actor!==grip.actor){this.releaseGrab(false);return;}
+      const t=1-hold.remaining/grip.duration;
+      const settle=Math.min(1,(t*grip.duration+1)/4);
+      const arc=Math.sin(Math.PI*t);
+      const targetX=summon.x+(grip.socketX+grip.swing*Math.sin(Math.PI*2*t))*grip.facing;
+      const targetY=summon.y+grip.socketY-grip.torsoY-grip.lift*arc;
+      this.x=hold.actorGrip.fromX+(targetX-hold.actorGrip.fromX)*settle;
+      this.y=hold.actorGrip.fromY+(targetY-hold.actorGrip.fromY)*settle;
+      this.facing=(grip.facing*-1) as 1|-1;
+      this.vx=0;this.vy=0;this.grounded=this.y>=FLOOR_Y;
+      if(--hold.remaining<=0)this.releaseGrab(true);
+      return;
+    }
+
     let offsetX = hold.offsetX;
     if (hold.pull && hold.pull.elapsed < hold.pull.frames) {
       const t = hold.pull.elapsed / hold.pull.frames;
@@ -465,7 +530,7 @@ export class Fighter {
     this.grabImmunity = 24;
 
     if (applyRelease && release && grabber) {
-      this.vx = release.knockback.x * grabber.facing * grabber.stats.knockback / this.stats.weight;
+      this.vx = release.knockback.x * (release.facing??grabber.facing) * grabber.stats.knockback / this.stats.weight;
       this.vy = release.knockback.y;
       this.hitstun = release.hitstun;
       if (release.launches || !this.grounded) {
@@ -581,6 +646,7 @@ export class Fighter {
       this.label.setText(this.currentMove?.displayName ?? ({ grabbed: 'CAPTURED', stunned: 'STUNNED', blockstun: 'BLOCK', juggle: 'LAUNCH' } as Partial<Record<FighterState,string>>)[this.state] ?? '');
       this.label.setFontSize(10);
     }
+    if(this.controlledSummon)this.label.setText(`HANDS CONTROL · ${(this.controlledSummon.remaining/60).toFixed(1)}s`);
   }
 
   private syncActorVisual(actor: FighterActorRuntime): void {
@@ -590,7 +656,7 @@ export class Fighter {
 
     const pose = this.actorPose(actor);
     actor.body.setPosition(pose.x, pose.y);
-    actor.body.setAngle(this.state === 'grabbed' ? -12 * pose.facing : (this.state === 'knockdown' || this.state === 'dead') ? 75 * pose.facing : 0);
+    actor.body.setAngle(this.config.poseStyle==='fluid'?0:this.state === 'grabbed' ? -12 * pose.facing : (this.state === 'knockdown' || this.state === 'dead') ? 75 * pose.facing : 0);
 
     const sprite = this.spriteForActor(actor);
     if (actor.body instanceof Phaser.GameObjects.Sprite && sprite) {
@@ -627,6 +693,21 @@ export class Fighter {
   private currentVisualFrame(actor?: FighterActorRuntime): { sheet: SpriteSheetId; frame: number } {
     const visualDelay = this.fusionFrames > 0 ? 0 : (actor?.config.visualDelay ?? 0);
     const sprite = actor ? this.spriteForActor(actor) : this.config.sprite;
+    if(this.controlledSummon && actor){
+      const victim=(this.scene as FighterScene).fighters?.find(f=>f.grabbedBy===this&&f.grabHold?.actorGrip?.actor===actor.id);
+      if(victim?.grabHold?.actorGrip){
+        // Keep the closing/cupped section on the victim, rather than playing
+        // the opening recovery while the opponent is still attached.
+        const t=1-victim.grabHold.remaining/victim.grabHold.actorGrip.duration;
+        const row=this.currentMove?.animation??'hands_pinch';
+        const count=sprite?.frameCounts[row]??24;
+        return {sheet:row,frame:Math.min(count-1,Math.floor(count*(.375+t*.292)))};
+      }
+      if(actor.id!==this.controlledSummon.actor || !this.currentMove?.controlledActor){
+        const row=actor.id===this.controlledSummon.actor?'hands_idle':'idle';
+        return {sheet:row,frame:stateRowFrame(this.simulationTick,sprite?.frameCounts[row]??1,true)};
+      }
+    }
     if(['dash','air_dodge','wavedash'].includes(this.state)){
       const row=this.state==='dash'?(this.movementDirection===this.facing?'dash_forward':'dash_back'):this.state==='air_dodge'?'jump':'crouch';
       if(sprite?.frameCounts[row])return {sheet:row,frame:stateRowFrame(this.stateFrame,sprite.frameCounts[row]!,false)};
@@ -642,14 +723,17 @@ export class Fighter {
     // the current state (jump/crouch/block), play it. Gated on row ownership so
     // fighters without these rows fall through to the base logic below,
     // byte-for-byte unchanged.
-    const stateSheet = resolveStateSheet(this.state, (row) => (sprite?.frameCounts?.[row] ?? 0) > 0);
+    const preferred=this.config.poseStyle==='fluid'?this.config.animations[this.state]:undefined;
+    const stateSheet = preferred && sprite?.frameCounts[preferred] ? preferred : resolveStateSheet(this.state, (row) => (sprite?.frameCounts?.[row] ?? 0) > 0);
     if (stateSheet !== 'base') {
       const elapsed = Math.max(0, this.stateFrame - visualDelay);
       const count=sprite?.frameCounts?.[stateSheet]??1;
       const reaction=['hitstun','stunned','juggle'].includes(this.state);
+      const duration=sprite?.rowPlayback?.[stateSheet]?.durationTicks;
+      if(duration)return {sheet:stateSheet,frame:timedStateRowFrame(elapsed,count,duration)};
       return {
         sheet: stateSheet,
-        frame: reaction?timedStateRowFrame(elapsed,count,this.stateFrame+this.hitstun):this.state==='getup'?timedStateRowFrame(elapsed,count,25):stateRowFrame(elapsed,count,isLoopingStateRow(stateSheet)),
+        frame: reaction?timedStateRowFrame(elapsed,count,this.stateFrame+this.hitstun):this.state==='getup'?timedStateRowFrame(elapsed,count,25):this.state==='landing'?timedStateRowFrame(elapsed,count,4):stateRowFrame(elapsed,count,sprite?.rowPlayback?.[stateSheet]?.loop??isLoopingStateRow(stateSheet),sprite?.rowPlayback?.[stateSheet]?.ticksPerFrame),
       };
     }
 
@@ -828,6 +912,7 @@ export class Fighter {
   }
 
   private actorVisible(actor: FighterActorRuntime): boolean {
+    if(actor.config.summon)return this.controlledSummon?.actor===actor.id;
     if (this.fusionFrames > 0) return actor.config.visibleInFusion ?? actor.id === 'fusion';
     return actor.config.defaultVisible ?? actor.id !== 'fusion';
   }
@@ -843,6 +928,12 @@ export class Fighter {
   }
 
   private actorPose(actor: FighterActorRuntime): ActorPose {
+    if(this.controlledSummon?.actor===actor.id){
+      const victim=(this.scene as FighterScene).fighters?.find(f=>f.grabbedBy===this&&f.grabHold?.actorGrip?.actor===actor.id);
+      const grip=victim?.grabHold?.actorGrip;
+      if(victim&&grip)return {x:victim.x-grip.socketX*grip.facing,y:victim.y+grip.torsoY-grip.socketY,facing:grip.facing};
+      return this.controlledSummon;
+    }
     const offset = this.actorOffset(actor);
     const delay = this.actorFollowDelay(actor);
     const sample = this.poseHistory[Math.min(delay, this.poseHistory.length - 1)] ?? { x: this.x, y: this.y, facing: this.facing };

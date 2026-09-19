@@ -1,4 +1,5 @@
 import type { ProjectilePool } from '../core/ProjectilePool';
+import type { Fighter } from '../core/Fighter';
 
 export type InputToken =
   | 'up'
@@ -45,6 +46,11 @@ export type MoveTrigger = {
   sequence: InputToken[];
   window?: number;
   cancelFrom?: string[];
+  /** Direction held on the attack edge, not an earlier motion-history direction. */
+  directions?: InputToken[];
+  activationFrames?: number;
+  cancelOnly?: boolean;
+  cancelOn?: 'hit' | 'contact' | 'always';
 };
 
 export type HitLevel = 'high' | 'mid' | 'low';
@@ -102,6 +108,8 @@ export type GrabSpec = {
   groundOnly?: boolean;
   /** Projectile cages can hold at contact instead of dragging to the caster. */
   anchor?: 'attacker' | 'contact';
+  /** A summon grips the victim's torso, then carries it along an authored arc. */
+  actorGrip?: { actor: FighterActorId; socketX: number; socketY: number; lift: number; swing: number };
   unblockable?: boolean;
 };
 
@@ -121,6 +129,8 @@ export type HitboxKeyframe = {
 };
 
 export type MoveEvent =
+  | { type:'summon_control'; actor:string; duration:number; speed:number; offsetX:number; offsetY:number }
+  | { type:'recall_summon' }
   | { type:'spawn_effect'; effect:ImpactSpec; offsetX:number; offsetY:number; attached?:boolean }
   | { type: 'power_up'; power: PowerUpSpec }
   | { type: 'transform'; formId: string }
@@ -167,6 +177,11 @@ export type MoveVisualFrame = {
 };
 
 export type Move = {
+  /** Only available while this temporary actor has the player's controls. */
+  controlledActor?: string;
+  category?: 'basic' | 'directional' | 'air' | 'throw' | 'string' | 'special';
+  requiredAnimation?: string;
+  artStatus?: 'proxy' | 'ready';
   cancelOn?: 'hit' | 'contact' | 'always';
   id: string;
   displayName: string;
@@ -185,7 +200,7 @@ export type Move = {
   description?: string;
   inputLabel?: string;
   /** Pixel-rendered attached extension; endpoints follow collision geometry. */
-  extension?: { kind: 'tentacle' | 'elastic' | 'ribbon' | 'root'; color: number; accent: number; thickness: number };
+  extension?: { kind: 'tentacle' | 'elastic' | 'ribbon' | 'root' | 'mic-cable' | 'paint-ribbon'; color: number; accent: number; thickness: number };
 };
 
 export type ProjectileConfig = {
@@ -204,7 +219,7 @@ export type ProjectileConfig = {
   clashesWithProjectiles?: boolean;
   grab?: GrabSpec;
   delayFrames?: number;
-  visual?: { kind: 'needle' | 'orb' | 'cage' | 'wave' | 'scrap' | 'spore'; color: number; accent: number };
+  visual?: { kind: 'needle' | 'orb' | 'cage' | 'wave' | 'scrap' | 'spore' | 'juggling-ball' | 'ink-fist' | 'paint-orb' | 'paint-wave' | 'paint-fist'; color: number; accent: number };
   spawnPolicy?: {
     maxActivePerOwner?: number;
     ifAlreadyActive?: 'block_spawn' | 'replace_oldest' | 'allow';
@@ -225,6 +240,7 @@ export type SpriteFrameMeta = {
 };
 
 export type CharacterSpriteConfig = {
+  rowPlayback?: Record<string, { ticksPerFrame: number; loop?: boolean; durationTicks?:number }>;
   basePath: string;
   frameWidth?: number;
   frameHeight?: number;
@@ -237,6 +253,8 @@ export type CharacterSpriteConfig = {
 };
 
 export type FighterActorConfig = {
+  /** Hidden until explicitly summoned. Collision shares the owner's health. */
+  summon?: boolean;
   id: FighterActorId;
   sprite?: CharacterSpriteConfig;
   hurtboxes?: Partial<Record<FighterState, Hurtbox>>;
@@ -272,6 +290,7 @@ export type FighterState =
   | 'dead';
 
 export type CharacterConfig = {
+  poseStyle?: 'fluid';
   stats?: Partial<CombatStats>;
   powerUps?: PowerUpSpec[];
   forms?: CharacterForm[];
@@ -305,9 +324,10 @@ export type CombatStats = { attack: number; defense: number; projectileAttack: n
 export type PowerUpSpec = { id: string; name: string; modifiers: Partial<CombatStats>; durationTicks: number | null; cost: number; color?: number };
 /** A complete, non-selectable combat character owned by its base fighter. */
 export type CharacterForm = { id: string; name: string; durationTicks: number | null; cost: number; config: CharacterConfig };
-export type ImpactSpec = { id: string; kind: 'spark' | 'ink' | 'thread' | 'electric' | 'shards' | 'spores' | 'pressure' | 'bind'; color: number; accent: number; durationTicks: number; radius: number };
+export type ImpactSpec = { id: string; kind: 'spark' | 'ink' | 'watercolor' | 'thread' | 'electric' | 'shards' | 'spores' | 'pressure' | 'bind'; color: number; accent: number; durationTicks: number; radius: number };
 
 export type FighterScene = Phaser.Scene & {
+  fighters?: Fighter[];
   projectiles: ProjectilePool;
   hitPauseFrames: number;
   _soundsPlayedThisFrame?: Set<string>;

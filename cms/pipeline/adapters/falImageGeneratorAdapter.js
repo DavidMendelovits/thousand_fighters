@@ -45,20 +45,27 @@ export class FalImageGeneratorAdapter extends ParallelFrameSpriteGenerator {
       referenceField: this.referenceField,
     });
     const headers = { authorization: `Key ${this.apiKey}`, 'content-type': 'application/json' };
+    const submissionStartedAt = this.now();
     const response = await this.fetch(`${this.queueUrl.replace(/\/$/, '')}/${this.model}`, {
       method: 'POST', headers, body: JSON.stringify(payload),
     });
     const created = await responseJson(response, 'fal');
+    const submissionMs = this.now() - submissionStartedAt;
     if (!created.request_id && !created.response_url) throw new Error('fal did not return a request_id or response_url.');
     const statusUrl = created.status_url ?? `${this.queueUrl.replace(/\/$/, '')}/${this.model}/requests/${created.request_id}/status`;
     const responseUrl = created.response_url ?? `${this.queueUrl.replace(/\/$/, '')}/${this.model}/requests/${created.request_id}`;
+    const queueStartedAt = this.now();
     await this.waitForResult(statusUrl, headers);
+    const queueAndGenerationMs = this.now() - queueStartedAt;
+    const resultLookupStartedAt = this.now();
     const resultResponse = await this.fetch(responseUrl, { headers: { authorization: headers.authorization } });
     const result = await responseJson(resultResponse, 'fal');
+    const resultLookupMs = this.now() - resultLookupStartedAt;
     const image = result.images?.[0] ?? result.image ?? result.output?.images?.[0];
     const imageUrl = typeof image === 'string' ? image : image?.url;
     const base64 = image?.content ?? image?.base64;
     let downloaded;
+    const downloadStartedAt = this.now();
     if (base64) {
       downloaded = { bytes: Buffer.from(base64, 'base64'), contentType: image.content_type ?? 'image/png' };
     } else if (imageUrl?.startsWith('data:')) {
@@ -70,12 +77,14 @@ export class FalImageGeneratorAdapter extends ParallelFrameSpriteGenerator {
     } else {
       throw new Error('fal completed without returning an image URL or base64 payload.');
     }
+    const downloadMs = this.now() - downloadStartedAt;
     return {
       ...downloaded,
       provider: this.provider,
       model: this.model,
       taskId: created.request_id ?? null,
       elapsedMs: this.now() - startedAt,
+      stageTimings: { submissionMs, queueAndGenerationMs, resultLookupMs, downloadMs, totalProviderMs: this.now() - startedAt },
       usage: result.usage ?? result.timings ?? null,
       estimatedCostUsd: this.costPerImageUsd,
     };

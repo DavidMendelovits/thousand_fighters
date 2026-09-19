@@ -85,6 +85,13 @@ export class R2CmsStorage {
     }
   }
 
+  async putImmutable(key, bytes, metadata = {}) {
+    const normalizedKey = normalizeStorageKey(key);
+    await this.client.send(new PutObjectCommand({ Bucket: this.bucket, Key: normalizedKey,
+      Body: bytes, ContentType: metadata.contentType ?? 'application/octet-stream', IfNoneMatch: '*' }));
+    await this.writeMetadata(normalizedKey, metadata);
+  }
+
   async exists(key) {
     try {
       await this.client.send(new HeadObjectCommand({

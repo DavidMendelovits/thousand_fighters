@@ -58,8 +58,11 @@ try {
   assert.deepEqual(keys, [
     'characters/test_fighter/assets/sprites/base/base_001.png',
     'characters/test_fighter/draft/content.json',
+    'characters/test_fighter/qa/latest.json',
     'characters/test_fighter/qa/run-001/report.json',
+    'characters/test_fighter/versions/v1/assets.json',
     'characters/test_fighter/versions/v1/content.json',
+    'characters/test_fighter/versions/v1/integrity.json',
   ]);
 
   console.log(`CMS storage smoke test passed: ${rootDir}`);

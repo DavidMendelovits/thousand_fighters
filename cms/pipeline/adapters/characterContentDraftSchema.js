@@ -192,6 +192,7 @@ function projectileSchema() {
 // real text adapters so the instructions can't drift from the schema above.
 export function characterContentDraftGuidance() {
   return [
+    ...characterInputGuidance(),
     'You draft game-ready Thousand Fighters character content as strict JSON.',
     'Create a playable fighting-game character from the brief with a FULL move kit.',
     'Author moves across these move-triggered rows: punch, kick, special_1, special_2, grab, throw. Give normals, specials, AND a grab/throw — not just one or two moves.',
@@ -251,6 +252,7 @@ export function comboAuthoringSchema() {
 
 export function comboAuthoringGuidance() {
   return [
+    ...characterInputGuidance(),
     'You design the NEW moves of a fighting-game COMBO from the requested segments.',
     'Return one move per requested NEW segment, in the SAME order. Each segment carries the sprite row it has already been assigned (the `animation` field) plus a description — author a move that reads as that description on that row.',
     'Do NOT set `animation` yourself; the row is fixed for you. Use the assigned row only to judge what kind of move fits.',
@@ -258,6 +260,15 @@ export function comboAuthoringGuidance() {
     'Tune hitbox numbers to the description and ESCALATE across the combo (later links hit harder / launch). A headbutt is short-range high-stun; a roundhouse is wide; a launcher knocks up.',
     'trigger.sequence: assign a SHORT (1-2 token) input using ONLY canonical tokens — lp, mp, hp, lk, mk, hk, up, down, forward, back. Make each combo move\'s input DISTINCT from its siblings in this combo AND from the existing-move inputs you are given, so the player can chain the links cleanly.',
     'Do not include markdown. Return only JSON matching the supplied schema.',
+  ];
+}
+
+export function characterInputGuidance(){
+  return [
+    'Inputs are CHARACTER-SPECIFIC. Do not copy David or another fighter\'s command layout. Choose commands that fit this character\'s abilities, movement vocabulary, tactical role and intended combo flow; honor any explicit user control preferences.',
+    'Use supported runtime input tokens, not literal keyboard letters. Physical bindings may alias lp/mk, lk/mp and hp/hk; aliases are NOT distinct buttons. Keep frequent actions easy on a three-button mobile layout. Forward/back are facing-relative.',
+    'Choose directions deliberately: down for a low or grounded action, forward for commitment or reach, back for retreat/counter/pull when that fits the character; these are semantic suggestions, not mandatory mappings. Explain the chosen command and its purpose briefly in each move description.',
+    'Check commands against the existing kit and the legal state/predecessor. Never create two indistinguishable triggers competing in the same state. Repeated buttons are valid for authored strings only when predecessor/cancel-only gating is actually supported by the supplied authoring schema; otherwise do not invent unsupported trigger fields.',
   ];
 }
 

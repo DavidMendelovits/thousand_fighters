@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-16T21:15:09.760Z",
-  "fighterCount": 33,
+  "generatedAt": "2026-09-17T02:34:39.267Z",
+  "fighterCount": 35,
   "arenaCount": 0,
   "fighters": {
     "bellwether": {
@@ -1959,6 +1959,454 @@
       "projectiles": {
         "foam_wave": "projectiles/foam_wave.png"
       },
+      "sounds": {}
+    },
+    "david": {
+      "displayName": "david",
+      "basePath": "/fighters/david",
+      "artSource": "bfl-flux-2-klein-key-poses",
+      "config": "config.json",
+      "sheets": {
+        "punch": "sheets/punch.png",
+        "kick": "sheets/kick.png",
+        "juggle": "sheets/juggle.png",
+        "sound": "sheets/sound.png",
+        "ink": "sheets/ink.png",
+        "cable": "sheets/cable.png",
+        "base": "sheets/base.png",
+        "hurt": "sheets/hurt.png",
+        "crouch": "sheets/crouch.png",
+        "block": "sheets/block.png",
+        "jump": "sheets/jump.png",
+        "walk_forward": "sheets/walk_forward.png",
+        "walk_back": "sheets/walk_back.png",
+        "dash_forward": "sheets/dash_forward.png",
+        "dash_back": "sheets/dash_back.png",
+        "grab": "sheets/grab.png",
+        "throw": "sheets/throw.png"
+      },
+      "frameCounts": {
+        "punch": 3,
+        "kick": 3,
+        "juggle": 3,
+        "sound": 3,
+        "ink": 3,
+        "cable": 3,
+        "base": 1,
+        "hurt": 1,
+        "crouch": 1,
+        "block": 1,
+        "jump": 1,
+        "walk_forward": 1,
+        "walk_back": 1,
+        "dash_forward": 1,
+        "dash_back": 1,
+        "grab": 3,
+        "throw": 3
+      },
+      "frameData": {
+        "punch": [
+          {
+            "file": "sprites/punch/punch_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/punch/punch_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/punch/punch_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "kick": [
+          {
+            "file": "sprites/kick/kick_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/kick/kick_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/kick/kick_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "juggle": [
+          {
+            "file": "sprites/juggle/juggle_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/juggle/juggle_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/juggle/juggle_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "sound": [
+          {
+            "file": "sprites/sound/sound_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/sound/sound_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/sound/sound_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "ink": [
+          {
+            "file": "sprites/ink/ink_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/ink/ink_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/ink/ink_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "cable": [
+          {
+            "file": "sprites/cable/cable_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/cable/cable_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/cable/cable_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "base": [
+          {
+            "file": "sprites/base/base_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "hurt": [
+          {
+            "file": "sprites/hurt/hurt_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "crouch": [
+          {
+            "file": "sprites/crouch/crouch_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "block": [
+          {
+            "file": "sprites/block/block_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "jump": [
+          {
+            "file": "sprites/jump/jump_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "walk_forward": [
+          {
+            "file": "sprites/walk_forward/walk_forward_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "walk_back": [
+          {
+            "file": "sprites/walk_back/walk_back_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "dash_forward": [
+          {
+            "file": "sprites/dash_forward/dash_forward_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "dash_back": [
+          {
+            "file": "sprites/dash_back/dash_back_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "grab": [
+          {
+            "file": "sprites/grab/grab_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/grab/grab_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/grab/grab_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ],
+        "throw": [
+          {
+            "file": "sprites/throw/throw_001.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/throw/throw_002.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          },
+          {
+            "file": "sprites/throw/throw_003.png",
+            "width": 224,
+            "height": 192,
+            "anchor": {
+              "x": 96,
+              "y": 176
+            }
+          }
+        ]
+      },
+      "sprites": {
+        "punch": [
+          "sprites/punch/punch_001.png",
+          "sprites/punch/punch_002.png",
+          "sprites/punch/punch_003.png"
+        ],
+        "kick": [
+          "sprites/kick/kick_001.png",
+          "sprites/kick/kick_002.png",
+          "sprites/kick/kick_003.png"
+        ],
+        "juggle": [
+          "sprites/juggle/juggle_001.png",
+          "sprites/juggle/juggle_002.png",
+          "sprites/juggle/juggle_003.png"
+        ],
+        "sound": [
+          "sprites/sound/sound_001.png",
+          "sprites/sound/sound_002.png",
+          "sprites/sound/sound_003.png"
+        ],
+        "ink": [
+          "sprites/ink/ink_001.png",
+          "sprites/ink/ink_002.png",
+          "sprites/ink/ink_003.png"
+        ],
+        "cable": [
+          "sprites/cable/cable_001.png",
+          "sprites/cable/cable_002.png",
+          "sprites/cable/cable_003.png"
+        ],
+        "base": [
+          "sprites/base/base_001.png"
+        ],
+        "hurt": [
+          "sprites/hurt/hurt_001.png"
+        ],
+        "crouch": [
+          "sprites/crouch/crouch_001.png"
+        ],
+        "block": [
+          "sprites/block/block_001.png"
+        ],
+        "jump": [
+          "sprites/jump/jump_001.png"
+        ],
+        "walk_forward": [
+          "sprites/walk_forward/walk_forward_001.png"
+        ],
+        "walk_back": [
+          "sprites/walk_back/walk_back_001.png"
+        ],
+        "dash_forward": [
+          "sprites/dash_forward/dash_forward_001.png"
+        ],
+        "dash_back": [
+          "sprites/dash_back/dash_back_001.png"
+        ],
+        "grab": [
+          "sprites/grab/grab_001.png",
+          "sprites/grab/grab_002.png",
+          "sprites/grab/grab_003.png"
+        ],
+        "throw": [
+          "sprites/throw/throw_001.png",
+          "sprites/throw/throw_002.png",
+          "sprites/throw/throw_003.png"
+        ]
+      },
+      "projectiles": {},
       "sounds": {}
     },
     "demi": {
@@ -23101,6 +23549,35 @@
         "hi_vis_vest": "projectiles/hi_vis_vest.png"
       },
       "sounds": {}
+    },
+    "palimpsest": {
+      "displayName": "Palimpsest",
+      "basePath": "/fighters/palimpsest",
+      "config": "config.json",
+      "frameCounts": {
+        "idle": 24,
+        "walk_forward": 24,
+        "walk_back": 24,
+        "jump": 24,
+        "landing": 24,
+        "crouch": 24,
+        "block": 24,
+        "hurt": 24,
+        "getup": 24,
+        "dash_forward": 24,
+        "ribbon_jab": 24,
+        "undertow": 24,
+        "rising_ochre": 24,
+        "impasto": 24,
+        "bind": 24,
+        "summon": 24,
+        "hands_idle": 24,
+        "needle_thrust": 24,
+        "hands_pinch": 24,
+        "hands_recall": 24,
+        "base": 24
+      },
+      "artSource": "reviewed-video-motion"
     }
   },
   "arenas": {},

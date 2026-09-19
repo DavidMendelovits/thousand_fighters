@@ -4,6 +4,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { rowPromptProfile } from '../rowPromptProfiles.js';
 import { pixelArtDirection } from './pixelArtDirection.js';
+import { runGenerationAttempt } from '../generationAttemptTelemetry.js';
 
 const DEFAULT_CODEX_BIN = 'codex';
 const DEFAULT_TIMEOUT_MS = 480_000;
@@ -66,31 +67,30 @@ export class CodexImageGeneratorAdapter {
 
     try {
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        const beforeTimestamp = Date.now() - 3000;
-
-        const codexOutput = await spawnWithStdin(
-          this.codexBin,
-          ['exec', '--sandbox', 'workspace-write', ...imageArgs],
-          codexPrompt,
-          { timeout: this.timeoutMs, onData: onProgress ? (chunk) => onProgress({ type: chunk.stream, data: chunk.data }) : undefined },
-        );
-
-        const imageFile = await findNewestImage(GENERATED_IMAGES_DIR, beforeTimestamp);
-        if (imageFile) {
-          const bytes = await readFile(imageFile);
-          onProgress?.({ type: 'complete', imageFound: true });
-          return {
-            provider: 'codex',
-            model: 'codex-image-gen',
-            promptRef: null,
-            contentType: 'image/png',
-            base64: bytes.toString('base64'),
-            bytes,
-          };
+        try {
+          return await runGenerationAttempt({ ...request, attemptNumber: attempt }, {
+            kind: 'image', provider: this.provider, model: 'codex-image-gen',
+            operation: task, attemptNumber: attempt,
+          }, async () => {
+            const beforeTimestamp = Date.now() - 3000;
+            const codexOutput = await spawnWithStdin(
+              this.codexBin,
+              ['exec', '--sandbox', 'workspace-write', ...imageArgs],
+              codexPrompt,
+              { timeout: this.timeoutMs, onData: onProgress ? (chunk) => onProgress({ type: chunk.stream, data: chunk.data }) : undefined },
+            );
+            const imageFile = await findNewestImage(GENERATED_IMAGES_DIR, beforeTimestamp);
+            if (!imageFile) throw new Error(`Codex produced no image. Last output:\n${codexOutput.slice(0, 300)}`);
+            const bytes = await readFile(imageFile);
+            onProgress?.({ type: 'complete', imageFound: true });
+            return {
+              provider: 'codex', model: 'codex-image-gen', promptRef: null,
+              contentType: 'image/png', base64: bytes.toString('base64'), bytes,
+            };
+          });
+        } catch (error) {
+          if (attempt === maxAttempts) throw error;
         }
-
-        if (attempt < maxAttempts) continue;
-        throw new Error(`Codex did not generate an image after ${maxAttempts} attempts. Last output:\n${codexOutput.slice(0, 300)}`);
       }
     } finally {
       if (tmpDir) await rm(tmpDir, { recursive: true, force: true }).catch(() => {});

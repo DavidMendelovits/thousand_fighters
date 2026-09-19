@@ -1,5 +1,6 @@
 import { CharacterContentRepository } from '../repositories/CharacterContentRepository.js';
 import { createCmsStorage } from '../storage/createCmsStorage.js';
+import { withLineage } from '../storage/LineageStore.js';
 import { CharacterCreationPipeline } from '../pipeline/CharacterCreationPipeline.js';
 import { PipelineRegistry } from '../pipeline/PipelineRegistry.js';
 import { PipelinePort } from '../pipeline/ports.js';
@@ -16,7 +17,7 @@ import { createCmsTools } from '../tools/createCmsTools.js';
 import { createJobQueueAdapter } from '../pipeline/adapters/createJobQueueAdapter.js';
 
 export function createLocalCmsRuntime(options = {}) {
-  const storage = options.storage ?? createCmsStorage(options.storageOptions ?? {});
+  const storage = withLineage(options.storage ?? createCmsStorage(options.storageOptions ?? {}));
   const repository = options.repository ?? new CharacterContentRepository(storage);
   const registry = new PipelineRegistry({
     [PipelinePort.ASSET_STORAGE]: storage,

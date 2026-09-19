@@ -5,6 +5,19 @@ async function arena(page,p1='brine',p2='meridian'){
   await page.evaluate(()=>window.__stamptownDebug.training.reset(300,360));
 }
 const snapshot=page=>page.evaluate(()=>window.__stamptownDebug.snapshot());
+test('dash jump cancel respects four committed ticks before becoming airborne',async({page})=>{
+  await arena(page);
+  const step=async n=>page.evaluate(n=>window.__stamptownDebug.training.step(n),n);
+  await page.keyboard.down('d');await page.keyboard.down('Shift');await step(1);
+  await page.keyboard.up('Shift');
+  expect((await snapshot(page)).fighters[0].state).toBe('dash');
+  await page.keyboard.down('w');await step(3);
+  expect((await snapshot(page)).fighters[0].state).toBe('dash');
+  await step(1);
+  const fighter=(await snapshot(page)).fighters[0];
+  expect(fighter.state).toBe('airborne');expect(fighter.vy).toBeLessThan(0);
+  await page.keyboard.up('w');await page.keyboard.up('d');
+});
 test('keyboard hit confirms branch punch into kick into projectile as a true three-hit combo',async({page})=>{
   await arena(page);
   const step=async(n=1)=>page.evaluate(n=>window.__stamptownDebug.training.step(n),n);

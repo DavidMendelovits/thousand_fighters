@@ -1,15 +1,29 @@
 import { normalizeStorageKey } from '../storage/FileCmsStorage.js';
+import { withLineage, digest } from '../storage/LineageStore.js';
+import { snapshotAssets, listVersions, restoreVersion, restoreArtifact } from './characterHistory.js';
+import { randomUUID } from 'node:crypto';
 
 const CHARACTER_INDEX_KEY = 'characters/index.json';
 
 export class CharacterContentRepository {
   constructor(storage, options = {}) {
-    this.storage = storage;
+    this.storage = withLineage(storage);
     this.clock = options.clock ?? (() => new Date());
     this.recoverIndexFromDrafts = options.recoverIndexFromDrafts ?? storage.provider === 'file';
     this.id = 'file-character-repository';
     this.provider = 'file';
     this.capabilities = ['drafts', 'versions', 'assets', 'qa-reports'];
+    this.mutations = new Map();
+  }
+
+  // One writer per character in this CMS process; different characters remain
+  // parallel. Prevent a restore from racing a long-running generation install.
+  async withMutation(characterId, operation) {
+    const prior = this.mutations.get(characterId) ?? Promise.resolve();
+    const pending = prior.catch(() => {}).then(operation);
+    this.mutations.set(characterId, pending);
+    try { return await pending; }
+    finally { if (this.mutations.get(characterId) === pending) this.mutations.delete(characterId); }
   }
 
   async healthCheck() {
@@ -76,16 +90,25 @@ export class CharacterContentRepository {
 
   async createVersion(characterId, content, options = {}) {
     const now = this.clock().toISOString();
-    const versionId = options.versionId ?? now.replaceAll(':', '-').replaceAll('.', '-');
+    const versionId = options.versionId ?? `${now.replaceAll(':', '-').replaceAll('.', '-')}-${randomUUID()}`;
+    if (await this.storage.exists(this.versionKey(characterId, versionId))) throw new Error('Version already exists; immutable versions cannot be replaced.');
+    const { content: pinned, manifest } = await snapshotAssets(this, characterId, content, versionId);
+    const manifestKey = this.versionKey(characterId, versionId).replace(/content.json$/, 'assets.json');
+    await this.storage.putJson(manifestKey, manifest);
     const version = {
-      ...content,
+      ...pinned,
       id: characterId,
       lifecycle: 'version',
       versionId,
       createdAt: content.createdAt ?? now,
       updatedAt: now,
+      history: { schemaVersion: 1, label: options.label ?? options.metadata?.releaseId ?? 'Character checkpoint', manifestKey, assetCount: manifest.assets.length, parentVersionId: content.history?.parentVersionId ?? content.history?.restoredFromVersionId ?? null },
     };
     const key = this.versionKey(characterId, versionId);
+
+    const contentArtifact = await this.storage.lineage.artifact(Buffer.from(`${JSON.stringify(version, null, 2)}\n`), { contentType: 'application/json' });
+    const manifestArtifact = await this.storage.lineage.artifact(await this.storage.getBytes(manifestKey), { contentType: 'application/json' });
+    await this.storage.putJson(key.replace(/content.json$/, 'integrity.json'), { schemaVersion: 1, content: contentArtifact, manifest: manifestArtifact });
 
     await this.storage.putJson(key, version, {
       contentType: 'application/vnd.thousand-fighters.character+json',
@@ -102,19 +125,43 @@ export class CharacterContentRepository {
       updatedAt: now,
     });
 
+    await this.storage.lineage.event(characterId, { type: 'version-created', versionId, manifestKey, label: version.history.label, assetCount: manifest.assets.length });
+
     return version;
   }
 
+  async listVersions(characterId) { return listVersions(this, characterId); }
+  async restoreVersion(characterId, versionId) { return restoreVersion(this, characterId, versionId); }
+  async branchArtifact(characterId, eventId) { return restoreArtifact(this, characterId, eventId); }
+
   async getVersion(characterId, versionId) {
-    return this.storage.getJson(this.versionKey(characterId, versionId));
+    const key = this.versionKey(characterId, versionId);
+    const bytes = await this.storage.getBytes(key);
+    const sealKey = key.replace(/content.json$/, 'integrity.json');
+    if (await this.storage.exists(sealKey)) {
+      const seal = await this.storage.getJson(sealKey);
+      if (digest(bytes) !== seal.content.sha256) throw new Error('Version configuration integrity check failed.');
+      const version = JSON.parse(bytes);
+      if (digest(await this.storage.getBytes(version.history.manifestKey)) !== seal.manifest.sha256) throw new Error('Version manifest integrity check failed.');
+    }
+    return JSON.parse(bytes);
   }
 
   async listCharacterAssets(characterId) {
-    return this.storage.list(`characters/${this.safeCharacterId(characterId)}/assets`);
+    return this.storage.list(await this.workingAssetRoot(characterId));
+  }
+
+  async workingAssetRoot(characterId) {
+    const base = `characters/${this.safeCharacterId(characterId)}/assets`;
+    if (!(await this.storage.exists(this.draftKey(characterId)))) return base;
+    const root = (await this.getDraft(characterId)).history?.workingRoot;
+    if (!root) return base;
+    if (!root.startsWith(`${base}/revisions/`) || normalizeStorageKey(root) !== root) throw new Error('Invalid restored working root.');
+    return root;
   }
 
   async writeAsset(characterId, relativePath, bytes, metadata = {}) {
-    const key = this.assetKey(characterId, relativePath);
+    const key = `${await this.workingAssetRoot(characterId)}/${normalizeStorageKey(relativePath)}`;
     await this.storage.putBytes(key, bytes, metadata);
     return {
       key,

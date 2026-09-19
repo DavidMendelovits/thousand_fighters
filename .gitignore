@@ -14,8 +14,15 @@ stamptown-qlab/
 generated/
 artifacts/fast-image-benchmark/
 artifacts/animation-video/
+artifacts/workbench-video-jobs/
 artifacts/roster-oddities/
 tests/__pycache__/
 scripts/__pycache__/
 
 **copy
+mobile/.expo/
+mobile/ios/
+mobile/android/
+dist-fight/
+artifacts/mobile/
+mobile/dist-native-check/

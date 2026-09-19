@@ -13,6 +13,26 @@ resumable fal video generation, see [Animation clips](../docs/ANIMATION_CLIPS.md
 This path supports arbitrary frame counts, acrobatics, morphing, transformations,
 and independently inspectable effects without changing the legacy image provider.
 
+### Pruna video and watercolor revisions
+
+Set `PRUNA_API_KEY` in Doppler. The workbench row selector now includes **Video
+motion · Pruna**, using direct `p-video-2-pro` at 480p, Quality mode, five seconds,
+prompt upsampler off. Looping rows condition on the same first and last frame.
+The CLI also supports `--provider pruna --recipe speed|quality --resolution 480p|768p`.
+Every external generation attempt is timed through the existing benchmark recorder;
+source videos and resumable jobs remain private under ignored artifact directories.
+Pruna generates audio, which sprite extraction ignores.
+
+Set a draft's `artStyle` to `watercolor` for watercolor prompts and palette-preserving
+compilation. Default pixel-art behavior is unchanged. `videoGenerator: pruna-video`
+sets that draft's default row provider. Draft `assets.rootKey`, `manifestKey` and
+`frameDataKey` identify the active art revision; archived packs must never be chosen
+by suffix alone in the workbench or playtest. New revisions clear old motion approvals.
+
+Transport success is not animation acceptance: clipping, unwanted effects and
+facing/identity drift still require rejection or review. See
+[David watercolor experiment](../docs/DAVID_WATERCOLOR.md) for measured results.
+
 ## Provider Contract
 
 CMS storage is object-store shaped:
@@ -275,6 +295,25 @@ doppler run -- npm run cms:image:benchmark -- \
   --move punch \
   --prompt "A vaudeville boxer throws one crisp straight punch"
 ```
+
+Every workbench row generation also writes a durable benchmark JSON asset under
+`characters/<id>/assets/benchmarks/<move>/`. It records reference loading,
+provider wall time, provider-specific submission/queue/download stages, local
+composition, artifact persistence, frame timings, estimated cost, and total
+elapsed time. Frame extraction writes a companion record under
+`fighter-pack/benchmarks/extraction/<move>/`. The workbench activity log shows
+the same stage breakdown immediately after each operation, so normal authoring
+runs continuously build the benchmark dataset without a separate profiling mode.
+
+In addition, every external image/video request emits one immutable attempt
+record under `benchmarks/generation-attempts/YYYY-MM-DD/<attempt-id>-<observation>.json`.
+Attempts are recorded independently from final assets, including provider
+failures, contract-rejected output, and each retry of an individual frame. The
+record includes provider/model, operation, character/move/projectile/arena
+context, attempt and frame numbers, start/end/wall time, provider task id,
+stage timings, usage, estimated cost, and sanitized error details. A failed
+benchmark write is surfaced as a warning but never converts a successfully
+generated asset into a failed generation.
 
 The default comparison set is `minimax-image,bfl-klein,fal`. Gemini remains
 available through `--providers gemini-fast` but is intentionally excluded from

@@ -41,15 +41,20 @@ export async function loadTestbedConfig(characterId: string): Promise<TestbedCon
   const warnings: string[] = [];
   const id = encodeURIComponent(characterId);
 
-  const [{ config }, { assets }] = await Promise.all([
-    getJson<{ config: CharacterConfig }>(`/api/characters/${id}/runtime-config`),
+  const [{ config, assetRoot }, { assets }] = await Promise.all([
+    getJson<{ config: CharacterConfig; assetRoot?: string }>(`/api/characters/${id}/runtime-config`),
     getJson<{ assets: AssetRecord[] }>(`/api/characters/${id}/assets`),
   ]);
 
   if (!config?.sprite) throw new Error(`runtime-config for "${characterId}" has no sprite`);
 
   const byRelativePath = new Map<string, AssetRecord>();
-  for (const asset of assets ?? []) byRelativePath.set(asset.relativePath, asset);
+  for (const asset of assets ?? []) {
+    // Archived art revisions can have identical frame suffixes. Never let the
+    // first archived match replace the active outfit in a live preview.
+    if(assetRoot && /\/(sprites|sheets)\//.test(asset.key) && !asset.key.startsWith(`${assetRoot}/`))continue;
+    byRelativePath.set(asset.relativePath, asset);
+  }
 
   // Projectile sprites: convert inlines `projectile.animation` into spawn events.
   // A generated projectile's sprite is stored at `source/<animation>_projectile.png`
@@ -60,13 +65,15 @@ export async function loadTestbedConfig(characterId: string): Promise<TestbedCon
   for (const animation of collectProjectileAnimations(config)) {
     const asset = findProjectileAsset(byRelativePath, animation);
     if (asset) projectileUrls[animation] = asset.apiUrl;
-    else warnings.push(`projectile "${animation}": sprite not found in assets (renders as a box until generated).`);
+    else if (!config.moves.some(move => move.phases.some(phase => phase.events.some(({event}) => 'projectile' in event && event.projectile.animation === animation && event.projectile.visual)))) warnings.push(`projectile "${animation}": sprite not found in assets (renders as a box until generated).`);
   }
 
   const frameUrls: Partial<Record<SpriteSheetId, string[]>> = {};
   const frameCounts = config.sprite.frameCounts ?? {};
   let resolvedCount = 0;
-  for (const sheet of SHEET_IDS) {
+  // Authored characters may own rows beyond the generation registry (ink,
+  // cable, video_signature...). Preview the same frames the live game loads.
+  for (const sheet of new Set([...SHEET_IDS, ...Object.keys(frameCounts)])) {
     const count = frameCounts[sheet] ?? 0;
     if (!count) continue;
 
@@ -95,7 +102,7 @@ export async function loadTestbedConfig(characterId: string): Promise<TestbedCon
   }
 
   if (config.moves.length === 0) warnings.push('Draft has no moves defined.');
-  warnings.push('Hurtboxes are engine-default boxes derived from frame data (drafts do not author hurtboxes yet).');
+  warnings.push('Collision geometry comes from the same draft-to-runtime conversion used for publishing.');
 
   return { config, frameUrls, projectileUrls, warnings };
 }

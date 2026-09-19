@@ -3,10 +3,13 @@ import type { Move, MoveEvent } from '../schema/types';
 
 export class MoveExecutor {
   static start(fighter: Fighter, move: Move): void {
+    if((move.controlledActor??null)!==(fighter.controlledSummon?.actor??null))return;
     const cost=move.cost?.meter??0;
     if(fighter.meter<cost)return;
     fighter.meter-=cost;
-    fighter.inputBuffer.consumeButtons();
+    const inputFrame=move.trigger.cancelOnly?fighter.inputBuffer.matchCommand(move.trigger.sequence,move.trigger.window??15,move.trigger.activationFrames??6,move.trigger.directions):null;
+    if(inputFrame!==null)fighter.inputBuffer.consumeThrough(inputFrame);
+    else fighter.inputBuffer.consumeButtons();
     fighter.contactThisMove=false;
     fighter.hitThisMove=false;
     fighter.moveSerial=(fighter.moveSerial??0)+1;
@@ -51,6 +54,8 @@ export class MoveExecutor {
 
   static handleEvent(fighter: Fighter, event: MoveEvent): void {
     switch (event.type) {
+      case 'summon_control': fighter.summonControl(event); break;
+      case 'recall_summon': fighter.recallSummon(); break;
       case 'power_up': fighter.applyPowerUp(event.power); break;
       case 'transform': fighter.enterForm(event.formId); break;
       case 'revert_form': fighter.exitForm(); break;
@@ -186,8 +191,9 @@ export class MoveExecutor {
     if (!fighter.currentMove) return false;
     const phase = fighter.currentMove.phases[fighter.movePhaseIndex];
     if (!phase?.cancellable) return false;
-    if(fighter.currentMove.cancelOn==='hit'&&!fighter.hitThisMove)return false;
-    if(fighter.currentMove.cancelOn==='contact'&&!fighter.contactThisMove)return false;
+    const condition=newMove.trigger.cancelOn??fighter.currentMove.cancelOn;
+    if(condition==='hit'&&!fighter.hitThisMove)return false;
+    if(condition==='contact'&&!fighter.contactThisMove)return false;
     if(fighter.meter<(newMove.cost?.meter??0))return false;
 
     const cancels = fighter.currentMove.cancelInto ?? [];

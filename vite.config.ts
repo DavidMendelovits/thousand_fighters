@@ -14,6 +14,7 @@ export default defineConfig({
       '/styles.css': { target: CMS_ADMIN_TARGET, changeOrigin: true },
       '/app.js': { target: CMS_ADMIN_TARGET, changeOrigin: true },
       '/moveInspector.js': { target: CMS_ADMIN_TARGET, changeOrigin: true },
+      '/characterHistory.js': { target: CMS_ADMIN_TARGET, changeOrigin: true },
       '/api': {
         target: CMS_ADMIN_TARGET,
         changeOrigin: true,
@@ -24,6 +25,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: 'index.html',
+        fight: 'fight.html',
         testbed: 'testbed.html',
         gym: 'gym.html',
         animationLab: 'animation-lab.html',

@@ -51,12 +51,15 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
   return {
     id,
     displayName: draft.displayName ?? id,
+    ...(draft.poseStyle?{poseStyle:draft.poseStyle}:{}),
     ...(draft.rosterGroup?{rosterGroup:draft.rosterGroup}:{}),
     ...(draft.concept?{concept:draft.concept}:{}),
     ...(draft.pushboxWidth?{pushboxWidth:draft.pushboxWidth}:{}),
     stats: draft.combatStats ?? Object.fromEntries(['attack','defense','projectileAttack','projectileDefense','speed','weight','knockback','size'].filter(k=>typeof stats[k]==='number').map(k=>[k,stats[k]])),
     powerUps: draft.powerUps ?? [],
     forms: draft.forms ?? [],
+    ...(draft.actors?.length?{actors:structuredClone(draft.actors)}:{}),
+    comboRoutes: draft.comboRoutes ?? [],
     walkForwardSpeed: stats.walkForwardSpeed ?? 2.8,
     walkBackSpeed: stats.walkBackSpeed ?? 1.8,
     jumpVelocity: Math.abs(stats.jumpVelocity ?? 10.2),
@@ -86,6 +89,7 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
       knockdown: 'knockdown',
       getup: 'getup',
       dead: 'dead',
+      ...(draft.animations??{}),
     },
     moves: resolveProjectileEntities(
       applyComboChaining(
@@ -505,6 +509,7 @@ function buildSpriteConfig({ draft, frameData, manifest, scale }) {
     frameCounts,
     sheets,
     frames: frameData?.frames ?? undefined,
+    rowPlayback: sprite.rowPlayback ?? {},
     stateFrames: {
       idle: [0, 1],
       walk_forward: [1, 0],
@@ -671,12 +676,13 @@ function convertMove(draftMove, context = {}) {
       sequence: expandTriggerSequence(draftMove.trigger?.sequence ?? [], animation),
       window: draftMove.trigger?.window ?? 14,
       ...(draftMove.trigger?.cancelFrom ? {cancelFrom:draftMove.trigger.cancelFrom} : {}),
+      ...Object.fromEntries(['directions','activationFrames','cancelOnly','cancelOn'].filter(k=>draftMove.trigger?.[k]!==undefined).map(k=>[k,structuredClone(draftMove.trigger[k])])),
     },
     phases,
     cancelInto: draftMove.cancelInto ?? [],
     ...(draftMove.cancelOn ? {cancelOn:draftMove.cancelOn} : {}),
     ...(draftMove.cost ? {cost:draftMove.cost} : {}),
-    ...Object.fromEntries(['airOk','groundOk','endState','extension','description','inputLabel'].filter(k=>draftMove[k]!==undefined).map(k=>[k,structuredClone(draftMove[k])])),
+    ...Object.fromEntries(['airOk','groundOk','endState','extension','description','inputLabel','category','requiredAnimation','artStatus','controlledActor'].filter(k=>draftMove[k]!==undefined).map(k=>[k,structuredClone(draftMove[k])])),
   };
   if (Array.isArray(draftMove.visualTimeline) && draftMove.visualTimeline.length) {
     move.visualTimeline = draftMove.visualTimeline;
@@ -985,6 +991,7 @@ function convertEvent(draftEvent, moveId, phaseIndex, eventIndex) {
   if(draftEvent.type==='transform')return {type:'transform',formId:draftEvent.formId};
   if(draftEvent.type==='revert_form')return {type:'revert_form'};
   if(draftEvent.type==='power_up')return {type:'power_up',power:draftEvent.power};
+  if(draftEvent.type==='summon_control'||draftEvent.type==='recall_summon')return structuredClone(draftEvent);
 
   // Some drafts (older schema versions, lenient models) say `hitbox` instead
   // of `hitbox_active`. A hitbox payload makes the intent unambiguous.
@@ -998,6 +1005,7 @@ function convertEvent(draftEvent, moveId, phaseIndex, eventIndex) {
     const converted = {
       type: 'hitbox_active',
       id: hitboxId,
+      ...(draftEvent.actor?{actor:draftEvent.actor}:{}),
       hitbox: {
         x: hb.x,
         y: hb.y,

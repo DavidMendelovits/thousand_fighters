@@ -10,13 +10,28 @@ function lifetime(rule) {
 /** Reject invalid hidden forms before a CMS save/export can strand the runtime. */
 export function validateCombatRules(draft, parentId=draft.id) {
   for(const move of draft.moves??[]) {
+    if(move.controlledActor && !draft.actors?.some(a=>a.id===move.controlledActor&&a.summon))throw new Error('Controlled moves require a configured summon actor');
+    const trigger=move.trigger??{};
+    if(trigger.directions!==undefined&&(!Array.isArray(trigger.directions)||!trigger.directions.length||trigger.directions.some(d=>!['neutral','forward','back','up','down','up-forward','up-back','down-forward','down-back'].includes(d))))throw new Error('Invalid command directions');
+    if(trigger.activationFrames!==undefined&&(!Number.isInteger(trigger.activationFrames)||trigger.activationFrames<1||trigger.activationFrames>60))throw new Error('Invalid command activation window');
+    if(trigger.cancelOnly!==undefined&&typeof trigger.cancelOnly!=='boolean')throw new Error('cancelOnly must be boolean');
+    if(trigger.cancelOnly&&(!trigger.cancelFrom?.length||trigger.cancelFrom.some(id=>!draft.moves.some(m=>m.id===id))))throw new Error('String continuation requires valid predecessors');
+    if(trigger.cancelOn!==undefined&&!['hit','contact','always'].includes(trigger.cancelOn))throw new Error('Invalid edge cancel condition');
     if(move.cancelOn!==undefined&&!['hit','contact','always'].includes(move.cancelOn)) throw new Error('Invalid cancel condition');
     for(const phase of move.phases??[])for(const {event} of phase.events??[]) {
+      if(event?.type==='summon_control'){
+        if(!draft.actors?.some(a=>a.id===event.actor&&a.summon))throw new Error('Summon requires a configured actor');
+        if(!Number.isInteger(event.duration)||event.duration<1||event.duration>600||!Number.isFinite(event.speed)||event.speed<=0||event.speed>12||![event.offsetX,event.offsetY].every(n=>Number.isFinite(n)&&Math.abs(n)<=300))throw new Error('Invalid summon lifetime, speed or offset');
+      }
       const grab=event?.grab??event?.projectile?.grab;
+      if(grab?.actorGrip){
+        const g=grab.actorGrip;
+        if(event.actor!==g.actor || !draft.actors?.some(a=>a.id===g.actor&&a.summon) || !['socketX','socketY','lift','swing'].every(k=>Number.isFinite(g[k])&&Math.abs(g[k])<=200))throw new Error('Invalid summon grip socket or trajectory');
+      }
       if(grab){for(const k of ['holdDuration','pullFrames','releaseHitstun']){const v=grab[k];if(v!==undefined&&(!Number.isInteger(v)||v<0||v>180||(k==='holdDuration'&&v===0)))throw new Error('Invalid grab timer (0–180 ticks; hold must be positive)');}if((grab.pullFrames??0)>(grab.holdDuration??0))throw new Error('Grab pull cannot exceed hold duration');}
       if(event?.type!=='spawn_effect')continue;
       const fx=event.effect;
-      if(!fx?.id||!['spark','ink','thread','electric','shards','spores','pressure','bind'].includes(fx.kind)) throw new Error('Independent effect requires an id and supported kind');
+      if(!fx?.id||!['spark','ink','watercolor','thread','electric','shards','spores','pressure','bind'].includes(fx.kind)) throw new Error('Independent effect requires an id and supported kind');
       if(!Number.isInteger(fx.durationTicks)||fx.durationTicks<1||fx.durationTicks>180||!Number.isFinite(fx.radius)||fx.radius<1||fx.radius>250) throw new Error('Effect lifetime must be 1–180 ticks and radius 1–250');
       if(![fx.color,fx.accent].every(v=>Number.isInteger(v)&&v>=0&&v<=0xffffff)||![event.offsetX,event.offsetY].every(v=>Number.isFinite(v)&&Math.abs(v)<=500)) throw new Error('Invalid effect colors or socket coordinates');
     }

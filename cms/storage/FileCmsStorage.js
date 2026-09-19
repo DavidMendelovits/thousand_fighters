@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rename, rm, stat, writeFile, link, unlink, open } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -59,6 +59,18 @@ export class FileCmsStorage {
   async putBytes(key, bytes, metadata = {}) {
     await this.writeObject(key, bytes);
     await this.writeMetadata(key, metadata);
+  }
+
+  async putImmutable(key, bytes, metadata = {}) {
+    const destination = this.absolutePath(key);
+    await mkdir(path.dirname(destination), { recursive: true });
+    const temporary = `${destination}.${randomUUID()}.pending`;
+    try {
+      const file = await open(temporary, 'wx');
+      try { await file.writeFile(bytes); await file.sync(); } finally { await file.close(); }
+      await link(temporary, destination); // atomic publication; fails if destination exists
+      await this.writeMetadata(key, metadata);
+    } finally { await unlink(temporary).catch(error => { if (error.code !== 'ENOENT') throw error; }); }
   }
 
   async getMetadata(key) {

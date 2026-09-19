@@ -38,7 +38,18 @@ try{
   const press=async(keys,wait)=>{for(const k of keys)await page.keyboard.down(k);await frames(2);for(const k of [...keys].reverse())await page.keyboard.up(k);await frames(wait);};
   const walk=async(count)=>{await page.keyboard.down('d');await frames(count);await page.keyboard.up('d');};
   await mark('Live engine / Brine vs Madame Meridian');await frames(60);
-  await walk(58);await frames(12);
+  if(process.argv.includes('--movement')){
+    await mark('Dash into jump: new jump cancel after the four-tick commitment');
+    await page.keyboard.down('d');await page.keyboard.down('Shift');await frames(5);
+    await page.keyboard.up('Shift');await page.keyboard.up('d');
+    await press(['w'],65);
+    const states=await page.evaluate(()=>window.__capture.events.map(e=>e.fighters[0].state));
+    if(!states.includes('dash')||!states.includes('airborne'))throw new Error('Dash/jump demonstration did not execute');
+    await page.keyboard.down('d');
+    await page.waitForFunction(()=>{const f=window.__stamptownDebug.snapshot().fighters;return Math.abs(f[0].x-f[1].x)<230;},null,{timeout:10000});
+    await page.keyboard.up('d');
+  }else await walk(58);
+  await frames(12);
   await mark('Brine: video-derived tentacle capture, pull and release');await press(['h'],140);
   if(!probe){
     await mark('Meridian: ground-summoned binding cage');await press(['ArrowDown','l'],120);
