@@ -71,10 +71,12 @@ test('reference selection follows replacement formats and the restored working b
   assert.equal((await workbenchDetail(repository,id)).reference.key,`${root}/concept/concept_art.png`);
 });
 
-test('review clip preserves actual frame geometry and durations and passes shared parser',async t=>{
+test('review clip uses game cadence, retains extraction mode and preserves geometry',async t=>{
   const {repository,id,pack}=await fixture(t);
   const clip=parseAnimationClip(await workbenchReviewClip(repository,id,'idle'));
-  assert.equal(clip.totalTicks,5);assert.equal(clip.playback,'loop');
+  assert.equal(clip.totalTicks,12);assert.equal(clip.playback,'loop');
+  const extracted=parseAnimationClip(await workbenchReviewClip(repository,id,'idle',{mode:'source'}));
+  assert.equal(extracted.totalTicks,5);assert.equal(extracted.provenance.timingMode,'source');
   assert.equal(clip.layers[0].frames[1].x,20);assert.equal(clip.qa.status,'needs-review');
   assert.ok(decodeURIComponent(clip.layers[0].sheet).includes(pack));
   const invalid=Buffer.alloc(24);Buffer.from('89504e470d0a1a0a','hex').copy(invalid);invalid.writeUInt32BE(39,16);invalid.writeUInt32BE(30,20);
@@ -145,4 +147,21 @@ test('a replacement format supersedes rejected art in the actual generation requ
   assert.deepEqual(request.referenceAssetKeys,[`${base}.webp`]);
   assert.equal(request.referenceImages[0].contentType,'image/webp');
   assert.equal(Buffer.from(request.referenceImages[0].base64,'base64').toString(),'replacement');
+});
+
+test('saved row corrections reach the image provider request without triggering generation on review',async t=>{
+  const {repository,id}=await fixture(t);
+  const draft=await repository.getDraft(id);
+  await repository.saveDraft(id,{...draft,motionRows:{idle:{review:{decision:'changes-requested',notes:'Keep exactly two hands and keep the needle pinched.'}}}});
+  let request;
+  const pipeline=new CharacterCreationPipeline({resolve(port){
+    if(port===PipelinePort.CHARACTER_REPOSITORY)return repository;
+    if(port===PipelinePort.ASSET_STORAGE)return repository.storage;
+    if(port===PipelinePort.IMAGE_GENERATOR)return {generateImage(input){request=input;throw new Error('captured mock request');}};
+    throw new Error(port);
+  }});
+  assert.equal(request,undefined);
+  await assert.rejects(pipeline.generateSpriteSheet({characterId:id,prompt:'Floating paint hands at rest.',moveId:'idle'}),/captured mock request/);
+  assert.ok(request.prompt.startsWith('Floating paint hands at rest.'));
+  assert.ok(request.prompt.includes('Keep exactly two hands and keep the needle pinched.'));
 });

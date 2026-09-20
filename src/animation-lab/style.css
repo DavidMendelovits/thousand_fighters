@@ -22,4 +22,12 @@ dialog{color:#eeeae2;border:1px solid #55594d;background:#202226;max-width:510px
 .motion-embedded .transport { flex-wrap:wrap; }
 .motion-embedded .timeline-caption { flex-wrap:wrap; gap:6px; }
 .motion-embedded .viewer,.motion-embedded .viewer-header { min-width:0; }
-@media(max-width:550px) { .motion-embedded main { padding:6px; } .motion-embedded .inspector { grid-template-columns:1fr; } .motion-embedded .stage { height:260px; min-height:220px; } }
+@media(max-width:550px) {
+  .motion-embedded main { padding:6px; }
+  .motion-embedded .inspector { grid-template-columns:1fr; }
+  .motion-embedded .stage { height:260px; min-height:220px; }
+  .motion-embedded .stage-toolbar { height:auto; min-height:44px; flex-wrap:wrap; gap:8px; padding-block:8px; }
+  .motion-embedded .stage-tool-label { display:none; }
+  .motion-embedded .event-label { display:none; }
+  .motion-embedded .event-marker { min-width:16px; }
+}

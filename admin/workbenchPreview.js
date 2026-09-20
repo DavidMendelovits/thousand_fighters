@@ -16,6 +16,7 @@ export function renderPreview(detail) {
   const rows = (detail?.rows ?? []).filter(row => row.clipUrl && row.available === row.frameCount);
   return `<section class="workbench-preview" id="workbench-preview"><header class="concept-section-header"><div><span class="eyebrow">Current draft · shared Animation Lab viewer</span><h3>Motion & playtest</h3></div></header>
     ${rows.length ? `<div class="preview-toolbar"><label>Animation<select data-preview-row aria-label="Preview animation">${rows.map(row => `<option value="${esc(row.row)}" ${row.row === 'idle' ? 'selected' : ''}>${esc(row.row.replaceAll('_',' '))} · ${row.frameCount} poses · ${esc(row.review)}</option>`).join('')}</select></label><button type="button" data-preview-motion>Review motion</button><button type="button" data-preview-testbed>Play current draft</button><button type="button" data-preview-close hidden>Close preview</button></div><p class="move-note">Frame stepping, timing, zoom, background and anchors use the Motion review viewer. Playtest uses this draft, not an older published copy.</p>` : `<p class="preview-empty">${detail?.frameCount ? 'Extracted sprites exist, but no complete sheet is available for the timeline. Re-extract a row or open Playtest.' : 'No extracted animations yet. This is an unfinished draft—not a playable fighter.'}</p>${detail?.frameCount ? '<button type="button" data-preview-testbed>Play current draft</button>' : ''}`}
+    ${rows.length?'<div class="preview-timing"><label>Timing<select data-preview-timing aria-label="Preview timing"><option value="game">Game timing</option><option value="source">All extracted poses</option></select></label><label data-preview-move-label hidden>Move variant<select data-preview-move aria-label="Preview move variant"></select></label><span>Game timing includes authored phases. Contact, hitstop and held grabs still need a playtest.</span></div>':''}
     <iframe data-workbench-preview title="Current character motion preview" hidden allow="autoplay"></iframe><p data-preview-status role="status"></p>
   </section>`;
 }
@@ -24,12 +25,23 @@ export function mountPreview({ host, detail, gameBase }) {
   const frame = host.querySelector('[data-workbench-preview]');
   const status = host.querySelector('[data-preview-status]');
   const close = host.querySelector('[data-preview-close]');
+  const moveSelect=host.querySelector('[data-preview-move]');
+  let lastRow;
   function open(kind) {
     const row = host.querySelector('[data-preview-row]')?.value;
     const entry = detail.rows.find(item => item.row === row);
     if (kind === 'motion' && !entry?.clipUrl) return;
     const url = new URL(kind === 'motion' ? '/animation-lab.html' : '/testbed.html', gameBase);
-    if (kind === 'motion') { url.searchParams.set('embed', '1'); url.searchParams.set('clip', entry.clipUrl); }
+    if (kind === 'motion') {
+      if(lastRow!==row){
+        moveSelect.innerHTML=(entry.moves??[]).map(move=>`<option value="${esc(move.id)}">${esc(move.name)}</option>`).join('');
+        host.querySelector('[data-preview-move-label]').hidden=(entry.moves?.length??0)<2;lastRow=row;
+      }
+      const clip=new URL(entry.clipUrl,gameBase);
+      clip.searchParams.set('timing',host.querySelector('[data-preview-timing]').value);
+      if(moveSelect.value)clip.searchParams.set('move',moveSelect.value);
+      url.searchParams.set('embed', '1'); url.searchParams.set('clip', clip.pathname+clip.search);
+    }
     else url.searchParams.set('id', detail.id);
     frame.src = url.href; frame.hidden = false; if (close) close.hidden = false;
     status.textContent = kind === 'motion' ? `Reviewing ${row.replaceAll('_', ' ')} from this draft.` : 'Live testbed · keyboard and touch controls · draft data';
@@ -37,6 +49,7 @@ export function mountPreview({ host, detail, gameBase }) {
   }
   host.querySelector('[data-preview-motion]')?.addEventListener('click', () => open('motion'));
   host.querySelector('[data-preview-row]')?.addEventListener('change', () => { if (!frame.hidden) open('motion'); });
+  for(const selector of ['[data-preview-timing]','[data-preview-move]'])host.querySelector(selector)?.addEventListener('change',()=>open('motion'));
   host.querySelector('[data-preview-testbed]')?.addEventListener('click', () => open('testbed'));
   close?.addEventListener('click', () => { frame.removeAttribute('src'); frame.hidden = true; close.hidden = true; status.textContent = 'Preview closed.'; });
   return { open };

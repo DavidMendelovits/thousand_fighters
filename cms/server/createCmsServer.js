@@ -150,7 +150,7 @@ async function handleApiRequest({ request, response, url, runtime }) {
   }
   const reviewClipMatch = url.pathname.match(/^\/api\/characters\/([^/]+)\/review-clip\/([^/]+)$/);
   if (request.method === 'GET' && reviewClipMatch) {
-    sendJson(response, await workbenchReviewClip(runtime.repository, segment(decodeURIComponent(reviewClipMatch[1])), segment(decodeURIComponent(reviewClipMatch[2]))));
+    sendJson(response, await workbenchReviewClip(runtime.repository, segment(decodeURIComponent(reviewClipMatch[1])), segment(decodeURIComponent(reviewClipMatch[2])),{mode:url.searchParams.get('timing')??'game',moveId:url.searchParams.get('move')??undefined}));
     return;
   }
 

@@ -18,10 +18,12 @@ export async function publishReadiness(repository, characterId) {
     const report = draft.motionRows?.[row];
     const clipped=frameData.frames?.[row]?.some(frame=>frame.sourceClipped);
     rows.push({row,...fingerprint,status:clipped?'rejected':motionReviewStatus(report,fingerprint.fingerprint,fingerprint.missing),frameCount:frameData.frames?.[row]?.length ?? 0,
+      canRequestChanges:!!fingerprint.fingerprint&&!fingerprint.missing.length,
       canReview:!!fingerprint.fingerprint && !fingerprint.missing.length && (frameData.frames?.[row]?.length??0)>=8 && report?.uniqueFrames >= 8 && !report?.clippedFrames?.length && !clipped,
       notes:report?.review?.notes ?? ''});
   }
   const pending = rows.filter(row => row.status !== 'approved');
+  if(rows.some(row=>row.status==='changes-requested'))check('visual-changes','blocked','A current motion review requests changes. Revise and review those rows before publishing.');
   check('motion',pending.length ? strict ? 'blocked' : 'warning' : 'pass',pending.length ? `${pending.length} of ${rows.length} required rows need generation or a current visual review.` : `All ${rows.length} required rows have current, version-bound reviews.`);
   try {assertMotionCoverage(draft);} catch (error) {if(!error.message.startsWith('Incomplete motion pack:'))check('coverage','blocked',error.message);}
   const qa = await repository.getLatestQaReport(characterId);

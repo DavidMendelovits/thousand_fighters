@@ -5,6 +5,7 @@ import { assetApiUrl } from '../assets/uploadCharacterAsset.js';
 import { planAnimations } from '../pipeline/animationPlan.js';
 import { currentConceptAssetKey } from './referenceArt.js';
 import {loadReviewContext,motionFingerprint,motionReviewStatus} from '../pipeline/reviewFingerprint.js';
+import {reviewPlayback} from './reviewPlayback.js';
 
 const publicRoot = fileURLToPath(new URL('../../public/', import.meta.url));
 const pngSignature = Buffer.from('89504e470d0a1a0a', 'hex');
@@ -22,6 +23,7 @@ export async function workbenchData(repository, characterId) {
   const active = keys.filter(key => key.startsWith(`${root}/`));
   const rows = Object.entries(frames).map(([row, list]) => ({
     row, frameCount: list.length,
+    moves:(draft.moves??[]).filter(move=>move.animation===row).map(move=>({id:move.id,name:move.name??move.id})),
     available: list.filter(frame => frame.file && active.includes(`${root}/${frame.file}`)).length,
     review: draft.motionRows?.[row]?.status === 'approved' ? 'review recorded · verify version' : draft.motionRows?.[row]?.status ?? 'unreviewed',
     clipUrl: active.includes(`${root}/sheets/${row}.png`) ? `/api/characters/${encodeURIComponent(characterId)}/review-clip/${encodeURIComponent(row)}` : null,
@@ -87,7 +89,7 @@ export async function updateWorkbench(repository, characterId, input) {
 
 /** Adapt the current CMS sheet to the existing Animation Lab, without generating
  * anything or silently treating a published/archived pack as the current draft. */
-export async function workbenchReviewClip(repository, characterId, row) {
+export async function workbenchReviewClip(repository, characterId, row, options={}) {
   segment(row);
   const { draft, frames, root } = await workbenchData(repository, characterId);
   const source = frames[row];
@@ -106,9 +108,10 @@ export async function workbenchReviewClip(repository, characterId, row) {
   }
   const report = draft.motionRows?.[row];
   const actor = draft.actors?.find(actor => actor.idleAnimation === row || draft.moves?.some(move => move.animation === row && move.controlledActor === actor.id));
-  const playback = draft.sprite?.rowPlayback?.[row];
-  const durations = source.map(frame => Math.max(1, Math.round(frame.durationFrames ?? playback?.ticksPerFrame ?? 6)));
+  const timing = reviewPlayback(draft,row,source,options);
+  const durations = timing.sequence.map(pose=>pose.duration);
   const warnings = ['Preview uses the current CMS draft; it is not a published release.'];
+  warnings.push(...timing.warnings);
   if (!report) warnings.push('No video provenance recorded for this row. These may be image keyposes.');
   if (report?.clippedFrames?.length) warnings.push(`Source clipping reported in ${report.clippedFrames.length} frames.`);
   const reviewContext=await loadReviewContext(repository,characterId,draft);
@@ -116,17 +119,18 @@ export async function workbenchReviewClip(repository, characterId, row) {
   const reviewStatus=motionReviewStatus(report,current.fingerprint,current.missing);
   const reviewed=reviewStatus==='approved';
   if(report?.status==='approved'&&!reviewed)warnings.push(`Recorded review is ${reviewStatus}; inspect this version again before publishing.`);
+  if(reviewStatus==='changes-requested')warnings.push(`Changes requested: ${report.review.notes}`);
   const cellAnchor = frame => ({ x: Math.floor((width-frame.width)/2)+(frame.anchor?.x??frame.width/2), y: height-frame.height+(frame.anchor?.y??frame.height) });
   const anchor = cellAnchor(source[0]);
   return {
     schemaVersion: 1, id: `${characterId}_${row}`, displayName: `${draft.displayName ?? characterId} · ${row.replaceAll('_', ' ')}`,
     kind: 'cms-draft', tickRate: 60, totalTicks: durations.reduce((a, b) => a + b, 0),
-    playback: playback?.loop ? 'loop' : 'once', canvas: { width, height }, anchor, rootMode: 'in-place',
-    layers: [{ id: actor?.id ?? 'body', role: actor ? 'summon' : 'body', z: 0, blend: 'normal', sheet: `${assetApiUrl(sheetKey)}?v=${digest(bytes)}`, frames: source.map((frame, index) => ({
+    playback: timing.loop ? 'loop' : 'once', canvas: { width, height }, anchor, rootMode: 'in-place',
+    layers: [{ id: actor?.id ?? 'body', role: actor ? 'summon' : 'body', z: 0, blend: 'normal', sheet: `${assetApiUrl(sheetKey)}?v=${digest(bytes)}`, frames: timing.sequence.map(({index,duration}) => { const frame=source[index];return ({
       x: index % columns * width, y: Math.floor(index / columns) * height, width, height,
-      durationTicks: durations[index], sourceFrame: frame.sourceFrame ?? index, sourceTimeMs: frame.sourceTimeMs ?? 0, rootMotion: { x: 0, y: 0 }, offset: { x:anchor.x-cellAnchor(frame).x, y:anchor.y-cellAnchor(frame).y }, sockets: frame.sockets ?? {},
-    })) }], events: [], intent: { topologyChanges: draft.artStyle === 'paint', scaleChanges: draft.artStyle === 'paint', paletteChanges: false },
-    qa: { status: report?.clippedFrames?.length ? 'rejected' : reviewed ? 'approved' : 'needs-review', warnings, checks: [] },
-    provenance: { method: report?.source ? 'generated-video' : 'cms-extracted-frames', description: 'Current draft sheet and authored frame timing, loaded directly from the workbench.', characterId, row, sourceTimingKnown: source.every(frame => Number.isFinite(frame.sourceTimeMs)), sourceSha256: report?.sourceSha256 ?? null },
+      durationTicks: duration, sourceFrame: frame.sourceFrame ?? index, sourceTimeMs: frame.sourceTimeMs ?? 0, rootMotion: { x: 0, y: 0 }, offset: { x:anchor.x-cellAnchor(frame).x, y:anchor.y-cellAnchor(frame).y }, sockets: frame.sockets ?? {},
+    });}) }], events: timing.events, intent: { topologyChanges: draft.artStyle === 'paint', scaleChanges: draft.artStyle === 'paint', paletteChanges: false },
+    qa: { status: report?.clippedFrames?.length||reviewStatus==='changes-requested' ? 'rejected' : reviewed ? 'approved' : 'needs-review', warnings, checks: [] },
+    provenance: { method: report?.source ? 'generated-video' : 'cms-extracted-frames', description: timing.description, timingMode:timing.mode,moveId:timing.moveId, characterId, row, sourceTimingKnown: source.every(frame => Number.isFinite(frame.sourceTimeMs)), sourceSha256: report?.sourceSha256 ?? null },
   };
 }

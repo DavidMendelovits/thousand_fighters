@@ -4,7 +4,7 @@ import { build as buildAssetsIndex } from '../../scripts/build_assets_index.mjs'
 import { SHEET_IDS } from '../../shared/animationRows.js';
 import {validateCombatRules} from '../export/validateCombatRules.js';
 import {importPublishedCharacter} from '../import/importPublishedCharacter.js';
-import {approveMotionRow} from '../pipeline/motionRowArtifacts.js';
+import {approveMotionRow,requestMotionChanges} from '../pipeline/motionRowArtifacts.js';
 import {publishReadiness} from '../authoring/publishReadiness.js';
 import {defineSummon,addSummonMove,defineForm,installForm} from '../authoring/characterComponents.js';
 import {getAnimationPlan} from '../pipeline/animationPlan.js';
@@ -170,6 +170,11 @@ export function createCmsTools({ pipeline, repository, registry }) {
       description: 'Approve a compiled motion row after inspecting its animation and loop/contact timing. Requires explicit review notes; does not generate or publish.',
       inputSchema: objectSchema({characterId:stringSchema('Character id'),action:stringSchema('Reviewed animation row'),notes:stringSchema('What was visually checked'),expectedFingerprint:stringSchema('Exact row fingerprint from get_publish_readiness, after inspecting that version')},['characterId','action','notes','expectedFingerprint']),
       execute: async input => ({row:await approveMotionRow({repository,...input})}),
+    },
+    {
+      name:'request_motion_changes',description:'Record visual problems against the exact inspected motion version. Keeps assets and history; does not generate or publish.',
+      inputSchema:objectSchema({characterId:stringSchema('Character id'),action:stringSchema('Reviewed animation row'),notes:stringSchema('Specific visual issues and requested corrections'),expectedFingerprint:stringSchema('Current inspected row fingerprint')},['characterId','action','notes','expectedFingerprint']),
+      execute:async input=>({row:await requestMotionChanges({repository,...input})}),
     },
     {
       name:'get_publish_readiness',description:'Read current version-bound motion review, reference and QA blockers. No generation or writes.',

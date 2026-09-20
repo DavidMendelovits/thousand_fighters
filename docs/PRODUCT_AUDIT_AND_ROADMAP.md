@@ -4,6 +4,16 @@ Audit date: September 19, 2026. Scope: current local working tree, including unc
 
 ## Executive assessment
 
+### September 19 execution update — trustworthy motion review and correction loop
+
+The current-draft viewer now samples the same visual-frame function and converted move phases as the runtime. Game timing includes variant selection and phase/contact markers; **All extracted poses** remains available to inspect poses combat skips. It is explicitly not original source-video speed. Held grabs, hitstop, airborne travel and interruptions still require a real playtest. Fit artwork uses stable bounds across all poses, ignoring transparent padding without editing the sprites.
+
+Visual reviewers can now request changes against an exact asset fingerprint, not just approve. Current requested changes block publication, survive reload, appear in the animation planner, and are appended to subsequent image/video generation prompts. Submission remains explicit; saving feedback does not buy a retry. The review fingerprint contract is version 2 so approvals made against the earlier preview interpretation require reinspection. Owned dash/legacy summon-idle rows are also covered; Palimpsest has **20 required rows**, not 18.
+
+An actual browser review of Palimpsest's `hands_pinch` was saved: the needle detaches from the fingers and an extra hand appears during the turn. Requested correction: exactly two hands, continuous needle grip, stable empty opponent space, and visible closure/lift/release. Before/after lineage comparison confirms **546 assets unchanged**; only motion review metadata changed. There are **0/20 current approvals**. This does not mean all 20 rows are bad, and the detected hands defects have **not** been repaired.
+
+Verification and the 41.9-second browser recording are in [motion-review evidence](../artifacts/motion-review/README.md). No generation, publication or new gameplay capture ran. ART-06/CREATE-06 advanced; ART-02, paired-grab acceptance and CREATE-07 remain open. Next: revise the rejected hands row through the workbench, inspect the new output and paired interaction, then complete the new-fighter acceptance journey. The recorded review save took about 20.7 seconds for its existing before/after checkpoints; checkpoint latency is a further pipeline optimization target.
+
 ### September 19 execution update — version-bound review and release checklist
 
 The pending project baseline was committed first as `becf1d5` (not pushed). The workbench now has a read-only publish-readiness checklist and motion review queue, using the shared Animation Lab viewer. An approval pins the actual row/reference pixels, frame metadata, relevant moves and playback settings. Replacing those inputs invalidates the review; older approvals remain explicitly unversioned until inspected again. The animation planner and preview use the same current-version check.

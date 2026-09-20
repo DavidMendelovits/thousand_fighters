@@ -4,7 +4,7 @@ import {loadReviewContext,motionFingerprint} from './reviewFingerprint.js';
 
 const locks=new Map();
 export const REQUIRED_MOTION_STATES=['idle','walk_forward','walk_back','jump','landing','crouch','block','hurt','getup'];
-export function requiredMotionRows(draft){return [...new Set([...REQUIRED_MOTION_STATES,...(draft.actors??[]).flatMap(a=>a.idleAnimation?[a.idleAnimation]:[]),...(draft.moves??[]).flatMap(m=>[m.animation,...(m.requiredAnimation?[m.requiredAnimation]:[])])])];}
+export function requiredMotionRows(draft){return [...new Set([...REQUIRED_MOTION_STATES,...['dash_forward','dash_back','hands_idle'].filter(row=>draft.sprite?.frames?.[row]?.length||draft.motionRows?.[row]),...(draft.actors??[]).flatMap(a=>a.idleAnimation?[a.idleAnimation]:[]),...(draft.moves??[]).flatMap(m=>[m.animation,...(m.requiredAnimation?[m.requiredAnimation]:[])])])];}
 
 /** Retiming changes visual playback only. Collision/event ticks remain authored. */
 export function retimeMotion(move, count, contact=Math.floor(count*.45), recoveryFrame) {
@@ -75,6 +75,17 @@ export async function approveMotionRow({repository,characterId,action,notes,expe
   if(!expectedFingerprint||expectedFingerprint!==fingerprint)throw Object.assign(new Error('Motion changed or review version is missing. Refresh the release check, inspect the current row, then approve.'),{statusCode:409});
   if(context.conceptHash&&draft.referenceReview?.sha256===context.conceptHash&&draft.referenceReview.status==='rejected')throw new Error('The current identity reference is rejected. Replace it before approving motion.');
   row.status='approved';row.review={notes:notes.trim().slice(0,4000),at:new Date().toISOString(),fingerprint,schemaVersion:1};
+  await repository.saveDraft(characterId,draft,{provider:'motion-review'});return row;
+}
+export async function requestMotionChanges({repository,characterId,action,notes,expectedFingerprint}){
+  if(!notes?.trim())throw new Error('Describe what needs to change before saving.');
+  const draft=await repository.getDraft(characterId);
+  const {fingerprint,missing}=await motionFingerprint(await loadReviewContext(repository,characterId,draft),action);
+  if(!fingerprint||missing.length)throw new Error('Load a complete current row before reviewing it.');
+  if(!expectedFingerprint||expectedFingerprint!==fingerprint)throw Object.assign(new Error('Motion changed. Refresh and inspect the current version before saving feedback.'),{statusCode:409});
+  draft.motionRows??={};
+  const row={...draft.motionRows[action],status:'changes-requested',review:{decision:'changes-requested',notes:notes.trim().slice(0,4000),at:new Date().toISOString(),fingerprint,schemaVersion:1}};
+  draft.motionRows[action]=row;
   await repository.saveDraft(characterId,draft,{provider:'motion-review'});return row;
 }
 export function assertMotionCoverage(draft){

@@ -51,7 +51,7 @@ export async function motionFingerprint(context, action) {
   const files = [...new Set([`sheets/${action}.png`, ...frames.map(f => f.file), ...referenceFrames.map(f => f.file)])];
   const assets = await Promise.all(files.map(async file => ({file:relativeFile(file),sha256:await hash(file)})));
   const missing = assets.filter(asset => !asset.sha256).map(asset => asset.file);
-  const fingerprint = digest(Buffer.from(stableJson({schema:1, action, frames, assets, conceptHash,
+  const fingerprint = digest(Buffer.from(stableJson({schema:2, action, frames, assets, conceptHash,
     referenceFrames, artStyle:draft.artStyle, scale:{relativeHeight:draft.sprite?.relativeHeight,scaleAdjust:draft.sprite?.scaleAdjust},
     playback:draft.sprite?.rowPlayback?.[action], actor,
     moves:(draft.moves ?? []).filter(move => move.animation === action || move.requiredAnimation === action), overrides:draft.overrides,
@@ -63,6 +63,7 @@ export async function motionFingerprint(context, action) {
 export function motionReviewStatus(report, fingerprint, missing = []) {
   if (missing.length) return 'missing-assets';
   if (report?.clippedFrames?.length) return 'rejected';
+  if (report?.review?.decision === 'changes-requested') return report.review.fingerprint === fingerprint ? 'changes-requested' : 'stale-review';
   if (!report || report.uniqueFrames < 8) return 'needs-motion';
   if (report.status !== 'approved') return 'needs-review';
   if (!report.review?.fingerprint) return 'unversioned-review';

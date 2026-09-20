@@ -682,7 +682,7 @@ export function generateDefaultHurtboxes(frameData, scale = 1) {
  * @param {{ frameData?: object|null, scale?: number }} [context]
  * @returns {object} Runtime Move object
  */
-function convertMove(draftMove, context = {}) {
+export function convertMove(draftMove, context = {}) {
   const moveId = draftMove.id;
   const phases = (draftMove.phases ?? []).map((draftPhase, phaseIndex) =>
     convertPhase(draftPhase, phaseIndex, moveId, draftMove.phases)

@@ -940,19 +940,20 @@ async function beginMotionReview(action){
     elements.characterWorkbench.querySelector(`[data-move-card="${CSS.escape(action)}"]`)?.scrollIntoView({block:'start'});
     return;
   }
-  select.value=action;state.preview.open('motion');
+  select.value=action;elements.characterWorkbench.querySelector('[data-preview-timing]').value='game';state.preview.open('motion');
   const panel=document.getElementById('motion-review');
   panel.hidden=false;panel.innerHTML=renderMotionReview(row);
   document.getElementById('workbench-preview').scrollIntoView({block:'start'});
   panel.querySelector('form').addEventListener('submit',async event=>{
-    event.preventDefault();const form=event.currentTarget,data=new FormData(form),status=form.querySelector('[role=status]'),button=form.querySelector('button');
-    if(!data.get('confirmed'))return;
-    const characterId=currentCharacterId();button.disabled=true;status.textContent='Saving version-bound review…';
+    event.preventDefault();const form=event.currentTarget,data=new FormData(form),status=form.querySelector('[role=status]'),changes=event.submitter?.value==='changes';
+    if(!data.get('confirmed')){status.textContent='Confirm that you inspected this version before saving a review.';return;}
+    const buttons=[...form.querySelectorAll('button')],disabled=buttons.map(button=>button.disabled);
+    const characterId=currentCharacterId();buttons.forEach(button=>button.disabled=true);status.textContent='Saving version-bound review…';
     try{
-      await invokeTool('approve_motion_row',{characterId,action:data.get('action'),notes:data.get('notes'),expectedFingerprint:data.get('fingerprint')});
+      await invokeTool(changes?'request_motion_changes':'approve_motion_row',{characterId,action:data.get('action'),notes:data.get('notes'),expectedFingerprint:data.get('fingerprint')});
       await selectCharacter(characterId,{silent:true});
       document.getElementById('publish-readiness')?.scrollIntoView({block:'start'});
-    }catch(error){status.textContent=error.message;button.disabled=false;}
+    }catch(error){status.textContent=error.message;buttons.forEach((button,index)=>button.disabled=disabled[index]);}
   });
 }
 
@@ -1921,11 +1922,12 @@ function renderMoveCardTabs(group) {
   const originalSheet=state.currentAssets.find(a=>a.relativePath===`source/${state.currentCharacterId}_${group.id}_sheet.png`);
   const sampling=motionAsset?`<label>Video key moments (six seconds, comma-separated)<input data-sample-times="${escapeHtml(group.id)}" value="${escapeHtml((originalSheet?.metadata?.videoSampleTimes??[0,.84,1.68,2.52,3.36,4.2]).join(', '))}"></label><button data-resample="${escapeHtml(group.id)}" type="button">Resample saved video · no generation cost</button><p>First moment must be 0 to preserve reference scale. Choose full, unobstructed poses; never approve a clipped frame. Original MP4 is kept. Run QA afterward.</p>`:'';
   const promptPane = `
+    ${state.currentDraftData?.motionRows?.[group.id]?.review?.decision==='changes-requested'?`<p class="move-note"><strong>Saved review corrections — included in the next image or video attempt:</strong> ${escapeHtml(state.currentDraftData.motionRows[group.id].review.notes)}</p>`:''}
     <textarea class="move-prompt-input" data-move-prompt="${escapeHtml(group.id)}" rows="4" spellcheck="false">${escapeHtml(rowPromptFor(group.id))}</textarea>
     <div class="move-prompt-actions">
       <button type="button" class="move-prompt-reset" data-move-prompt-reset="${escapeHtml(group.id)}" title="Replace with the suggested per-move prompt (overrides the prompt the current sheet was generated with)">↺ Suggested prompt</button>
     </div>
-    <p class="move-note">Sent to the image generator on Generate/Regen. Defaults to the prompt the current sheet was generated with; <b>Suggested prompt</b> swaps in a fresh per-move default so two rows don't share one prompt. Edits stick until reload; the prompt actually used is saved with the sheet.</p>
+    <p class="move-note">Generate/Regen uses this action brief with the selected provider's motion recipe. Saved review corrections are always included for image and video attempts. <b>Suggested prompt</b> resets the per-move brief. Unsent edits last until reload; submitted requests retain their prompt in generation history.</p>
   `;
 
   return `

@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {FileCmsStorage} from '../cms/storage/FileCmsStorage.js';
 import {CharacterContentRepository} from '../cms/repositories/CharacterContentRepository.js';
-import {requiredMotionRows,approveMotionRow} from '../cms/pipeline/motionRowArtifacts.js';
+import {requiredMotionRows,approveMotionRow,requestMotionChanges} from '../cms/pipeline/motionRowArtifacts.js';
 import {loadReviewContext,motionFingerprint,packFingerprint} from '../cms/pipeline/reviewFingerprint.js';
 import {publishReadiness} from '../cms/authoring/publishReadiness.js';
 import {CharacterCreationPipeline} from '../cms/pipeline/CharacterCreationPipeline.js';
@@ -62,6 +62,21 @@ test('approval rejects a stale client fingerprint and leaves the current row una
 test('older approvals are not silently converted into versioned reviews',async t=>{
   const {repository,id}=await fixture(t),draft=await repository.getDraft(id);draft.motionRows.ribbon.status='approved';draft.motionRows.ribbon.review={notes:'historical'};await repository.saveDraft(id,draft);
   const report=await publishReadiness(repository,id);assert.equal(report.canPublish,false);assert.equal(report.rows.find(r=>r.row==='ribbon').status,'unversioned-review');
+});
+test('requested changes revoke approval, survive reload and stay tied to inspected bytes',async t=>{
+  const {repository,id,root}=await fixture(t);await ready(repository,id);
+  const {fingerprint}=await motionFingerprint(await loadReviewContext(repository,id),'ribbon');
+  await requestMotionChanges({repository,characterId:id,action:'ribbon',expectedFingerprint:fingerprint,notes:'Needle disconnects during opening; keep it attached to the upper hand.'});
+  const report=await publishReadiness(repository,id);
+  assert.equal(report.rows.find(row=>row.row==='ribbon').status,'changes-requested');assert.equal(report.canPublish,false);
+  assert.equal((await getAnimationPlan(repository,id)).scopes[0].jobs.find(job=>job.row==='ribbon').status,'rejected');
+  const draft=await repository.getDraft(id);draft.requireMotionCoverage=false;await repository.saveDraft(id,draft);
+  assert.equal((await publishReadiness(repository,id)).canPublish,false,'explicit current rejection also blocks legacy packs');
+  await repository.storage.putBytes(`${root}/sprites/ribbon/0.png`,Buffer.from('revised'));
+  assert.equal((await publishReadiness(repository,id)).rows.find(row=>row.row==='ribbon').status,'stale-review');
+  await assert.rejects(requestMotionChanges({repository,characterId:id,action:'ribbon',expectedFingerprint:fingerprint,notes:'old view'}),/Motion changed/);
+  await approve(repository,id,'ribbon');
+  assert.equal((await publishReadiness(repository,id)).rows.find(row=>row.row==='ribbon').status,'approved');
 });
 test('missing and clipped assets cannot be approved',async t=>{
   const {repository,id,root}=await fixture(t);

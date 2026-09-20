@@ -8,6 +8,7 @@ import { digest } from '../storage/LineageStore.js';
 import { currentConceptAssetKey } from '../authoring/referenceArt.js';
 import {assertPublishReadiness} from '../authoring/publishReadiness.js';
 import {loadReviewContext,packFingerprint} from './reviewFingerprint.js';
+import {withMotionReviewFeedback} from '../../shared/motionReviewFeedback.js';
 
 import { PipelinePort } from './ports.js';
 import { normalizeManifest } from './manifestSchema.js';
@@ -165,6 +166,7 @@ export class CharacterCreationPipeline {
     let characterDraft;
     try{characterDraft=await repository.getDraft(characterId);}
     catch(error){if(error.code!=='ENOENT')throw error;}
+    prompt=withMotionReviewFeedback(prompt,characterDraft,resolvedMoveId);
     const conceptKey = await currentConceptAssetKey(repository, characterId, storage);
     const referenceReview = characterDraft?.referenceReview;
     if (referenceReview?.status === 'rejected' && referenceReview.assetKey &&

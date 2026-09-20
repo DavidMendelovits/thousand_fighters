@@ -20,6 +20,7 @@ import type {
   CharacterForm,
 } from '../schema/types';
 import { MOVE_SHEET_IDS } from '../../shared/animationRows.js';
+import { moveVisualFrameAt } from '../../shared/moveVisualFrame.js';
 import { resolveStateSheet, stateRowFrame, isLoopingStateRow,timedStateRowFrame } from './animationRowPlayback';
 import { boxToWorld, type AABB } from '../util/aabb';
 import { interpolateHitboxGeometry } from './hitboxGeometry';
@@ -802,19 +803,7 @@ export class Fighter {
       move.phases.slice(0, this.movePhaseIndex).reduce((sum, phase) => sum + phase.frames, 0) + this.movePhaseFrame - frameDelay,
     );
     const frameCount = sprite?.frameCounts[move.animation as SpriteSheetId] ?? 4;
-    const maxFrame = Math.max(0, frameCount - 1);
-
-    if (move.visualTimeline?.length) {
-      let cursor = 0;
-      for (const visualFrame of move.visualTimeline) {
-        cursor += visualFrame.duration;
-        if (elapsed < cursor) return Phaser.Math.Clamp(visualFrame.frame, 0, maxFrame);
-      }
-      return Phaser.Math.Clamp(move.visualTimeline[move.visualTimeline.length - 1].frame, 0, maxFrame);
-    }
-
-    const totalFrames = move.phases.reduce((sum, phase) => sum + phase.frames, 0);
-    return Phaser.Math.Clamp(Math.floor((elapsed / Math.max(totalFrames, 1)) * frameCount), 0, maxFrame);
+    return moveVisualFrameAt(move, elapsed, frameCount);
   }
 
   setActiveHitbox(id: string, hitbox: Hitbox, actorId?: FighterActorId, keyframes?: HitboxKeyframe[]): void {

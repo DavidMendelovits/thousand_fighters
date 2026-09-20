@@ -12,7 +12,7 @@ export function planAnimations(draft,frameData={}) {
     const isReference=row==='base'||row===actor?.idleAnimation;
     const approved=report?.status==='approved'&&report.uniqueFrames>=8&&!report.clippedFrames?.length&&frames.length>=8;
     const referencePresent=(frameData.frames?.[reference]??draft.sprite?.frames?.[reference]??[]).length>0 || Boolean(actor?.sprite?.frames?.base?.length);
-    const status=approved?'approved':report?.clippedFrames?.length?'rejected':report?.status==='needs-visual-review'?'needs-review':row==='base'&&frames.length?'reference-ready':frames.length?'extracted':!isReference&&!referencePresent?'blocked':'missing';
+    const status=approved?'approved':report?.clippedFrames?.length||report?.status==='changes-requested'?'rejected':report?.status==='needs-visual-review'?'needs-review':row==='base'&&frames.length?'reference-ready':frames.length?'extracted':!isReference&&!referencePresent?'blocked':'missing';
     return {id:`${draft.id}:${actor?.id??'body'}:${row}`,characterId:draft.id,actorId:actor?.id??null,row,kind:isReference?'reference':'motion',status,frameCount:frames.length,
       dependencies:row===reference?[]:[reference],
       nextAction:approved?'Keep approved motion':status==='reference-ready'?'Reference ready':status==='needs-review'?'Inspect and approve':status==='blocked'?`Create ${reference} first`:frames.length?'Generate/review video motion':isReference?'Create isolated reference':'Generate video motion',
@@ -29,13 +29,13 @@ export async function getAnimationPlan(repository,characterId) {
     const plan=planAnimations(draft,frames);
     // The pure plan reads metadata only. Before showing a green approval in
     // the workbench, verify that it still describes the current asset bytes.
-    const reviewed=plan.jobs.filter(job=>job.status==='approved');
+    const reviewed=plan.jobs.filter(job=>job.status==='approved'||draft.motionRows?.[job.row]?.review?.decision==='changes-requested');
     if(reviewed.length){
       const context=await loadReviewContext(repository,draft.id,draft);
       for(const job of reviewed){
         const current=await motionFingerprint(context,job.row);
         const status=motionReviewStatus(draft.motionRows[job.row],current.fingerprint,current.missing);
-        if(status!=='approved'){job.status=status==='missing-assets'?'missing':status==='rejected'?'rejected':'needs-review';job.nextAction=status==='missing-assets'?'Re-extract missing assets':'Inspect the current version again';}
+        if(status!=='approved'){job.status=status==='missing-assets'?'missing':['rejected','changes-requested'].includes(status)?'rejected':'needs-review';job.nextAction=status==='missing-assets'?'Re-extract missing assets':status==='changes-requested'?'Revise from review notes':'Inspect the current version again';}
       }
       for(const key of Object.keys(plan.counts))plan.counts[key]=plan.jobs.filter(job=>job.status===key).length;
     }

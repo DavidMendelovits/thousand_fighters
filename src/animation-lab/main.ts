@@ -4,7 +4,7 @@ import {mountWorkspace} from './workspace';
 
 type GalleryEntry = { id: string; name: string; description: string; url: string; tags: string[] };
 type ClipBounds = { minX: number; minY: number; maxX: number; maxY: number };
-type LoadedClip = { clip: AnimationClip; url: string; images: Map<string, HTMLImageElement>; rootBounds: ClipBounds; poseBounds: ClipBounds };
+type LoadedClip = { clip: AnimationClip; url: string; images: Map<string, HTMLImageElement>; rootBounds: ClipBounds; poseBounds: ClipBounds; artBounds: ClipBounds; movingArtBounds: ClipBounds };
 const app = document.querySelector<HTMLDivElement>('#app')!;
 app.innerHTML = `
   <header class="masthead">
@@ -48,6 +48,8 @@ const playButton = $<HTMLButtonElement>('play');
 const rootToggle = $<HTMLInputElement>('root-motion');
 const anchorsToggle = $<HTMLInputElement>('show-anchors');
 const zoomSelect = $<HTMLSelectElement>('zoom');
+zoomSelect.insertAdjacentHTML('afterbegin','<option value="art">Fit artwork</option>');
+zoomSelect.value='art';
 const dialog = $<HTMLDialogElement>('open-dialog');
 let loaded: LoadedClip | null = null;
 let gallery: GalleryEntry[] = [];
@@ -110,6 +112,33 @@ function loadImage(url: string, signal: AbortSignal): Promise<HTMLImageElement> 
   });
 }
 
+/** Stable camera bounds across ALL poses: ignore transparent padding without
+ * cropping/repositioning the source art or pumping the zoom frame to frame. */
+function artworkBounds(clip:AnimationClip,images:Map<string,HTMLImageElement>,withRoot:boolean):ClipBounds {
+  const bounds={minX:Infinity,minY:Infinity,maxX:-Infinity,maxY:-Infinity};
+  const scratch=document.createElement('canvas');scratch.width=clip.canvas.width;scratch.height=clip.canvas.height;
+  const ctx=scratch.getContext('2d',{willReadFrequently:true})!;
+  for(const layer of clip.layers){
+    const seen=new Map<string,ClipBounds>();
+    for(const frame of layer.frames){
+      const key=`${frame.x}:${frame.y}`;
+      let local=seen.get(key);
+      if(!local){
+        ctx.clearRect(0,0,scratch.width,scratch.height);
+        ctx.drawImage(images.get(layer.id)!,frame.x,frame.y,frame.width,frame.height,0,0,frame.width,frame.height);
+        const pixels=ctx.getImageData(0,0,frame.width,frame.height).data;
+        local={minX:Infinity,minY:Infinity,maxX:-Infinity,maxY:-Infinity};
+        for(let y=0;y<frame.height;y++)for(let x=0;x<frame.width;x++)if(pixels[(y*frame.width+x)*4+3]>0){local.minX=Math.min(local.minX,x);local.minY=Math.min(local.minY,y);local.maxX=Math.max(local.maxX,x+1);local.maxY=Math.max(local.maxY,y+1);}
+        seen.set(key,local);
+      }
+      const x=(frame.offset?.x??0)+(withRoot?frame.rootMotion.x:0),y=(frame.offset?.y??0)+(withRoot?frame.rootMotion.y:0);
+      bounds.minX=Math.min(bounds.minX,local.minX+x);bounds.minY=Math.min(bounds.minY,local.minY+y);
+      bounds.maxX=Math.max(bounds.maxX,local.maxX+x);bounds.maxY=Math.max(bounds.maxY,local.maxY+y);
+    }
+  }
+  return Number.isFinite(bounds.minX)?bounds:{minX:0,minY:0,maxX:clip.canvas.width,maxY:clip.canvas.height};
+}
+
 async function openClip(path: string): Promise<void> {
   loader?.abort();
   const controller = new AbortController();
@@ -139,7 +168,9 @@ async function openClip(path: string): Promise<void> {
       rootBounds.maxX = Math.max(rootBounds.maxX, x+frame.rootMotion.x + clip.canvas.width);
       rootBounds.maxY = Math.max(rootBounds.maxY, y+frame.rootMotion.y + clip.canvas.height);
     }
-    loaded = { clip, url, images, rootBounds, poseBounds };
+    const artBounds=artworkBounds(clip,images,false);
+    const movingArtBounds=clip.rootMode==='extract'?artworkBounds(clip,images,true):artBounds;
+    loaded = { clip, url, images, rootBounds, poseBounds, artBounds, movingArtBounds };
     tick = 0;
     hiddenLayers = new Set();
     rootToggle.checked = false;
@@ -266,10 +297,10 @@ function draw(): void {
   const rootEnabled = rootToggle.checked && clip.rootMode === 'extract';
   // Fit the complete trajectory, not just the stationary canvas: extracted
   // travel must remain inspectable on narrow screens without clipping.
-  const { minX, minY, maxX, maxY } = rootEnabled ? loaded.rootBounds : loaded.poseBounds;
   const requestedZoom = zoomSelect.value;
+  const { minX, minY, maxX, maxY } = requestedZoom==='art'?(rootEnabled?loaded.movingArtBounds:loaded.artBounds):(rootEnabled ? loaded.rootBounds : loaded.poseBounds);
   const fit = Math.min((viewWidth - 64) / (maxX - minX), (viewHeight - 80) / (maxY - minY));
-  const scale = requestedZoom === 'fit' ? (fit >= 1 ? Math.max(1, Math.floor(fit)) : Math.max(0.1, fit)) : Number(requestedZoom);
+  const scale = requestedZoom === 'fit'||requestedZoom==='art' ? (fit >= 1 ? Math.max(1, Math.floor(fit)) : Math.max(0.01, fit)) : Number(requestedZoom);
   const left = Math.round((viewWidth - (maxX + minX) * scale) / 2);
   const top = Math.round((viewHeight - (maxY + minY) * scale) / 2);
   const light = stage.dataset.background === 'light';
