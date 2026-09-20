@@ -24,7 +24,19 @@ try {
     ...baseMock,
     async generateImage(request) {
       imageCalls.push({ task: request.task, moveId: request.moveId, referenceImages: request.referenceImages?.length ?? 0 });
-      return baseMock.generateImage(request);
+      const result = await baseMock.generateImage(request);
+      await request.onGenerationAttempt?.({
+        schemaVersion: 1,
+        attemptId: `attempt-${imageCalls.length}`,
+        startedAt: '2026-05-28T12:00:00.000Z',
+        completedAt: '2026-05-28T12:00:00.010Z',
+        durationMs: 10,
+        status: 'succeeded',
+        kind: 'image', provider: 'mock-external', model: 'mock-image-model',
+        operation: request.task, characterId: request.context?.characterId ?? characterId,
+        moveId: request.moveId, attemptNumber: 1,
+      });
+      return result;
     },
   };
 
@@ -49,6 +61,15 @@ try {
   const expectedPunchKey = `characters/${characterId}/assets/source/${characterId}_punch_sheet.png`;
   assert.equal(punchResult.asset.key, expectedPunchKey, 'punch asset key');
   assert.equal(await storage.exists(expectedPunchKey), true, 'punch asset exists in storage');
+  assert.ok(punchResult.stageTimings.referenceLoadMs >= 0, 'reference loading is timed');
+  assert.ok(punchResult.stageTimings.providerWallMs >= 0, 'provider wall time is timed');
+  assert.ok(punchResult.stageTimings.artifactPersistenceMs >= 0, 'artifact persistence is timed');
+  assert.equal(await storage.exists(punchResult.benchmarkAsset.key), true, 'generation benchmark is persisted');
+  assert.equal(
+    (await storage.list('benchmarks/generation-attempts/2026-05-28')).some((key) => key.includes('/attempt-1-')),
+    true,
+    'external generation attempt is persisted independently of the final asset',
+  );
 
   // 2. Generate with moveId: 'kick'
   const kickResult = await pipeline.generateSpriteSheet({
@@ -107,6 +128,9 @@ try {
   assert.equal(baseExtract.assetRootKey, `characters/${characterId}/assets/fighter-pack`);
   assert.equal(baseExtract.frames.length, 6, 'six base frames extracted');
   assert.equal(await storage.exists(baseExtract.sheetKey), true, 'assembled base sheet stored');
+  assert.ok(baseExtract.stageTimings.normalizationMs >= 0, 'normalization is timed');
+  assert.ok(baseExtract.stageTimings.artifactPersistenceMs >= 0, 'extraction persistence is timed');
+  assert.equal(await storage.exists(baseExtract.benchmarkKey), true, 'extraction benchmark is persisted');
 
   const frameDataAfterBase = await storage.getJson(baseExtract.frameDataKey);
   assert.equal(frameDataAfterBase.frames.base.length, 6, 'base frameData merged');
@@ -179,8 +203,9 @@ try {
   assert.equal(manifestAfterBlock.sheets.block, 'sheets/block.png', 'manifest carries the block sheet');
   assert.equal(manifestAfterBlock.frameCounts.block, 6, 'manifest frameCount for block');
 
-  // 10. The generate/extract tools reject a row id outside the registry (codex
-  //     P2) — a typo would otherwise produce assets the runtime never loads.
+  // 10. Tool validation accepts registered or explicitly authored rows. Supply
+  // a real draft so unknown-row checks exercise that contract, not missing data.
+  await repository.saveDraft(characterId,{id:characterId,displayName:'Row test fighter',moves:[]});
   const { createCmsTools } = await import('../cms/tools/createCmsTools.js');
   const tools = createCmsTools({ pipeline, repository, registry });
   await assert.rejects(

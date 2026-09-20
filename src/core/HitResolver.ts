@@ -5,7 +5,7 @@ import { HitPause } from '../util/hitpause';
 import { boxesOverlap, boxToWorld, type AABB } from '../util/aabb';
 
 export class HitResolver {
-  static resolveGrab(attacker: Fighter, defender: Fighter, grab: GrabSpec, grabId: string, projectile = false, stats?:CombatStats, ownerMoveSerial?:number): boolean {
+  static resolveGrab(attacker: Fighter, defender: Fighter, grab: GrabSpec, grabId: string, projectile = false, stats?:CombatStats, ownerMoveSerial?:number, sourceFacing?:1|-1): boolean {
     const hitKey = `${defender.id}:grab:${grabId}`;
     if (attacker.hasHitThisMove.has(hitKey)) return false;
     attacker.hasHitThisMove.add(hitKey);
@@ -29,11 +29,13 @@ export class HitResolver {
       offsetY: grab.holdOffsetY ?? 0,
       remaining: grab.holdDuration,
       requiresAttack: !projectile,
-      anchor: grab.anchor === 'contact' ? { x: defender.x, y: defender.y, facing: attacker.facing } : undefined,
+      ...(grab.actorGrip ? {actorGrip:{...grab.actorGrip,duration:grab.holdDuration,fromX:defender.x,fromY:defender.y,torsoY:((defender.config.hurtboxes.idle?.y??-100)+(defender.config.hurtboxes.idle?.height??100)*.5)*defender.stats.size,facing:sourceFacing??attacker.facing}} : {}),
+      anchor: grab.anchor === 'contact' ? { x: defender.x, y: defender.y, facing: sourceFacing??attacker.facing } : undefined,
       pull: grab.pullFrames
         ? { fromX: contactOffsetX, frames: grab.pullFrames, elapsed: 0 }
         : null,
       release: {
+        ...(sourceFacing?{facing:sourceFacing}:{}),
         knockback: grab.releaseKnockback ?? { x: 2.5, y: 0 },
         hitstun: grab.releaseHitstun ?? 16,
         launches: grab.releaseLaunches ?? false,
@@ -143,6 +145,7 @@ export class HitResolver {
   }
 
   static isBlocking(defender: Fighter, attacker: { x: number; y: number; facing: 1 | -1; world?: AABB }, hitbox: Hitbox): boolean {
+    if(defender.controlledSummon)return false;
     if (['attack','dash','air_dodge','wavedash', 'hitstun', 'stunned', 'juggle', 'grabbed', 'knockdown', 'getup', 'dead'].includes(defender.state)) return false;
     const awayFromAttacker = Math.sign(defender.x - attacker.x);
     const input = defender.inputBuffer.current();

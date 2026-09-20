@@ -3,7 +3,8 @@ import './style.css';
 import {mountWorkspace} from './workspace';
 
 type GalleryEntry = { id: string; name: string; description: string; url: string; tags: string[] };
-type LoadedClip = { clip: AnimationClip; url: string; images: Map<string, HTMLImageElement>; rootBounds: { minX: number; minY: number; maxX: number; maxY: number } };
+type ClipBounds = { minX: number; minY: number; maxX: number; maxY: number };
+type LoadedClip = { clip: AnimationClip; url: string; images: Map<string, HTMLImageElement>; rootBounds: ClipBounds; poseBounds: ClipBounds };
 const app = document.querySelector<HTMLDivElement>('#app')!;
 app.innerHTML = `
   <header class="masthead">
@@ -128,13 +129,17 @@ async function openClip(path: string): Promise<void> {
     }));
     if (controller.signal.aborted) return;
     const rootBounds = { minX: 0, minY: 0, maxX: clip.canvas.width, maxY: clip.canvas.height };
+    const poseBounds = {...rootBounds};
     for (const layer of clip.layers) for (const frame of layer.frames) {
-      rootBounds.minX = Math.min(rootBounds.minX, frame.rootMotion.x);
-      rootBounds.minY = Math.min(rootBounds.minY, frame.rootMotion.y);
-      rootBounds.maxX = Math.max(rootBounds.maxX, frame.rootMotion.x + clip.canvas.width);
-      rootBounds.maxY = Math.max(rootBounds.maxY, frame.rootMotion.y + clip.canvas.height);
+      const x = frame.offset?.x ?? 0, y = frame.offset?.y ?? 0;
+      poseBounds.minX = Math.min(poseBounds.minX,x);poseBounds.minY = Math.min(poseBounds.minY,y);
+      poseBounds.maxX = Math.max(poseBounds.maxX,x+clip.canvas.width);poseBounds.maxY = Math.max(poseBounds.maxY,y+clip.canvas.height);
+      rootBounds.minX = Math.min(rootBounds.minX, x+frame.rootMotion.x);
+      rootBounds.minY = Math.min(rootBounds.minY, y+frame.rootMotion.y);
+      rootBounds.maxX = Math.max(rootBounds.maxX, x+frame.rootMotion.x + clip.canvas.width);
+      rootBounds.maxY = Math.max(rootBounds.maxY, y+frame.rootMotion.y + clip.canvas.height);
     }
-    loaded = { clip, url, images, rootBounds };
+    loaded = { clip, url, images, rootBounds, poseBounds };
     tick = 0;
     hiddenLayers = new Set();
     rootToggle.checked = false;
@@ -178,7 +183,7 @@ function renderClipInfo(): void {
   $('source-badge').classList.toggle('generated', !fixture);
   $('stage-empty').hidden = true;
   $('canvas-size').textContent = `${clip.canvas.width} × ${clip.canvas.height} PX`;
-  $('stage-top-note').textContent = fixture ? 'PROCEDURAL FIXTURE · NOT AI-GENERATED' : `${clip.provenance.method.replaceAll('-', ' ').toUpperCase()} · REVIEW REQUIRED`;
+  $('stage-top-note').textContent = fixture ? 'PROCEDURAL FIXTURE · NOT AI-GENERATED' : `${clip.provenance.method.replaceAll('-', ' ').toUpperCase()} · ${clip.qa.status === 'approved' ? 'APPROVED ROW' : 'REVIEW REQUIRED'}`;
   $('tick-total').textContent = pad(clip.totalTicks);
   $('playback-mode').textContent = `${clip.playback === 'loop' ? '↻' : '→'} ${clip.playback.toUpperCase()}`;
   $('layer-count').textContent = pad(clip.layers.length, 2);
@@ -197,7 +202,7 @@ function renderClipInfo(): void {
   ];
   $('intent').innerHTML = flags.map(flag => `<span class="intent-tag ${flag.enabled ? 'enabled' : ''}"><span aria-hidden="true">${flag.enabled ? '✓' : '−'}</span> ${flag.label}</span>`).join('');
   const warnings = clip.qa.warnings;
-  $('qa-status').textContent = clip.qa.status === 'rejected' ? '✕  REJECTED' : '◷  NEEDS HUMAN REVIEW';
+  $('qa-status').textContent = clip.qa.status === 'rejected' ? '✕  REJECTED' : clip.qa.status === 'approved' ? '✓  APPROVED ROW' : '◷  NEEDS HUMAN REVIEW';
   $('qa-status').classList.toggle('rejected', clip.qa.status === 'rejected');
   $('qa-count').textContent = `${warnings.length} ${warnings.length === 1 ? 'NOTE' : 'NOTES'}`;
   $('qa-warnings').innerHTML = warnings.length ? `<ul class="warning-list">${warnings.map(warning => `<li>${escape(warning)}</li>`).join('')}</ul>` : '<p class="inspector-note">No automated warnings. Visual review is still required.</p>';
@@ -261,7 +266,7 @@ function draw(): void {
   const rootEnabled = rootToggle.checked && clip.rootMode === 'extract';
   // Fit the complete trajectory, not just the stationary canvas: extracted
   // travel must remain inspectable on narrow screens without clipping.
-  const { minX, minY, maxX, maxY } = rootEnabled ? loaded.rootBounds : { minX: 0, minY: 0, maxX: clip.canvas.width, maxY: clip.canvas.height };
+  const { minX, minY, maxX, maxY } = rootEnabled ? loaded.rootBounds : loaded.poseBounds;
   const requestedZoom = zoomSelect.value;
   const fit = Math.min((viewWidth - 64) / (maxX - minX), (viewHeight - 80) / (maxY - minY));
   const scale = requestedZoom === 'fit' ? (fit >= 1 ? Math.max(1, Math.floor(fit)) : Math.max(0.1, fit)) : Number(requestedZoom);
@@ -292,8 +297,8 @@ function draw(): void {
 
   for (const { layer, frame } of evaluation.layers) {
     if (hiddenLayers.has(layer.id)) continue;
-    const x = Math.round(left + (rootEnabled ? frame.rootMotion.x * scale : 0));
-    const y = Math.round(top + (rootEnabled ? frame.rootMotion.y * scale : 0));
+    const x = Math.round(left + ((frame.offset?.x ?? 0) + (rootEnabled ? frame.rootMotion.x : 0)) * scale);
+    const y = Math.round(top + ((frame.offset?.y ?? 0) + (rootEnabled ? frame.rootMotion.y : 0)) * scale);
     context.globalCompositeOperation = layer.blend === 'add' ? 'lighter' : 'source-over';
     context.drawImage(images.get(layer.id)!, frame.x, frame.y, frame.width, frame.height, x, y, frame.width * scale, frame.height * scale);
     context.globalCompositeOperation = 'source-over';
@@ -318,7 +323,7 @@ function draw(): void {
     lastReadoutTick = evaluation.tick;
     $('tick-readout').textContent = pad(evaluation.tick);
     $('stage-frame').textContent = `FRAME ${pad(evaluation.frameIndex + 1, 2)} / ${pad(clip.layers[0].frames.length, 2)}`;
-    $('source-frame').textContent = `SRC ${pad(evaluation.layers[0].frame.sourceFrame)} · ${Math.round(evaluation.layers[0].frame.sourceTimeMs)} MS · ${evaluation.layers[0].frame.durationTicks}T HOLD`;
+    $('source-frame').textContent = `SRC ${pad(evaluation.layers[0].frame.sourceFrame)} · ${clip.provenance.sourceTimingKnown === false ? 'TIME UNKNOWN' : Math.round(evaluation.layers[0].frame.sourceTimeMs) + ' MS'} · ${evaluation.layers[0].frame.durationTicks}T HOLD`;
     scrubber.value = String(evaluation.tick);
     $('playhead').style.left = `${evaluation.tick / clip.totalTicks * 100}%`;
     $('frame-strips').querySelectorAll<HTMLElement>('.frame-strip').forEach(strip => strip.classList.toggle('current', Number(strip.dataset.frame) === evaluation.frameIndex));
@@ -391,4 +396,5 @@ async function start(): Promise<void> {
   else if (gallery.length) await openClip(gallery[0].url);
 }
 void start();
-mountWorkspace(()=>setPlaying(false));
+if (new URLSearchParams(location.search).get('embed') === '1') document.body.classList.add('motion-embedded');
+else mountWorkspace(()=>setPlaying(false));

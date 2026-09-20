@@ -2,14 +2,17 @@
 // guarded by scripts/smoke_animation_rows.mjs — this browser file is served
 // behind a static server and can't import the Node module, so it keeps a
 // literal copy. 'projectiles' is a virtual tab (not a sprite row).
-import {moveContacts,moveGrabs,frameAdvantage,patchMove,REACTION_FIELDS} from './moveInspector.js';
+import {moveContacts,moveGrabs,frameAdvantage,patchMove,REACTION_FIELDS,GEOMETRY_FIELDS,GRIP_FIELDS} from './moveInspector.js';
+import { mountCharacterHistory } from './characterHistory.js';
+import { mountCharacterComponents } from './characterComponents.js';
+import { renderReference, renderPreview, mountPreview } from './workbenchPreview.js';
 const MOVE_ORDER = ['base', 'punch', 'kick', 'special_1', 'special_2', 'jump', 'crouch', 'dash_forward', 'dash_back', 'block', 'grab', 'throw', 'walk_forward', 'walk_back', 'hurt', 'getup', 'projectiles'];
 
 // Where the Vite-served game (and the single-player testbed) lives. The testbed
 // reads this character's draft + assets back through the admin API via a Vite
 // proxy, so the game dev server (npm run dev) must be running alongside the CMS
 // admin server. Override with window.TESTBED_BASE_URL if your ports differ.
-const TESTBED_BASE_URL = window.TESTBED_BASE_URL || 'http://127.0.0.1:5173';
+const TESTBED_BASE_URL = window.TESTBED_BASE_URL || (location.pathname.startsWith('/cms-admin') ? location.origin : 'http://127.0.0.1:5173');
 const EMBEDDED=window.self!==window.top;
 const ROUTE_PREFIX=location.pathname.startsWith('/cms-admin')?'/cms-admin':'';
 if(EMBEDDED)document.body.classList.add('studio-embedded');
@@ -23,6 +26,7 @@ if (animationLabLink) animationLabLink.href = `${TESTBED_BASE_URL}/animation-lab
 
 function openTestbed(characterId) {
   if (!characterId) return;
+  if (state.preview && characterId === state.currentCharacterId) { state.preview.open('testbed'); document.getElementById('workbench-preview')?.scrollIntoView({block:'start'}); return; }
   const url = `${TESTBED_BASE_URL}/testbed.html?id=${encodeURIComponent(characterId)}`;
   window.open(url, `testbed-${characterId}`);
 }
@@ -44,7 +48,7 @@ function getCurrentRoute() {
   if (pathname === '/pipeline') return { page: 'pipeline' };
   if (pathname === '/roster') return { page: 'roster' };
   if (pathname === '/roster/new') return { page: 'roster', isNew: true };
-  const rosterMatch = pathname.match(/^\/roster\/([a-z][a-z0-9_]{2,})$/);
+  const rosterMatch = pathname.match(/^\/roster\/([a-z][a-z0-9_-]{2,})$/);
   if (rosterMatch) return { page: 'roster', characterId: rosterMatch[1] };
   return { page: 'roster' };
 }
@@ -77,6 +81,8 @@ const state = {
   currentCharacterId: '',
   openActivityMove: null,
   characters: [],
+  rosterFilter: 'animated',
+  rosterQuery: '',
   sourceAssetKey: '',
   normalizedKey: '',
   animationTimers: [],
@@ -202,6 +208,21 @@ const WORKBENCH_CTA_HANDLERS = {
 };
 
 function handleWorkbenchClick(event) {
+  const archive = event.target.closest('[data-archive-character]');
+  const referenceReview = event.target.closest('[data-reference-review]');
+  if (archive || referenceReview) {
+    const characterId = currentCharacterId();
+    const input = archive ? { archived: archive.dataset.archiveCharacter === 'true' } : {
+      referenceStatus: referenceReview.dataset.referenceReview,
+      sha256: state.workbenchDetail.reference?.sha256,
+      notes: elements.characterWorkbench.querySelector('[data-reference-notes]').value,
+    };
+    const button = archive ?? referenceReview; button.disabled = true;
+    postJson(`/api/characters/${encodeURIComponent(characterId)}/workbench`, input)
+      .then(async () => { await loadCharacters(); await selectCharacter(characterId, {silent:true}); })
+      .catch(showError).finally(() => { button.disabled = false; });
+    return;
+  }
   if (event.target.closest('[data-save-authoring]')) { void saveAuthoring(); return; }
   const tune=event.target.closest('[data-save-move]');
   if(tune){void saveMoveInspector(tune.dataset.saveMove);return;}
@@ -235,10 +256,26 @@ function handleWorkbenchClick(event) {
     generateConcept();
     return;
   }
+  const saveArtBrief=event.target.closest('[data-save-art-brief]');
+  if(saveArtBrief){
+    const artBrief=elements.characterWorkbench.querySelector('[data-art-brief]').value.trim();
+    if(!artBrief){showError(new Error('A visual art brief is required.'));return;}
+    saveArtBrief.disabled=true;
+    const generateButton=elements.characterWorkbench.querySelector('[data-gen-concept]');if(generateButton)generateButton.disabled=true;
+    state.artBriefSaveError=null;
+    state.artBriefSave=invokeTool('update_character_draft',{characterId:currentCharacterId(),patch:{artBrief},note:'Edit visual identity separately from move instructions'}).then(()=>selectCharacter(currentCharacterId(),{silent:true})).catch(error=>{state.artBriefSaveError=error;showError(error);}).finally(()=>{saveArtBrief.disabled=false;if(generateButton)generateButton.disabled=false;state.artBriefSave=null;});
+    return;
+  }
 
   const genButton = event.target.closest('[data-gen-move]');
   if (genButton) {
     generateMoveRow(genButton.dataset.genMove);
+    return;
+  }
+  const approveMotion=event.target.closest('[data-approve-motion]');
+  if(approveMotion){
+    const notes=prompt('Review notes: verify motion, facing, loop seam, body scale and contact timing.');
+    if(notes?.trim())invokeTool('approve_motion_row',{characterId:currentCharacterId(),action:approveMotion.dataset.approveMotion,notes}).then(()=>selectCharacter(currentCharacterId(),{silent:true})).catch(showError);
     return;
   }
 
@@ -293,6 +330,11 @@ document.querySelector('.new-fighter-link')?.addEventListener('click', (event) =
   event.preventDefault();
   navigateTo('/roster/new');
 });
+document.getElementById('roster-search')?.addEventListener('input', event => { state.rosterQuery = event.target.value; renderLibrary(); });
+document.getElementById('roster-filters')?.addEventListener('click', event => {
+  const button = event.target.closest('[data-collection]');
+  if (button) { state.rosterFilter = button.dataset.collection; renderLibrary(); }
+});
 elements.opsTabs?.addEventListener('click', (event) => {
   const tab = event.target.closest('[data-ops-tab]');
   if (tab) setOpsTab(tab.dataset.opsTab);
@@ -322,9 +364,10 @@ async function boot() {
   try {
     syncAssetPath();
     renderChatThread();
-    await Promise.all([loadHealth(), loadPipeline(), loadChatHealth()]);
     await loadCharacters();
     handleRouteChange();
+    // Provider health is diagnostic; a slow model must not block local editing.
+    void Promise.allSettled([loadHealth(), loadPipeline(), loadChatHealth()]);
     log('Admin platform ready.');
   } catch (error) {
     showError(error);
@@ -373,7 +416,7 @@ async function loadPipeline() {
 }
 
 async function loadCharacters() {
-  const result = await getJson('/api/characters');
+  const result = await getJson('/api/characters?view=workbench');
   state.characters = result.characters;
 
   if (result.characters.length === 0) {
@@ -385,11 +428,25 @@ async function loadCharacters() {
     return;
   }
 
-  elements.characterList.replaceChildren(...result.characters.map(renderCharacter));
+  renderLibrary();
+}
+
+function renderLibrary() {
+  const groups = [['animated','Animated'],['drafts','Drafts'],['archived','Archived']];
+  document.getElementById('roster-filters').innerHTML = groups.map(([id,label]) => `<button type="button" data-collection="${id}" aria-pressed="${state.rosterFilter === id}">${label} <span>${state.characters.filter(c => c.group === id).length}</span></button>`).join('');
+  document.getElementById('roster-description').textContent = ({animated:'Has extracted sprites. Review coverage before publishing.',drafts:'Unfinished concepts and test drafts. No implied readiness.',archived:'Hidden from active work. Assets and history are preserved.'})[state.rosterFilter];
+  const query = state.rosterQuery.trim().toLowerCase();
+  const visible = state.characters.filter(c => (c.group ?? 'drafts') === state.rosterFilter && `${c.displayName} ${c.id}`.toLowerCase().includes(query));
+  elements.characterList.replaceChildren(...visible.map(renderCharacter));
+  if (!visible.length) { const empty = document.createElement('p'); empty.className='empty-inline'; empty.textContent = query ? 'No matching characters.' : 'No characters in this collection.'; elements.characterList.append(empty); }
+  setActiveCharacterRow(state.currentCharacterId);
 }
 
 async function selectCharacter(characterId, options = {}) {
+  if (state.currentCharacterId !== characterId) { state.artBriefSaveError = null; state.preview = null; }
   state.currentCharacterId = characterId;
+  const entry = state.characters.find(c => c.id === characterId);
+  if (entry && entry.group !== state.rosterFilter) { state.rosterFilter = entry.group; renderLibrary(); }
   setActiveCharacterRow(characterId);
 
   // Push URL unless caller opted out (e.g. popstate handler, initial load)
@@ -404,10 +461,11 @@ async function selectCharacter(characterId, options = {}) {
   // the sequence token keeps a slow, stale response from clobbering a newer one.
   const seq = ++state.selectSeq;
 
-  const [draftResult, assetResult, qaReport] = await Promise.all([
+  const [draftResult, assetResult, qaReport, workbenchDetail] = await Promise.all([
     getJson(`/api/characters/${encodeURIComponent(characterId)}/draft`),
     getJson(`/api/characters/${encodeURIComponent(characterId)}/assets`),
     getJson(`/api/assets/${encodeURIComponent(`characters/${characterId}/qa/latest.json`)}`).catch(() => null),
+    getJson(`/api/characters/${encodeURIComponent(characterId)}/workbench`),
   ]);
   if (seq !== state.selectSeq || state.currentCharacterId !== characterId) return;
 
@@ -419,6 +477,10 @@ async function selectCharacter(characterId, options = {}) {
   const assets = assetResult.assets.map((asset) =>
     asset.apiUrl ? { ...asset, apiUrl: withCacheBust(asset.apiUrl) } : asset);
   state.currentDraftData = draft;
+  state.workbenchDetail = workbenchDetail;
+  state.characters = state.characters.map(character => character.id === characterId ? {...character,...workbenchDetail} : character);
+  state.rosterFilter = workbenchDetail.group;
+  renderLibrary();
   if(EMBEDDED)window.parent.postMessage({type:'studio-character',characterId},location.origin);
   state.currentAssets = assets;
   state.qaReports[characterId] = qaReport;
@@ -451,7 +513,7 @@ async function createDraft() {
 }
 
 // Sprite-row ids (the registry rows, no 'projectiles'). See MOVE_ORDER above.
-const MOVE_IDS = ['base', 'punch', 'kick', 'special_1', 'special_2', 'jump', 'crouch', 'dash_forward', 'dash_back', 'block', 'grab', 'throw', 'walk_forward', 'walk_back', 'hurt', 'getup'];
+const MOVE_IDS = ['base', 'idle', 'landing', 'punch', 'kick', 'special_1', 'special_2', 'jump', 'crouch', 'dash_forward', 'dash_back', 'block', 'grab', 'throw', 'walk_forward', 'walk_back', 'hurt', 'getup'];
 
 // Source-sheet filename detection (`..._<rowId>_sheet.png`) built from MOVE_IDS,
 // longest-first so multi-token ids (special_1, dash_forward) win over any
@@ -552,9 +614,11 @@ const ROW_PROMPT_DESCRIPTIONS = {
 // frame roles are NOT duplicated here.
 function buildRowPrompt(moveId) {
   const moveDescription = ROW_PROMPT_DESCRIPTIONS[moveId];
+  const actor=(state.currentDraftData?.actors??[]).find(a=>a.idleAnimation===moveId);
   const authoredMoves = (state.currentDraftData?.moves ?? []).filter((move) => move.animation === moveId);
   return [
     spriteBrief(),
+    actor?`ISOLATED SUMMON REFERENCE: ${actor.description??actor.id}. Show only this entity, not the fighter or an opponent. Idle loop with clear silhouette; this row becomes its own video reference.`:'',
     moveDescription ? `Move: ${moveDescription}.` : '',
     ...authoredMoves.map((move) => `Character-specific action: ${move.displayName ?? move.id}. ${move.description ?? ''}`),
     'Side-view fighting game sprite row. Magenta background, full body visible, generous gutters, no cropping.',
@@ -616,7 +680,7 @@ async function generateMoveRow(moveId) {
   try {
     const prompt = rowPromptFor(moveId);
     const spriteProfile = moveSpriteProfile(moveId);
-    const generator=elements.characterWorkbench.querySelector(`[data-row-generator="${moveId}"]`)?.value??'image';
+    const generator=elements.characterWorkbench.querySelector(`[data-row-generator="${moveId}"]`)?.value??(moveId==='base'?'image':'video');
     const result = await invokeToolStreaming('generate_sprite_sheet',
       { characterId, prompt, moveId, spriteProfile, generator },
       (event) => {
@@ -646,6 +710,8 @@ async function generateMoveRow(moveId) {
         'pass',
       );
     }
+    const generationStages = formatStageTimings(result.stageTimings);
+    if (generationStages) logMoveActivity(moveId, `Stages: ${generationStages}.`, 'pass');
     if (Number.isFinite(result.estimatedCostUsd)) {
       logMoveActivity(moveId, `Estimated provider cost: $${result.estimatedCostUsd.toFixed(4)}.`, 'pass');
     }
@@ -654,7 +720,7 @@ async function generateMoveRow(moveId) {
     // Auto-extract individual frames from the row sheet
     try {
       logMoveActivity(moveId, 'Extracting individual frames...');
-      const extraction = await postJson('/api/tools/extract_row_frames', {
+      const extraction = result.framesReady ? {result:{warnings:[],stageTimings:{}}} : await postJson('/api/tools/extract_row_frames', {
         characterId, sourceAssetKey: result.asset.key, moveId, spriteProfile,
       });
       for (const warning of extraction.result?.warnings ?? []) {
@@ -662,7 +728,8 @@ async function generateMoveRow(moveId) {
         logMoveActivity(moveId, warning, severe ? 'error' : '');
         if (severe) log(`${moveId}: ${warning}`, 'error');
       }
-      logMoveActivity(moveId, 'Frames extracted.', 'pass');
+      const extractionStages = formatStageTimings(extraction.result?.stageTimings);
+      logMoveActivity(moveId, extractionStages ? `Frames extracted. Stages: ${extractionStages}.` : 'Frames extracted.', 'pass');
     } catch (extractErr) {
       logMoveActivity(moveId, `Frame extraction failed: ${extractErr.message}`, 'error');
       throw extractErr; // A source sheet alone is not a playable row.
@@ -703,9 +770,24 @@ function formatElapsedMs(milliseconds) {
   return `${minutes}m ${remainder}s`;
 }
 
+function formatStageTimings(stages, prefix = '') {
+  if (!stages || typeof stages !== 'object') return '';
+  const values = [];
+  for (const [key, value] of Object.entries(stages)) {
+    if (key === 'frames' || key === 'totalMs' || key === 'totalAdapterMs' || key === 'totalProviderMs') continue;
+    const label = `${prefix}${key.replace(/Ms$/, '').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()}`;
+    if (Number.isFinite(value)) values.push(`${label} ${formatElapsedMs(value)}`);
+    else if (value && typeof value === 'object' && !Array.isArray(value)) {
+      const nested = formatStageTimings(value, `${prefix}${key} `);
+      if (nested) values.push(nested);
+    }
+  }
+  return values.join(' · ');
+}
+
 // The base row defines the fighter's look and scale, so it must exist before
 // the other rows generate — they all attach it as a reference image. Once it
-// does, the four attack rows have no ordering dependency and run in parallel.
+// does, missing state and authored-move rows run in bounded batches.
 async function generateAllRows() {
   const characterId = currentCharacterId();
   if (!characterId) return;
@@ -718,17 +800,20 @@ async function generateAllRows() {
       return;
     }
   } else {
-    log('Base sheet already exists — generating the four attack rows in parallel against it. Regenerate the base row from its card if you want a fresh look.');
+    log('Base sheet already exists — generating missing motion rows against it. Regenerate the base row from its card if you want a fresh look.');
   }
 
-  const attackRows = MOVE_IDS.filter((id) => id !== 'base');
-  const results = await Promise.all(attackRows.map((id) => generateMoveRow(id)));
-  const failed = attackRows.filter((id, index) => !results[index]);
-  if (failed.length) {
-    log(`Some rows failed: ${failed.join(', ')} — regenerate them from their move cards.`, 'error');
-  } else {
-    log('All sprite rows generated.', 'pass');
+  const rows=[...new Set(['idle','walk_forward','walk_back','jump','landing','crouch','block','hurt','getup',...(state.currentDraftData?.moves??[]).map(m=>m.animation)])];
+  const pending=rows.filter(id=>state.currentDraftData?.motionRows?.[id]?.status!=='approved');
+  if(!confirm(`Generate ${pending.length} action videos (paid API calls, up to two at a time)? Every row needs visual approval before publishing.`))return;
+  await invokeTool('update_character_draft',{characterId,patch:{requireMotionCoverage:true},note:'Require complete reviewed motion before publishing'});
+  for(let i=0;i<pending.length;i+=2){
+    const batch=pending.slice(i,i+2);
+    for(const id of batch){const method=state.rowGenerators[`${characterId}:${id}`]??state.currentDraftData?.videoGenerator??'video';state.rowGenerators[`${characterId}:${id}`]=method==='image'?'video':method;const select=elements.characterWorkbench.querySelector(`[data-row-generator="${id}"]`);if(select)select.value=state.rowGenerators[`${characterId}:${id}`];}
+    const results=await Promise.all(batch.map(id=>generateMoveRow(id)));
+    if(results.some(result=>!result)){log('Motion batch stopped after a failure. Completed rows are preserved; inspect the failed job before resuming.','error');return;}
   }
+  log('Motion candidates generated. Review and approve each row; generation alone is not completion.','pass');
 }
 
 async function generateSheet() {
@@ -795,6 +880,7 @@ async function normalizePack() {
 
 async function validatePack() {
   const characterId = currentCharacterId();
+  state.normalizedKey=state.currentDraftData?.assets?.manifestKey??(state.currentDraftData?.assets?.rootKey?`${state.currentDraftData.assets.rootKey}/manifest.json`:state.normalizedKey);
   if (!characterId || !state.normalizedKey) {
     log('Normalize the pack before validation.', 'error');
     return null;
@@ -1122,7 +1208,7 @@ function renderCharacter(character) {
   button.type = 'button';
   button.className = 'character-row';
   button.dataset.characterId = character.id;
-  button.innerHTML = `<strong>${escapeHtml(character.displayName ?? character.id)}</strong><span>${escapeHtml(character.id)} · ${escapeHtml(character.status ?? 'draft')}</span>`;
+  button.innerHTML = `<strong>${escapeHtml(character.displayName ?? character.id)}</strong><span>${character.frameCount ?? 0} frames · ${character.fixture ? 'Test draft' : character.published ? 'Published copy exists' : character.group === 'animated' ? 'In progress' : 'Unfinished'}</span>`;
   button.addEventListener('click', () => selectCharacter(character.id));
   return button;
 }
@@ -1142,6 +1228,7 @@ function detectCharacterStage(draft, assets) {
   );
   const hasFrames = assets.some((asset) => parseSpriteAsset(asset) !== null);
 
+  if (hasFrames) return 'review-motion';
   if (!hasSource && !hasFrames && !hasConcept) return 'no-concept';
   if (!hasSource) return 'no-source';
   if (!hasNormalized && !hasFrames) return 'no-frames';
@@ -1149,6 +1236,7 @@ function detectCharacterStage(draft, assets) {
 }
 
 function renderNextStepBanner(stage) {
+  if (stage === 'review-motion') return `<div class="next-step-banner" role="status"><div><div class="next-step-label">Current draft</div><p class="next-step-title">Review what’s actually in motion.</p><p class="next-step-detail">Extracted sprites are available. Inspect motion, missing rows and contact timing before publishing.</p></div></div>`;
   if (stage === 'published') {
     return `
       <div class="next-step-banner banner-done" role="status">
@@ -1183,7 +1271,7 @@ function renderNextStepBanner(stage) {
         <div>
           <div class="next-step-label">Next Step</div>
           <p class="next-step-title">Generate Sprite Rows</p>
-          <p class="next-step-detail">The base row generates first to lock the look and scale, then the four attack rows generate in parallel against it.</p>
+          <p class="next-step-detail">The base locks the look and scale. Movement, reactions, and each authored move then get video motion candidates, two at a time. Review each candidate before publishing.</p>
         </div>
         <button id="cta-generate-sheet" class="next-step-action" type="button">Generate All Rows</button>
       </div>
@@ -1220,35 +1308,7 @@ function renderNextStepBanner(stage) {
 }
 
 function renderConceptSection(conceptAsset) {
-  const panels = conceptAsset
-    ? `
-      <div class="concept-panels">
-        ${['Front', 'Profile', 'Back'].map((label, index) => `
-          <div class="concept-panel">
-            <div class="concept-panel-img" style="background-image:url('${conceptAsset.apiUrl}');background-position:${(index / 2) * 100}% 0;background-size:300% 100%;"></div>
-            <span class="concept-panel-label">${label}</span>
-          </div>
-        `).join('')}
-      </div>
-      <details class="concept-full-sheet">
-        <summary>Full sheet</summary>
-        <img src="${conceptAsset.apiUrl}" alt="Full concept sheet" />
-      </details>
-    `
-    : '<span class="empty-inline">No concept art yet. The base row uses it as a reference, so generating it first keeps the whole fighter consistent.</span>';
-
-  return `
-    <section class="concept-section">
-      <header class="concept-section-header">
-        <div>
-          <span class="eyebrow">Concept</span>
-          <h3>Reference Art</h3>
-        </div>
-        <button type="button" class="move-gen-btn" data-gen-concept>${conceptAsset ? 'Regen' : 'Generate'}</button>
-      </header>
-      ${panels}
-    </section>
-  `;
+  return renderReference(state.workbenchDetail?.reference, conceptAsset, spriteBrief());
 }
 
 function renderQaSection(report) {
@@ -1278,6 +1338,8 @@ function renderQaSection(report) {
 }
 
 async function generateConcept() {
+  if(state.artBriefSave)await state.artBriefSave;
+  if(state.artBriefSaveError){showError(new Error('Save the visual brief successfully before generating.'));return null;}
   const characterId = currentCharacterId();
   if (!characterId) return null;
 
@@ -1333,7 +1395,7 @@ function renderNewFighterWorkbench() {
         <p class="next-step-detail">Creating the draft adds it to the roster immediately — concept art, sprite rows, QA, and publishing all happen on its page. Stop at any point and it stays a draft you can pick back up.</p>
       </div>
     </div>
-    <section class="character-summary">
+    <section class="character-summary new-fighter-summary">
       <details><summary>Import a published fighter</summary><p>Bring an existing runtime fighter into this workbench. Keeps its moves and collision geometry; never overwrites an existing draft. No generation cost.</p><form id="import-published-form"><label>Published fighter ID<input name="characterId" placeholder="brine" pattern="[a-z][a-z0-9_]*" required></label><button type="submit">Import published fighter</button><p role="status"></p></form></details>
       <form id="new-fighter-form" class="new-fighter-form">
         <label>
@@ -1350,12 +1412,9 @@ function renderNewFighterWorkbench() {
           <label>
             Art Style
             <select id="new-fighter-style">
-              <option value="">AI decides</option>
-              <option value="pixel art">Pixel art</option>
-              <option value="painterly">Painterly</option>
-              <option value="cel-shaded">Cel-shaded</option>
-              <option value="realistic">Realistic</option>
-              <option value="sketch">Sketch / line art</option>
+              <option value="pixel">Pixel art</option>
+              <option value="paint">Paint / flowing pigment</option>
+              <option value="watercolor">Watercolor</option>
             </select>
           </label>
         </div>
@@ -1418,7 +1477,7 @@ async function onCreateNewFighter(event) {
   log(`> create_character_draft (${characterId})`);
 
   try {
-    const result = await postJson('/api/tools/create_character_draft', { characterId, brief });
+    const result = await postJson('/api/tools/create_character_draft', { characterId, brief, artStyle });
     const draft = result.result.draft;
 
     // Persist the uploaded reference image with the character so the look
@@ -1446,6 +1505,9 @@ async function onCreateNewFighter(event) {
 
 function renderCharacterWorkbench(draft, assets) {
   clearAnimationTimers();
+  const detail = state.workbenchDetail;
+  // Keep references/projectiles, but exclude superseded frame/sheet packs.
+  if (draft.assets?.rootKey) assets = assets.filter(asset => !/\/(sprites|sheets)\//.test(asset.key) || asset.key.startsWith(`${draft.assets.rootKey}/`));
   const moveGroups = buildMoveGroups(draft, assets);
   const assetCounts = summarizeAssets(assets);
   const stats = draft.gameplay?.stats ?? draft.stats ?? {};
@@ -1453,7 +1515,7 @@ function renderCharacterWorkbench(draft, assets) {
     `${draft.moves?.length ?? 0} moves`,
     `${assetCounts.frames} frames`,
     `${assetCounts.sheets} sheets`,
-    `${assetCounts.projectiles} projectiles`,
+    `${draft.projectiles?.length ?? assetCounts.projectiles} projectiles`,
   ];
 
   const stage = detectCharacterStage(draft, assets);
@@ -1471,18 +1533,22 @@ function renderCharacterWorkbench(draft, assets) {
         <p>${escapeHtml(draft.description ?? 'No character description yet.')}</p>
         <div class="summary-pills">${characterStatus.map((item) => `<span>${escapeHtml(item)}</span>`).join('')}</div>
         <div class="summary-actions">
-          <button type="button" class="playtest-btn" data-playtest="${escapeHtml(draft.id)}" title="Open the single-player testbed for this fighter">▶ Playtest</button>
+          <button type="button" class="playtest-btn" data-playtest="${escapeHtml(draft.id)}" ${detail?.frameCount ? '' : 'disabled'} title="Play the current draft">▶ Playtest</button>
           <button type="button" class="gym-btn" data-gym="${escapeHtml(draft.id)}" title="Open the Character Gym to align frames and tune bounds">🛠 Gym</button>
-          <a class="playtest-btn" href="${escapeHtml(TESTBED_BASE_URL)}/?p1=${encodeURIComponent(draft.id)}&p2=brine" target="_top">Play published fighter ↗</a>
+          ${detail?.published ? `<a class="playtest-btn" href="${escapeHtml(TESTBED_BASE_URL)}/?p1=${encodeURIComponent(draft.id)}&p2=brine" target="_top">Play published copy ↗</a>` : ''}
+          <button type="button" data-archive-character="${!detail?.archived}">${detail?.archived ? 'Restore to workbench' : 'Archive draft'}</button>
         </div>
       </div>
-      <div class="summary-side">
+      <details class="summary-side"><summary>Movement stats & bindings</summary>
         <div class="stat-grid">${renderStatGrid(stats)}</div>
         ${renderAnimationBindings(draft.animations)}
-      </div>
+      </details>
     </section>
     <details class="combat-rules-editor"><summary>Identity, movement & move definitions</summary><p>Edit without regenerating art. Coordinates are relative to the feet: negative Y is above the floor; jump velocities are positive. Move phases and hitstun / blockstun / stun / hitstop use 60 Hz ticks: 6 ticks = 100 ms. Stun overrides hitstun; hitstop pauses the impact separately.</p><p>Size: sprite.relativeHeight (0.5–1.6; 1 ≈ 160 px tall) and sprite.scaleAdjust (0.25–4) set the authored render size and measured boxes. Advanced combat size scales art and collision together, including temporary power-ups. Pixel rendering stays nearest-neighbor; integer enlargement is crispest, not higher-detail. Publish separately to update the game.</p><textarea id="authoring-json" aria-label="Character authoring JSON" rows="16">${escapeHtml(JSON.stringify({artBrief:draft.artBrief??draft.description,stats:draft.stats??{},sprite:{relativeHeight:draft.sprite?.relativeHeight??1,scaleAdjust:draft.sprite?.scaleAdjust??1},moves:draft.moves??[]},null,2))}</textarea><button type="button" data-save-authoring>Save character definitions</button><span id="authoring-save-status" role="status"></span></details>
     <details class="combat-rules-editor"><summary>Advanced combat rules · stats, power-ups & hidden forms</summary><p>Multipliers use 1 as neutral. Forms contain a complete config with parentId and selectable:false. Save updates the draft; publish separately to ship it.</p><textarea id="advanced-combat-json" aria-label="Advanced combat JSON" rows="12">${escapeHtml(JSON.stringify({combatStats:draft.combatStats??{},powerUps:draft.powerUps??[],forms:draft.forms??[]},null,2))}</textarea><button type="button" data-save-combat>Save combat rules to draft</button><span id="combat-save-status" role="status"></span></details>
+    <details class="character-history" id="character-history"></details>
+    <section id="character-components" class="character-components"></section>
+    ${renderPreview(detail)}
     ${renderConceptSection(conceptAsset)}
     <section class="move-board">
       ${moveGroups.map(renderMoveGroup).join('')}
@@ -1493,7 +1559,16 @@ function renderCharacterWorkbench(draft, assets) {
 
   // All workbench buttons are handled by the delegated click handler —
   // no per-render listener attachment.
+  const previewHost = document.getElementById('workbench-preview');
+  elements.characterWorkbench.querySelector('.character-summary').after(previewHost, elements.characterWorkbench.querySelector('.reference-review'));
+  state.preview = mountPreview({host: previewHost, detail, gameBase: TESTBED_BASE_URL});
+  if (detail?.rows?.some(row => row.clipUrl && row.available === row.frameCount)) state.preview.open('motion');
   startAnimationPreviews();
+  mountCharacterComponents({host:document.getElementById('character-components'),draft,invoke:(name,input)=>name==='get_animation_plan'?postJson(`/api/tools/${name}`,input).then(r=>r.result):invokeTool(name,input),
+    onSaved:async()=>{await selectCharacter(draft.id,{silent:true});const panel=document.getElementById('character-components');panel.querySelectorAll('.component-editor').forEach(d=>d.open=true);panel.scrollIntoView({block:'start'});},
+    onOpen:async id=>{await selectCharacter(id);document.getElementById('character-components').scrollIntoView({block:'start'});},
+    onRow:row=>document.querySelector(`[data-move-card="${CSS.escape(row)}"]`)?.scrollIntoView({block:'start',behavior:'smooth'})});
+  mountCharacterHistory({host:document.getElementById('character-history'),characterId:draft.id,getJson,postJson,onRestore:async()=>{await selectCharacter(draft.id,{silent:true});const panel=document.getElementById('character-history');panel.open=true;panel.scrollIntoView({block:'start'});}});
 }
 
 async function saveAuthoring() {
@@ -1693,7 +1768,7 @@ function renderProjectileEntity(entity) {
 
 function renderMoveGroup(group) {
   const source = state.currentAssets.find(asset => asset.relativePath === `source/${state.currentCharacterId}_${group.id}_sheet.png`);
-  const generator = state.rowGenerators[`${state.currentCharacterId}:${group.id}`] ?? (source?.metadata?.provider === 'fal-video' ? 'video' : 'image');
+  const generator = state.rowGenerators[`${state.currentCharacterId}:${group.id}`] ?? (group.id==='base'||group.summonReference?'image':state.currentDraftData?.videoGenerator??'video');
   const primaryFrames = groupPrimaryFrames(group);
   const previewFrames = group.id === 'projectiles' && primaryFrames.length === 0
     ? group.projectiles
@@ -1704,7 +1779,7 @@ function renderMoveGroup(group) {
     state.previewFrames.set(animationId, previewFrames.map((asset) => asset.apiUrl));
   }
 
-  const canGenerate = MOVE_IDS.includes(group.id);
+  const canGenerate = MOVE_IDS.includes(group.id) || group.moves.length > 0 || Boolean(group.summonReference);
   const hasFrames = groupAssetCount(group) > 0;
   const isLoading = state.generatingMoves.has(group.id);
   const activityEntries = state.moveActivity[group.id] ?? [];
@@ -1722,11 +1797,13 @@ function renderMoveGroup(group) {
         <div>
           <span class="eyebrow">${escapeHtml(group.id)}${isLoading ? ' <span class="move-loading-badge">generating</span>' : ''}</span>
           <h3>${escapeHtml(moveGroupTitle(group))}</h3>
+          ${group.summonReference?'<p class="move-note">Generate isolated image poses first, then extract frames before creating video motion.</p>':''}
         </div>
         <div class="move-card-actions">
-          ${canGenerate?`<select data-row-generator="${escapeHtml(group.id)}" aria-label="${escapeHtml(group.id)} generation method"><option value="image" ${generator==='image'?'selected':''}>Image poses</option><option value="video" ${generator==='video'?'selected':''} ${group.id==='base'?'disabled':''}>Video motion · fal</option></select>`:''}
+          ${canGenerate?`<select data-row-generator="${escapeHtml(group.id)}" aria-label="${escapeHtml(group.id)} generation method"><option value="image" ${generator==='image'?'selected':''}>Image poses</option><option value="video" ${generator==='video'?'selected':''} ${group.id==='base'?'disabled':''}>Video motion · fal</option><option value="pruna-video" ${generator==='pruna-video'?'selected':''} ${group.id==='base'?'disabled':''}>Video motion · Pruna</option></select>`:''}
           ${activityButton}
           ${generateButton}
+          ${state.currentDraftData?.motionRows?.[group.id] ? `<span>${escapeHtml(state.currentDraftData.motionRows[group.id].status)}</span><button type="button" data-approve-motion="${escapeHtml(group.id)}">Approve motion</button>` : ''}
           ${hasFrames && canGenerate ? `<button type="button" data-reextract="${escapeHtml(group.id)}" title="Rebuild transparent frames from the existing source, without a paid generation" ${isLoading?'disabled':''}>Re-extract</button>` : ''}
           <span class="frame-count">${escapeHtml(groupAssetCount(group))} assets</span>
         </div>
@@ -1751,7 +1828,7 @@ function renderMoveCardTabs(group) {
   const hasFrames = frameCount > 0 || group.projectiles.length > 0;
   const sounds = collectMoveSounds(group);
   const primarySheet = groupPrimarySheet(group);
-  const canGenerate = MOVE_IDS.includes(group.id);
+  const canGenerate = MOVE_IDS.includes(group.id) || group.moves.length > 0 || Boolean(group.summonReference);
   const defaultTab = hasFrames ? 'frames' : 'data';
 
   const tab = (id, label, badge) => `
@@ -1950,9 +2027,10 @@ function renderMoveInspector(move) {
   const signed=v=>`${v>=0?'+':''}${v}f`;
   return `<details class="move-inspector" data-move-inspector="${escapeHtml(move.id)}"><summary>Tune ${escapeHtml(move.displayName??move.id)}</summary>
     <p>60 Hz · 6 frames = 100 ms. Save updates the draft; publish separately.</p>
+    <p>Geometry uses world pixels relative to the fighter pivot; +X faces the opponent, negative Y is up. Grip frame numbers start at zero.</p>
     <div class="tune-grid">${move.phases.map((p,i)=>field(`${p.name} frames`,`phase-${i}`,p.frames)).join('')}${field('Meter cost','meter',move.cost?.meter??0)}</div>
-    ${moveGrabs(move,state.currentDraftData?.projectiles).map((g,i)=>`<fieldset data-grab-contact="${i}"><legend>Grab ${i+1} · hold and release</legend><div class="tune-grid">${['damage','holdDuration','pullFrames','releaseHitstun'].map(k=>field(k,k,g[k]??0)).join('')}</div><p>Hold includes the pull. Release hitstun is additional, not part of the hold.</p></fieldset>`).join('')}
-    ${contacts.map((c,i)=>`<fieldset data-contact="${i}"><legend>${c.entityId?`Projectile ${escapeHtml(c.entityId)} · shared entity`:c.projectile?'Projectile contact':'Melee contact'} ${i+1}</legend><div class="tune-grid">${REACTION_FIELDS.map(k=>field(k,k,c.hitbox[k])).join('')}${field('Knockback X','knockbackX',c.hitbox.knockback?.x??c.hitbox.knockbackX??0,.1)}${field('Knockback Y','knockbackY',c.hitbox.knockback?.y??c.hitbox.knockbackY??0,.1)}</div><p>Blank stun uses hitstun. Blank hitstop uses the engine default; zero means no pause.</p></fieldset>`).join('')}
+    ${moveGrabs(move,state.currentDraftData?.projectiles).map((g,i)=>`<fieldset data-grab-contact="${i}"><legend>Grab ${i+1} · hold and release</legend><div class="tune-grid">${['damage','holdDuration','pullFrames','releaseHitstun'].map(k=>field(k,k,g[k]??0)).join('')}</div>${g.actorGrip?`<fieldset data-grip><legend>Paired grip · ${escapeHtml(g.actorGrip.actor)}</legend><div class="tune-grid">${GRIP_FIELDS.map(k=>field(k,`grip-${k}`,g.actorGrip[k])).join('')}</div><p>Socket meets the opponent’s torso. Upper artwork behind layerSplitY renders behind the opponent; lower artwork renders in front. Leave the split blank for one layer.</p></fieldset>`:''}<p>Hold includes the pull. Release hitstun is additional, not part of the hold.</p></fieldset>`).join('')}
+    ${contacts.map((c,i)=>`<fieldset data-contact="${i}"><legend>${c.entityId?`Projectile ${escapeHtml(c.entityId)} · shared entity`:c.projectile?'Projectile contact':'Melee contact'} ${i+1}</legend><div class="tune-grid">${GEOMETRY_FIELDS.map(k=>field(`Hitbox ${k}`,k,c.hitbox[k])).join('')}${REACTION_FIELDS.map(k=>field(k,k,c.hitbox[k])).join('')}${field('Knockback X','knockbackX',c.hitbox.knockback?.x??c.hitbox.knockbackX??0,.1)}${field('Knockback Y','knockbackY',c.hitbox.knockback?.y??c.hitbox.knockbackY??0,.1)}</div>${!c.projectile?`<label>Motion track · active ticks (advanced JSON)<textarea data-geometry-track aria-label="${escapeHtml(move.displayName??move.id)} motion track">${escapeHtml(JSON.stringify(move.phases[c.phaseIndex].events[c.eventIndex].event.keyframes??[]))}</textarea></label><p>Ordered entries: atFrame, x, y, width, height. Ticks start at activation; [] keeps a static box.</p>`:''}<p>Blank stun uses hitstun. Blank hitstop uses the engine default; zero means no pause.</p></fieldset>`).join('')}
     <p class="frame-advantage">${advantage?`Estimated advantage: hit ${signed(advantage.hit)} · block ${signed(advantage.block)}. ${advantage.projectile?'Projectile estimate assumes immediate contact; travel changes it.':'First active contact, no cancel.'}`:'Grab / utility move: no ordinary hit advantage.'} Spacing, collision timing and cancels must be tested in the arena.</p>
     <label>Cancel into (move ids, comma-separated)<input data-tune="cancelInto" value="${escapeHtml((move.cancelInto??[]).join(', '))}"></label>
     <label>Cancel condition<select data-tune="cancelOn">${['hit','contact','always'].map(v=>`<option ${v===(move.cancelOn??'hit')?'selected':''}>${v}</option>`).join('')}</select></label>
@@ -1977,8 +2055,19 @@ async function saveMoveInspector(id){
       const patch={index:Number(contact.dataset.contact)};
       for(const input of contact.querySelectorAll('[data-tune]')){const key=input.dataset.tune;if(input.value===''){if(['stun','hitstop','blockstun'].includes(key))patch[key]=null;else throw new Error(`${key} is required.`);}else patch[key]=Number(input.value);}
       next=patchMove(next,id,{contact:patch});
+      const track=contact.querySelector('[data-geometry-track]');
+      if(track)next=patchMove(next,id,{contact:{index:patch.index,keyframes:JSON.parse(track.value)}});
     }
-    for(const grab of root.querySelectorAll('[data-grab-contact]'))next=patchMove(next,id,{grab:{index:Number(grab.dataset.grabContact),...Object.fromEntries([...grab.querySelectorAll('[data-tune]')].map(input=>[input.dataset.tune,Number(input.value)]))}});
+    for(const grab of root.querySelectorAll('[data-grab-contact]')){
+      const patch={index:Number(grab.dataset.grabContact),actorGrip:{}};
+      for(const input of grab.querySelectorAll('[data-tune]')){
+        const key=input.dataset.tune;
+        if(key.startsWith('grip-'))patch.actorGrip[key.slice(5)]=input.value===''?null:Number(input.value);
+        else patch[key]=Number(input.value);
+      }
+      if(!grab.querySelector('[data-grip]'))delete patch.actorGrip;
+      next=patchMove(next,id,{grab:patch});
+    }
     await invokeTool('update_character_draft',{characterId:state.currentCharacterId,patch:{moves:next.moves,...(next.projectiles?{projectiles:next.projectiles}:{})},note:'Move inspector: timing, reaction, cancels and independent VFX'});
     state.currentDraftData=next;
     root.outerHTML=renderMoveInspector(next.moves.find(m=>m.id===id));
@@ -2134,6 +2223,7 @@ function renderChatToolCalls(toolCalls, messageIndex) {
 }
 
 function buildMoveGroups(draft, assets) {
+  if((draft.artRevision || draft.history?.workingRoot) && draft.assets?.rootKey)assets=assets.filter(asset=>asset.key.startsWith(`${draft.assets.rootKey}/`));
   const groups = new Map();
   const ensureGroup = (id) => {
     if (!groups.has(id)) {
@@ -2153,6 +2243,7 @@ function buildMoveGroups(draft, assets) {
   // generatable even before any sprite exists — otherwise there's no card to
   // generate from (chicken-and-egg) and they stay invisible in the admin.
   for (const id of MOVE_IDS) ensureGroup(id);
+  for (const actor of draft.actors??[])if(actor.idleAnimation)ensureGroup(actor.idleAnimation).summonReference=actor;
   for (const move of draft.moves ?? []) {
     const animation = move.animation ?? inferAnimationId(move.id);
     ensureGroup(animation).moves.push(move);
@@ -2205,7 +2296,7 @@ function buildMoveGroups(draft, assets) {
   return [...groups.values()]
     // Keep every registry row (so each is generatable) + the projectiles group
     // when it has assets. Drop only stray empty non-registry groups.
-    .filter((group) => MOVE_IDS.includes(group.id) || group.id === 'base' || group.moves.length > 0 || group.variants.length > 0 || group.projectiles.length > 0)
+    .filter((group) => MOVE_IDS.includes(group.id) || group.id === 'base' || group.summonReference || group.moves.length > 0 || group.variants.length > 0 || group.projectiles.length > 0)
     .sort((left, right) => moveSortKey(left.id).localeCompare(moveSortKey(right.id)));
 }
 
@@ -2235,6 +2326,11 @@ function parseSheetAsset(asset) {
 }
 
 function parseSourceRowSheet(asset) {
+  const prefix=`source/${state.currentCharacterId}_`;
+  if(asset.relativePath.startsWith(prefix)&&asset.relativePath.endsWith('_sheet.png')){
+    const moveId=asset.relativePath.slice(prefix.length,-'_sheet.png'.length);
+    return /^[a-z][a-z0-9_-]*$/.test(moveId)?{moveId}:null;
+  }
   const match = asset.relativePath.match(SOURCE_ROW_SHEET_RE);
   if (!match) return null;
   return { moveId: match[1] };
@@ -2297,7 +2393,8 @@ function summarizePhaseEvents(phase) {
 
 function hydratePipelineStateFromAssets(assets) {
   const latestSource = [...assets].reverse().find((asset) => /^source\/.+\.(svg|png)$/i.test(asset.relativePath));
-  const latestManifest = [...assets].reverse().find((asset) => /(?:^|\/)(fighter-pack|normalized)\/manifest\.json$/i.test(asset.relativePath));
+  const preferred=state.currentDraftData?.assets?.manifestKey??(state.currentDraftData?.assets?.rootKey?`${state.currentDraftData.assets.rootKey}/manifest.json`:null);
+  const latestManifest = assets.find(asset=>asset.key===preferred)??[...assets].reverse().find((asset) => /(?:^|\/)(fighter-pack[^/]*|normalized)\/manifest\.json$/i.test(asset.relativePath));
   if (latestSource) state.sourceAssetKey = latestSource.key;
   if (latestManifest) state.normalizedKey = latestManifest.key;
 }
@@ -2313,7 +2410,8 @@ function startAnimationPreviews() {
   for (const player of elements.characterWorkbench.querySelectorAll('[data-animation-player]')) {
     const animationId = player.dataset.animationPlayer;
     const frames = state.previewFrames.get(animationId) ?? [];
-    state.animationStates.set(animationId, { frameIndex: 0, isPlaying: frames.length > 1 });
+    // The main review stage plays; dozens of off-screen thumbnails should not.
+    state.animationStates.set(animationId, { frameIndex: 0, isPlaying: false });
     if (frames.length <= 1) continue;
 
     const timer = window.setInterval(() => {
@@ -2412,6 +2510,7 @@ function groupPrimarySheet(group) {
 }
 
 function moveGroupTitle(group) {
+  if(group.summonReference)return `${titleize(group.summonReference.id)} · Summon reference`;
   if (group.id === 'base') return 'Base / States';
   if (group.id === 'projectiles') return 'Projectiles / Effects';
   if (group.moves.length === 1) return group.moves[0].displayName ?? group.moves[0].name ?? titleize(group.id);

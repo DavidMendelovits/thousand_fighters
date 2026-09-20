@@ -4,6 +4,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
+import { digest } from '../storage/LineageStore.js';
+import { currentConceptAssetKey } from '../authoring/referenceArt.js';
 
 import { PipelinePort } from './ports.js';
 import { normalizeManifest } from './manifestSchema.js';
@@ -16,8 +18,11 @@ import {
 } from '../export/convertDraftToCharacterConfig.js';
 import { MOVE_SHEET_IDS } from '../../shared/animationRows.js';
 import { rowPromptProfile } from './rowPromptProfiles.js';
+import { assertMotionCoverage } from './motionRowArtifacts.js';
 import { projectileImpact } from '../../shared/projectileImpact.js';
 import {generateWorkbenchVideoRow} from './adapters/workbenchVideoRow.js';
+import {normalizeGeneratedMoves} from './adapters/advancedMoveSchema.js';
+import {validateCombatRules} from '../export/validateCombatRules.js';
 import {composeSpriteSheetWithFfmpeg} from './adapters/minimaxH3SpriteSheetGeneratorAdapter.js';
 
 // Canonical inputs the engine's InputBuffer can actually match. A combo move
@@ -41,7 +46,8 @@ export class CharacterCreationPipeline {
     this.extractionQueues = new Map();
   }
 
-  async createCharacterDraft({ characterId, brief, schemaVersion = 1, context = {} }) {
+  async createCharacterDraft({ characterId, brief, artStyle='pixel', schemaVersion = 1, context = {} }) {
+    if(!['pixel','paint','watercolor'].includes(artStyle))throw new Error('Unsupported character art style. Choose pixel, paint or watercolor.');
     const textModel = this.registry.resolve(PipelinePort.TEXT_MODEL);
     const repository = this.registry.resolve(PipelinePort.CHARACTER_REPOSITORY);
     const result = await textModel.completeStructured({
@@ -51,12 +57,14 @@ export class CharacterCreationPipeline {
       input: {
         characterId,
         brief,
+        artStyle,
         context,
       },
       onProgress: context.onProgress,
     });
 
-    const moves = result.value?.moves ?? [];
+    const moves = normalizeGeneratedMoves(result.value?.moves ?? []);
+    const actors = normalizeGeneratedMoves(result.value?.actors ?? []);
     // Combos + projectiles are generated alongside moves (T-move-kit). They were
     // dropped here before — copy them through, but self-heal first so a model
     // slip (an unknown combo segment, a malformed projectile, a spawn event
@@ -73,10 +81,12 @@ export class CharacterCreationPipeline {
       id: characterId,
       displayName: result.value?.displayName ?? characterId,
       description: result.value?.description ?? brief,
-      artBrief: brief,
+      artBrief: result.value?.artBrief??result.value?.description??brief,
+      artStyle,
       stats: result.value?.stats ?? {},
       sprite: result.value?.sprite ?? {},
       moves,
+      ...(actors.length ? {actors,requireMotionCoverage:true} : {}),
       combos,
       projectiles,
       generation: {
@@ -88,6 +98,7 @@ export class CharacterCreationPipeline {
       },
     };
 
+    validateCombatRules(content);
     return repository.saveDraft(characterId, content, {
       provider: content.generation.provider,
       adapterId: content.generation.adapterId,
@@ -97,20 +108,24 @@ export class CharacterCreationPipeline {
   async generateCharacterConcept({ characterId, prompt, context = {} }) {
     const imageGenerator = this.registry.resolve(PipelinePort.IMAGE_GENERATOR);
     const repository = this.registry.resolve(PipelinePort.CHARACTER_REPOSITORY);
+    const storage = this.registry.resolve(PipelinePort.ASSET_STORAGE);
+    const draft=await repository.getDraft(characterId);
     const result = await imageGenerator.generateImage({
       task: 'character-concept',
       prompt,
-      context: { characterId, ...context },
+      context: { characterId, ...context, artStyle:context.artStyle??draft.artStyle },
       onProgress: context.onProgress,
+      onGenerationAttempt: createGenerationAttemptRecorder(storage, context.onGenerationAttempt),
     });
     const bytes = result.bytes ? Buffer.from(result.bytes) : Buffer.from(result.base64 ?? '', 'base64');
     const contentType = result.contentType ?? 'image/png';
-    const ext = contentType === 'image/svg+xml' ? '.svg' : contentType === 'image/webp' ? '.webp' : '.png';
+    const ext = contentType === 'image/svg+xml' ? '.svg' : contentType === 'image/webp' ? '.webp' : contentType === 'image/jpeg' ? '.jpg' : '.png';
     const asset = await repository.writeAsset(characterId, `concept/concept_art${ext}`, bytes, {
       contentType,
       provider: result.provider,
       model: result.model,
       prompt,
+      referenceGeneratedAt: new Date().toISOString(),
     });
     return {
       asset,
@@ -134,7 +149,9 @@ export class CharacterCreationPipeline {
   }
 
   async generateSpriteSheet({ characterId, prompt, moveId, spriteProfile, generator = 'image', referenceAssetKeys = [], extraReferenceAssetKeys = [], targetPath, context = {} }) {
-    if(!['image','video'].includes(generator))throw new Error('Unknown row generator');
+    const benchmarkStartedAt = Date.now();
+    if(!['image','video','pruna-video'].includes(generator))throw new Error('Unknown row generator');
+    const isVideoGenerator=generator!=='image';
     const imageGenerator = this.registry.resolve(PipelinePort.IMAGE_GENERATOR);
     const repository = this.registry.resolve(PipelinePort.CHARACTER_REPOSITORY);
     const storage = this.registry.resolve(PipelinePort.ASSET_STORAGE);
@@ -142,18 +159,30 @@ export class CharacterCreationPipeline {
     // 'wide' renders the 6 frames as a 2x3 grid so each cell is ~2x wider —
     // for moves whose limb extends far laterally (tentacle grabs, whips).
     const resolvedProfile = spriteProfile === 'wide' ? 'wide' : 'standard';
+    let characterDraft;
+    try{characterDraft=await repository.getDraft(characterId);}
+    catch(error){if(error.code!=='ENOENT')throw error;}
+    const conceptKey = await currentConceptAssetKey(repository, characterId, storage);
+    const referenceReview = characterDraft?.referenceReview;
+    if (referenceReview?.status === 'rejected' && referenceReview.assetKey &&
+        referenceReview.assetKey === conceptKey &&
+        digest(await storage.getBytes(referenceReview.assetKey)) === referenceReview.sha256) {
+      throw new Error('The current identity reference was rejected. Replace or explicitly approve it before generating new rows. Existing assets are unchanged.');
+    }
 
     // Reference images keep all rows of one fighter visually consistent.
     // Explicit keys win; otherwise the base row anchors to the concept art,
     // and every other row anchors to the approved base row plus concept art.
     let referenceKeys = referenceAssetKeys;
     if (!referenceKeys.length) {
-      referenceKeys = resolvedMoveId === 'base'
-        ? [`characters/${characterId}/assets/concept/concept_art.png`]
+      referenceKeys = (characterDraft?.artRevision || characterDraft?.history?.workingRoot) && characterDraft.assets?.rootKey
+        ? [`${characterDraft.assets.rootKey}/sprites/base/base_001.png`]
+        : resolvedMoveId === 'base'
+        ? [conceptKey].filter(Boolean)
         : [
             `characters/${characterId}/assets/source/${characterId}_base_sheet.png`,
-            `characters/${characterId}/assets/concept/concept_art.png`,
-          ];
+            conceptKey,
+          ].filter(Boolean);
     }
     // Continuity / supplemental references appended AFTER the identity refs (vs
     // replacing them like explicit referenceAssetKeys do) — combo segments use
@@ -162,6 +191,7 @@ export class CharacterCreationPipeline {
       referenceKeys = [...new Set([...referenceKeys, ...extraReferenceAssetKeys])];
     }
     const referenceImages = [];
+    const referenceLoadStartedAt = Date.now();
     for (const key of referenceKeys) {
       try {
         if (!(await storage.exists(key))) continue;
@@ -176,6 +206,8 @@ export class CharacterCreationPipeline {
         // missing/unreadable reference — generate without it
       }
     }
+    const referenceLoadMs = Date.now() - referenceLoadStartedAt;
+    const artStyle=context.artStyle??characterDraft?.artStyle;
 
     const request = {
       task: resolvedProfile === 'wide' ? 'fighter-2x3-grid' : 'fighter-1x6-row',
@@ -184,19 +216,23 @@ export class CharacterCreationPipeline {
       spriteProfile: resolvedProfile,
       referenceAssetKeys: referenceKeys,
       referenceImages,
-      context,
+      context: { characterId, ...context, artStyle },
       onProgress: context.onProgress,
+      onGenerationAttempt: createGenerationAttemptRecorder(storage, context.onGenerationAttempt),
     };
-    const result = generator==='video'
-      ? await generateWorkbenchVideoRow({characterId,moveId:resolvedMoveId,prompt,task:request.task,storage,repository,onProgress:context.onProgress})
+    const providerStartedAt = Date.now();
+    const result = isVideoGenerator
+      ? await generateWorkbenchVideoRow({characterId,moveId:resolvedMoveId,prompt,provider:generator==='pruna-video'?'pruna':'fal',task:request.task,storage,repository,onProgress:context.onProgress,onGenerationAttempt:request.onGenerationAttempt})
       : await imageGenerator.generateImage(request);
+    const providerWallMs = Date.now() - providerStartedAt;
 
+    const persistenceStartedAt = Date.now();
     const contentType = result.contentType ?? 'image/png';
     const key = targetPath ?? `source/${characterId}_${resolvedMoveId}_sheet${extensionForContentType(contentType)}`;
     const asset = await repository.writeAsset(characterId, key, bytesFromImageResult(result), {
       contentType,
       provider: result.provider ?? imageGenerator.provider ?? 'unknown',
-      adapterId: generator==='video'?'fal-workbench-video':imageGenerator.id ?? 'imageGenerator',
+      adapterId: isVideoGenerator?`${generator}-workbench`:imageGenerator.id ?? 'imageGenerator',
       model: result.model ?? null,
       prompt,
       generationMs: result.generationMs ?? null,
@@ -206,24 +242,27 @@ export class CharacterCreationPipeline {
       estimatedCostUsd: result.estimatedCostUsd ?? null,
       taskId: result.taskId ?? null,
       usage: result.usage ?? null,
+      stageTimings: result.stageTimings ?? null,
+      framesReady: result.framesReady ?? false,
     });
 
     let videoAsset = null;
     if (result.videoBytes) {
       videoAsset = await repository.writeAsset(
         characterId,
-        `source/${characterId}_${resolvedMoveId}_${result.provider==='fal-video'?'motion':'h3'}.mp4`,
+        `source/${characterId}_${resolvedMoveId}_${result.provider?.endsWith('-video')?'motion':'h3'}.mp4`,
         Buffer.from(result.videoBytes),
         {
           contentType: result.videoContentType ?? 'video/mp4',
           provider: result.provider ?? imageGenerator.provider ?? 'unknown',
-          adapterId: generator==='video'?'fal-workbench-video':imageGenerator.id ?? 'imageGenerator',
+          adapterId: isVideoGenerator?`${generator}-workbench`:imageGenerator.id ?? 'imageGenerator',
           model: result.model ?? null,
           prompt,
           sourceTaskId: result.taskId ?? null,
           generationMs: result.generationMs ?? null,
           elapsedMs: result.elapsedMs ?? null,
           usage: result.usage ?? null,
+          stageTimings: result.stageTimings ?? null,
         },
       );
     }
@@ -248,14 +287,45 @@ export class CharacterCreationPipeline {
         },
       ));
     }
+    const artifactPersistenceMs = Date.now() - persistenceStartedAt;
+    const totalMs = Date.now() - benchmarkStartedAt;
+    const benchmark = {
+      schemaVersion: 1,
+      recordedAt: new Date().toISOString(),
+      operation: 'generate-sprite-sheet',
+      characterId,
+      moveId: resolvedMoveId,
+      generator,
+      provider: result.provider ?? imageGenerator.provider ?? 'unknown',
+      model: result.model ?? null,
+      referenceCount: referenceImages.length,
+      stages: {
+        referenceLoadMs,
+        providerWallMs,
+        provider: result.stageTimings ?? null,
+        artifactPersistenceMs,
+        totalMs,
+      },
+      frameTimings: result.frameTimings ?? null,
+      estimatedCostUsd: result.estimatedCostUsd ?? null,
+      taskId: result.taskId ?? null,
+    };
+    const benchmarkAsset = await repository.writeAsset(
+      characterId,
+      `benchmarks/${resolvedMoveId}/${benchmark.recordedAt.replaceAll(':', '-').replaceAll('.', '-')}.json`,
+      Buffer.from(`${JSON.stringify(benchmark, null, 2)}\n`),
+      { contentType: 'application/json', artifactType: 'generation-benchmark', provider: benchmark.provider, model: benchmark.model },
+    );
 
     // Non-base rows generated without the base sheet drift visually — surface
     // that so callers can warn or regenerate once the base row exists.
-    const referencesUsed = generator==='video'?[`characters/${characterId}/assets/fighter-pack/sprites/base/base_001.png`]:referenceImages.map((image) => image.sourceKey);
+    const referencesUsed = isVideoGenerator?[result.referenceKey??`characters/${characterId}/assets/fighter-pack/sprites/base/base_001.png`]:referenceImages.map((image) => image.sourceKey);
     const baseReferenceAttached = referencesUsed.some((key) => key.endsWith(`${characterId}_base_sheet.png`)||key.endsWith('/base/base_001.png'));
 
     return {
       asset,
+      framesReady: result.framesReady ?? false,
+      motionRow: result.motionRow ?? null,
       provider: result.provider ?? imageGenerator.provider ?? 'unknown',
       model: result.model ?? null,
       promptRef: result.promptRef ?? null,
@@ -267,6 +337,8 @@ export class CharacterCreationPipeline {
       frameTimings: result.frameTimings ?? null,
       estimatedCostUsd: result.estimatedCostUsd ?? null,
       usage: result.usage ?? null,
+      stageTimings: benchmark.stages,
+      benchmarkAsset,
       referencesUsed,
       warnings: resolvedMoveId !== 'base' && !baseReferenceAttached
         ? ['no base sheet was available as a reference — this row may not match the fighter\'s look; regenerate it after the base row exists']
@@ -411,16 +483,18 @@ export class CharacterCreationPipeline {
         input: {
           comboId,
           characterId,
+          characterContext: {displayName:draft.displayName,description:draft.description,concept:draft.concept,controlPreferences:draft.controlPreferences},
+          actors: (draft.actors??[]).map(({id,summon,description})=>({id,summon,description})),
           segments: assignments.map((a) => ({
             description: a.seg.description ?? '',
             displayName: a.seg.displayName,
             animation: a.animation,
           })),
-          existingMoves: existingMoves.map((move) => ({ id: move.id, sequence: move.trigger?.sequence ?? [] })),
+          existingMoves: existingMoves.map((move) => ({ id: move.id, sequence: move.trigger?.sequence ?? [],directions:move.trigger?.directions,controlledActor:move.controlledActor })),
         },
         onProgress: context.onProgress,
       });
-      authoredMoves = authoring.value?.moves ?? [];
+      authoredMoves = normalizeGeneratedMoves(authoring.value?.moves ?? []);
     }
 
     // Map authored moves onto assignments; the server owns `animation`. Guarantee
@@ -439,12 +513,14 @@ export class CharacterCreationPipeline {
       // so the combo has a real starter. (existing-move segments are untouched.)
       const isFollowUp = a.index > 0;
       const trigger = { sequence: Array.isArray(authored.trigger?.sequence) ? authored.trigger.sequence : ['lp'] };
+      if(authored.trigger?.directions)trigger.directions=authored.trigger.directions;
       if (isFollowUp) trigger.allowedStates = ['attack'];
       const move = {
         id,
         displayName: authored.displayName ?? a.seg.displayName ?? id,
         description: authored.description ?? a.seg.description ?? '',
         animation: a.animation,
+        ...(authored.controlledActor?{controlledActor:authored.controlledActor}:{}),
         trigger,
         phases: Array.isArray(authored.phases) && authored.phases.length ? authored.phases : defaultComboPhases(idx),
       };
@@ -479,6 +555,7 @@ export class CharacterCreationPipeline {
     const combos = [...(draft.combos ?? []).filter((existing) => existing.id !== comboId), combo];
     const comboErrors = validateCombos(combos, mergedMoves.map((move) => move.id));
     if (comboErrors.length) throw new Error(`authorCombo rejected: ${comboErrors.join('; ')}`);
+    validateCombatRules({...draft,moves:mergedMoves,combos});
 
     await repository.saveDraft(characterId, { ...draft, moves: mergedMoves, combos }, {
       provider: 'cms-tool',
@@ -540,12 +617,13 @@ export class CharacterCreationPipeline {
     const storage = this.registry.resolve(PipelinePort.ASSET_STORAGE);
 
     // Identity references keep the projectile on-theme with the fighter.
+    const workingRoot = await repository.workingAssetRoot?.(characterId) ?? `characters/${characterId}/assets`;
     let referenceKeys = referenceAssetKeys;
     if (!referenceKeys.length) {
       referenceKeys = [
-        `characters/${characterId}/assets/source/${characterId}_base_sheet.png`,
-        `characters/${characterId}/assets/concept/concept_art.png`,
-      ];
+        `${workingRoot}/source/${characterId}_base_sheet.png`,
+        await currentConceptAssetKey(repository, characterId, storage),
+      ].filter(Boolean);
     }
     const referenceImages = [];
     for (const key of referenceKeys) {
@@ -570,8 +648,9 @@ export class CharacterCreationPipeline {
       projectileId,
       referenceAssetKeys: referenceKeys,
       referenceImages,
-      context,
+      context: { characterId, ...context },
       onProgress: context.onProgress,
+      onGenerationAttempt: createGenerationAttemptRecorder(storage, context.onGenerationAttempt),
     });
 
     // Normalize the raw image: chroma-key magenta → transparent, despill edges,
@@ -648,8 +727,11 @@ export class CharacterCreationPipeline {
   }
 
   async extractRowFramesExclusive({ characterId, sourceAssetKey, moveId, spriteProfile, targetHeight, videoSampleTimes, context = {} }) {
+    const benchmarkStartedAt = Date.now();
     const storage = this.registry.resolve(PipelinePort.ASSET_STORAGE);
-    const packRoot = `characters/${characterId}/assets/fighter-pack`;
+    const repository = this.registry.resolve(PipelinePort.CHARACTER_REPOSITORY);
+    const activeDraft = await storage.exists(`characters/${characterId}/draft/content.json`) ? await repository.getDraft(characterId) : {};
+    const packRoot = activeDraft.assets?.rootKey ?? `characters/${characterId}/assets/fighter-pack`;
 
     // Resolve the silhouette height this row should be normalized to: explicit
     // override, else the fighter's existing base row. The base row defines the
@@ -658,6 +740,7 @@ export class CharacterCreationPipeline {
     // (pixels protruding beyond the idle body are the attacking limb/weapon).
     let resolvedTargetHeight = targetHeight ?? null;
     let bodyHalfWidth = null;
+    const scaleReferenceStartedAt = Date.now();
     if (moveId !== 'base') {
       try {
         const existing = await storage.getJson(`${packRoot}/frameData.json`);
@@ -676,18 +759,25 @@ export class CharacterCreationPipeline {
         // no base row yet — this row sets its own scale and gets no attack boxes
       }
     }
+    const scaleReferenceLoadMs = Date.now() - scaleReferenceStartedAt;
 
+    const sourceLoadStartedAt = Date.now();
     let sourceBytes = await storage.getBytes(sourceAssetKey);
     const sourceMetadata = await storage.getMetadata(sourceAssetKey);
+    if(sourceMetadata.framesReady) return {characterId,moveId,warnings:['Video frames already compiled at their authored count; six-cell extraction skipped.']};
+    const sourceLoadMs = Date.now() - sourceLoadStartedAt;
     const isVideo = sourceMetadata.provider === 'fal-video';
+    let videoResampleMs = 0;
     if(videoSampleTimes&&!isVideo)throw new Error('Sample times require an existing video-derived source.');
     if(isVideo&&(sourceMetadata.videoSamplingVersion!==2||videoSampleTimes)){
-      const videoKey=`characters/${characterId}/assets/source/${characterId}_${moveId}_motion.mp4`;
+      const videoResampleStartedAt = Date.now();
+      const videoKey=`${activeDraft.history?.workingRoot ?? `characters/${characterId}/assets`}/source/${characterId}_${moveId}_motion.mp4`;
       if(await storage.exists(videoKey)){
         sourceBytes=await composeSpriteSheetWithFfmpeg({videoBytes:await storage.getBytes(videoKey),task:spriteProfile==='wide'?'fighter-2x3-grid':'fighter-1x6-row',duration:5,sampleTimes:videoSampleTimes});
         await storage.putBytes(sourceAssetKey,sourceBytes,{...sourceMetadata,videoSamplingVersion:2,videoSampleTimes:videoSampleTimes??null});
       }else if(videoSampleTimes){throw new Error('Original source video is missing; sampling was not changed.');
       }
+      videoResampleMs = Date.now() - videoResampleStartedAt;
     }
     const tempDir = await mkdtemp(path.join(os.tmpdir(), 'tf-extract-'));
     try {
@@ -709,6 +799,7 @@ export class CharacterCreationPipeline {
       } else {
         args.push('--equalize-frames');
       }
+      const normalizationStartedAt = Date.now();
       try {
         await execFileAsync('python3', args, {
           timeout: 60_000,
@@ -720,6 +811,7 @@ export class CharacterCreationPipeline {
           : (error.stderr?.trim() || error.message || 'Unknown error');
         throw new Error(`Frame extraction failed for ${characterId}/${moveId}: ${detail}`);
       }
+      const normalizationMs = Date.now() - normalizationStartedAt;
 
       const report = JSON.parse(await readFile(path.join(outputDir, 'extraction_report.json'), 'utf8'));
       const fragment = report.frameData ?? [];
@@ -731,6 +823,7 @@ export class CharacterCreationPipeline {
 
       const now = this.clock().toISOString();
       const spritesPrefix = `${packRoot}/sprites/${moveId}`;
+      const persistenceStartedAt = Date.now();
 
       // Replace any stale frames from a previous extraction of this move.
       const staleKeys = await storage.list(spritesPrefix).catch(() => []);
@@ -818,6 +911,12 @@ export class CharacterCreationPipeline {
           scaleApplied: report.scaleApplied,
           targetHeight: resolvedTargetHeight,
           warnings: report.warnings ?? [],
+          stageTimings: {
+            scaleReferenceLoadMs,
+            sourceLoadMs,
+            videoResampleMs,
+            normalizationMs,
+          },
         },
       };
       normReport.warnings = Object.entries(normReport.moves)
@@ -826,6 +925,28 @@ export class CharacterCreationPipeline {
         contentType: 'application/json',
         artifactType: 'normalization-report',
       });
+
+      const artifactPersistenceMs = Date.now() - persistenceStartedAt;
+      const stageTimings = {
+        scaleReferenceLoadMs,
+        sourceLoadMs,
+        videoResampleMs,
+        normalizationMs,
+        artifactPersistenceMs,
+        totalMs: Date.now() - benchmarkStartedAt,
+      };
+      const benchmarkKey = `${packRoot}/benchmarks/extraction/${moveId}/${now.replaceAll(':', '-').replaceAll('.', '-')}.json`;
+      await storage.putJson(benchmarkKey, {
+        schemaVersion: 1,
+        recordedAt: now,
+        operation: 'extract-row-frames',
+        characterId,
+        moveId,
+        sourceAssetKey,
+        isVideo,
+        stages: stageTimings,
+        warnings: report.warnings ?? [],
+      }, { contentType: 'application/json', artifactType: 'extraction-benchmark' });
 
       return {
         frames,
@@ -838,6 +959,8 @@ export class CharacterCreationPipeline {
         targetHeight: resolvedTargetHeight,
         scaleApplied: report.scaleApplied,
         warnings: report.warnings ?? [],
+        stageTimings,
+        benchmarkKey,
       };
     } finally {
       await rm(tempDir, { recursive: true, force: true });
@@ -861,6 +984,10 @@ export class CharacterCreationPipeline {
   }
 
   async publishCharacter(request) {
+    const repository = this.registry.resolve(PipelinePort.CHARACTER_REPOSITORY);
+    const draft=await repository.getDraft(request.characterId);
+    if(draft.parentId)throw new Error('Hidden forms are installed and published through their parent character, not as selectable fighters.');
+    assertMotionCoverage(draft);
     const publisher = this.registry.resolve(PipelinePort.PUBLISHER);
     return publisher.publishCharacter({
       requestedAt: this.clock().toISOString(),
@@ -906,6 +1033,7 @@ export class CharacterCreationPipeline {
       prompt,
       context: { arenaId, ...context },
       onProgress: context.onProgress,
+      onGenerationAttempt: createGenerationAttemptRecorder(storage, context.onGenerationAttempt),
     });
     const ext = result.contentType === 'image/svg+xml' ? '.svg'
       : result.contentType === 'image/webp' ? '.webp'
@@ -977,6 +1105,24 @@ export class CharacterCreationPipeline {
  *
  * @returns {{ combos: object[], projectiles: object[], warnings: string[] }}
  */
+function createGenerationAttemptRecorder(storage, downstream) {
+  const record = async (event) => {
+    const date = /^\d{4}-\d{2}-\d{2}/.exec(event.startedAt ?? '')?.[0] ?? 'unknown-date';
+    const observation = String(event.completedAt ?? new Date().toISOString()).replaceAll(':', '-').replaceAll('.', '-');
+    const key = `benchmarks/generation-attempts/${date}/${event.attemptId}-${observation}.json`;
+    await storage.putJson(key, { ...event, benchmarkKey: key }, {
+      contentType: 'application/json',
+      artifactType: 'external-generation-attempt',
+      provider: event.provider,
+      model: event.model,
+      status: event.status,
+    });
+    await downstream?.({ ...event, benchmarkKey: key });
+  };
+  record.lineage = storage.lineage;
+  return record;
+}
+
 function healGeneratedKit({ characterId, moves, combos, projectiles }) {
   const warnings = [];
   const moveIds = (moves ?? []).map((move) => move?.id).filter(Boolean);

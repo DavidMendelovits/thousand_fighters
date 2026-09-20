@@ -5,7 +5,8 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { rowPromptProfile } from '../rowPromptProfiles.js';
-import { pixelArtDirection } from './pixelArtDirection.js';
+import { characterArtDirection } from './pixelArtDirection.js';
+import { runGenerationAttempt } from '../generationAttemptTelemetry.js';
 
 const execFileAsync = promisify(execFile);
 const FRAME_COUNT = 6;
@@ -62,7 +63,16 @@ export class ParallelFrameSpriteGenerator {
       let result;
       for (let attempt = 0; attempt <= this.frameRetries; attempt += 1) {
         try {
-          result = await this.generateFrame(frameRequest);
+          const attemptRequest = { ...frameRequest, attemptNumber: attempt + 1 };
+          result = await runGenerationAttempt(attemptRequest, {
+            kind: 'image',
+            provider: this.provider,
+            model: this.model,
+            operation: request.task ?? 'sprite-frame',
+            frameNumber: index + 1,
+            attemptNumber: attempt + 1,
+            now: this.now,
+          }, () => this.generateFrame(attemptRequest));
           break;
         } catch (error) {
           if (attempt === this.frameRetries || !isRetryable(error)) throw error;
@@ -90,23 +100,42 @@ export class ParallelFrameSpriteGenerator {
         bytes,
         contentType: result.contentType ?? 'image/png',
         elapsedMs,
+        stageTimings: result.stageTimings ?? null,
         frameNumber: index + 1,
       };
     });
     const generationCompletedAt = this.now();
-
-    request.onProgress?.({ type: 'status', stage: 'compose', message: 'Aligning and tiling the six frames locally.' });
-    const sheetBytes = await this.composeFrameSheet({
-      frames,
-      task,
-      requireMagentaBackground: this.requireMagentaBackground,
-    });
-    const completedAt = this.now();
+    const frameTimings = frames.map(({ frameNumber, elapsedMs, taskId, stageTimings, generationAttemptId }) => ({
+      frameNumber, elapsedMs, taskId: taskId ?? null, generationAttemptId: generationAttemptId ?? null, stages: stageTimings,
+    }));
     const costValues = frames
       .map((frame) => frame.estimatedCostUsd)
       .filter((value) => value !== null && value !== undefined && value !== '')
       .map(Number)
       .filter(Number.isFinite);
+
+    request.onProgress?.({ type: 'status', stage: 'compose', message: 'Aligning and tiling the six frames locally.' });
+    let sheetBytes;
+    try {
+      sheetBytes = await this.composeFrameSheet({
+        frames,
+        task,
+        artStyle:request.context?.artStyle,
+        requireMagentaBackground: this.requireMagentaBackground,
+      });
+    } catch (error) {
+      const failedAt = this.now();
+      error.stageTimings = {
+        providerBatchMs: generationCompletedAt - startedAt,
+        spriteCompositionMs: failedAt - generationCompletedAt,
+        totalAdapterMs: failedAt - startedAt,
+        frames: frameTimings,
+      };
+      error.frameTimings = frameTimings;
+      error.estimatedCostUsd = costValues.length ? costValues.reduce((sum, value) => sum + value, 0) : null;
+      throw error;
+    }
+    const completedAt = this.now();
 
     return {
       provider: this.provider,
@@ -118,7 +147,13 @@ export class ParallelFrameSpriteGenerator {
       generationMs: generationCompletedAt - startedAt,
       postprocessMs: completedAt - generationCompletedAt,
       elapsedMs: completedAt - startedAt,
-      frameTimings: frames.map(({ frameNumber, elapsedMs, taskId }) => ({ frameNumber, elapsedMs, taskId: taskId ?? null })),
+      stageTimings: {
+        providerBatchMs: generationCompletedAt - startedAt,
+        spriteCompositionMs: completedAt - generationCompletedAt,
+        totalAdapterMs: completedAt - startedAt,
+        frames: frameTimings,
+      },
+      frameTimings,
       frameImages: frames.map(({ frameNumber, bytes, contentType, taskId }) => ({ frameNumber, bytes, contentType, taskId: taskId ?? null })),
       usage: mergeUsage(frames.map((frame) => frame.usage)),
       estimatedCostUsd: costValues.length ? costValues.reduce((sum, value) => sum + value, 0) : null,
@@ -127,14 +162,19 @@ export class ParallelFrameSpriteGenerator {
 
   async generateSingleImage(request) {
     const startedAt = this.now();
-    const result = await this.generateFrame({
+    const singleRequest = {
       ...request,
       prompt: stillPromptFor(request),
       frameIndex: 0,
       frameNumber: 1,
       frameCount: 1,
       aspectRatio: aspectRatioForTask(request.task),
-    });
+      attemptNumber: 1,
+    };
+    const result = await runGenerationAttempt(singleRequest, {
+      kind: 'image', provider: this.provider, model: this.model,
+      operation: request.task ?? 'image-generation', now: this.now,
+    }, () => this.generateFrame(singleRequest));
     const bytes = bytesFromResult(result);
     const completedAt = this.now();
     return {
@@ -147,11 +187,15 @@ export class ParallelFrameSpriteGenerator {
       generationMs: result.generationMs ?? result.elapsedMs ?? (completedAt - startedAt),
       postprocessMs: 0,
       elapsedMs: result.elapsedMs ?? (completedAt - startedAt),
+      stageTimings: result.stageTimings ?? {
+        providerRequestMs: result.elapsedMs ?? (completedAt - startedAt),
+        totalAdapterMs: result.elapsedMs ?? (completedAt - startedAt),
+      },
     };
   }
 }
 
-export async function composeFrameSheetWithFfmpeg({ frames, task, ffmpegBin = 'ffmpeg', requireMagentaBackground = true }) {
+export async function composeFrameSheetWithFfmpeg({ frames, task, artStyle='pixel', ffmpegBin = 'ffmpeg', requireMagentaBackground = true }) {
   if (!Array.isArray(frames) || frames.length !== FRAME_COUNT) {
     throw new Error(`Expected exactly ${FRAME_COUNT} frames, received ${frames?.length ?? 0}.`);
   }
@@ -177,11 +221,11 @@ export async function composeFrameSheetWithFfmpeg({ frames, task, ffmpegBin = 'f
     const wide = task === 'fighter-2x3-grid';
     const cellWidth = wide ? 640 : 512;
     const cellHeight = wide ? 360 : 512;
-    // Force a low native raster before a nearest-neighbor upscale. Even when a
-    // provider sneaks in smooth edges, the stored sheet has deliberate square
-    // pixel clusters instead of action-figure gloss.
-    const pixelWidth = wide ? 160 : 128;
-    const pixelHeight = wide ? 90 : 128;
+    // Pixel art uses a low native raster and nearest-neighbor upscale.
+    // Painted materials preserve brush detail at the full cell resolution.
+    const painted=['paint','watercolor'].includes(artStyle);
+    const pixelWidth = painted?cellWidth:(wide ? 160 : 128);
+    const pixelHeight = painted?cellHeight:(wide ? 90 : 128);
     const filters = frames.map((_, index) =>
       `[${index}:v]scale=${pixelWidth}:${pixelHeight}:force_original_aspect_ratio=decrease:flags=area,` +
       `pad=${pixelWidth}:${pixelHeight}:(ow-iw)/2:oh-ih:color=0xFF00FF,` +
@@ -233,22 +277,23 @@ async function magentaCornerRatio(inputPath, ffmpegBin) {
 function framePromptFor(request, frameIndex) {
   const moveId = request.moveId ?? 'base';
   const profile = rowPromptProfile(moveId);
+  const paint=request.context?.artStyle==='paint';
   return [
-    pixelArtDirection(),
+    characterArtDirection(request.context?.artStyle),
     request.prompt?.trim(),
-    `FRAME ${frameIndex + 1} OF 6 — ${profile.description}.`,
-    `Animation timing: ${profile.frameRoles}. Output ONLY frame ${frameIndex + 1}; never a sheet, sequence, collage, or multiple poses.`,
-    'Exactly ONE uncropped full-body fighter facing screen-right, centered, feet near the bottom.',
+    `FRAME ${frameIndex + 1} OF 6 — ${paint&&moveId==='base'?'neutral isolated pigment reference, subtle flowing variation only':profile.description}.`,
+    `Animation timing: ${paint&&moveId==='base'?'Keep the approved reference silhouette and puddle anchor. No anthropomorphic breathing, legs or feet.':profile.frameRoles}. Output ONLY frame ${frameIndex + 1}; never a sheet, sequence, collage, or multiple poses.`,
+    paint?'Exactly ONE complete nonhuman paint subject, oriented RIGHT, stable puddle anchor near the bottom. Preserve its reference anatomy rather than inventing human limbs.':'Exactly ONE uncropped full-body fighter facing screen-right, centered, feet near the bottom.',
     'The fighter mimes the action alone into empty air. NO opponent, second person, duplicate, target, or extra limb.',
     'The supplied sprite is binding: copy its 2D medium, character, costume, proportions, palette, camera, scale, and floor line.',
-    profile.scaleNote,
+    paint?'Keep the same reference scale and generous margins; flow and shape deformation may change bounds.':profile.scaleNote,
     'Background: every pixel exactly solid RGB(255,0,255) #FF00FF. No floor, horizon, gradient, shadow, scenery, text, border, or UI.',
   ].filter(Boolean).join('\n\n');
 }
 
 function stillPromptFor(request) {
   return [
-    pixelArtDirection(),
+    characterArtDirection(request.context?.artStyle),
     request.prompt?.trim(),
     request.task === 'arena-background'
       ? 'Create one clean 16:9 fighting-game arena background. No characters, text, borders, or UI.'
@@ -308,6 +353,8 @@ function nonNegativeInteger(value, fallback) {
 }
 
 function isRetryable(error) {
+  if (error?.noRetry) return false;
+  if (error?.name === 'ArchivePersistenceError' || error?.code === 'ARCHIVE_PERSISTENCE') return false;
   const status = Number(error?.statusCode);
   return !Number.isFinite(status) || status === 408 || status === 409 || status === 429 || status >= 500;
 }

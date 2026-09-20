@@ -2,7 +2,7 @@ export type ClipPoint = { x: number; y: number };
 export type AnimationClipFrame = {
   x: number; y: number; width: number; height: number;
   durationTicks: number; sourceFrame: number; sourceTimeMs: number;
-  rootMotion: ClipPoint; sockets: Record<string, ClipPoint>;
+  rootMotion: ClipPoint; offset?: ClipPoint; sockets: Record<string, ClipPoint>;
 };
 export type AnimationClipLayer = {
   id: string; role: string; z: number; blend: 'normal' | 'add';
@@ -16,7 +16,7 @@ export type AnimationClip = {
   rootMode: 'in-place' | 'extract' | 'baked'; layers: AnimationClipLayer[];
   events: AnimationClipEvent[];
   intent: { topologyChanges: boolean; scaleChanges: boolean; paletteChanges: boolean };
-  qa: { status: 'needs-review' | 'rejected'; checks: Array<{ id: string; label: string; status: 'pass' | 'warn' | 'fail'; detail: string }>; warnings: string[] };
+  qa: { status: 'needs-review' | 'rejected' | 'approved'; checks: Array<{ id: string; label: string; status: 'pass' | 'warn' | 'fail'; detail: string }>; warnings: string[] };
   provenance: { method: string; description?: string; [key: string]: unknown };
 };
 
@@ -62,6 +62,7 @@ export function parseAnimationClip(value: unknown): AnimationClip {
       integer(frame.durationTicks, 'frame.durationTicks', 1, 216000);
       integer(frame.sourceFrame, 'frame.sourceFrame'); number(frame.sourceTimeMs, 'frame.sourceTimeMs');
       point(frame.rootMotion, 'frame.rootMotion');
+      if (frame.offset !== undefined) point(frame.offset, 'frame.offset');
       const sockets = object(frame.sockets, 'frame.sockets');
       for (const [name, socket] of Object.entries(sockets)) point(socket, `socket ${name}`);
       durations.push(frame.durationTicks as number);
@@ -79,7 +80,7 @@ export function parseAnimationClip(value: unknown): AnimationClip {
   const intent = object(clip.intent, 'intent');
   for (const key of ['topologyChanges', 'scaleChanges', 'paletteChanges']) if (typeof intent[key] !== 'boolean') fail(`intent.${key} must be boolean`);
   const qa = object(clip.qa, 'qa');
-  if (!['needs-review', 'rejected'].includes(String(qa.status))) fail('unknown QA status');
+  if (!['needs-review', 'rejected', 'approved'].includes(String(qa.status))) fail('unknown QA status');
   if (!Array.isArray(qa.warnings) || qa.warnings.some(w => typeof w !== 'string')) fail('qa.warnings must be strings');
   if (!Array.isArray(qa.checks)) fail('qa.checks must be an array');
   for (const rawCheck of qa.checks as unknown[]) {

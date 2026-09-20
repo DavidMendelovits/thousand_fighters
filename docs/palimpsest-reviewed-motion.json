@@ -1,0 +1,22 @@
+{
+  "idle": {"notes":"Reviewed white-background candidate: pigment circulates, spiral identity and pooled origin remain coherent; no human gait."},
+  "walk_forward": {"notes":"Reviewed full-body liquid wave and dripping deformation; no stepping limbs, clean bounds."},
+  "walk_back": {"notes":"Reviewed recoiling pigment curls and core compression; no humanoid knees or feet."},
+  "jump": {"notes":"Reviewed pool compression, upward teardrop extension, and recoil; all tips contained."},
+  "landing": {"notes":"Reviewed broad paint-pool squash and upward reformation; no cropped splash."},
+  "crouch": {"directory":"generated/palimpsest/motion-v3/crouch-held","notes":"Selected source 0–57 so held crouch ends as a low pool instead of returning to standing."},
+  "block": {"notes":"Reviewed outer-coil shield curling around the teal core; same palette and scale."},
+  "hurt": {"notes":"Reviewed subtle leftward dent and liquid recoil, appropriate for a brief interrupt."},
+  "getup": {"directory":"generated/palimpsest/motion-v3/getup-rise","notes":"Selected source 35 onward: starts pooled, rises and restores the recognizable spiral without a standing prelude."},
+  "dash_forward": {"notes":"Reviewed horizontal elastic smear and recovery around a stationary root; runtime supplies translation."},
+  "ribbon_jab": {"contact":10,"recovery":17,"notes":"Reviewed rightward crimson ribbon unfurling and retracting; complete extension visible."},
+  "undertow": {"contact":10,"recovery":17,"notes":"Reviewed low lavender ribbon traveling right along the ground; no human kick."},
+  "rising_ochre": {"contact":9,"recovery":16,"notes":"Reviewed high golden-edged liquid whip; tip remains inside expanded canvas."},
+  "impasto": {"contact":10,"recovery":17,"notes":"Reviewed whole-core swell, rightward lean, and recoil; preserves scale and palette."},
+  "bind": {"contact":12,"recovery":18,"notes":"Reviewed rightward looping ribbon, curling closure and retraction; runtime tether handles contact and pull."},
+  "summon": {"contact":10,"recovery":17,"notes":"Reviewed opening core and framing ribbon gesture; no hands baked into body art."},
+  "hands_idle": {"notes":"Reviewed exactly two detached hands, subtle finger motion and single visible needle."},
+  "needle_thrust": {"contact":10,"recovery":17,"notes":"Reviewed upper-hand rightward needle thrust, lower-hand follow and return; needle remains legible."},
+  "hands_pinch": {"contact":10,"recovery":17,"notes":"Reviewed two floating hands opening and curling toward contact space; pair remains separate from body."},
+  "hands_recall": {"contact":10,"recovery":17,"notes":"Reviewed hands spiraling into paint ribbons; early dismissal occurs at the contraction pose."}
+}

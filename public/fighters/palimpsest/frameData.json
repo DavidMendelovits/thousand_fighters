@@ -1,0 +1,5590 @@
+{
+  "frames": {
+    "idle": [
+      {
+        "file": "sprites/idle/idle_001.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 0
+      },
+      {
+        "file": "sprites/idle/idle_002.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 5
+      },
+      {
+        "file": "sprites/idle/idle_003.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 10
+      },
+      {
+        "file": "sprites/idle/idle_004.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 16
+      },
+      {
+        "file": "sprites/idle/idle_005.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 21
+      },
+      {
+        "file": "sprites/idle/idle_006.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 26
+      },
+      {
+        "file": "sprites/idle/idle_007.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 32
+      },
+      {
+        "file": "sprites/idle/idle_008.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 37
+      },
+      {
+        "file": "sprites/idle/idle_009.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 42
+      },
+      {
+        "file": "sprites/idle/idle_010.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 48
+      },
+      {
+        "file": "sprites/idle/idle_011.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 53
+      },
+      {
+        "file": "sprites/idle/idle_012.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 58
+      },
+      {
+        "file": "sprites/idle/idle_013.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 64
+      },
+      {
+        "file": "sprites/idle/idle_014.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 69
+      },
+      {
+        "file": "sprites/idle/idle_015.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 74
+      },
+      {
+        "file": "sprites/idle/idle_016.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 80
+      },
+      {
+        "file": "sprites/idle/idle_017.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 85
+      },
+      {
+        "file": "sprites/idle/idle_018.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 90
+      },
+      {
+        "file": "sprites/idle/idle_019.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 96
+      },
+      {
+        "file": "sprites/idle/idle_020.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 101
+      },
+      {
+        "file": "sprites/idle/idle_021.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 106
+      },
+      {
+        "file": "sprites/idle/idle_022.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 112
+      },
+      {
+        "file": "sprites/idle/idle_023.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 117
+      },
+      {
+        "file": "sprites/idle/idle_024.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 123
+      }
+    ],
+    "walk_forward": [
+      {
+        "file": "sprites/walk_forward/walk_forward_001.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 0
+      },
+      {
+        "file": "sprites/walk_forward/walk_forward_002.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 5
+      },
+      {
+        "file": "sprites/walk_forward/walk_forward_003.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 10
+      },
+      {
+        "file": "sprites/walk_forward/walk_forward_004.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 16
+      },
+      {
+        "file": "sprites/walk_forward/walk_forward_005.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 21
+      },
+      {
+        "file": "sprites/walk_forward/walk_forward_006.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 26
+      },
+      {
+        "file": "sprites/walk_forward/walk_forward_007.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 32
+      },
+      {
+        "file": "sprites/walk_forward/walk_forward_008.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 37
+      },
+      {
+        "file": "sprites/walk_forward/walk_forward_009.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 42
+      },
+      {
+        "file": "sprites/walk_forward/walk_forward_010.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 48
+      },
+      {
+        "file": "sprites/walk_forward/walk_forward_011.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 53
+      },
+      {
+        "file": "sprites/walk_forward/walk_forward_012.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 58
+      },
+      {
+        "file": "sprites/walk_forward/walk_forward_013.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 64
+      },
+      {
+        "file": "sprites/walk_forward/walk_forward_014.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 69
+      },
+      {
+        "file": "sprites/walk_forward/walk_forward_015.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 74
+      },
+      {
+        "file": "sprites/walk_forward/walk_forward_016.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 80
+      },
+      {
+        "file": "sprites/walk_forward/walk_forward_017.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 85
+      },
+      {
+        "file": "sprites/walk_forward/walk_forward_018.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 90
+      },
+      {
+        "file": "sprites/walk_forward/walk_forward_019.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 96
+      },
+      {
+        "file": "sprites/walk_forward/walk_forward_020.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 101
+      },
+      {
+        "file": "sprites/walk_forward/walk_forward_021.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 106
+      },
+      {
+        "file": "sprites/walk_forward/walk_forward_022.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 112
+      },
+      {
+        "file": "sprites/walk_forward/walk_forward_023.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 117
+      },
+      {
+        "file": "sprites/walk_forward/walk_forward_024.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 123
+      }
+    ],
+    "walk_back": [
+      {
+        "file": "sprites/walk_back/walk_back_001.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 0
+      },
+      {
+        "file": "sprites/walk_back/walk_back_002.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 5
+      },
+      {
+        "file": "sprites/walk_back/walk_back_003.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 10
+      },
+      {
+        "file": "sprites/walk_back/walk_back_004.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 16
+      },
+      {
+        "file": "sprites/walk_back/walk_back_005.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 21
+      },
+      {
+        "file": "sprites/walk_back/walk_back_006.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 26
+      },
+      {
+        "file": "sprites/walk_back/walk_back_007.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 32
+      },
+      {
+        "file": "sprites/walk_back/walk_back_008.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 37
+      },
+      {
+        "file": "sprites/walk_back/walk_back_009.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 42
+      },
+      {
+        "file": "sprites/walk_back/walk_back_010.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 48
+      },
+      {
+        "file": "sprites/walk_back/walk_back_011.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 53
+      },
+      {
+        "file": "sprites/walk_back/walk_back_012.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 58
+      },
+      {
+        "file": "sprites/walk_back/walk_back_013.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 64
+      },
+      {
+        "file": "sprites/walk_back/walk_back_014.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 69
+      },
+      {
+        "file": "sprites/walk_back/walk_back_015.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 74
+      },
+      {
+        "file": "sprites/walk_back/walk_back_016.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 80
+      },
+      {
+        "file": "sprites/walk_back/walk_back_017.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 85
+      },
+      {
+        "file": "sprites/walk_back/walk_back_018.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 90
+      },
+      {
+        "file": "sprites/walk_back/walk_back_019.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 96
+      },
+      {
+        "file": "sprites/walk_back/walk_back_020.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 101
+      },
+      {
+        "file": "sprites/walk_back/walk_back_021.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 106
+      },
+      {
+        "file": "sprites/walk_back/walk_back_022.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 112
+      },
+      {
+        "file": "sprites/walk_back/walk_back_023.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 117
+      },
+      {
+        "file": "sprites/walk_back/walk_back_024.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 123
+      }
+    ],
+    "jump": [
+      {
+        "file": "sprites/jump/jump_001.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 0
+      },
+      {
+        "file": "sprites/jump/jump_002.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 5
+      },
+      {
+        "file": "sprites/jump/jump_003.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 10
+      },
+      {
+        "file": "sprites/jump/jump_004.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 16
+      },
+      {
+        "file": "sprites/jump/jump_005.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 21
+      },
+      {
+        "file": "sprites/jump/jump_006.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 26
+      },
+      {
+        "file": "sprites/jump/jump_007.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 32
+      },
+      {
+        "file": "sprites/jump/jump_008.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 37
+      },
+      {
+        "file": "sprites/jump/jump_009.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 42
+      },
+      {
+        "file": "sprites/jump/jump_010.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 48
+      },
+      {
+        "file": "sprites/jump/jump_011.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 53
+      },
+      {
+        "file": "sprites/jump/jump_012.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 58
+      },
+      {
+        "file": "sprites/jump/jump_013.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 64
+      },
+      {
+        "file": "sprites/jump/jump_014.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 69
+      },
+      {
+        "file": "sprites/jump/jump_015.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 74
+      },
+      {
+        "file": "sprites/jump/jump_016.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 80
+      },
+      {
+        "file": "sprites/jump/jump_017.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 85
+      },
+      {
+        "file": "sprites/jump/jump_018.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 90
+      },
+      {
+        "file": "sprites/jump/jump_019.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 96
+      },
+      {
+        "file": "sprites/jump/jump_020.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 101
+      },
+      {
+        "file": "sprites/jump/jump_021.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 106
+      },
+      {
+        "file": "sprites/jump/jump_022.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 112
+      },
+      {
+        "file": "sprites/jump/jump_023.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 117
+      },
+      {
+        "file": "sprites/jump/jump_024.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 123
+      }
+    ],
+    "landing": [
+      {
+        "file": "sprites/landing/landing_001.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 0
+      },
+      {
+        "file": "sprites/landing/landing_002.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 5
+      },
+      {
+        "file": "sprites/landing/landing_003.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 10
+      },
+      {
+        "file": "sprites/landing/landing_004.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 16
+      },
+      {
+        "file": "sprites/landing/landing_005.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 21
+      },
+      {
+        "file": "sprites/landing/landing_006.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 26
+      },
+      {
+        "file": "sprites/landing/landing_007.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 32
+      },
+      {
+        "file": "sprites/landing/landing_008.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 37
+      },
+      {
+        "file": "sprites/landing/landing_009.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 42
+      },
+      {
+        "file": "sprites/landing/landing_010.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 48
+      },
+      {
+        "file": "sprites/landing/landing_011.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 53
+      },
+      {
+        "file": "sprites/landing/landing_012.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 58
+      },
+      {
+        "file": "sprites/landing/landing_013.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 64
+      },
+      {
+        "file": "sprites/landing/landing_014.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 69
+      },
+      {
+        "file": "sprites/landing/landing_015.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 74
+      },
+      {
+        "file": "sprites/landing/landing_016.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 80
+      },
+      {
+        "file": "sprites/landing/landing_017.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 85
+      },
+      {
+        "file": "sprites/landing/landing_018.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 90
+      },
+      {
+        "file": "sprites/landing/landing_019.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 96
+      },
+      {
+        "file": "sprites/landing/landing_020.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 101
+      },
+      {
+        "file": "sprites/landing/landing_021.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 106
+      },
+      {
+        "file": "sprites/landing/landing_022.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 112
+      },
+      {
+        "file": "sprites/landing/landing_023.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 117
+      },
+      {
+        "file": "sprites/landing/landing_024.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 123
+      }
+    ],
+    "crouch": [
+      {
+        "file": "sprites/crouch/crouch_001.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 0
+      },
+      {
+        "file": "sprites/crouch/crouch_002.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 2
+      },
+      {
+        "file": "sprites/crouch/crouch_003.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 4
+      },
+      {
+        "file": "sprites/crouch/crouch_004.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 7
+      },
+      {
+        "file": "sprites/crouch/crouch_005.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 9
+      },
+      {
+        "file": "sprites/crouch/crouch_006.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 12
+      },
+      {
+        "file": "sprites/crouch/crouch_007.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 14
+      },
+      {
+        "file": "sprites/crouch/crouch_008.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 17
+      },
+      {
+        "file": "sprites/crouch/crouch_009.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 19
+      },
+      {
+        "file": "sprites/crouch/crouch_010.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 22
+      },
+      {
+        "file": "sprites/crouch/crouch_011.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 24
+      },
+      {
+        "file": "sprites/crouch/crouch_012.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 27
+      },
+      {
+        "file": "sprites/crouch/crouch_013.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 29
+      },
+      {
+        "file": "sprites/crouch/crouch_014.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 32
+      },
+      {
+        "file": "sprites/crouch/crouch_015.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 34
+      },
+      {
+        "file": "sprites/crouch/crouch_016.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 37
+      },
+      {
+        "file": "sprites/crouch/crouch_017.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 39
+      },
+      {
+        "file": "sprites/crouch/crouch_018.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 42
+      },
+      {
+        "file": "sprites/crouch/crouch_019.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 44
+      },
+      {
+        "file": "sprites/crouch/crouch_020.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 47
+      },
+      {
+        "file": "sprites/crouch/crouch_021.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 49
+      },
+      {
+        "file": "sprites/crouch/crouch_022.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 52
+      },
+      {
+        "file": "sprites/crouch/crouch_023.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 54
+      },
+      {
+        "file": "sprites/crouch/crouch_024.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 57
+      }
+    ],
+    "block": [
+      {
+        "file": "sprites/block/block_001.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 0
+      },
+      {
+        "file": "sprites/block/block_002.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 2
+      },
+      {
+        "file": "sprites/block/block_003.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 5
+      },
+      {
+        "file": "sprites/block/block_004.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 8
+      },
+      {
+        "file": "sprites/block/block_005.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 11
+      },
+      {
+        "file": "sprites/block/block_006.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 14
+      },
+      {
+        "file": "sprites/block/block_007.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 16
+      },
+      {
+        "file": "sprites/block/block_008.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 19
+      },
+      {
+        "file": "sprites/block/block_009.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 22
+      },
+      {
+        "file": "sprites/block/block_010.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 25
+      },
+      {
+        "file": "sprites/block/block_011.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 28
+      },
+      {
+        "file": "sprites/block/block_012.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 31
+      },
+      {
+        "file": "sprites/block/block_013.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 33
+      },
+      {
+        "file": "sprites/block/block_014.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 36
+      },
+      {
+        "file": "sprites/block/block_015.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 39
+      },
+      {
+        "file": "sprites/block/block_016.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 42
+      },
+      {
+        "file": "sprites/block/block_017.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 45
+      },
+      {
+        "file": "sprites/block/block_018.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 48
+      },
+      {
+        "file": "sprites/block/block_019.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 50
+      },
+      {
+        "file": "sprites/block/block_020.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 53
+      },
+      {
+        "file": "sprites/block/block_021.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 56
+      },
+      {
+        "file": "sprites/block/block_022.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 59
+      },
+      {
+        "file": "sprites/block/block_023.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 62
+      },
+      {
+        "file": "sprites/block/block_024.png",
+        "width": 744,
+        "height": 640,
+        "anchor": {
+          "x": 360,
+          "y": 600
+        },
+        "durationFrames": 3,
+        "sourceFrame": 65
+      }
+    ],
+    "hurt": [
+      {
+        "file": "sprites/hurt/hurt_001.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 0
+      },
+      {
+        "file": "sprites/hurt/hurt_002.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 5
+      },
+      {
+        "file": "sprites/hurt/hurt_003.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 10
+      },
+      {
+        "file": "sprites/hurt/hurt_004.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 16
+      },
+      {
+        "file": "sprites/hurt/hurt_005.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 21
+      },
+      {
+        "file": "sprites/hurt/hurt_006.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 26
+      },
+      {
+        "file": "sprites/hurt/hurt_007.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 32
+      },
+      {
+        "file": "sprites/hurt/hurt_008.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 37
+      },
+      {
+        "file": "sprites/hurt/hurt_009.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 42
+      },
+      {
+        "file": "sprites/hurt/hurt_010.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 48
+      },
+      {
+        "file": "sprites/hurt/hurt_011.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 53
+      },
+      {
+        "file": "sprites/hurt/hurt_012.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 58
+      },
+      {
+        "file": "sprites/hurt/hurt_013.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 64
+      },
+      {
+        "file": "sprites/hurt/hurt_014.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 69
+      },
+      {
+        "file": "sprites/hurt/hurt_015.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 74
+      },
+      {
+        "file": "sprites/hurt/hurt_016.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 80
+      },
+      {
+        "file": "sprites/hurt/hurt_017.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 85
+      },
+      {
+        "file": "sprites/hurt/hurt_018.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 90
+      },
+      {
+        "file": "sprites/hurt/hurt_019.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 96
+      },
+      {
+        "file": "sprites/hurt/hurt_020.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 101
+      },
+      {
+        "file": "sprites/hurt/hurt_021.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 106
+      },
+      {
+        "file": "sprites/hurt/hurt_022.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 112
+      },
+      {
+        "file": "sprites/hurt/hurt_023.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 117
+      },
+      {
+        "file": "sprites/hurt/hurt_024.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 123
+      }
+    ],
+    "getup": [
+      {
+        "file": "sprites/getup/getup_001.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 35
+      },
+      {
+        "file": "sprites/getup/getup_002.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 38
+      },
+      {
+        "file": "sprites/getup/getup_003.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 42
+      },
+      {
+        "file": "sprites/getup/getup_004.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 46
+      },
+      {
+        "file": "sprites/getup/getup_005.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 50
+      },
+      {
+        "file": "sprites/getup/getup_006.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 54
+      },
+      {
+        "file": "sprites/getup/getup_007.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 57
+      },
+      {
+        "file": "sprites/getup/getup_008.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 61
+      },
+      {
+        "file": "sprites/getup/getup_009.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 65
+      },
+      {
+        "file": "sprites/getup/getup_010.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 69
+      },
+      {
+        "file": "sprites/getup/getup_011.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 73
+      },
+      {
+        "file": "sprites/getup/getup_012.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 77
+      },
+      {
+        "file": "sprites/getup/getup_013.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 80
+      },
+      {
+        "file": "sprites/getup/getup_014.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 84
+      },
+      {
+        "file": "sprites/getup/getup_015.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 88
+      },
+      {
+        "file": "sprites/getup/getup_016.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 92
+      },
+      {
+        "file": "sprites/getup/getup_017.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 96
+      },
+      {
+        "file": "sprites/getup/getup_018.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 100
+      },
+      {
+        "file": "sprites/getup/getup_019.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 103
+      },
+      {
+        "file": "sprites/getup/getup_020.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 107
+      },
+      {
+        "file": "sprites/getup/getup_021.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 111
+      },
+      {
+        "file": "sprites/getup/getup_022.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 115
+      },
+      {
+        "file": "sprites/getup/getup_023.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 119
+      },
+      {
+        "file": "sprites/getup/getup_024.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 123
+      }
+    ],
+    "dash_forward": [
+      {
+        "file": "sprites/dash_forward/dash_forward_001.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 0
+      },
+      {
+        "file": "sprites/dash_forward/dash_forward_002.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 5
+      },
+      {
+        "file": "sprites/dash_forward/dash_forward_003.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 10
+      },
+      {
+        "file": "sprites/dash_forward/dash_forward_004.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 16
+      },
+      {
+        "file": "sprites/dash_forward/dash_forward_005.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 21
+      },
+      {
+        "file": "sprites/dash_forward/dash_forward_006.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 26
+      },
+      {
+        "file": "sprites/dash_forward/dash_forward_007.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 32
+      },
+      {
+        "file": "sprites/dash_forward/dash_forward_008.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 37
+      },
+      {
+        "file": "sprites/dash_forward/dash_forward_009.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 42
+      },
+      {
+        "file": "sprites/dash_forward/dash_forward_010.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 48
+      },
+      {
+        "file": "sprites/dash_forward/dash_forward_011.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 53
+      },
+      {
+        "file": "sprites/dash_forward/dash_forward_012.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 58
+      },
+      {
+        "file": "sprites/dash_forward/dash_forward_013.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 64
+      },
+      {
+        "file": "sprites/dash_forward/dash_forward_014.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 69
+      },
+      {
+        "file": "sprites/dash_forward/dash_forward_015.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 74
+      },
+      {
+        "file": "sprites/dash_forward/dash_forward_016.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 80
+      },
+      {
+        "file": "sprites/dash_forward/dash_forward_017.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 85
+      },
+      {
+        "file": "sprites/dash_forward/dash_forward_018.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 90
+      },
+      {
+        "file": "sprites/dash_forward/dash_forward_019.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 96
+      },
+      {
+        "file": "sprites/dash_forward/dash_forward_020.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 101
+      },
+      {
+        "file": "sprites/dash_forward/dash_forward_021.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 106
+      },
+      {
+        "file": "sprites/dash_forward/dash_forward_022.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 112
+      },
+      {
+        "file": "sprites/dash_forward/dash_forward_023.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 117
+      },
+      {
+        "file": "sprites/dash_forward/dash_forward_024.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 123
+      }
+    ],
+    "ribbon_jab": [
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_001.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 0
+      },
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_002.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 5
+      },
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_003.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 10
+      },
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_004.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 16
+      },
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_005.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 21
+      },
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_006.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 26
+      },
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_007.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 32
+      },
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_008.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 37
+      },
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_009.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 42
+      },
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_010.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 48
+      },
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_011.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 53
+      },
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_012.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 58
+      },
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_013.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 64
+      },
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_014.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 69
+      },
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_015.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 74
+      },
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_016.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 80
+      },
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_017.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 85
+      },
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_018.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 90
+      },
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_019.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 96
+      },
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_020.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 101
+      },
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_021.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 106
+      },
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_022.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 112
+      },
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_023.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 117
+      },
+      {
+        "file": "sprites/ribbon_jab/ribbon_jab_024.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 123
+      }
+    ],
+    "undertow": [
+      {
+        "file": "sprites/undertow/undertow_001.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 0
+      },
+      {
+        "file": "sprites/undertow/undertow_002.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 5
+      },
+      {
+        "file": "sprites/undertow/undertow_003.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 10
+      },
+      {
+        "file": "sprites/undertow/undertow_004.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 16
+      },
+      {
+        "file": "sprites/undertow/undertow_005.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 21
+      },
+      {
+        "file": "sprites/undertow/undertow_006.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 26
+      },
+      {
+        "file": "sprites/undertow/undertow_007.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 32
+      },
+      {
+        "file": "sprites/undertow/undertow_008.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 37
+      },
+      {
+        "file": "sprites/undertow/undertow_009.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 42
+      },
+      {
+        "file": "sprites/undertow/undertow_010.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 48
+      },
+      {
+        "file": "sprites/undertow/undertow_011.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 53
+      },
+      {
+        "file": "sprites/undertow/undertow_012.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 58
+      },
+      {
+        "file": "sprites/undertow/undertow_013.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 64
+      },
+      {
+        "file": "sprites/undertow/undertow_014.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 69
+      },
+      {
+        "file": "sprites/undertow/undertow_015.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 74
+      },
+      {
+        "file": "sprites/undertow/undertow_016.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 80
+      },
+      {
+        "file": "sprites/undertow/undertow_017.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 85
+      },
+      {
+        "file": "sprites/undertow/undertow_018.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 90
+      },
+      {
+        "file": "sprites/undertow/undertow_019.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 96
+      },
+      {
+        "file": "sprites/undertow/undertow_020.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 101
+      },
+      {
+        "file": "sprites/undertow/undertow_021.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 106
+      },
+      {
+        "file": "sprites/undertow/undertow_022.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 112
+      },
+      {
+        "file": "sprites/undertow/undertow_023.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 117
+      },
+      {
+        "file": "sprites/undertow/undertow_024.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 123
+      }
+    ],
+    "rising_ochre": [
+      {
+        "file": "sprites/rising_ochre/rising_ochre_001.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 0
+      },
+      {
+        "file": "sprites/rising_ochre/rising_ochre_002.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 5
+      },
+      {
+        "file": "sprites/rising_ochre/rising_ochre_003.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 10
+      },
+      {
+        "file": "sprites/rising_ochre/rising_ochre_004.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 16
+      },
+      {
+        "file": "sprites/rising_ochre/rising_ochre_005.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 21
+      },
+      {
+        "file": "sprites/rising_ochre/rising_ochre_006.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 26
+      },
+      {
+        "file": "sprites/rising_ochre/rising_ochre_007.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 32
+      },
+      {
+        "file": "sprites/rising_ochre/rising_ochre_008.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 37
+      },
+      {
+        "file": "sprites/rising_ochre/rising_ochre_009.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 42
+      },
+      {
+        "file": "sprites/rising_ochre/rising_ochre_010.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 48
+      },
+      {
+        "file": "sprites/rising_ochre/rising_ochre_011.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 53
+      },
+      {
+        "file": "sprites/rising_ochre/rising_ochre_012.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 58
+      },
+      {
+        "file": "sprites/rising_ochre/rising_ochre_013.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 64
+      },
+      {
+        "file": "sprites/rising_ochre/rising_ochre_014.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 69
+      },
+      {
+        "file": "sprites/rising_ochre/rising_ochre_015.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 74
+      },
+      {
+        "file": "sprites/rising_ochre/rising_ochre_016.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 80
+      },
+      {
+        "file": "sprites/rising_ochre/rising_ochre_017.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 85
+      },
+      {
+        "file": "sprites/rising_ochre/rising_ochre_018.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 90
+      },
+      {
+        "file": "sprites/rising_ochre/rising_ochre_019.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 96
+      },
+      {
+        "file": "sprites/rising_ochre/rising_ochre_020.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 101
+      },
+      {
+        "file": "sprites/rising_ochre/rising_ochre_021.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 106
+      },
+      {
+        "file": "sprites/rising_ochre/rising_ochre_022.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 112
+      },
+      {
+        "file": "sprites/rising_ochre/rising_ochre_023.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 117
+      },
+      {
+        "file": "sprites/rising_ochre/rising_ochre_024.png",
+        "width": 672,
+        "height": 634,
+        "anchor": {
+          "x": 288,
+          "y": 594
+        },
+        "durationFrames": 3,
+        "sourceFrame": 123
+      }
+    ],
+    "impasto": [
+      {
+        "file": "sprites/impasto/impasto_001.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 0
+      },
+      {
+        "file": "sprites/impasto/impasto_002.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 5
+      },
+      {
+        "file": "sprites/impasto/impasto_003.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 10
+      },
+      {
+        "file": "sprites/impasto/impasto_004.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 16
+      },
+      {
+        "file": "sprites/impasto/impasto_005.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 21
+      },
+      {
+        "file": "sprites/impasto/impasto_006.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 26
+      },
+      {
+        "file": "sprites/impasto/impasto_007.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 32
+      },
+      {
+        "file": "sprites/impasto/impasto_008.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 37
+      },
+      {
+        "file": "sprites/impasto/impasto_009.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 42
+      },
+      {
+        "file": "sprites/impasto/impasto_010.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 48
+      },
+      {
+        "file": "sprites/impasto/impasto_011.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 53
+      },
+      {
+        "file": "sprites/impasto/impasto_012.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 58
+      },
+      {
+        "file": "sprites/impasto/impasto_013.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 64
+      },
+      {
+        "file": "sprites/impasto/impasto_014.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 69
+      },
+      {
+        "file": "sprites/impasto/impasto_015.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 74
+      },
+      {
+        "file": "sprites/impasto/impasto_016.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 80
+      },
+      {
+        "file": "sprites/impasto/impasto_017.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 85
+      },
+      {
+        "file": "sprites/impasto/impasto_018.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 90
+      },
+      {
+        "file": "sprites/impasto/impasto_019.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 96
+      },
+      {
+        "file": "sprites/impasto/impasto_020.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 101
+      },
+      {
+        "file": "sprites/impasto/impasto_021.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 106
+      },
+      {
+        "file": "sprites/impasto/impasto_022.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 112
+      },
+      {
+        "file": "sprites/impasto/impasto_023.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 117
+      },
+      {
+        "file": "sprites/impasto/impasto_024.png",
+        "width": 748,
+        "height": 660,
+        "anchor": {
+          "x": 359,
+          "y": 588
+        },
+        "durationFrames": 3,
+        "sourceFrame": 123
+      }
+    ],
+    "bind": [
+      {
+        "file": "sprites/bind/bind_001.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 0
+      },
+      {
+        "file": "sprites/bind/bind_002.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 5
+      },
+      {
+        "file": "sprites/bind/bind_003.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 10
+      },
+      {
+        "file": "sprites/bind/bind_004.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 16
+      },
+      {
+        "file": "sprites/bind/bind_005.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 21
+      },
+      {
+        "file": "sprites/bind/bind_006.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 26
+      },
+      {
+        "file": "sprites/bind/bind_007.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 32
+      },
+      {
+        "file": "sprites/bind/bind_008.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 37
+      },
+      {
+        "file": "sprites/bind/bind_009.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 42
+      },
+      {
+        "file": "sprites/bind/bind_010.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 48
+      },
+      {
+        "file": "sprites/bind/bind_011.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 53
+      },
+      {
+        "file": "sprites/bind/bind_012.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 58
+      },
+      {
+        "file": "sprites/bind/bind_013.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 64
+      },
+      {
+        "file": "sprites/bind/bind_014.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 69
+      },
+      {
+        "file": "sprites/bind/bind_015.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 74
+      },
+      {
+        "file": "sprites/bind/bind_016.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 80
+      },
+      {
+        "file": "sprites/bind/bind_017.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 85
+      },
+      {
+        "file": "sprites/bind/bind_018.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 90
+      },
+      {
+        "file": "sprites/bind/bind_019.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 96
+      },
+      {
+        "file": "sprites/bind/bind_020.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 101
+      },
+      {
+        "file": "sprites/bind/bind_021.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 106
+      },
+      {
+        "file": "sprites/bind/bind_022.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 112
+      },
+      {
+        "file": "sprites/bind/bind_023.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 117
+      },
+      {
+        "file": "sprites/bind/bind_024.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 123
+      }
+    ],
+    "summon": [
+      {
+        "file": "sprites/summon/summon_001.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 0
+      },
+      {
+        "file": "sprites/summon/summon_002.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 5
+      },
+      {
+        "file": "sprites/summon/summon_003.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 10
+      },
+      {
+        "file": "sprites/summon/summon_004.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 16
+      },
+      {
+        "file": "sprites/summon/summon_005.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 21
+      },
+      {
+        "file": "sprites/summon/summon_006.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 26
+      },
+      {
+        "file": "sprites/summon/summon_007.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 32
+      },
+      {
+        "file": "sprites/summon/summon_008.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 37
+      },
+      {
+        "file": "sprites/summon/summon_009.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 42
+      },
+      {
+        "file": "sprites/summon/summon_010.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 48
+      },
+      {
+        "file": "sprites/summon/summon_011.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 53
+      },
+      {
+        "file": "sprites/summon/summon_012.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 58
+      },
+      {
+        "file": "sprites/summon/summon_013.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 64
+      },
+      {
+        "file": "sprites/summon/summon_014.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 69
+      },
+      {
+        "file": "sprites/summon/summon_015.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 74
+      },
+      {
+        "file": "sprites/summon/summon_016.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 80
+      },
+      {
+        "file": "sprites/summon/summon_017.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 85
+      },
+      {
+        "file": "sprites/summon/summon_018.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 90
+      },
+      {
+        "file": "sprites/summon/summon_019.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 96
+      },
+      {
+        "file": "sprites/summon/summon_020.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 101
+      },
+      {
+        "file": "sprites/summon/summon_021.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 106
+      },
+      {
+        "file": "sprites/summon/summon_022.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 112
+      },
+      {
+        "file": "sprites/summon/summon_023.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 117
+      },
+      {
+        "file": "sprites/summon/summon_024.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 123
+      }
+    ],
+    "hands_idle": [
+      {
+        "file": "sprites/hands_idle/hands_idle_001.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 0
+      },
+      {
+        "file": "sprites/hands_idle/hands_idle_002.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 5
+      },
+      {
+        "file": "sprites/hands_idle/hands_idle_003.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 10
+      },
+      {
+        "file": "sprites/hands_idle/hands_idle_004.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 16
+      },
+      {
+        "file": "sprites/hands_idle/hands_idle_005.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 21
+      },
+      {
+        "file": "sprites/hands_idle/hands_idle_006.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 26
+      },
+      {
+        "file": "sprites/hands_idle/hands_idle_007.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 32
+      },
+      {
+        "file": "sprites/hands_idle/hands_idle_008.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 37
+      },
+      {
+        "file": "sprites/hands_idle/hands_idle_009.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 42
+      },
+      {
+        "file": "sprites/hands_idle/hands_idle_010.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 48
+      },
+      {
+        "file": "sprites/hands_idle/hands_idle_011.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 53
+      },
+      {
+        "file": "sprites/hands_idle/hands_idle_012.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 58
+      },
+      {
+        "file": "sprites/hands_idle/hands_idle_013.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 64
+      },
+      {
+        "file": "sprites/hands_idle/hands_idle_014.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 69
+      },
+      {
+        "file": "sprites/hands_idle/hands_idle_015.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 74
+      },
+      {
+        "file": "sprites/hands_idle/hands_idle_016.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 80
+      },
+      {
+        "file": "sprites/hands_idle/hands_idle_017.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 85
+      },
+      {
+        "file": "sprites/hands_idle/hands_idle_018.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 90
+      },
+      {
+        "file": "sprites/hands_idle/hands_idle_019.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 96
+      },
+      {
+        "file": "sprites/hands_idle/hands_idle_020.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 101
+      },
+      {
+        "file": "sprites/hands_idle/hands_idle_021.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 106
+      },
+      {
+        "file": "sprites/hands_idle/hands_idle_022.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 112
+      },
+      {
+        "file": "sprites/hands_idle/hands_idle_023.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 117
+      },
+      {
+        "file": "sprites/hands_idle/hands_idle_024.png",
+        "width": 679,
+        "height": 577,
+        "anchor": {
+          "x": 295,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 123
+      }
+    ],
+    "needle_thrust": [
+      {
+        "file": "sprites/needle_thrust/needle_thrust_001.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 0
+      },
+      {
+        "file": "sprites/needle_thrust/needle_thrust_002.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 5
+      },
+      {
+        "file": "sprites/needle_thrust/needle_thrust_003.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 10
+      },
+      {
+        "file": "sprites/needle_thrust/needle_thrust_004.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 16
+      },
+      {
+        "file": "sprites/needle_thrust/needle_thrust_005.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 21
+      },
+      {
+        "file": "sprites/needle_thrust/needle_thrust_006.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 26
+      },
+      {
+        "file": "sprites/needle_thrust/needle_thrust_007.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 32
+      },
+      {
+        "file": "sprites/needle_thrust/needle_thrust_008.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 37
+      },
+      {
+        "file": "sprites/needle_thrust/needle_thrust_009.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 42
+      },
+      {
+        "file": "sprites/needle_thrust/needle_thrust_010.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 48
+      },
+      {
+        "file": "sprites/needle_thrust/needle_thrust_011.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 53
+      },
+      {
+        "file": "sprites/needle_thrust/needle_thrust_012.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 58
+      },
+      {
+        "file": "sprites/needle_thrust/needle_thrust_013.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 64
+      },
+      {
+        "file": "sprites/needle_thrust/needle_thrust_014.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 69
+      },
+      {
+        "file": "sprites/needle_thrust/needle_thrust_015.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 74
+      },
+      {
+        "file": "sprites/needle_thrust/needle_thrust_016.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 80
+      },
+      {
+        "file": "sprites/needle_thrust/needle_thrust_017.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 85
+      },
+      {
+        "file": "sprites/needle_thrust/needle_thrust_018.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 90
+      },
+      {
+        "file": "sprites/needle_thrust/needle_thrust_019.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 96
+      },
+      {
+        "file": "sprites/needle_thrust/needle_thrust_020.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 101
+      },
+      {
+        "file": "sprites/needle_thrust/needle_thrust_021.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 106
+      },
+      {
+        "file": "sprites/needle_thrust/needle_thrust_022.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 112
+      },
+      {
+        "file": "sprites/needle_thrust/needle_thrust_023.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 117
+      },
+      {
+        "file": "sprites/needle_thrust/needle_thrust_024.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 123
+      }
+    ],
+    "hands_pinch": [
+      {
+        "file": "sprites/hands_pinch/hands_pinch_001.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 0
+      },
+      {
+        "file": "sprites/hands_pinch/hands_pinch_002.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 5
+      },
+      {
+        "file": "sprites/hands_pinch/hands_pinch_003.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 10
+      },
+      {
+        "file": "sprites/hands_pinch/hands_pinch_004.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 16
+      },
+      {
+        "file": "sprites/hands_pinch/hands_pinch_005.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 21
+      },
+      {
+        "file": "sprites/hands_pinch/hands_pinch_006.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 26
+      },
+      {
+        "file": "sprites/hands_pinch/hands_pinch_007.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 32
+      },
+      {
+        "file": "sprites/hands_pinch/hands_pinch_008.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 37
+      },
+      {
+        "file": "sprites/hands_pinch/hands_pinch_009.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 42
+      },
+      {
+        "file": "sprites/hands_pinch/hands_pinch_010.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 48
+      },
+      {
+        "file": "sprites/hands_pinch/hands_pinch_011.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 53
+      },
+      {
+        "file": "sprites/hands_pinch/hands_pinch_012.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 58
+      },
+      {
+        "file": "sprites/hands_pinch/hands_pinch_013.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 64
+      },
+      {
+        "file": "sprites/hands_pinch/hands_pinch_014.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 69
+      },
+      {
+        "file": "sprites/hands_pinch/hands_pinch_015.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 74
+      },
+      {
+        "file": "sprites/hands_pinch/hands_pinch_016.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 80
+      },
+      {
+        "file": "sprites/hands_pinch/hands_pinch_017.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 85
+      },
+      {
+        "file": "sprites/hands_pinch/hands_pinch_018.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 90
+      },
+      {
+        "file": "sprites/hands_pinch/hands_pinch_019.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 96
+      },
+      {
+        "file": "sprites/hands_pinch/hands_pinch_020.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 101
+      },
+      {
+        "file": "sprites/hands_pinch/hands_pinch_021.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 106
+      },
+      {
+        "file": "sprites/hands_pinch/hands_pinch_022.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 112
+      },
+      {
+        "file": "sprites/hands_pinch/hands_pinch_023.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 117
+      },
+      {
+        "file": "sprites/hands_pinch/hands_pinch_024.png",
+        "width": 672,
+        "height": 492,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 123
+      }
+    ],
+    "hands_recall": [
+      {
+        "file": "sprites/hands_recall/hands_recall_001.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 0
+      },
+      {
+        "file": "sprites/hands_recall/hands_recall_002.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 5
+      },
+      {
+        "file": "sprites/hands_recall/hands_recall_003.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 10
+      },
+      {
+        "file": "sprites/hands_recall/hands_recall_004.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 16
+      },
+      {
+        "file": "sprites/hands_recall/hands_recall_005.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 21
+      },
+      {
+        "file": "sprites/hands_recall/hands_recall_006.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 26
+      },
+      {
+        "file": "sprites/hands_recall/hands_recall_007.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 32
+      },
+      {
+        "file": "sprites/hands_recall/hands_recall_008.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 37
+      },
+      {
+        "file": "sprites/hands_recall/hands_recall_009.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 42
+      },
+      {
+        "file": "sprites/hands_recall/hands_recall_010.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 48
+      },
+      {
+        "file": "sprites/hands_recall/hands_recall_011.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 53
+      },
+      {
+        "file": "sprites/hands_recall/hands_recall_012.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 58
+      },
+      {
+        "file": "sprites/hands_recall/hands_recall_013.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 64
+      },
+      {
+        "file": "sprites/hands_recall/hands_recall_014.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 69
+      },
+      {
+        "file": "sprites/hands_recall/hands_recall_015.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 74
+      },
+      {
+        "file": "sprites/hands_recall/hands_recall_016.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 80
+      },
+      {
+        "file": "sprites/hands_recall/hands_recall_017.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 85
+      },
+      {
+        "file": "sprites/hands_recall/hands_recall_018.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 90
+      },
+      {
+        "file": "sprites/hands_recall/hands_recall_019.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 96
+      },
+      {
+        "file": "sprites/hands_recall/hands_recall_020.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 101
+      },
+      {
+        "file": "sprites/hands_recall/hands_recall_021.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 106
+      },
+      {
+        "file": "sprites/hands_recall/hands_recall_022.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 112
+      },
+      {
+        "file": "sprites/hands_recall/hands_recall_023.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 117
+      },
+      {
+        "file": "sprites/hands_recall/hands_recall_024.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 123
+      }
+    ],
+    "base": [
+      {
+        "file": "sprites/idle/idle_001.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 0
+      },
+      {
+        "file": "sprites/idle/idle_002.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 5
+      },
+      {
+        "file": "sprites/idle/idle_003.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 10
+      },
+      {
+        "file": "sprites/idle/idle_004.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 16
+      },
+      {
+        "file": "sprites/idle/idle_005.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 21
+      },
+      {
+        "file": "sprites/idle/idle_006.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 26
+      },
+      {
+        "file": "sprites/idle/idle_007.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 32
+      },
+      {
+        "file": "sprites/idle/idle_008.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 37
+      },
+      {
+        "file": "sprites/idle/idle_009.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 42
+      },
+      {
+        "file": "sprites/idle/idle_010.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 48
+      },
+      {
+        "file": "sprites/idle/idle_011.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 53
+      },
+      {
+        "file": "sprites/idle/idle_012.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 58
+      },
+      {
+        "file": "sprites/idle/idle_013.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 64
+      },
+      {
+        "file": "sprites/idle/idle_014.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 69
+      },
+      {
+        "file": "sprites/idle/idle_015.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 74
+      },
+      {
+        "file": "sprites/idle/idle_016.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 80
+      },
+      {
+        "file": "sprites/idle/idle_017.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 85
+      },
+      {
+        "file": "sprites/idle/idle_018.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 90
+      },
+      {
+        "file": "sprites/idle/idle_019.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 96
+      },
+      {
+        "file": "sprites/idle/idle_020.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 101
+      },
+      {
+        "file": "sprites/idle/idle_021.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 106
+      },
+      {
+        "file": "sprites/idle/idle_022.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 112
+      },
+      {
+        "file": "sprites/idle/idle_023.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 117
+      },
+      {
+        "file": "sprites/idle/idle_024.png",
+        "width": 672,
+        "height": 480,
+        "anchor": {
+          "x": 288,
+          "y": 440
+        },
+        "durationFrames": 3,
+        "sourceFrame": 123
+      }
+    ]
+  }
+}

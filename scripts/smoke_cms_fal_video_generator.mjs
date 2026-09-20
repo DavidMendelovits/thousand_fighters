@@ -104,9 +104,22 @@ try {
     result: async () => ({ url: 'https://example.com/video.mp4' }),
     download: async () => mp4,
   };
-  const completed = await runVideoJob({ resume: output }, { adapter: successful, log: () => {} });
+  const generationAttempts = [];
+  const completed = await runVideoJob({ resume: output }, {
+    adapter: successful,
+    log: () => {},
+    onGenerationAttempt: async (event) => { generationAttempts.push(event); },
+  });
   assert.equal(completed.transportStatus, 'downloaded');
   assert.equal(completed.qualityStatus, 'unreviewed');
+  assert.ok(completed.timings.inputPreparationMs >= 0);
+  assert.ok(completed.timings.submissionMs >= 0);
+  assert.ok(completed.timings.providerQueueAndGenerationMs >= 0);
+  assert.ok(completed.timings.downloadMs >= 0);
+  assert.ok(completed.timings.transportInvocationMs >= 0);
+  assert.equal(generationAttempts.length, 1);
+  assert.equal(generationAttempts[0].status, 'succeeded');
+  assert.equal(generationAttempts[0].attemptId, completed.generationAttempt.attemptId);
   assert.equal(submits, 1);
   assert.equal(polls, 2);
   const disk = await readFile(path.join(output, 'job.json'), 'utf8');

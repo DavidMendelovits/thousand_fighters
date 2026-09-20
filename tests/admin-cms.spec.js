@@ -40,6 +40,7 @@ test.describe('CMS admin platform', () => {
     await page.locator('[data-ops-tab="tools"]').click();
     await expect(page.getByRole('heading', { name: 'Add Sprite Asset' })).toBeVisible();
 
+    await page.locator('[data-collection="drafts"]').click();
     await page.locator(`[data-character-id="${characterId}"]`).click();
     const workbench = page.locator('#character-workbench');
     await expect(workbench).toContainText('Base / States');

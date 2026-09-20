@@ -13,3 +13,13 @@ dialog{color:#eeeae2;border:1px solid #55594d;background:#202226;max-width:510px
 @media(min-width:761px){.viewer{display:flex;flex-direction:column}.stage{flex:1;min-height:382px}.viewer-header,.stage-toolbar,.transport{flex-shrink:0}}
 @media(max-width:760px){.frame-strip{font-size:0}.frame-strip.current{font-size:8px}.inspector-section:has(#intent){grid-column:1/-1;border-right:0}.inspector-section:has(#intent) .inspector-note{max-width:290px}}
 @media(min-width:761px){.masthead{height:65px}main{padding-top:25px}.page-heading{margin-bottom:22px}h1{font-size:47px}.eyebrow{margin-bottom:8px}.page-heading p{font-size:12px;margin-top:9px}.open-button{margin-top:8px}.clip-card{display:grid;grid-template-columns:22px 1fr;column-gap:10px;min-height:107px;padding:14px 16px}.clip-card-number{grid-row:1/4;margin:2px 0 0;display:block}.clip-card-number span{display:none}.clip-card-title{font-size:14px}.clip-card p{font-size:10px;margin:6px 0 9px}.clip-card-tags{font-size:7px;grid-column:2;align-self:end}.gallery-section{margin-bottom:20px}.viewer-header{height:68px}.stage-toolbar{height:41px}}
+/* The workbench embeds the same renderer, not a second preview implementation. */
+.motion-embedded .masthead,.motion-embedded .page-heading,.motion-embedded .gallery-section,.motion-embedded .page-footer { display:none; }
+.motion-embedded main { padding:12px; max-width:none; }
+.motion-embedded .studio { grid-template-columns:minmax(0,1fr); }
+.motion-embedded .inspector { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+.motion-embedded .stage { min-height:280px; height:350px; }
+.motion-embedded .transport { flex-wrap:wrap; }
+.motion-embedded .timeline-caption { flex-wrap:wrap; gap:6px; }
+.motion-embedded .viewer,.motion-embedded .viewer-header { min-width:0; }
+@media(max-width:550px) { .motion-embedded main { padding:6px; } .motion-embedded .inspector { grid-template-columns:1fr; } .motion-embedded .stage { height:260px; min-height:220px; } }

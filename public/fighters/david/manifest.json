@@ -1,0 +1,92 @@
+{
+  "id": "david",
+  "artSource": "bfl-flux-2-klein-key-poses",
+  "sheets": {
+    "punch": "sheets/punch.png",
+    "kick": "sheets/kick.png",
+    "juggle": "sheets/juggle.png",
+    "sound": "sheets/sound.png",
+    "ink": "sheets/ink.png",
+    "cable": "sheets/cable.png",
+    "base": "sheets/base.png",
+    "hurt": "sheets/hurt.png",
+    "crouch": "sheets/crouch.png",
+    "block": "sheets/block.png",
+    "jump": "sheets/jump.png",
+    "walk_forward": "sheets/walk_forward.png",
+    "walk_back": "sheets/walk_back.png",
+    "dash_forward": "sheets/dash_forward.png",
+    "dash_back": "sheets/dash_back.png",
+    "grab": "sheets/grab.png",
+    "throw": "sheets/throw.png"
+  },
+  "sprites": {
+    "punch": [
+      "sprites/punch/punch_001.png",
+      "sprites/punch/punch_002.png",
+      "sprites/punch/punch_003.png"
+    ],
+    "kick": [
+      "sprites/kick/kick_001.png",
+      "sprites/kick/kick_002.png",
+      "sprites/kick/kick_003.png"
+    ],
+    "juggle": [
+      "sprites/juggle/juggle_001.png",
+      "sprites/juggle/juggle_002.png",
+      "sprites/juggle/juggle_003.png"
+    ],
+    "sound": [
+      "sprites/sound/sound_001.png",
+      "sprites/sound/sound_002.png",
+      "sprites/sound/sound_003.png"
+    ],
+    "ink": [
+      "sprites/ink/ink_001.png",
+      "sprites/ink/ink_002.png",
+      "sprites/ink/ink_003.png"
+    ],
+    "cable": [
+      "sprites/cable/cable_001.png",
+      "sprites/cable/cable_002.png",
+      "sprites/cable/cable_003.png"
+    ],
+    "base": [
+      "sprites/base/base_001.png"
+    ],
+    "hurt": [
+      "sprites/hurt/hurt_001.png"
+    ],
+    "crouch": [
+      "sprites/crouch/crouch_001.png"
+    ],
+    "block": [
+      "sprites/block/block_001.png"
+    ],
+    "jump": [
+      "sprites/jump/jump_001.png"
+    ],
+    "walk_forward": [
+      "sprites/walk_forward/walk_forward_001.png"
+    ],
+    "walk_back": [
+      "sprites/walk_back/walk_back_001.png"
+    ],
+    "dash_forward": [
+      "sprites/dash_forward/dash_forward_001.png"
+    ],
+    "dash_back": [
+      "sprites/dash_back/dash_back_001.png"
+    ],
+    "grab": [
+      "sprites/grab/grab_001.png",
+      "sprites/grab/grab_002.png",
+      "sprites/grab/grab_003.png"
+    ],
+    "throw": [
+      "sprites/throw/throw_001.png",
+      "sprites/throw/throw_002.png",
+      "sprites/throw/throw_003.png"
+    ]
+  }
+}

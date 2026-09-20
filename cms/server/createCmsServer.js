@@ -6,6 +6,11 @@ import { fileURLToPath } from 'node:url';
 import { assetRecordForKey, writeCharacterAssetUpload } from '../assets/uploadCharacterAsset.js';
 import { createLocalCmsRuntime } from '../runtime/createLocalCmsRuntime.js';
 import { convertDraftToCharacterConfig } from '../export/convertDraftToCharacterConfig.js';
+import { segment } from '../storage/LineageStore.js';
+import { reprocessArchivedVideo } from '../pipeline/reprocessArchivedVideo.js';
+import { compareVersions } from '../repositories/characterHistory.js';
+import { resumeArchivedVideo } from '../pipeline/resumeArchivedVideo.js';
+import { workbenchLibrary, workbenchDetail, updateWorkbench, workbenchReviewClip } from '../authoring/workbenchLibrary.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -32,6 +37,10 @@ export function createCmsServer(options = {}) {
 }
 
 async function handleApiRequest({ request, response, url, runtime }) {
+  if (request.method === 'GET' && url.pathname === '/api/status') {
+    sendJson(response, { ok: true, service: 'thousand-fighters-cms', storage: runtime.storage.constructor.name });
+    return;
+  }
   if (request.method === 'GET' && url.pathname === '/api/health') {
     const adapterHealth = await runtime.registry.health();
       sendJson(response, {
@@ -90,7 +99,7 @@ async function handleApiRequest({ request, response, url, runtime }) {
     };
 
     try {
-      const result = await runtime.tools.invoke(toolName, input);
+      const result = await invokeTrackedTool(runtime, toolName, input);
       sendEvent('result', { ok: true, tool: toolName, result });
     } catch (err) {
       sendEvent('error', { error: err.message });
@@ -103,7 +112,7 @@ async function handleApiRequest({ request, response, url, runtime }) {
   if (request.method === 'POST' && url.pathname.startsWith('/api/tools/')) {
     const toolName = decodeURIComponent(url.pathname.slice('/api/tools/'.length));
     const input = await readJsonBody(request);
-    const result = await runtime.tools.invoke(toolName, input);
+    const result = await invokeTrackedTool(runtime, toolName, input);
     sendJson(response, { ok: true, tool: toolName, result });
     return;
   }
@@ -123,7 +132,19 @@ async function handleApiRequest({ request, response, url, runtime }) {
   }
 
   if (request.method === 'GET' && url.pathname === '/api/characters') {
-    sendJson(response, { characters: await runtime.repository.listCharacters() });
+    sendJson(response, { characters: url.searchParams.get('view') === 'workbench' ? await workbenchLibrary(runtime.repository) : await runtime.repository.listCharacters() });
+    return;
+  }
+
+  const workbenchMatch = url.pathname.match(/^\/api\/characters\/([^/]+)\/workbench$/);
+  if (workbenchMatch && ['GET', 'POST'].includes(request.method)) {
+    const characterId = segment(decodeURIComponent(workbenchMatch[1]));
+    sendJson(response, request.method === 'GET' ? await workbenchDetail(runtime.repository, characterId) : await updateWorkbench(runtime.repository, characterId, await readJsonBody(request)));
+    return;
+  }
+  const reviewClipMatch = url.pathname.match(/^\/api\/characters\/([^/]+)\/review-clip\/([^/]+)$/);
+  if (request.method === 'GET' && reviewClipMatch) {
+    sendJson(response, await workbenchReviewClip(runtime.repository, segment(decodeURIComponent(reviewClipMatch[1])), segment(decodeURIComponent(reviewClipMatch[2]))));
     return;
   }
 
@@ -131,6 +152,34 @@ async function handleApiRequest({ request, response, url, runtime }) {
   if (request.method === 'GET' && draftMatch) {
     sendJson(response, { draft: await runtime.repository.getDraft(decodeURIComponent(draftMatch[1])) });
     return;
+  }
+
+  const historyMatch = url.pathname.match(/^\/api\/characters\/([^/]+)\/history(?:\/(checkpoint|restore|branch|reprocess|compare|resume))?$/);
+  if (historyMatch) {
+    const characterId = segment(decodeURIComponent(historyMatch[1]));
+    if (request.method === 'GET' && historyMatch[2] === 'compare') {
+      sendJson(response, await compareVersions(runtime.repository, characterId, url.searchParams.get('left'), url.searchParams.get('right')));
+      return;
+    }
+    if (request.method === 'GET' && !historyMatch[2]) {
+      const [versions, history] = await Promise.all([runtime.repository.listVersions(characterId), runtime.storage.lineage.events(url.searchParams.get('scope') === 'unassigned' ? null : characterId, { before: url.searchParams.get('before'), limit: 80 })]);
+      sendJson(response, { versions, ...history, storage: { provider: runtime.storage.provider, remote: runtime.storage.provider !== 'file' && (runtime.storage.provider !== 'cached' || runtime.storage.writeThrough), retention: 'No automatic deletion' } });
+      return;
+    }
+    if (request.method === 'POST') {
+      const input = await readJsonBody(request);
+      const action = historyMatch[2];
+      const result = await runtime.repository.withMutation(characterId, () => runtime.storage.lineage.run({ characterId, stage: `history-${action}`, inputs: input }, async () => {
+        if (action === 'checkpoint') return runtime.repository.createVersion(characterId, await runtime.repository.getDraft(characterId), { label: String(input.label ?? 'Manual checkpoint').slice(0, 160) });
+        if (action === 'restore') return runtime.repository.restoreVersion(characterId, input.versionId);
+        if (action === 'branch') return runtime.repository.branchArtifact(characterId, input.eventId);
+        if (action === 'reprocess') return reprocessArchivedVideo({ repository: runtime.repository, storage: runtime.storage, characterId, eventId: input.eventId, action: input.action, frames: input.frames, loop: input.loop });
+        if (action === 'resume') return resumeArchivedVideo({ storage: runtime.storage, characterId, eventId: input.eventId });
+        throw new Error('Unknown history operation.');
+      }));
+      sendJson(response, { ok: true, result });
+      return;
+    }
   }
 
   // Runtime CharacterConfig for the single-player testbed. Runs the same
@@ -141,12 +190,12 @@ async function handleApiRequest({ request, response, url, runtime }) {
     const characterId = decodeURIComponent(runtimeConfigMatch[1]);
     const draft = await runtime.repository.getDraft(characterId);
     const keys = await runtime.repository.listCharacterAssets(characterId);
-    const frameDataKey = keys.find((key) => key.endsWith('frameData.json'));
-    const manifestKey = keys.find((key) => key.endsWith('manifest.json'));
+    const frameDataKey = draft.assets?.frameDataKey ?? keys.find((key) => key.endsWith('frameData.json'));
+    const manifestKey = draft.assets?.manifestKey ?? keys.find((key) => key.endsWith('manifest.json'));
     const frameData = frameDataKey ? await runtime.storage.getJson(frameDataKey) : null;
     const manifest = manifestKey ? await runtime.storage.getJson(manifestKey) : null;
     const config = convertDraftToCharacterConfig({ draft, frameData, manifest });
-    sendJson(response, { config });
+    sendJson(response, { config, assetRoot: draft.assets?.rootKey ?? null });
     return;
   }
 
@@ -166,13 +215,13 @@ async function handleApiRequest({ request, response, url, runtime }) {
 
   if (request.method === 'POST' && assetsMatch) {
     const characterId = decodeURIComponent(assetsMatch[1]);
-    const asset = await writeCharacterAssetUpload({
-      repository: runtime.repository,
-      storage: runtime.storage,
-      characterId,
-      input: await readJsonBody(request),
-      source: 'admin-dashboard',
-    });
+    const input = await readJsonBody(request);
+    const asset = await runtime.repository.withMutation(characterId, () => runtime.storage.lineage.run({ characterId, stage: 'upload-asset', inputs: input }, async () => {
+      await runtime.repository.createVersion(characterId, await runtime.repository.getDraft(characterId), { label: 'Before asset upload' });
+      const result = await writeCharacterAssetUpload({ repository: runtime.repository, storage: runtime.storage, characterId, input, source: 'admin-dashboard' });
+      await runtime.repository.createVersion(characterId, await runtime.repository.getDraft(characterId), { label: 'After asset upload' });
+      return result;
+    }));
     sendJson(response, { ok: true, characterId, asset }, 201);
     return;
   }
@@ -198,6 +247,10 @@ async function handleApiRequest({ request, response, url, runtime }) {
   }
 
   sendJson(response, { error: 'Not found' }, 404);
+}
+
+function invokeTrackedTool(runtime, toolName, input) {
+  return runtime.tools.invoke(toolName, input);
 }
 
 async function chatAgentHealth(runtime) {
@@ -273,7 +326,8 @@ async function serveAdminAsset({ response, url, adminRoot }) {
   if (pathname === '/roster' || pathname.startsWith('/roster/') || pathname === '/pipeline') {
     const absolutePath = path.resolve(adminRoot, 'index.html');
     response.writeHead(200, { 'content-type': contentTypeFor(absolutePath), 'cache-control': 'no-store' });
-    createReadStream(absolutePath).pipe(response);
+    const html = await readFile(absolutePath, 'utf8');
+    response.end(embedded ? html.replace('href="/styles.css"', 'href="/cms-admin/styles.css"').replace('src="/app.js"', 'src="/cms-admin/app.js"') : html);
     return;
   }
 

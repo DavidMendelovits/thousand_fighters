@@ -47,16 +47,21 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
   const stats = draft.stats ?? {};
   const scale = deriveSpriteScale(draft.sprite ?? {}, frameData);
   const overrides = (draft.overrides && typeof draft.overrides === 'object') ? draft.overrides : {};
+  const sprite = buildSpriteConfig({ draft, frameData, manifest, scale });
 
   return {
     id,
     displayName: draft.displayName ?? id,
+    ...(draft.parentId?{parentId:draft.parentId,selectable:false}:{}),
+    ...(draft.poseStyle?{poseStyle:draft.poseStyle}:{}),
     ...(draft.rosterGroup?{rosterGroup:draft.rosterGroup}:{}),
     ...(draft.concept?{concept:draft.concept}:{}),
     ...(draft.pushboxWidth?{pushboxWidth:draft.pushboxWidth}:{}),
     stats: draft.combatStats ?? Object.fromEntries(['attack','defense','projectileAttack','projectileDefense','speed','weight','knockback','size'].filter(k=>typeof stats[k]==='number').map(k=>[k,stats[k]])),
     powerUps: draft.powerUps ?? [],
     forms: draft.forms ?? [],
+    ...(draft.actors?.length?{actors:resolveDraftActors(draft,sprite)}:{}),
+    comboRoutes: draft.comboRoutes ?? [],
     walkForwardSpeed: stats.walkForwardSpeed ?? 2.8,
     walkBackSpeed: stats.walkBackSpeed ?? 1.8,
     jumpVelocity: Math.abs(stats.jumpVelocity ?? 10.2),
@@ -66,7 +71,7 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
     maxFallSpeed: stats.maxFallSpeed ?? 12,
     maxHealth: stats.maxHealth ?? 1000,
     pivotOffsetY: 0,
-    sprite: buildSpriteConfig({ draft, frameData, manifest, scale }),
+    sprite,
     // Measured hurtboxes first, then gym overrides win (D2).
     hurtboxes: applyHurtboxOverrides(draft.geometryMode==='authored-runtime'?structuredClone(draft.hurtboxes):generateDefaultHurtboxes(frameData, scale), overrides.hurtboxes, scale),
     // Guard boxes are override-only — no measured/default pass. Fighters with no
@@ -86,6 +91,7 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
       knockdown: 'knockdown',
       getup: 'getup',
       dead: 'dead',
+      ...(draft.animations??{}),
     },
     moves: resolveProjectileEntities(
       applyComboChaining(
@@ -470,6 +476,26 @@ function deriveSpriteScale(sprite, frameData) {
   return Math.min(2, Math.max(0.05, derived)) * relativeHeight * adjust;
 }
 
+export function resolveDraftActors(draft, sprite) {
+  const actors=structuredClone(draft.actors??[]);
+  // Legacy/imported actors already own complete packs; leave them untouched.
+  if(!actors.some(actor=>actor.idleAnimation))return actors;
+  const resolved=actors.map(actor=>{
+    if(!actor.idleAnimation)return actor;
+    const rows=[actor.idleAnimation,...(draft.moves??[]).filter(m=>m.controlledActor===actor.id).map(m=>m.animation)];
+    for(const row of rows)if(!sprite.frames?.[row]?.length)throw new Error(`Summon ${actor.id} is missing animation ${row}. Generate and review it before export.`);
+    const select=(values)=>Object.fromEntries([...new Set(rows)].map(row=>[row,values?.[row]]).filter(([,v])=>v!==undefined));
+    const frames=select(sprite.frames),frameCounts=select(sprite.frameCounts),sheets=select(sprite.sheets);
+    frames.base=frames[actor.idleAnimation];
+    frameCounts.base=frames.base.length;
+    if(sheets[actor.idleAnimation])sheets.base=sheets[actor.idleAnimation];
+    return {...actor,defaultVisible:false,sprite:{...sprite,frames,frameCounts,sheets,
+      rowPlayback:{...select(sprite.rowPlayback),base:{ticksPerFrame:3,loop:true}}}};
+  });
+  if(!resolved.some(actor=>!actor.summon))resolved.unshift({id:'lead',defaultVisible:true,sprite});
+  return resolved;
+}
+
 function buildSpriteConfig({ draft, frameData, manifest, scale }) {
   const sprite = draft.sprite ?? {};
   const id = draft.id;
@@ -505,6 +531,7 @@ function buildSpriteConfig({ draft, frameData, manifest, scale }) {
     frameCounts,
     sheets,
     frames: frameData?.frames ?? undefined,
+    rowPlayback: sprite.rowPlayback ?? {},
     stateFrames: {
       idle: [0, 1],
       walk_forward: [1, 0],
@@ -671,12 +698,13 @@ function convertMove(draftMove, context = {}) {
       sequence: expandTriggerSequence(draftMove.trigger?.sequence ?? [], animation),
       window: draftMove.trigger?.window ?? 14,
       ...(draftMove.trigger?.cancelFrom ? {cancelFrom:draftMove.trigger.cancelFrom} : {}),
+      ...Object.fromEntries(['directions','activationFrames','cancelOnly','cancelOn'].filter(k=>draftMove.trigger?.[k]!==undefined).map(k=>[k,structuredClone(draftMove.trigger[k])])),
     },
     phases,
     cancelInto: draftMove.cancelInto ?? [],
     ...(draftMove.cancelOn ? {cancelOn:draftMove.cancelOn} : {}),
     ...(draftMove.cost ? {cost:draftMove.cost} : {}),
-    ...Object.fromEntries(['airOk','groundOk','endState','extension','description','inputLabel'].filter(k=>draftMove[k]!==undefined).map(k=>[k,structuredClone(draftMove[k])])),
+    ...Object.fromEntries(['airOk','groundOk','endState','extension','description','inputLabel','category','requiredAnimation','artStatus','controlledActor'].filter(k=>draftMove[k]!==undefined).map(k=>[k,structuredClone(draftMove[k])])),
   };
   if (Array.isArray(draftMove.visualTimeline) && draftMove.visualTimeline.length) {
     move.visualTimeline = draftMove.visualTimeline;
@@ -762,6 +790,7 @@ function applyMeasuredHitboxGeometry(move, rowFrames, scale) {
   }
 
   for (const { event, startTick, endTick } of activations) {
+    if(event.geometrySource==='authored')continue;
     const track = [];
     let lastSpriteFrame = -1;
     for (let tick = startTick; tick < Math.max(endTick, startTick + 1); tick++) {
@@ -985,6 +1014,7 @@ function convertEvent(draftEvent, moveId, phaseIndex, eventIndex) {
   if(draftEvent.type==='transform')return {type:'transform',formId:draftEvent.formId};
   if(draftEvent.type==='revert_form')return {type:'revert_form'};
   if(draftEvent.type==='power_up')return {type:'power_up',power:draftEvent.power};
+  if(draftEvent.type==='summon_control'||draftEvent.type==='recall_summon')return structuredClone(draftEvent);
 
   // Some drafts (older schema versions, lenient models) say `hitbox` instead
   // of `hitbox_active`. A hitbox payload makes the intent unambiguous.
@@ -998,6 +1028,8 @@ function convertEvent(draftEvent, moveId, phaseIndex, eventIndex) {
     const converted = {
       type: 'hitbox_active',
       id: hitboxId,
+      ...(draftEvent.geometrySource==='authored'?{geometrySource:'authored'}:{}),
+      ...(draftEvent.actor?{actor:draftEvent.actor}:{}),
       hitbox: {
         x: hb.x,
         y: hb.y,
@@ -1035,6 +1067,7 @@ function convertEvent(draftEvent, moveId, phaseIndex, eventIndex) {
   if (draftEvent.type === 'hitbox_end') {
     const result = { type: 'hitbox_end' };
     if (draftEvent.id) result.id = draftEvent.id;
+    if (draftEvent.actor) result.actor = draftEvent.actor;
     return result;
   }
 
@@ -1054,6 +1087,9 @@ function convertEvent(draftEvent, moveId, phaseIndex, eventIndex) {
     if (type === 'spawn_projectile_from_sky') {
       ref.targetOffsetX = num(draftEvent.targetOffsetX, 0);
       ref.spawnOffsetY = num(draftEvent.spawnOffsetY, -360);
+    } else if(type === 'spawn_projectile_behind_target') {
+      ref.distance = num(draftEvent.distance, 80);
+      ref.offsetY = num(draftEvent.offsetY, -60);
     } else {
       ref.offsetX = num(draftEvent.offsetX, 40);
       ref.offsetY = num(draftEvent.offsetY, -60);

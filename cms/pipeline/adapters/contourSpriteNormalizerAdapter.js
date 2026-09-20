@@ -82,7 +82,8 @@ export class ContourSpriteNormalizerAdapter {
     // Read source image bytes from storage
     const sourceBytes = await this.storage.getBytes(sourceAssetKey);
 
-    const normalizedRootKey = `characters/${characterId}/assets/fighter-pack`;
+    const activeDraft = await this.storage.exists(`characters/${characterId}/draft/content.json`) ? await this.repository?.getDraft(characterId) : null;
+    const normalizedRootKey = activeDraft?.assets?.rootKey ?? `characters/${characterId}/assets/fighter-pack`;
     const normalizedKey = `${normalizedRootKey}/manifest.json`;
     const frameDataKey = `${normalizedRootKey}/frameData.json`;
     const reportKey = `${normalizedRootKey}/normalization-report.json`;
@@ -98,8 +99,9 @@ export class ContourSpriteNormalizerAdapter {
       await writeFile(tmpSourcePath, sourceBytes);
 
       // Write description.txt to temp dir (from CMS storage if available, else placeholder)
-      const descriptionKey = `characters/${characterId}/assets/description.txt`;
-      const movesetKey = `characters/${characterId}/assets/moveset.txt`;
+      const workingRoot = activeDraft?.history?.workingRoot ?? `characters/${characterId}/assets`;
+      const descriptionKey = `${workingRoot}/description.txt`;
+      const movesetKey = `${workingRoot}/moveset.txt`;
 
       const descriptionText = await readTextFromStorage(this.storage, descriptionKey)
         ?? `${titleize(characterId)} — fighter description placeholder.`;

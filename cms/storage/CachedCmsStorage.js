@@ -78,12 +78,18 @@ export class CachedCmsStorage {
     return metadata;
   }
 
+  async putImmutable(key, bytes, metadata = {}) {
+    if (this.writeThrough) await this.remote.putImmutable(key, bytes, metadata);
+    await this.cache.putImmutable(key, bytes, metadata);
+  }
+
   async exists(key) {
     return await this.cache.exists(key) || await this.remote.exists(key);
   }
 
   async list(prefix = '') {
-    return this.remote.list(prefix);
+    if (!this.writeThrough) return this.cache.list(prefix);
+    return [...new Set([...await this.remote.list(prefix), ...await this.cache.list(prefix)])].sort();
   }
 
   async delete(key) {

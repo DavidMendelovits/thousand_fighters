@@ -15,7 +15,7 @@ export function mountWorkspace(pauseMotion:()=>void):void {
   let active='motion',loaded=false,online=false;let roster:CharacterConfig[]=[];
   const frame=$<HTMLIFrameElement>('cms-frame');
   async function health(){
-    try{const r=await fetch('/api/health',{signal:AbortSignal.timeout(5000)});const h=await r.json();online=r.ok&&h.service==='thousand-fighters-cms';}catch{online=false;}
+    try{const r=await fetch('/api/status',{signal:AbortSignal.timeout(5000)});const h=await r.json();online=r.ok&&h.service==='thousand-fighters-cms';}catch{online=false;}
     $('cms-connection').textContent=online?'CMS · CONNECTED':'CMS · OFFLINE';$('cms-connection').classList.toggle('online',online);
     $('cms-error').hidden=online;frame.hidden=!online;
     if(online&&(active==='characters'||active==='pipeline'))loadCms();

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { loadTestbedConfig } from './runtimeConfig';
 import { TestbedScene, type PlaybackMode, type DummyMode } from './TestbedScene';
+import type {CharacterConfig} from '../schema/types';
 
 const $ = <T extends HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
@@ -69,22 +70,33 @@ async function main(): Promise<void> {
   startHudLoop(scene);
 }
 
-function buildMoveButtons(scene: TestbedScene, config: { moves: Array<{ id: string; displayName: string; animation: string }> }): void {
+function buildMoveButtons(scene: TestbedScene, config: CharacterConfig): void {
   const container = $('moves');
   if (config.moves.length === 0) {
     container.innerHTML = '<span class="help">No moves in this draft.</span>';
     return;
   }
-  for (const move of config.moves) {
+  const legend=document.createElement('p');legend.className='help move-legend';legend.textContent='J = jab (F) · K = kick (G) · S = special (H). Arrows are relative to facing. Buttons preview individual moves; enter strings using the keyboard. Timings: startup / active / recovery, in 60 Hz ticks.';container.appendChild(legend);
+  const categories=[...new Set(config.moves.map(m=>m.category??'special'))];
+  for(const category of categories){
+  const heading=document.createElement('h3');heading.className='move-category';heading.textContent=category;container.appendChild(heading);
+  for (const move of config.moves.filter(m=>(m.category??'special')===category)) {
     const button = document.createElement('button');
     button.className = 'move';
-    button.innerHTML = `${escapeHtml(move.displayName || move.id)}<br /><span class="anim">${escapeHtml(move.animation)}</span>`;
+    const labels:Record<string,string>={lp:'J',lk:'K',hp:'S'};
+    const command=move.inputLabel??move.trigger.sequence.map(t=>labels[t]??t).join(' + ');
+    button.innerHTML = `${escapeHtml(move.displayName || move.id)}<br /><span class="anim">${escapeHtml(command)} · ${move.phases.map(p=>p.frames).join(' / ')}</span>${move.artStatus==='proxy'?'<br /><span class="proxy">Temporary art</span>':''}`;
     button.title = `Trigger ${move.id}`;
     button.addEventListener('click', () => {
       scene.triggerMove(move.id);
       ($('game').querySelector('canvas') as HTMLCanvasElement | null)?.focus();
     });
     container.appendChild(button);
+  }
+  }
+  if(config.comboRoutes?.length){
+    const heading=document.createElement('h3');heading.className='move-category';heading.textContent='Strings & hit-confirm routes';container.appendChild(heading);
+    for(const route of config.comboRoutes){const row=document.createElement('div');row.className='combo-route';row.innerHTML=`<strong>${escapeHtml(route.name)}</strong><br /><span class="help">${escapeHtml(route.purpose)}</span>`;container.appendChild(row);}
   }
 }
 

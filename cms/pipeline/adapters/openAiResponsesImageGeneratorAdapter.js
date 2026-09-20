@@ -1,5 +1,6 @@
 import { rowPromptProfile } from '../rowPromptProfiles.js';
 import { pixelArtDirection } from './pixelArtDirection.js';
+import { runGenerationAttempt } from '../generationAttemptTelemetry.js';
 
 const DEFAULT_RESPONSES_MODEL = 'gpt-5.5';
 const DEFAULT_IMAGE_MODEL = 'gpt-image-2';
@@ -52,6 +53,13 @@ export class OpenAiResponsesImageGeneratorAdapter {
   }
 
   async generateImage(request = {}) {
+    return runGenerationAttempt(request, {
+      kind: 'image', provider: this.provider, model: this.imageModel,
+      operation: request.task ?? 'image-generation',
+    }, () => this.generateImageUntracked(request));
+  }
+
+  async generateImageUntracked(request = {}) {
     if (!this.apiKey) {
       const error = new Error('OPENAI_API_KEY is required for OpenAI image generation.');
       error.statusCode = 503;
@@ -59,6 +67,7 @@ export class OpenAiResponsesImageGeneratorAdapter {
     }
 
     const size = request.task === 'fighter-1x6-row' || request.task === 'fighter-2x3-grid' ? '1536x1024' : this.size;
+    const startedAt = Date.now();
     const response = await this.createResponse({
       prompt: imagePromptFor(request),
       size,
@@ -69,6 +78,7 @@ export class OpenAiResponsesImageGeneratorAdapter {
     if (!base64) {
       throw new Error('OpenAI image generation returned no base64 image result.');
     }
+    const completedAt = Date.now();
 
     return {
       provider: this.provider,
@@ -78,6 +88,10 @@ export class OpenAiResponsesImageGeneratorAdapter {
       revisedPrompt: imageCall.revised_prompt ?? null,
       contentType: contentTypeForOutputFormat(imageCall.output_format ?? this.outputFormat),
       base64,
+      generationMs: completedAt - startedAt,
+      postprocessMs: 0,
+      elapsedMs: completedAt - startedAt,
+      stageTimings: { apiRequestAndGenerationMs: completedAt - startedAt, totalProviderMs: completedAt - startedAt },
     };
   }
 

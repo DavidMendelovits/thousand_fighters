@@ -88,6 +88,15 @@ export class SupabaseCmsStorage {
     }
   }
 
+  async putImmutable(key, bytes, metadata = {}) {
+    const normalizedKey = normalizeStorageKey(key);
+    const { error } = await storageRequest(() => this.bucketClient().upload(normalizedKey, Buffer.from(bytes), {
+      contentType: metadata.contentType ?? 'application/octet-stream', upsert: false,
+    }), `create immutable ${normalizedKey}`);
+    if (error) throwStorageError(error, `create immutable ${normalizedKey}`);
+    await this.writeMetadata(normalizedKey, metadata);
+  }
+
   async exists(key) {
     const normalizedKey = normalizeStorageKey(key);
     const directory = path.posix.dirname(normalizedKey);

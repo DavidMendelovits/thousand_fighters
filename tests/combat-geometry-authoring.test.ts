@@ -1,0 +1,24 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {patchMove} from '../admin/moveInspector.js';
+import {createPalimpsest} from '../src/characters/palimpsest';
+import {validateCombatRules} from '../cms/export/validateCombatRules.js';
+import {convertDraftToCharacterConfig} from '../cms/export/convertDraftToCharacterConfig.js';
+const draft=()=>({...createPalimpsest(),geometryMode:'authored-runtime',actors:[{id:'hands',summon:true}],sprite:{scale:.5,frameCounts:{hands_pinch:24}},stats:{}});
+test('workbench geometry and grip survive conversion without mutating the original',()=>{
+ const original=draft();
+ let d=patchMove(original,'impasto',{contact:{index:0,x:-15,y:-180,width:150,height:165,keyframes:[{atFrame:0,x:10,y:-100,width:80,height:90},{atFrame:6,x:-15,y:-180,width:150,height:165}]}});
+ d=patchMove(d,'hands_pinch',{grab:{index:0,actorGrip:{holdStartFrame:9,holdEndFrame:16,layerSplitY:-48}}});
+ validateCombatRules(d);
+ const c=convertDraftToCharacterConfig({draft:d,frameData:null,manifest:null});
+ const event=(id:string)=>c.moves.find((m:any)=>m.id===id).phases[1].events[0].event;
+ assert.equal(event('impasto').hitbox.width,150);assert.equal(event('impasto').keyframes.length,2);
+ assert.equal(event('hands_pinch').grab.actorGrip.layerSplitY,-48);
+ const measured={width:100,height:100,anchor:{x:50,y:90},attackBox:{x:1,y:2,width:3,height:4}};
+ const derived=convertDraftToCharacterConfig({draft:{...d,geometryMode:undefined},frameData:{frames:{base:[measured],impasto:[measured]}},manifest:null});
+ assert.equal(derived.moves.find((m:any)=>m.id==='impasto').phases[1].events[0].event.hitbox.width,150,'measured extraction must not replace authored contact');
+ assert.equal(original.moves.find(m=>m.id==='impasto')!.phases[1].events[0].event.type,'hitbox_active');
+ assert.throws(()=>patchMove(d,'hands_pinch',{grab:{index:0,actorGrip:{holdEndFrame:99}}}),/frame/);
+ assert.throws(()=>patchMove(d,'impasto',{contact:{index:0,width:-5}}),/positive/);
+ assert.throws(()=>patchMove(d,'impasto',{contact:{index:0,keyframes:[{atFrame:9,x:0}]}}),/active phase/);
+});

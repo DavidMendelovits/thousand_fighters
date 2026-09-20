@@ -1,0 +1,24 @@
+import {readFile} from 'node:fs/promises';
+import {createCmsStorage} from '../cms/storage/createCmsStorage.js';
+import {CharacterContentRepository} from '../cms/repositories/CharacterContentRepository.js';
+import {applyDavidWatercolor} from '../shared/davidWatercolor.js';
+
+const storage=createCmsStorage(),repository=new CharacterContentRepository(storage);
+const draft=await repository.getDraft('david');
+const root='characters/david/assets/fighter-pack-watercolor-v1';
+if(draft.assets?.rootKey===root)throw new Error('Watercolor revision already staged; refusing to reset reviewed rows.');
+const backup=await repository.createVersion('david',draft);
+const file='sprites/base/base_001.png';
+const frames={base:[{file,width:448,height:384,anchor:{x:192,y:352}}]};
+await storage.putBytes(`${root}/${file}`,await readFile('generated/david-watercolor/reference-v2/body-clean.png'),{contentType:'image/png'});
+await storage.putBytes(`${root}/sheets/base.png`,await readFile('generated/david-watercolor/reference-v2/body-clean.png'),{contentType:'image/png'});
+await storage.putBytes(`${root}/portrait.png`,await readFile('generated/david-watercolor/reference-v2/body-clean.png'),{contentType:'image/png'});
+await storage.putJson(`${root}/frameData.json`,{frames,anchorConvention:'Shared actor pivot; watercolor source at 2x native game height.'});
+await storage.putJson(`${root}/manifest.json`,{id:'david',artSource:'watercolor-reference-pending-motion',sprites:{base:[file]},sheets:{base:'sheets/base.png'},frameCounts:{base:1}});
+applyDavidWatercolor(draft);
+draft.motionRows={};
+draft.assets={...draft.assets,rootKey:root,frameDataKey:`${root}/frameData.json`,manifestKey:`${root}/manifest.json`};
+draft.sprite={...draft.sprite,frames,frameCounts:{base:1},rowPlayback:{},scale:.5,scaleMode:'authored-reference',scaleAdjust:1,relativeHeight:1};
+draft.artRevision={id:'watercolor-v1',previousVersion:backup.versionId,reference:'reference-v2',status:'incomplete'};
+await repository.saveDraft('david',draft,{provider:'watercolor-revision'});
+console.log(JSON.stringify({draft:'david',root,previousVersion:backup.versionId,published:false}));

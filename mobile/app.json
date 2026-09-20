@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "Thousand Fighters",
+    "slug": "thousand-fighters",
+    "version": "0.1.0",
+    "orientation": "landscape",
+    "userInterfaceStyle": "dark",
+    "ios": { "supportsTablet": true, "bundleIdentifier": "com.thousandfighters.game", "infoPlist": { "NSAppTransportSecurity": { "NSAllowsLocalNetworking": true } } },
+    "android": { "package": "com.thousandfighters.game" }
+  }
+}

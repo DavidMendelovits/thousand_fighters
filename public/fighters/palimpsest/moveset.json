@@ -1,0 +1,1565 @@
+[
+  {
+    "id": "rising_ochre",
+    "displayName": "Rising Ochre",
+    "animation": "rising_ochre",
+    "requiredAnimation": "rising_ochre",
+    "artStatus": "ready",
+    "description": "Down + light: a rising paint crescent catches aerial approaches.",
+    "trigger": {
+      "allowedStates": [
+        "idle",
+        "walk_forward",
+        "walk_back",
+        "crouch",
+        "block",
+        "landing"
+      ],
+      "sequence": [
+        "lp"
+      ],
+      "directions": [
+        "down",
+        "down-forward",
+        "down-back"
+      ],
+      "window": 10
+    },
+    "phases": [
+      {
+        "name": "startup",
+        "frames": 11,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "set_velocity",
+              "vx": 0
+            }
+          }
+        ]
+      },
+      {
+        "name": "active",
+        "frames": 6,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "hitbox_active",
+              "hitbox": {
+                "x": 22,
+                "y": -142,
+                "width": 64,
+                "height": 110,
+                "damage": 55,
+                "hitstun": 22,
+                "blockstun": 7,
+                "hitstop": 3,
+                "knockback": {
+                  "x": 3,
+                  "y": -8
+                },
+                "level": "mid",
+                "impact": {
+                  "id": "pigment-contact",
+                  "kind": "watercolor",
+                  "color": 13321007,
+                  "accent": 12296406,
+                  "radius": 24,
+                  "durationTicks": 14
+                },
+                "launches": true
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "recovery",
+        "frames": 24,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "hitbox_end"
+            }
+          },
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "grab_end"
+            }
+          }
+        ]
+      }
+    ],
+    "inputLabel": "↓ + F",
+    "visualTimeline": [
+      {
+        "frame": 0,
+        "duration": 2
+      },
+      {
+        "frame": 1,
+        "duration": 1
+      },
+      {
+        "frame": 2,
+        "duration": 1
+      },
+      {
+        "frame": 3,
+        "duration": 1
+      },
+      {
+        "frame": 4,
+        "duration": 2
+      },
+      {
+        "frame": 5,
+        "duration": 1
+      },
+      {
+        "frame": 6,
+        "duration": 1
+      },
+      {
+        "frame": 7,
+        "duration": 1
+      },
+      {
+        "frame": 8,
+        "duration": 1
+      },
+      {
+        "frame": 9,
+        "duration": 1
+      },
+      {
+        "frame": 10,
+        "duration": 1
+      },
+      {
+        "frame": 11,
+        "duration": 1
+      },
+      {
+        "frame": 12,
+        "duration": 1
+      },
+      {
+        "frame": 13,
+        "duration": 1
+      },
+      {
+        "frame": 14,
+        "duration": 1
+      },
+      {
+        "frame": 16,
+        "duration": 3
+      },
+      {
+        "frame": 17,
+        "duration": 3
+      },
+      {
+        "frame": 18,
+        "duration": 3
+      },
+      {
+        "frame": 19,
+        "duration": 3
+      },
+      {
+        "frame": 20,
+        "duration": 3
+      },
+      {
+        "frame": 21,
+        "duration": 3
+      },
+      {
+        "frame": 22,
+        "duration": 3
+      },
+      {
+        "frame": 23,
+        "duration": 3
+      }
+    ]
+  },
+  {
+    "id": "summon",
+    "displayName": "Borrowed Hands",
+    "animation": "summon",
+    "requiredAnimation": "summon",
+    "artStatus": "ready",
+    "description": "Down + heavy: spend 30 pigment to control floating needle-hands for four seconds. Body remains vulnerable; a hit dismisses them.",
+    "trigger": {
+      "allowedStates": [
+        "idle",
+        "walk_forward",
+        "walk_back",
+        "crouch",
+        "block",
+        "landing"
+      ],
+      "sequence": [
+        "hp"
+      ],
+      "directions": [
+        "down",
+        "down-forward",
+        "down-back"
+      ],
+      "window": 10
+    },
+    "phases": [
+      {
+        "name": "startup",
+        "frames": 18,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "set_velocity",
+              "vx": 0
+            }
+          }
+        ]
+      },
+      {
+        "name": "active",
+        "frames": 1,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "summon_control",
+              "actor": "hands",
+              "duration": 240,
+              "speed": 4.1,
+              "offsetX": 85,
+              "offsetY": -35
+            }
+          }
+        ]
+      },
+      {
+        "name": "recovery",
+        "frames": 15,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "hitbox_end"
+            }
+          },
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "grab_end"
+            }
+          }
+        ]
+      }
+    ],
+    "cost": {
+      "meter": 30
+    },
+    "inputLabel": "↓ + H",
+    "visualTimeline": [
+      {
+        "frame": 0,
+        "duration": 2
+      },
+      {
+        "frame": 1,
+        "duration": 2
+      },
+      {
+        "frame": 2,
+        "duration": 2
+      },
+      {
+        "frame": 3,
+        "duration": 2
+      },
+      {
+        "frame": 4,
+        "duration": 1
+      },
+      {
+        "frame": 5,
+        "duration": 2
+      },
+      {
+        "frame": 6,
+        "duration": 2
+      },
+      {
+        "frame": 7,
+        "duration": 2
+      },
+      {
+        "frame": 8,
+        "duration": 2
+      },
+      {
+        "frame": 9,
+        "duration": 1
+      },
+      {
+        "frame": 10,
+        "duration": 1
+      },
+      {
+        "frame": 17,
+        "duration": 3
+      },
+      {
+        "frame": 18,
+        "duration": 2
+      },
+      {
+        "frame": 19,
+        "duration": 2
+      },
+      {
+        "frame": 20,
+        "duration": 2
+      },
+      {
+        "frame": 21,
+        "duration": 2
+      },
+      {
+        "frame": 22,
+        "duration": 2
+      },
+      {
+        "frame": 23,
+        "duration": 2
+      }
+    ]
+  },
+  {
+    "id": "bind",
+    "displayName": "Wet Binding",
+    "animation": "bind",
+    "requiredAnimation": "bind",
+    "artStatus": "ready",
+    "description": "Light + medium: an extending paint loop catches and reels in grounded opponents. Jump to evade.",
+    "trigger": {
+      "allowedStates": [
+        "idle",
+        "walk_forward",
+        "walk_back",
+        "crouch",
+        "block",
+        "landing"
+      ],
+      "sequence": [
+        "grab"
+      ],
+      "window": 10
+    },
+    "phases": [
+      {
+        "name": "startup",
+        "frames": 15,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "set_velocity",
+              "vx": 0
+            }
+          }
+        ]
+      },
+      {
+        "name": "active",
+        "frames": 21,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "grab_check",
+              "grab": {
+                "hitbox": {
+                  "x": 25,
+                  "y": -90,
+                  "width": 35,
+                  "height": 45
+                },
+                "damage": 55,
+                "holdOffsetX": 60,
+                "holdDuration": 18,
+                "pullFrames": 12,
+                "releaseKnockback": {
+                  "x": 5,
+                  "y": -3
+                },
+                "releaseHitstun": 12,
+                "releaseLaunches": true,
+                "groundOnly": true
+              },
+              "keyframes": [
+                {
+                  "atFrame": 0,
+                  "x": 25
+                },
+                {
+                  "atFrame": 12,
+                  "x": 160
+                },
+                {
+                  "atFrame": 20,
+                  "x": 25
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "recovery",
+        "frames": 27,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "hitbox_end"
+            }
+          },
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "grab_end"
+            }
+          }
+        ]
+      }
+    ],
+    "extension": {
+      "kind": "paint-ribbon",
+      "color": 10915018,
+      "accent": 15905866,
+      "thickness": 7
+    },
+    "inputLabel": "F + G",
+    "visualTimeline": [
+      {
+        "frame": 0,
+        "duration": 2
+      },
+      {
+        "frame": 1,
+        "duration": 1
+      },
+      {
+        "frame": 2,
+        "duration": 1
+      },
+      {
+        "frame": 3,
+        "duration": 1
+      },
+      {
+        "frame": 4,
+        "duration": 2
+      },
+      {
+        "frame": 5,
+        "duration": 1
+      },
+      {
+        "frame": 6,
+        "duration": 1
+      },
+      {
+        "frame": 7,
+        "duration": 1
+      },
+      {
+        "frame": 8,
+        "duration": 2
+      },
+      {
+        "frame": 9,
+        "duration": 1
+      },
+      {
+        "frame": 10,
+        "duration": 1
+      },
+      {
+        "frame": 11,
+        "duration": 1
+      },
+      {
+        "frame": 12,
+        "duration": 4
+      },
+      {
+        "frame": 13,
+        "duration": 3
+      },
+      {
+        "frame": 14,
+        "duration": 4
+      },
+      {
+        "frame": 15,
+        "duration": 3
+      },
+      {
+        "frame": 16,
+        "duration": 4
+      },
+      {
+        "frame": 17,
+        "duration": 3
+      },
+      {
+        "frame": 18,
+        "duration": 5
+      },
+      {
+        "frame": 19,
+        "duration": 4
+      },
+      {
+        "frame": 20,
+        "duration": 5
+      },
+      {
+        "frame": 21,
+        "duration": 4
+      },
+      {
+        "frame": 22,
+        "duration": 5
+      },
+      {
+        "frame": 23,
+        "duration": 4
+      }
+    ]
+  },
+  {
+    "id": "ribbon_jab",
+    "displayName": "Ribbon Flick",
+    "animation": "ribbon_jab",
+    "requiredAnimation": "ribbon_jab",
+    "artStatus": "ready",
+    "description": "A thin pigment ribbon snaps forward. Confirm into Undertow or Impasto.",
+    "trigger": {
+      "allowedStates": [
+        "idle",
+        "walk_forward",
+        "walk_back",
+        "crouch",
+        "block",
+        "landing"
+      ],
+      "sequence": [
+        "lp"
+      ],
+      "window": 10
+    },
+    "phases": [
+      {
+        "name": "startup",
+        "frames": 6,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "set_velocity",
+              "vx": 0
+            }
+          }
+        ]
+      },
+      {
+        "name": "active",
+        "frames": 4,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "hitbox_active",
+              "hitbox": {
+                "x": 22,
+                "y": -88,
+                "width": 66,
+                "height": 38,
+                "damage": 34,
+                "hitstun": 12,
+                "blockstun": 7,
+                "hitstop": 3,
+                "knockback": {
+                  "x": 2,
+                  "y": 0
+                },
+                "level": "mid",
+                "impact": {
+                  "id": "pigment-contact",
+                  "kind": "watercolor",
+                  "color": 13321007,
+                  "accent": 12296406,
+                  "radius": 24,
+                  "durationTicks": 14
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "recovery",
+        "frames": 12,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "hitbox_end"
+            }
+          },
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "grab_end"
+            }
+          }
+        ],
+        "cancellable": true
+      }
+    ],
+    "cancelInto": [
+      "undertow",
+      "impasto"
+    ],
+    "cancelOn": "hit",
+    "inputLabel": "F",
+    "visualTimeline": [
+      {
+        "frame": 0,
+        "duration": 1
+      },
+      {
+        "frame": 1,
+        "duration": 1
+      },
+      {
+        "frame": 3,
+        "duration": 1
+      },
+      {
+        "frame": 5,
+        "duration": 1
+      },
+      {
+        "frame": 6,
+        "duration": 1
+      },
+      {
+        "frame": 8,
+        "duration": 1
+      },
+      {
+        "frame": 10,
+        "duration": 1
+      },
+      {
+        "frame": 11,
+        "duration": 1
+      },
+      {
+        "frame": 13,
+        "duration": 1
+      },
+      {
+        "frame": 15,
+        "duration": 1
+      },
+      {
+        "frame": 17,
+        "duration": 2
+      },
+      {
+        "frame": 18,
+        "duration": 2
+      },
+      {
+        "frame": 19,
+        "duration": 2
+      },
+      {
+        "frame": 20,
+        "duration": 1
+      },
+      {
+        "frame": 21,
+        "duration": 2
+      },
+      {
+        "frame": 22,
+        "duration": 2
+      },
+      {
+        "frame": 23,
+        "duration": 1
+      }
+    ]
+  },
+  {
+    "id": "undertow",
+    "displayName": "Undertow",
+    "animation": "undertow",
+    "requiredAnimation": "undertow",
+    "artStatus": "ready",
+    "description": "A low paint ribbon sweeps beneath standing guard.",
+    "trigger": {
+      "allowedStates": [
+        "idle",
+        "walk_forward",
+        "walk_back",
+        "crouch",
+        "block",
+        "landing"
+      ],
+      "sequence": [
+        "lk"
+      ],
+      "window": 10
+    },
+    "phases": [
+      {
+        "name": "startup",
+        "frames": 10,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "set_velocity",
+              "vx": 0
+            }
+          }
+        ]
+      },
+      {
+        "name": "active",
+        "frames": 5,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "hitbox_active",
+              "hitbox": {
+                "x": 22,
+                "y": -25,
+                "width": 92,
+                "height": 25,
+                "damage": 42,
+                "hitstun": 12,
+                "blockstun": 7,
+                "hitstop": 3,
+                "knockback": {
+                  "x": 4,
+                  "y": 0
+                },
+                "level": "low",
+                "impact": {
+                  "id": "pigment-contact",
+                  "kind": "watercolor",
+                  "color": 13321007,
+                  "accent": 12296406,
+                  "radius": 24,
+                  "durationTicks": 14
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "recovery",
+        "frames": 19,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "hitbox_end"
+            }
+          },
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "grab_end"
+            }
+          }
+        ],
+        "cancellable": true
+      }
+    ],
+    "cancelInto": [
+      "impasto"
+    ],
+    "cancelOn": "hit",
+    "inputLabel": "G",
+    "visualTimeline": [
+      {
+        "frame": 0,
+        "duration": 1
+      },
+      {
+        "frame": 1,
+        "duration": 1
+      },
+      {
+        "frame": 2,
+        "duration": 1
+      },
+      {
+        "frame": 3,
+        "duration": 1
+      },
+      {
+        "frame": 4,
+        "duration": 1
+      },
+      {
+        "frame": 5,
+        "duration": 1
+      },
+      {
+        "frame": 6,
+        "duration": 1
+      },
+      {
+        "frame": 7,
+        "duration": 1
+      },
+      {
+        "frame": 8,
+        "duration": 1
+      },
+      {
+        "frame": 9,
+        "duration": 1
+      },
+      {
+        "frame": 10,
+        "duration": 1
+      },
+      {
+        "frame": 11,
+        "duration": 1
+      },
+      {
+        "frame": 12,
+        "duration": 1
+      },
+      {
+        "frame": 14,
+        "duration": 1
+      },
+      {
+        "frame": 15,
+        "duration": 1
+      },
+      {
+        "frame": 17,
+        "duration": 3
+      },
+      {
+        "frame": 18,
+        "duration": 3
+      },
+      {
+        "frame": 19,
+        "duration": 3
+      },
+      {
+        "frame": 20,
+        "duration": 2
+      },
+      {
+        "frame": 21,
+        "duration": 3
+      },
+      {
+        "frame": 22,
+        "duration": 3
+      },
+      {
+        "frame": 23,
+        "duration": 2
+      }
+    ]
+  },
+  {
+    "id": "impasto",
+    "displayName": "Impasto",
+    "animation": "impasto",
+    "requiredAnimation": "impasto",
+    "artStatus": "ready",
+    "description": "Heavy: the entire spiral uncoils into a forceful wave.",
+    "trigger": {
+      "allowedStates": [
+        "idle",
+        "walk_forward",
+        "walk_back",
+        "crouch",
+        "block",
+        "landing"
+      ],
+      "sequence": [
+        "hp"
+      ],
+      "window": 10
+    },
+    "phases": [
+      {
+        "name": "startup",
+        "frames": 15,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "set_velocity",
+              "vx": 0
+            }
+          }
+        ]
+      },
+      {
+        "name": "active",
+        "frames": 7,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "hitbox_active",
+              "hitbox": {
+                "x": 22,
+                "y": -88,
+                "width": 106,
+                "height": 38,
+                "damage": 65,
+                "hitstun": 20,
+                "blockstun": 7,
+                "hitstop": 3,
+                "knockback": {
+                  "x": 8,
+                  "y": -3
+                },
+                "level": "mid",
+                "impact": {
+                  "id": "pigment-contact",
+                  "kind": "watercolor",
+                  "color": 13321007,
+                  "accent": 12296406,
+                  "radius": 24,
+                  "durationTicks": 14
+                },
+                "launches": true
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "recovery",
+        "frames": 26,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "hitbox_end"
+            }
+          },
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "grab_end"
+            }
+          }
+        ]
+      }
+    ],
+    "inputLabel": "H",
+    "visualTimeline": [
+      {
+        "frame": 0,
+        "duration": 2
+      },
+      {
+        "frame": 1,
+        "duration": 1
+      },
+      {
+        "frame": 2,
+        "duration": 2
+      },
+      {
+        "frame": 3,
+        "duration": 1
+      },
+      {
+        "frame": 4,
+        "duration": 2
+      },
+      {
+        "frame": 5,
+        "duration": 1
+      },
+      {
+        "frame": 6,
+        "duration": 2
+      },
+      {
+        "frame": 7,
+        "duration": 1
+      },
+      {
+        "frame": 8,
+        "duration": 2
+      },
+      {
+        "frame": 9,
+        "duration": 1
+      },
+      {
+        "frame": 10,
+        "duration": 1
+      },
+      {
+        "frame": 11,
+        "duration": 1
+      },
+      {
+        "frame": 12,
+        "duration": 1
+      },
+      {
+        "frame": 13,
+        "duration": 1
+      },
+      {
+        "frame": 14,
+        "duration": 1
+      },
+      {
+        "frame": 15,
+        "duration": 1
+      },
+      {
+        "frame": 16,
+        "duration": 1
+      },
+      {
+        "frame": 17,
+        "duration": 4
+      },
+      {
+        "frame": 18,
+        "duration": 4
+      },
+      {
+        "frame": 19,
+        "duration": 4
+      },
+      {
+        "frame": 20,
+        "duration": 3
+      },
+      {
+        "frame": 21,
+        "duration": 4
+      },
+      {
+        "frame": 22,
+        "duration": 4
+      },
+      {
+        "frame": 23,
+        "duration": 3
+      }
+    ]
+  },
+  {
+    "id": "needle_thrust",
+    "displayName": "Needle Stitch",
+    "animation": "needle_thrust",
+    "requiredAnimation": "needle_thrust",
+    "artStatus": "ready",
+    "description": "Hands light: a precise needle thrust.",
+    "trigger": {
+      "allowedStates": [
+        "idle",
+        "walk_forward",
+        "walk_back",
+        "crouch",
+        "block",
+        "landing"
+      ],
+      "sequence": [
+        "lp"
+      ],
+      "window": 10
+    },
+    "phases": [
+      {
+        "name": "startup",
+        "frames": 7,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "set_velocity",
+              "vx": 0
+            }
+          }
+        ]
+      },
+      {
+        "name": "active",
+        "frames": 5,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "hitbox_active",
+              "actor": "hands",
+              "hitbox": {
+                "x": 10,
+                "y": -72,
+                "width": 74,
+                "height": 35,
+                "damage": 28,
+                "hitstun": 10,
+                "blockstun": 7,
+                "hitstop": 3,
+                "knockback": {
+                  "x": 2,
+                  "y": 0
+                },
+                "level": "mid",
+                "impact": {
+                  "id": "pigment-contact",
+                  "kind": "watercolor",
+                  "color": 13321007,
+                  "accent": 12296406,
+                  "radius": 24,
+                  "durationTicks": 14
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "recovery",
+        "frames": 13,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "hitbox_end"
+            }
+          },
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "grab_end"
+            }
+          }
+        ]
+      }
+    ],
+    "controlledActor": "hands",
+    "inputLabel": "Hands: F",
+    "visualTimeline": [
+      {
+        "frame": 0,
+        "duration": 1
+      },
+      {
+        "frame": 1,
+        "duration": 1
+      },
+      {
+        "frame": 2,
+        "duration": 1
+      },
+      {
+        "frame": 4,
+        "duration": 1
+      },
+      {
+        "frame": 5,
+        "duration": 1
+      },
+      {
+        "frame": 7,
+        "duration": 1
+      },
+      {
+        "frame": 8,
+        "duration": 1
+      },
+      {
+        "frame": 10,
+        "duration": 1
+      },
+      {
+        "frame": 11,
+        "duration": 1
+      },
+      {
+        "frame": 12,
+        "duration": 1
+      },
+      {
+        "frame": 14,
+        "duration": 1
+      },
+      {
+        "frame": 15,
+        "duration": 1
+      },
+      {
+        "frame": 17,
+        "duration": 2
+      },
+      {
+        "frame": 18,
+        "duration": 2
+      },
+      {
+        "frame": 19,
+        "duration": 2
+      },
+      {
+        "frame": 20,
+        "duration": 2
+      },
+      {
+        "frame": 21,
+        "duration": 2
+      },
+      {
+        "frame": 22,
+        "duration": 2
+      },
+      {
+        "frame": 23,
+        "duration": 1
+      }
+    ]
+  },
+  {
+    "id": "hands_pinch",
+    "displayName": "Pigment Pinch",
+    "animation": "hands_pinch",
+    "requiredAnimation": "hands_pinch",
+    "artStatus": "ready",
+    "description": "Hands medium: briefly capture at contact, then release with knockback.",
+    "trigger": {
+      "allowedStates": [
+        "idle",
+        "walk_forward",
+        "walk_back",
+        "crouch",
+        "block",
+        "landing"
+      ],
+      "sequence": [
+        "lk"
+      ],
+      "window": 10
+    },
+    "phases": [
+      {
+        "name": "startup",
+        "frames": 11,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "set_velocity",
+              "vx": 0
+            }
+          }
+        ]
+      },
+      {
+        "name": "active",
+        "frames": 5,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "grab_check",
+              "actor": "hands",
+              "grab": {
+                "hitbox": {
+                  "x": -10,
+                  "y": -76,
+                  "width": 70,
+                  "height": 65
+                },
+                "damage": 40,
+                "holdOffsetX": 0,
+                "holdDuration": 14,
+                "anchor": "contact",
+                "releaseKnockback": {
+                  "x": 5,
+                  "y": -3
+                },
+                "releaseHitstun": 10,
+                "releaseLaunches": true,
+                "groundOnly": false
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "recovery",
+        "frames": 24,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "hitbox_end"
+            }
+          },
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "grab_end"
+            }
+          }
+        ]
+      }
+    ],
+    "controlledActor": "hands",
+    "inputLabel": "Hands: G",
+    "visualTimeline": [
+      {
+        "frame": 0,
+        "duration": 2
+      },
+      {
+        "frame": 1,
+        "duration": 1
+      },
+      {
+        "frame": 2,
+        "duration": 1
+      },
+      {
+        "frame": 3,
+        "duration": 1
+      },
+      {
+        "frame": 4,
+        "duration": 1
+      },
+      {
+        "frame": 5,
+        "duration": 1
+      },
+      {
+        "frame": 6,
+        "duration": 1
+      },
+      {
+        "frame": 7,
+        "duration": 1
+      },
+      {
+        "frame": 8,
+        "duration": 1
+      },
+      {
+        "frame": 9,
+        "duration": 1
+      },
+      {
+        "frame": 10,
+        "duration": 1
+      },
+      {
+        "frame": 11,
+        "duration": 1
+      },
+      {
+        "frame": 12,
+        "duration": 1
+      },
+      {
+        "frame": 14,
+        "duration": 1
+      },
+      {
+        "frame": 15,
+        "duration": 1
+      },
+      {
+        "frame": 17,
+        "duration": 4
+      },
+      {
+        "frame": 18,
+        "duration": 3
+      },
+      {
+        "frame": 19,
+        "duration": 4
+      },
+      {
+        "frame": 20,
+        "duration": 3
+      },
+      {
+        "frame": 21,
+        "duration": 4
+      },
+      {
+        "frame": 22,
+        "duration": 3
+      },
+      {
+        "frame": 23,
+        "duration": 3
+      }
+    ]
+  },
+  {
+    "id": "hands_recall",
+    "displayName": "Return to Canvas",
+    "animation": "hands_recall",
+    "requiredAnimation": "hands_recall",
+    "artStatus": "ready",
+    "description": "Hands heavy: dismiss early and regain body control.",
+    "trigger": {
+      "allowedStates": [
+        "idle",
+        "walk_forward",
+        "walk_back",
+        "crouch",
+        "block",
+        "landing"
+      ],
+      "sequence": [
+        "hp"
+      ],
+      "window": 10
+    },
+    "phases": [
+      {
+        "name": "startup",
+        "frames": 5,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "set_velocity",
+              "vx": 0
+            }
+          }
+        ]
+      },
+      {
+        "name": "active",
+        "frames": 1,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "recall_summon"
+            }
+          }
+        ]
+      },
+      {
+        "name": "recovery",
+        "frames": 6,
+        "events": [
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "hitbox_end"
+            }
+          },
+          {
+            "onFrame": 0,
+            "event": {
+              "type": "grab_end"
+            }
+          }
+        ]
+      }
+    ],
+    "controlledActor": "hands",
+    "inputLabel": "Hands: H",
+    "visualTimeline": [
+      {
+        "frame": 0,
+        "duration": 1
+      },
+      {
+        "frame": 2,
+        "duration": 1
+      },
+      {
+        "frame": 4,
+        "duration": 1
+      },
+      {
+        "frame": 6,
+        "duration": 1
+      },
+      {
+        "frame": 8,
+        "duration": 1
+      },
+      {
+        "frame": 10,
+        "duration": 1
+      },
+      {
+        "frame": 17,
+        "duration": 1
+      },
+      {
+        "frame": 18,
+        "duration": 1
+      },
+      {
+        "frame": 19,
+        "duration": 1
+      },
+      {
+        "frame": 20,
+        "duration": 1
+      },
+      {
+        "frame": 21,
+        "duration": 1
+      },
+      {
+        "frame": 22,
+        "duration": 1
+      }
+    ]
+  }
+]

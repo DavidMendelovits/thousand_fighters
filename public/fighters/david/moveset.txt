@@ -1,0 +1,27 @@
+Mic-cord Reel (Away + H)
+The thrown mic travels out, its cable wraps the opponent, and reels them in. Jump to evade; punish the long whiff recovery.
+startup: 13 ticks, active: 26 ticks, recovery: 32 ticks
+
+Ink to Impact (↓ + H)
+A brush-flick sends ink outward; the droplet resolves into a solid fist after six ticks. It launches on impact.
+startup: 9 ticks, active: 5 ticks, recovery: 29 ticks
+
+Mic Projection (Toward + H)
+A fast sound-wave ender with strong pushback. Block it, then close the gap during recovery.
+startup: 9 ticks, active: 5 ticks, recovery: 26 ticks
+
+Three-ball Cascade (H)
+Three staggered, arcing balls. Hit-confirm into sound or ink; jumping changes which arcs connect.
+startup: 12 ticks, active: 17 ticks, recovery: 16 ticks
+
+Close Cable Throw (F + G)
+Close grab, brief cable wrap, then a throw.
+startup: 7 ticks, active: 5 ticks, recovery: 40 ticks
+
+Mic Jab (F)
+Quick confirm into a kick or a juggling cascade.
+startup: 5 ticks, active: 4 ticks, recovery: 11 ticks
+
+Stage Kick (G)
+Mid-height kick links into balls, ink or sound.
+startup: 8 ticks, active: 5 ticks, recovery: 16 ticks

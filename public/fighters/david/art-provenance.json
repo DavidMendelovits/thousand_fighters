@@ -1,0 +1,72 @@
+{
+  "generator": "BFL FLUX.2 Klein API",
+  "sourceType": "reference-based-key-poses",
+  "videoDerived": false,
+  "limitation": "FAL video generation blocked by exhausted balance. Walk/jump are placeholder key poses, not full motion cycles.",
+  "sourcePhotosPublished": false,
+  "attempts": [
+    {
+      "prompt": "David, the SAME slim adult man from the references, pale skin, medium brown curtain hair swept across forehead, subtle stubble, long narrow face. Colorful teal yellow coral abstract-print short-sleeve open-collar shirt, black trousers, black shoes. Full body 3/4 fighting-game SIDE VIEW facing RIGHT. Faithful face and hair, stylized readable 16-bit pixel clusters and dark outlines, NOT a toy, NOT 3D, NOT photoreal. Solid exact #ff00ff background. One character, no text, no shadow, no scenery. Whole body inside central 65% of square canvas with huge safe margins. Grounded feet on same baseline. No floating effects. Relaxed ready stance, knees slightly bent. Holding a silver wired handheld microphone at chest level, other hand relaxed. Cable tucked close to body. ",
+      "provider": "bfl-klein",
+      "model": "flux-2-klein-4b",
+      "taskId": "815a79a1-6956-4e75-a097-2a707cb61966",
+      "elapsedMs": 13142
+    },
+    {
+      "prompt": "David, the SAME slim adult man from the references, pale skin, medium brown curtain hair swept across forehead, subtle stubble, long narrow face. Colorful teal yellow coral abstract-print short-sleeve open-collar shirt, black trousers, black shoes. Full body 3/4 fighting-game SIDE VIEW facing RIGHT. Faithful face and hair, stylized readable 16-bit pixel clusters and dark outlines, NOT a toy, NOT 3D, NOT photoreal. Solid exact #ff00ff background. One character, no text, no shadow, no scenery. Whole body inside central 65% of square canvas with huge safe margins. Grounded feet on same baseline. No floating effects. Fast straight forward jab with the microphone in right hand, left hand guards. Feet remain planted. Right arm extends toward right. Match reference EXACTLY: identical face, hair, outfit, pixel density, body scale and feet baseline. Change only the pose.",
+      "provider": "bfl-klein",
+      "model": "flux-2-klein-4b",
+      "taskId": "07b79ff7-6eef-4f40-8990-a4f6b5bb0303",
+      "elapsedMs": 6182
+    },
+    {
+      "prompt": "David, the SAME slim adult man from the references, pale skin, medium brown curtain hair swept across forehead, subtle stubble, long narrow face. Colorful teal yellow coral abstract-print short-sleeve open-collar shirt, black trousers, black shoes. Full body 3/4 fighting-game SIDE VIEW facing RIGHT. Faithful face and hair, stylized readable 16-bit pixel clusters and dark outlines, NOT a toy, NOT 3D, NOT photoreal. Solid exact #ff00ff background. One character, no text, no shadow, no scenery. Whole body inside central 65% of square canvas with huge safe margins. Grounded feet on same baseline. No floating effects. Dynamic forward waist-height side kick to the RIGHT, one foot planted. Keep microphone hand near chest. Match reference EXACTLY: identical face, hair, outfit, pixel density, body scale and feet baseline. Change only the pose.",
+      "provider": "bfl-klein",
+      "model": "flux-2-klein-4b",
+      "taskId": "a84c102f-955e-4f2f-951a-5358cb8c6367",
+      "elapsedMs": 5780
+    },
+    {
+      "prompt": "David, the SAME slim adult man from the references, pale skin, medium brown curtain hair swept across forehead, subtle stubble, long narrow face. Colorful teal yellow coral abstract-print short-sleeve open-collar shirt, black trousers, black shoes. Full body 3/4 fighting-game SIDE VIEW facing RIGHT. Faithful face and hair, stylized readable 16-bit pixel clusters and dark outlines, NOT a toy, NOT 3D, NOT photoreal. Solid exact #ff00ff background. One character, no text, no shadow, no scenery. Whole body inside central 65% of square canvas with huge safe margins. Grounded feet on same baseline. No floating effects. Underhand toss toward the RIGHT with free hand, palm open extending forward at waist level. Mic in other hand. Do not draw the ball; engine adds it. Match reference EXACTLY: identical face, hair, outfit, pixel density, body scale and feet baseline. Change only the pose.",
+      "provider": "bfl-klein",
+      "model": "flux-2-klein-4b",
+      "taskId": "0ced7399-0eee-4d3b-8c35-60d7d4975508",
+      "elapsedMs": 6595
+    },
+    {
+      "prompt": "David, the SAME slim adult man from the references, pale skin, medium brown curtain hair swept across forehead, subtle stubble, long narrow face. Colorful teal yellow coral abstract-print short-sleeve open-collar shirt, black trousers, black shoes. Full body 3/4 fighting-game SIDE VIEW facing RIGHT. Faithful face and hair, stylized readable 16-bit pixel clusters and dark outlines, NOT a toy, NOT 3D, NOT photoreal. Solid exact #ff00ff background. One character, no text, no shadow, no scenery. Whole body inside central 65% of square canvas with huge safe margins. Grounded feet on same baseline. No floating effects. Leans forward projecting voice into microphone held at mouth, free hand extended in performance gesture. No sound effects drawn. Match reference EXACTLY: identical face, hair, outfit, pixel density, body scale and feet baseline. Change only the pose.",
+      "provider": "bfl-klein",
+      "model": "flux-2-klein-4b",
+      "taskId": "3431ba18-5021-4823-b18d-4c5a3bf93f2d",
+      "elapsedMs": 11825
+    },
+    {
+      "prompt": "David, the SAME slim adult man from the references, pale skin, medium brown curtain hair swept across forehead, subtle stubble, long narrow face. Colorful teal yellow coral abstract-print short-sleeve open-collar shirt, black trousers, black shoes. Full body 3/4 fighting-game SIDE VIEW facing RIGHT. Faithful face and hair, stylized readable 16-bit pixel clusters and dark outlines, NOT a toy, NOT 3D, NOT photoreal. Solid exact #ff00ff background. One character, no text, no shadow, no scenery. Whole body inside central 65% of square canvas with huge safe margins. Grounded feet on same baseline. No floating effects. Sweeps a small black drawing brush forward toward RIGHT, low stance. Mic held near waist in other hand. Do not draw ink effects. Match reference EXACTLY: identical face, hair, outfit, pixel density, body scale and feet baseline. Change only the pose.",
+      "provider": "bfl-klein",
+      "model": "flux-2-klein-4b",
+      "taskId": "7bf46b67-2d8e-4349-b5d5-087db2174d36",
+      "elapsedMs": 7254
+    },
+    {
+      "prompt": "David, the SAME slim adult man from the references, pale skin, medium brown curtain hair swept across forehead, subtle stubble, long narrow face. Colorful teal yellow coral abstract-print short-sleeve open-collar shirt, black trousers, black shoes. Full body 3/4 fighting-game SIDE VIEW facing RIGHT. Faithful face and hair, stylized readable 16-bit pixel clusters and dark outlines, NOT a toy, NOT 3D, NOT photoreal. Solid exact #ff00ff background. One character, no text, no shadow, no scenery. Whole body inside central 65% of square canvas with huge safe margins. Grounded feet on same baseline. No floating effects. EDIT REFERENCE: REMOVE THE SILVER MICROPHONE FROM BOTH HANDS COMPLETELY. Neither hand holds a microphone. No microphone anywhere in image. Left hand at waist holding ONLY the end of a thin black wire. Right arm FULLY EXTENDED straight to the RIGHT with OPEN palm after having thrown the microphone away. Lean into the throw, feet stay planted. The thrown microphone is OFFSCREEN, not drawn. All clothing and face stay identical. Plain flat bright magenta background, absolutely no floor shadow. Match reference EXACTLY: identical face, hair, outfit, pixel density, body scale and feet baseline. Change only the pose.",
+      "provider": "bfl-klein",
+      "model": "flux-2-klein-4b",
+      "taskId": "71dbd4aa-66e3-4de0-ae49-1f36af59a17b",
+      "elapsedMs": 7227
+    },
+    {
+      "prompt": "David, the SAME slim adult man from the references, pale skin, medium brown curtain hair swept across forehead, subtle stubble, long narrow face. Colorful teal yellow coral abstract-print short-sleeve open-collar shirt, black trousers, black shoes. Full body 3/4 fighting-game SIDE VIEW facing RIGHT. Faithful face and hair, stylized readable 16-bit pixel clusters and dark outlines, NOT a toy, NOT 3D, NOT photoreal. Solid exact #ff00ff background. One character, no text, no shadow, no scenery. Whole body inside central 65% of square canvas with huge safe margins. Grounded feet on same baseline. No floating effects. Recoils backward from a chest strike, face strained, arms pulled inward, knees bent. Preserve full body and outfit. Match reference EXACTLY: identical face, hair, outfit, pixel density, body scale and feet baseline. Change only the pose.",
+      "provider": "bfl-klein",
+      "model": "flux-2-klein-4b",
+      "taskId": "99a4c470-e8f2-402c-bf5a-90d1f25f11c8",
+      "elapsedMs": 5275
+    },
+    {
+      "prompt": "David, the SAME slim adult man from the references, pale skin, medium brown curtain hair swept across forehead, subtle stubble, long narrow face. Colorful teal yellow coral abstract-print short-sleeve open-collar shirt, black trousers, black shoes. Full body 3/4 fighting-game SIDE VIEW facing RIGHT. Faithful face and hair, stylized readable 16-bit pixel clusters and dark outlines, NOT a toy, NOT 3D, NOT photoreal. Solid exact #ff00ff background. One character, no text, no shadow, no scenery. Whole body inside central 65% of square canvas with huge safe margins. Grounded feet on same baseline. No floating effects. Deep defensive crouch, both knees bent, mic tucked close, hands guarding face. Body naturally shorter than standing, do not enlarge. Match reference EXACTLY: identical face, hair, outfit, pixel density, body scale and feet baseline. Change only the pose.",
+      "provider": "bfl-klein",
+      "model": "flux-2-klein-4b",
+      "taskId": "6413f8c8-7da0-4eaa-a948-9244b7470281",
+      "elapsedMs": 6839
+    }
+  ]
+}

@@ -10,6 +10,7 @@ import { mkdir, readdir, copyFile, writeFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { convertDraftToCharacterConfig } from './convertDraftToCharacterConfig.js';
+import { assertMotionCoverage } from '../pipeline/motionRowArtifacts.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -43,9 +44,10 @@ export async function exportCharacterToRuntime({ runtime, characterId, outputDir
   if (!draft) {
     throw new Error(`exportCharacterToRuntime: No draft found for character "${characterId}"`);
   }
+  assertMotionCoverage(draft);
 
   // Read fighter pack data
-  const assetRoot = `characters/${characterId}/assets/fighter-pack`;
+  const assetRoot = draft.assets?.rootKey ?? `characters/${characterId}/assets/fighter-pack`;
   let manifest = null;
   let frameData = null;
 
@@ -87,7 +89,7 @@ export async function exportCharacterToRuntime({ runtime, characterId, outputDir
       }
     }
 
-    const assetDirsToSync = ['sheets', 'sprites', 'projectiles'];
+    const assetDirsToSync = ['sheets', 'sprites', 'projectiles', 'forms'];
     // Imported packs can declare a root-level atlas (e.g. poses.png), not
     // only sheets/*.png. Keep fresh exports portable, not dependent on an
     // older public directory happening to contain that atlas.
@@ -119,7 +121,7 @@ export async function exportCharacterToRuntime({ runtime, characterId, outputDir
     // Generated SFX live outside the fighter pack, at characters/{id}/assets/sounds/
     const soundsCopied = await copyStorageAssets({
       storage,
-      storagePrefix: `characters/${characterId}/assets/sounds`,
+      storagePrefix: `${draft.history?.manifestKey ? draft.history.manifestKey.replace(/\/assets.json$/, '/assets') : draft.history?.workingRoot ?? `characters/${characterId}/assets`}/sounds`,
       destDir: path.join(characterOutputDir, 'sounds'),
     });
     filesCopied.push(...soundsCopied);

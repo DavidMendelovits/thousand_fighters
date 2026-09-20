@@ -1,0 +1,336 @@
+{
+  "anchorConvention": "Feet aligned; shared nearest-neighbor scale across every pose. Effects live separately.",
+  "frames": {
+    "punch": [
+      {
+        "file": "sprites/punch/punch_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/punch/punch_002.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/punch/punch_003.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "kick": [
+      {
+        "file": "sprites/kick/kick_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/kick/kick_002.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/kick/kick_003.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "juggle": [
+      {
+        "file": "sprites/juggle/juggle_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/juggle/juggle_002.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/juggle/juggle_003.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "sound": [
+      {
+        "file": "sprites/sound/sound_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/sound/sound_002.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/sound/sound_003.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "ink": [
+      {
+        "file": "sprites/ink/ink_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/ink/ink_002.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/ink/ink_003.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "cable": [
+      {
+        "file": "sprites/cable/cable_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/cable/cable_002.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/cable/cable_003.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "base": [
+      {
+        "file": "sprites/base/base_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "hurt": [
+      {
+        "file": "sprites/hurt/hurt_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "crouch": [
+      {
+        "file": "sprites/crouch/crouch_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "block": [
+      {
+        "file": "sprites/block/block_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "jump": [
+      {
+        "file": "sprites/jump/jump_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "walk_forward": [
+      {
+        "file": "sprites/walk_forward/walk_forward_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "walk_back": [
+      {
+        "file": "sprites/walk_back/walk_back_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "dash_forward": [
+      {
+        "file": "sprites/dash_forward/dash_forward_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "dash_back": [
+      {
+        "file": "sprites/dash_back/dash_back_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "grab": [
+      {
+        "file": "sprites/grab/grab_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/grab/grab_002.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/grab/grab_003.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ],
+    "throw": [
+      {
+        "file": "sprites/throw/throw_001.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/throw/throw_002.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      },
+      {
+        "file": "sprites/throw/throw_003.png",
+        "width": 224,
+        "height": 192,
+        "anchor": {
+          "x": 96,
+          "y": 176
+        }
+      }
+    ]
+  }
+}

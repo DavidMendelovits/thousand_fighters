@@ -1,0 +1,6 @@
+{
+  "block":{"directory":"generated/palimpsest/motion-v5/block-held","notes":"Reviewed uniform-scale contact strip: coil expands into a four-point diamond, teal eye retained. Ends on held shield rather than returning to idle. No clipping."},
+  "impasto":{"directory":"generated/palimpsest/motion-v5/impasto","contact":10,"recovery":16,"notes":"Reviewed puddle anticipation, asymmetric angular star expansion and dripping recovery. Identity retained, full extensions in canvas; rejected v4 source clipped."},
+  "rising_ochre":{"directory":"generated/palimpsest/motion-v5/rising_ochre","contact":10,"recovery":14,"notes":"Reviewed upward branching ochre silhouette, teal eye and draining puddle recovery. Nonhuman deformation and unclipped branches."},
+  "hands_pinch":{"directory":"generated/palimpsest/motion-v4/hands_pinch","contact":9,"recovery":17,"notes":"Reviewed two hands opening, finger articulation, cupped closure and opening release. Frames 9–16 used while torso is attached. Runtime socket alignment separately verified."}
+}

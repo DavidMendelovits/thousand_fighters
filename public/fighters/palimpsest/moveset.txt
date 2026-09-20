@@ -1,0 +1,26 @@
+Rising Ochre — ↓ + F
+Down + light: a rising paint crescent catches aerial approaches.
+
+Borrowed Hands — ↓ + H
+Down + heavy: spend 30 pigment to control floating needle-hands for four seconds. Body remains vulnerable; a hit dismisses them.
+
+Wet Binding — F + G
+Light + medium: an extending paint loop catches and reels in grounded opponents. Jump to evade.
+
+Ribbon Flick — F
+A thin pigment ribbon snaps forward. Confirm into Undertow or Impasto.
+
+Undertow — G
+A low paint ribbon sweeps beneath standing guard.
+
+Impasto — H
+Heavy: the entire spiral uncoils into a forceful wave.
+
+Needle Stitch — Hands: F
+Hands light: a precise needle thrust.
+
+Pigment Pinch — Hands: G
+Hands medium: briefly capture at contact, then release with knockback.
+
+Return to Canvas — Hands: H
+Hands heavy: dismiss early and regain body control.

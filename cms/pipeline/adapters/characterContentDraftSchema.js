@@ -9,8 +9,8 @@
 //
 // Before T-move-kit there were two hand-maintained copies that drifted (the
 // move `animation` enum, no combos/projectiles). This module removes that
-// duplication. The move-row enum is sourced from shared/animationRows.js so a
-// new move-triggered row can't silently fall out of generation.
+// duplication. Custom animation row ids are supported so nonhuman characters
+// and controlled actors are not constrained to the canonical six attack rows.
 //
 // What the model authors vs. what the pipeline derives:
 //   - The model emits combos as ordered move-id chains. It does NOT author the
@@ -22,7 +22,7 @@
 //     spawn events via `projectileId`. The texture key (`animation`) and
 //     `sourceKey` are derived/attached by the pipeline, not the model.
 
-import { MOVE_SHEET_IDS } from '../../../shared/animationRows.js';
+import {advancedMoveEvents,summonActorSchema,commandDirectionsSchema} from './advancedMoveSchema.js';
 
 const nullable = (schema) => ({ anyOf: [schema, { type: 'null' }] });
 
@@ -49,22 +49,24 @@ function hitboxSchema() {
 // by `projectileId` (the T23 path), never an inline projectile. Offsets are
 // nullable so non-spawn events emit null; convert defaults them for spawns.
 function eventSchema() {
-  return {
+  return {anyOf:[{
     type: 'object',
     additionalProperties: false,
-    required: ['type', 'hitbox', 'projectile', 'projectileId', 'offsetX', 'offsetY'],
+    required: ['type', 'hitbox', 'projectile', 'projectileId', 'offsetX', 'offsetY', 'keyframes', 'actor'],
     properties: {
       type: {
         type: 'string',
         enum: ['hitbox_active', 'hitbox_end', 'spawn_projectile'],
       },
       hitbox: nullable(hitboxSchema()),
+      actor: nullable({type:'string'}),
       projectile: { type: 'null' },
       projectileId: nullable({ type: 'string' }),
       offsetX: nullable({ type: 'number' }),
       offsetY: nullable({ type: 'number' }),
+      keyframes: nullable({type:'array',items:{type:'object',additionalProperties:false,required:['atFrame','x','y','width','height'],properties:{atFrame:{type:'integer'},x:{type:'number'},y:{type:'number'},width:{type:'number'},height:{type:'number'}}}}),
     },
-  };
+  },...advancedMoveEvents()]};
 }
 
 function phaseSchema() {
@@ -95,18 +97,20 @@ function moveSchema() {
   return {
     type: 'object',
     additionalProperties: false,
-    required: ['id', 'displayName', 'description', 'animation', 'trigger', 'phases'],
+    required: ['id', 'displayName', 'description', 'animation', 'trigger', 'phases', 'controlledActor'],
     properties: {
       id: { type: 'string' },
       displayName: { type: 'string' },
       description: { type: 'string' },
-      // Move-triggered sprite rows (punch/kick/special_1/special_2/grab/throw).
-      animation: { type: 'string', enum: [...MOVE_SHEET_IDS] },
+      // Safe custom row ids are resolved against real pack assets at export.
+      animation: { type: 'string', pattern: '^[a-z][a-z0-9_]*$' },
+      controlledActor: nullable({type:'string'}),
       trigger: {
         type: 'object',
         additionalProperties: false,
-        required: ['sequence'],
+        required: ['sequence', 'directions'],
         properties: {
+          directions: commandDirectionsSchema(),
           // Non-empty: a move with an empty input sequence never matches in the
           // input buffer, so a combo follow-up with [] gets cancel wiring but
           // can never fire (codex P1). Use canonical tokens (lp/mp/hp/lk/mk/hk,
@@ -192,16 +196,22 @@ function projectileSchema() {
 // real text adapters so the instructions can't drift from the schema above.
 export function characterContentDraftGuidance() {
   return [
+    ...characterInputGuidance(),
     'You draft game-ready Thousand Fighters character content as strict JSON.',
     'Create a playable fighting-game character from the brief with a FULL move kit.',
-    'Author moves across these move-triggered rows: punch, kick, special_1, special_2, grab, throw. Give normals, specials, AND a grab/throw — not just one or two moves.',
-    'Every move has phases named startup, active, then recovery (in that order). Put hitbox_active then hitbox_end events in the active phase. The recovery phase is what lets a move be cancelled into a combo.',
+    'Give a full kit with normals, specials and a grab/throw. Each mechanically distinct action may use a unique lowercase snake_case animation row; canonical punch/kick/special_1/special_2/grab/throw rows remain supported. Do not reuse a human punch animation for a nonhuman morph.',
+    'Every move has phases named startup, active, then recovery (in that order). Only striking moves need hitbox_active/hitbox_end. Use grab_check/grab_end for grabs, summon_control for possession and recall_summon for dismissal; never add a fake melee hit to a non-attacking action.',
+    'Summons: actors lists only summoned entities, each with a unique id, summon:true, description, and dedicated idleAnimation row. The body actor is derived by the pipeline. A summon_control event names that actor, duration 1–600 ticks, speed >0 and <=12, and offsets within +/-300. Give it controlled moves with controlledActor set to its id, including a recall_summon action. Body moves use controlledActor:null. Contact events on controlled moves must name the same actor. Generate the entity isolated from the fighter; its own approved idle/reference must exist before video generation.',
+    'Grabs use grab_check with a grab payload and grab_end to clear contact. A summon grip names the same actor in event.actor and grab.actorGrip.actor, with torso socket and lift/swing trajectory; never bake an opponent into the sprite. Ordinary grabs use actor:null and actorGrip:null.',
+    'Directional commands use trigger.directions as a facing-relative held-direction filter; use null for unrestricted commands. Keep sequence for button/motion history. Actor control separates body and summon commands, so the same button may be reused in those different contexts.',
+    'Projectiles may also use spawn_projectile_at_target, spawn_projectile_from_sky, or spawn_projectile_behind_target with their explicit offset/distance fields and a defined projectileId.',
     'Combos: in `combos`, list ordered chains of EXISTING move ids (2+ segments each). Do NOT author cancel windows, allowed states, or cancelFrom — the engine derives the cancel graph from the combo order. Just give the move-id sequence.',
     'Projectiles: for any move that throws something, add a projectile ENTITY to `projectiles` (id, width, height, speed, velocity, lifetime, hitbox) and reference it from that move\'s spawn_projectile event by setting the event `projectileId` to the entity id (keep the event `projectile` field null). Set the spawn event offsetX/offsetY to where it leaves the body.',
     'Event nullability: for a hitbox_active event set hitbox and leave projectileId/offsetX/offsetY null; for a spawn_projectile event set projectileId/offsetX/offsetY and leave hitbox null; for hitbox_end leave them all null.',
     'frameCounts: use 6 frames per row unless the brief says otherwise. walk_forward/walk_back are looping walk cycles; grab/throw are the grab and throw animations.',
     'Set sprite.relativeHeight from the brief: 1.0 for a standard fighter, up to 1.6 for giants, down to 0.5 for tiny fighters. This is how intended character height reaches the game.',
     'Moves should be mechanically readable and usable by the runtime config.',
+    'For shape-changing attacks, keyframes may describe a collision track using increasing atFrame ticks since hitbox activation and x/y/width/height in feet-origin world pixels. Keep ticks inside the active phase. Use null for ordinary contacts. Geometry must match the striking portion, not the whole VFX silhouette. The workbench can refine and lock authored geometry after visual review.',
     'Coordinates are feet-origin: y=0 is the floor, negative y is ABOVE the floor. Melee hitbox y and hand projectile offsetY should normally be negative (for example -70); positive values put attacks underground. Projectile hitboxes are relative to their projectile center.',
     'Physics stats are positive magnitudes: jumpVelocity and jumpBackVelocity must be POSITIVE. The engine applies upward/backward signs. Use jumpVelocity around 10-13 and jumpBackVelocity around 3.',
     'Do not include markdown. Return only JSON matching the supplied schema.',
@@ -216,16 +226,18 @@ function comboMoveSchema() {
   return {
     type: 'object',
     additionalProperties: false,
-    required: ['id', 'displayName', 'description', 'trigger', 'phases'],
+    required: ['id', 'displayName', 'description', 'trigger', 'phases', 'controlledActor'],
     properties: {
       id: { type: 'string' },
       displayName: { type: 'string' },
       description: { type: 'string' },
+      controlledActor: nullable({type:'string'}),
       trigger: {
         type: 'object',
         additionalProperties: false,
-        required: ['sequence'],
+        required: ['sequence', 'directions'],
         properties: {
+          directions: commandDirectionsSchema(),
           sequence: { type: 'array', minItems: 1, items: { type: 'string' } },
         },
       },
@@ -251,13 +263,23 @@ export function comboAuthoringSchema() {
 
 export function comboAuthoringGuidance() {
   return [
+    ...characterInputGuidance(),
     'You design the NEW moves of a fighting-game COMBO from the requested segments.',
     'Return one move per requested NEW segment, in the SAME order. Each segment carries the sprite row it has already been assigned (the `animation` field) plus a description — author a move that reads as that description on that row.',
     'Do NOT set `animation` yourself; the row is fixed for you. Use the assigned row only to judge what kind of move fits.',
-    'Every move needs phases named startup, active, then recovery (in that order). Put hitbox_active then hitbox_end in the active phase. The recovery phase is REQUIRED — it is what lets the move be cancelled into the next link of the combo.',
+    'Every move needs phases named startup, active, then recovery. Only strikes use hitbox_active/hitbox_end; grabs use grab_check/grab_end. Recovery is required for combo links. Controlled summon moves must name an EXISTING actor in controlledActor and contact events; never invent an actor that is absent from the current draft. Use trigger.directions for held-direction variants, null otherwise.',
     'Tune hitbox numbers to the description and ESCALATE across the combo (later links hit harder / launch). A headbutt is short-range high-stun; a roundhouse is wide; a launcher knocks up.',
     'trigger.sequence: assign a SHORT (1-2 token) input using ONLY canonical tokens — lp, mp, hp, lk, mk, hk, up, down, forward, back. Make each combo move\'s input DISTINCT from its siblings in this combo AND from the existing-move inputs you are given, so the player can chain the links cleanly.',
     'Do not include markdown. Return only JSON matching the supplied schema.',
+  ];
+}
+
+export function characterInputGuidance(){
+  return [
+    'Inputs are CHARACTER-SPECIFIC. Do not copy David or another fighter\'s command layout. Choose commands that fit this character\'s abilities, movement vocabulary, tactical role and intended combo flow; honor any explicit user control preferences.',
+    'Use supported runtime input tokens, not literal keyboard letters. Physical bindings may alias lp/mk, lk/mp and hp/hk; aliases are NOT distinct buttons. Keep frequent actions easy on a three-button mobile layout. Forward/back are facing-relative.',
+    'Choose directions deliberately: down for a low or grounded action, forward for commitment or reach, back for retreat/counter/pull when that fits the character; these are semantic suggestions, not mandatory mappings. Explain the chosen command and its purpose briefly in each move description.',
+    'Check commands against the existing kit and the legal state/predecessor. Never create two indistinguishable triggers competing in the same state. Repeated buttons are valid for authored strings only when predecessor/cancel-only gating is actually supported by the supplied authoring schema; otherwise do not invent unsupported trigger fields.',
   ];
 }
 
@@ -265,10 +287,12 @@ export function characterContentDraftSchema() {
   return {
     type: 'object',
     additionalProperties: false,
-    required: ['displayName', 'description', 'stats', 'sprite', 'moves', 'combos', 'projectiles'],
+    required: ['displayName', 'description', 'artBrief', 'stats', 'sprite', 'moves', 'combos', 'projectiles', 'actors'],
     properties: {
+      actors: {type:'array',items:summonActorSchema()},
       displayName: { type: 'string' },
       description: { type: 'string' },
+      artBrief: {type:'string',description:'Appearance-only identity brief: silhouette, palette, material and side-view neutral pose. Never include controls, move lists, labels, text, UI or multiple poses; image generation consumes this verbatim.'},
       stats: {
         type: 'object',
         additionalProperties: false,

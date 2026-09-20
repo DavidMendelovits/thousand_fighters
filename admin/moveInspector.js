@@ -1,5 +1,12 @@
 // Pure authoring model, shared by the real form and its regression tests.
 export const REACTION_FIELDS = ['damage','hitstun','blockstun','stun','hitstop'];
+export const GEOMETRY_FIELDS = ['x','y','width','height'];
+export const GRIP_FIELDS = ['socketX','socketY','lift','swing','holdStartFrame','holdEndFrame','layerSplitY'];
+function patchGeometry(box,patch){
+  for(const key of GEOMETRY_FIELDS){const v=patch[key];if(v===undefined)continue;
+    if(!Number.isFinite(v)||Math.abs(v)>600||(['width','height'].includes(key)&&v<=0))throw new Error('Collision coordinates must be within ±600; dimensions must be positive.');box[key]=v;
+  }
+}
 export function moveGrabs(move,projectiles=[]) {
   return (move.phases??[]).flatMap(p=>(p.events??[]).flatMap(({event:e})=>{const grab=e?.grab??e?.projectile?.grab??projectiles.find(p=>p.id===e?.projectileId)?.grab;return grab?[grab]:[];}));
 }
@@ -46,6 +53,16 @@ export function patchMove(draft,moveId,patch) {
     const contact=moveContacts(move,result.projectiles)[patch.contact.index];
     if(!contact)throw new Error('Select a damage contact first.');
     const hb=contact.hitbox;
+    patchGeometry(hb,patch.contact);
+    if(!contact.projectile && (GEOMETRY_FIELDS.some(k=>patch.contact[k]!==undefined)||patch.contact.keyframes!==undefined))move.phases[contact.phaseIndex].events[contact.eventIndex].event.geometrySource='authored';
+    if(patch.contact.keyframes!==undefined){
+      const track=patch.contact.keyframes;
+      if(contact.projectile)throw new Error('Motion tracks are for melee contacts.');
+      if(!Array.isArray(track))throw new Error('Motion track must be a JSON array.');
+      let previous=-1;
+      for(const k of track){if(!Number.isInteger(k.atFrame)||k.atFrame<=previous||k.atFrame>=move.phases[contact.phaseIndex].frames)throw new Error('Track ticks must increase and fit within the active phase.');patchGeometry({},k);previous=k.atFrame;}
+      move.phases[contact.phaseIndex].events[contact.eventIndex].event.keyframes=track;
+    }
     for(const key of REACTION_FIELDS){const v=patch.contact[key];if(v===null){if(['damage','hitstun'].includes(key))throw new Error(`${key} is required.`);delete hb[key];continue;}if(v===undefined)continue;
       if(!Number.isInteger(v)||v<0||(key!=='damage'&&v>180))throw new Error(`${key}: use non-negative whole numbers (timers at most 180 ticks).`);hb[key]=v;
     }
@@ -55,6 +72,16 @@ export function patchMove(draft,moveId,patch) {
   }
   if(patch.grab){
     const g=moveGrabs(move,result.projectiles)[patch.grab.index];if(!g)throw new Error('Grab no longer exists.');
+    if(patch.grab.actorGrip){
+      if(!g.actorGrip)throw new Error('This grab does not control a summon.');
+      for(const key of GRIP_FIELDS){const v=patch.grab.actorGrip[key];if(v===undefined)continue;
+        if(v===null){delete g.actorGrip[key];continue;}
+        if(!Number.isFinite(v)||Math.abs(v)>200)throw new Error('Grip coordinates must be within ±200.');
+        if(key.includes('Frame')&&(!Number.isInteger(v)||v<0||v>=(draft.sprite?.frameCounts?.[move.animation]??1)))throw new Error('Grip frame must exist in the animation.');
+        g.actorGrip[key]=v;
+      }
+      if((g.actorGrip.holdEndFrame??Infinity)<(g.actorGrip.holdStartFrame??0))throw new Error('Grip end frame must follow its start frame.');
+    }
     for(const k of ['damage','holdDuration','pullFrames','releaseHitstun']){const v=patch.grab[k];if(v===undefined)continue;if(!Number.isInteger(v)||v<0||(k!=='damage'&&v>180)||(k==='holdDuration'&&v===0))throw new Error('Grab timers must be whole ticks from 0 to 180; hold must be at least 1.');g[k]=v;}
     if((g.pullFrames??0)>g.holdDuration)throw new Error('Pull time cannot exceed grab hold time.');
   }

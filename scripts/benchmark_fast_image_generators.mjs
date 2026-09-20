@@ -21,6 +21,7 @@ const task = options.profile === 'wide' ? 'fighter-2x3-grid' : 'fighter-1x6-row'
 
 await mkdir(outputDirectory, { recursive: true });
 const results = [];
+const generationAttempts = [];
 for (const provider of providers) {
   const adapter = createImageGeneratorAdapter({ provider });
   const health = await adapter.healthCheck();
@@ -31,7 +32,10 @@ for (const provider of providers) {
   }
   const startedAt = performance.now();
   try {
-    const generated = await adapter.generateImage({ task, prompt, moveId, referenceImages });
+    const generated = await adapter.generateImage({
+      task, prompt, moveId, referenceImages,
+      onGenerationAttempt: async (event) => { generationAttempts.push(event); },
+    });
     const wallTimeMs = Math.round(performance.now() - startedAt);
     const filename = `${provider.replace(/[^a-z0-9_-]+/gi, '-')}.png`;
     await writeFile(path.join(outputDirectory, filename), generated.bytes ?? Buffer.from(generated.base64, 'base64'));
@@ -43,12 +47,22 @@ for (const provider of providers) {
       generationMs: generated.generationMs ?? null,
       postprocessMs: generated.postprocessMs ?? null,
       frameTimings: generated.frameTimings ?? null,
+      stageTimings: generated.stageTimings ?? null,
       estimatedCostUsd: generated.estimatedCostUsd ?? null,
       output: filename,
     });
     console.log(`OK   ${provider}: ${(wallTimeMs / 1000).toFixed(2)}s${generated.estimatedCostUsd == null ? '' : `, est. $${generated.estimatedCostUsd.toFixed(4)}`}`);
   } catch (error) {
-    results.push({ provider, model: adapter.model ?? null, status: 'error', wallTimeMs: Math.round(performance.now() - startedAt), error: error.message });
+    results.push({
+      provider,
+      model: adapter.model ?? null,
+      status: 'error',
+      wallTimeMs: Math.round(performance.now() - startedAt),
+      stageTimings: error.stageTimings ?? null,
+      frameTimings: error.frameTimings ?? null,
+      estimatedCostUsd: error.estimatedCostUsd ?? null,
+      error: error.message,
+    });
     console.error(`FAIL ${provider}: ${error.message}`);
   }
 }
@@ -61,6 +75,7 @@ const report = {
   referenceCount: referenceImages.length,
   providers,
   results,
+  generationAttempts,
 };
 await writeFile(path.join(outputDirectory, 'results.json'), `${JSON.stringify(report, null, 2)}\n`);
 await writeFile(path.join(outputDirectory, 'README.md'), markdownReport(report));
@@ -86,7 +101,15 @@ function contentTypeFor(filename) {
 
 function markdownReport(report) {
   const rows = report.results.map((result) =>
-    `| ${result.provider} | ${result.model ?? '—'} | ${result.status} | ${result.wallTimeMs == null ? '—' : `${(result.wallTimeMs / 1000).toFixed(2)}s`} | ${result.postprocessMs == null ? '—' : `${result.postprocessMs}ms`} | ${result.estimatedCostUsd == null ? '—' : `$${result.estimatedCostUsd.toFixed(4)}`} | ${result.output ?? result.error ?? '—'} |`,
+    `| ${result.provider} | ${result.model ?? '—'} | ${result.status} | ${result.wallTimeMs == null ? '—' : `${(result.wallTimeMs / 1000).toFixed(2)}s`} | ${result.postprocessMs == null ? '—' : `${result.postprocessMs}ms`} | ${stageSummary(result.stageTimings)} | ${result.estimatedCostUsd == null ? '—' : `$${result.estimatedCostUsd.toFixed(4)}`} | ${result.output ?? result.error ?? '—'} |`,
   );
-  return `# Fast image benchmark\n\nGenerated ${report.generatedAt}. Six frame calls run concurrently; wall time includes provider generation, downloads, and local sheet composition.\n\n| Provider | Model | Status | Wall time | Local compose | Est. cost | Output / error |\n| --- | --- | --- | ---: | ---: | ---: | --- |\n${rows.join('\n')}\n`;
+  return `# Fast image benchmark\n\nGenerated ${report.generatedAt}. Six frame calls run concurrently; wall time includes provider generation, downloads, and local sheet composition.\n\n| Provider | Model | Status | Wall time | Local compose | Stage breakdown | Est. cost | Output / error |\n| --- | --- | --- | ---: | ---: | --- | ---: | --- |\n${rows.join('\n')}\n`;
+}
+
+function stageSummary(stages) {
+  if (!stages || typeof stages !== 'object') return '—';
+  return Object.entries(stages)
+    .filter(([key, value]) => key !== 'frames' && Number.isFinite(value))
+    .map(([key, value]) => `${key.replace(/Ms$/, '')}: ${(value / 1000).toFixed(2)}s`)
+    .join('<br>') || '—';
 }

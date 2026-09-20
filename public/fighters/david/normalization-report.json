@@ -1,0 +1,151 @@
+{
+  "scale": 0.12184873949579832,
+  "paletteColors": 48,
+  "poses": [
+    {
+      "pose": "base",
+      "sourceBounds": [
+        86,
+        42,
+        730,
+        994
+      ],
+      "outputBounds": [
+        58,
+        60,
+        137,
+        176
+      ],
+      "clipped": false
+    },
+    {
+      "pose": "punch",
+      "sourceBounds": [
+        86,
+        42,
+        923,
+        994
+      ],
+      "outputBounds": [
+        59,
+        60,
+        161,
+        176
+      ],
+      "clipped": false
+    },
+    {
+      "pose": "kick",
+      "sourceBounds": [
+        83,
+        42,
+        957,
+        995
+      ],
+      "outputBounds": [
+        60,
+        60,
+        167,
+        176
+      ],
+      "clipped": false
+    },
+    {
+      "pose": "juggle",
+      "sourceBounds": [
+        86,
+        42,
+        845,
+        994
+      ],
+      "outputBounds": [
+        59,
+        60,
+        152,
+        176
+      ],
+      "clipped": false
+    },
+    {
+      "pose": "sound",
+      "sourceBounds": [
+        86,
+        41,
+        829,
+        994
+      ],
+      "outputBounds": [
+        58,
+        60,
+        149,
+        176
+      ],
+      "clipped": false
+    },
+    {
+      "pose": "ink",
+      "sourceBounds": [
+        195,
+        41,
+        906,
+        994
+      ],
+      "outputBounds": [
+        74,
+        60,
+        160,
+        176
+      ],
+      "clipped": false
+    },
+    {
+      "pose": "cable",
+      "sourceBounds": [
+        112,
+        42,
+        948,
+        994
+      ],
+      "outputBounds": [
+        62,
+        60,
+        164,
+        176
+      ],
+      "clipped": false
+    },
+    {
+      "pose": "hurt",
+      "sourceBounds": [
+        228,
+        42,
+        731,
+        982
+      ],
+      "outputBounds": [
+        63,
+        61,
+        124,
+        176
+      ],
+      "clipped": false
+    },
+    {
+      "pose": "crouch",
+      "sourceBounds": [
+        85,
+        40,
+        734,
+        995
+      ],
+      "outputBounds": [
+        59,
+        60,
+        139,
+        176
+      ],
+      "clipped": false
+    }
+  ],
+  "status": "geometry-passed-visual-review-required"
+}
