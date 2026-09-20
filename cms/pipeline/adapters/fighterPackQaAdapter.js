@@ -1,5 +1,6 @@
 import { normalizeManifest, validateManifestSchema } from '../manifestSchema.js';
 import {clippedSourceFrames} from '../../export/validateSpriteBoundaries.js';
+import {requiredMotionRows} from '../motionRowArtifacts.js';
 
 const EXPECTED_SHEETS = ['base', 'punch', 'kick', 'special_1', 'special_2'];
 const MIN_FRAME_COUNT = 4;
@@ -29,6 +30,8 @@ export class FighterPackQaAdapter {
     const generatedAt = request.requestedAt ?? new Date().toISOString();
 
     const assetRoot = normalizedKey.replace(/\/manifest\.json$/, '');
+    const draft=await this.repository.getDraft(characterId).catch(()=>null);
+    const expectedSheets=draft?.requireMotionCoverage?['base',...requiredMotionRows(draft).filter(Boolean)]:EXPECTED_SHEETS;
     const checks = [];
     let manifest = null;
     let frameData = null;
@@ -55,7 +58,7 @@ export class FighterPackQaAdapter {
     }
 
     // Check 2: framedata-exists
-    const frameDataCheck = await this._checkFrameDataExists(assetRoot);
+    const frameDataCheck = await this._checkFrameDataExists(assetRoot,expectedSheets);
     checks.push(frameDataCheck);
     if (frameDataCheck.status !== 'error') {
       frameData = frameDataCheck._data;
@@ -88,7 +91,7 @@ export class FighterPackQaAdapter {
 
     // Check 9: projectile-assets
     checks.push(await this._checkProjectileAssets(assetRoot, manifest));
-    const authoredProjectiles = (await this.repository.getDraft(characterId).catch(() => null))?.projectiles ?? [];
+    const authoredProjectiles = draft?.projectiles ?? [];
     const missingAuthoredProjectiles = [];
     for (const projectile of authoredProjectiles) {
       if (!projectile.sourceKey || !await this.storage.exists(projectile.sourceKey)) missingAuthoredProjectiles.push(projectile.id);
@@ -97,7 +100,7 @@ export class FighterPackQaAdapter {
       message:missingAuthoredProjectiles.length?`Generate missing projectile sprites before publishing: ${missingAuthoredProjectiles.join(', ')}.`:`All ${authoredProjectiles.length} authored projectile sprites are present.`});
 
     // Check 10: minimum-frame-count
-    checks.push(this._checkMinimumFrameCount(frameData, manifest));
+    checks.push(this._checkMinimumFrameCount(frameData, manifest,draft?.requireMotionCoverage?expectedSheets:null));
 
     // Check 11: frame-height-consistency (all rows at the fighter's scale)
     checks.push(this._checkFrameHeightConsistency(frameData));
@@ -187,7 +190,7 @@ export class FighterPackQaAdapter {
     }
   }
 
-  async _checkFrameDataExists(assetRoot) {
+  async _checkFrameDataExists(assetRoot,expectedSheets=EXPECTED_SHEETS) {
     const key = `${assetRoot}/frameData.json`;
     try {
       const exists = await this.storage.exists(key);
@@ -217,7 +220,7 @@ export class FighterPackQaAdapter {
         };
       }
       const foundSheets = Object.keys(parsed.frames);
-      const missingSheets = EXPECTED_SHEETS.filter((s) => !foundSheets.includes(s));
+      const missingSheets = expectedSheets.filter((s) => !foundSheets.includes(s));
       if (missingSheets.length > 0) {
         return {
           id: 'framedata-exists',
@@ -356,7 +359,7 @@ export class FighterPackQaAdapter {
     const spritePaths = manifest.sprites ?? manifest.sprite_paths ?? {};
     const mismatches = [];
 
-    for (const sheet of EXPECTED_SHEETS) {
+    for (const sheet of new Set([...Object.keys(frameDataSheets),...Object.keys(manifestCounts),...Object.keys(spritePaths)])) {
       const frameDataCount = Array.isArray(frameDataSheets[sheet]) ? frameDataSheets[sheet].length : null;
       const manifestCount = typeof manifestCounts[sheet] === 'number' ? manifestCounts[sheet] : null;
       const spriteFileCount = actualSpriteCounts[sheet] ?? (Array.isArray(spritePaths[sheet]) ? spritePaths[sheet].length : null);
@@ -677,7 +680,11 @@ export class FighterPackQaAdapter {
     };
   }
 
-  _checkMinimumFrameCount(frameData, manifest) {
+  _checkMinimumFrameCount(frameData, manifest,requiredRows=null) {
+    if(requiredRows){
+      const missing=requiredRows.filter(row=>(frameData?.frames?.[row]?.length??0)<(row==='base'?1:8));
+      return {id:'minimum-frame-count',status:missing.length?'error':'pass',message:missing.length?`Authored animation coverage is incomplete: ${missing.join(', ')}.`:'Every authored motion row has at least eight frames; the base has its own reference.'};
+    }
     const framesSource = frameData?.frames ?? manifest?.frameCounts ?? manifest?.frame_counts ?? null;
 
     if (!framesSource) {

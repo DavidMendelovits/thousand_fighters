@@ -3,6 +3,7 @@ import path from 'node:path';
 import {createCmsStorage} from '../cms/storage/createCmsStorage.js';
 import {CharacterContentRepository} from '../cms/repositories/CharacterContentRepository.js';
 import {installMotionRow,approveMotionRow,retimeMotion} from '../cms/pipeline/motionRowArtifacts.js';
+import {loadReviewContext,motionFingerprint} from '../cms/pipeline/reviewFingerprint.js';
 const planPath=process.argv[2];if(!planPath)throw new Error('Pass reviewed-plan.json');
 const plan=JSON.parse(await readFile(planPath,'utf8'));
 const storage=createCmsStorage(),repository=new CharacterContentRepository(storage);
@@ -20,7 +21,7 @@ await repository.withMutation('david',async()=>{
    const updated=await repository.getDraft('david'),bound=updated.moves.find(m=>m.id===move.id);
    bound.animation=row.action;bound.artStatus='ready';bound.visualTimeline=retimeMotion(bound,report.frameCount,row.contact,row.recovery);
    await repository.saveDraft('david',updated,{provider:'reviewed-expanded-motion-binding'});
-   await approveMotionRow({repository,characterId:'david',action:row.action,notes:row.notes});
+   await approveMotionRow({repository,characterId:'david',action:row.action,notes:row.notes,expectedFingerprint:(await motionFingerprint(await loadReviewContext(repository,'david'),row.action)).fingerprint});
   });
   console.log(`Bound reviewed animation ${row.action}`);
  }

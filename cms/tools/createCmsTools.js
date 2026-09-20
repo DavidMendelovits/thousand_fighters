@@ -5,6 +5,7 @@ import { SHEET_IDS } from '../../shared/animationRows.js';
 import {validateCombatRules} from '../export/validateCombatRules.js';
 import {importPublishedCharacter} from '../import/importPublishedCharacter.js';
 import {approveMotionRow} from '../pipeline/motionRowArtifacts.js';
+import {publishReadiness} from '../authoring/publishReadiness.js';
 import {defineSummon,addSummonMove,defineForm,installForm} from '../authoring/characterComponents.js';
 import {getAnimationPlan} from '../pipeline/animationPlan.js';
 import { validateCombos, validateProjectiles, validateProjectileReferences } from '../export/convertDraftToCharacterConfig.js';
@@ -167,8 +168,13 @@ export function createCmsTools({ pipeline, repository, registry }) {
     {
       name: 'approve_motion_row',
       description: 'Approve a compiled motion row after inspecting its animation and loop/contact timing. Requires explicit review notes; does not generate or publish.',
-      inputSchema: objectSchema({characterId:stringSchema('Character id'),action:stringSchema('Reviewed animation row'),notes:stringSchema('What was visually checked')},['characterId','action','notes']),
-      execute: async ({characterId,action,notes}) => ({row:await approveMotionRow({repository,characterId,action,notes})}),
+      inputSchema: objectSchema({characterId:stringSchema('Character id'),action:stringSchema('Reviewed animation row'),notes:stringSchema('What was visually checked'),expectedFingerprint:stringSchema('Exact row fingerprint from get_publish_readiness, after inspecting that version')},['characterId','action','notes','expectedFingerprint']),
+      execute: async input => ({row:await approveMotionRow({repository,...input})}),
+    },
+    {
+      name:'get_publish_readiness',description:'Read current version-bound motion review, reference and QA blockers. No generation or writes.',
+      inputSchema:objectSchema({characterId:stringSchema('Character id')},['characterId']),
+      execute:async({characterId})=>publishReadiness(repository,characterId),
     },
     {
       name: 'define_combo',

@@ -43,6 +43,10 @@ try {
     brief: 'A fighter that proves the whole pipeline hangs together.',
   });
   assert.equal(draft.id, CHARACTER_ID);
+  assert.equal(draft.requireMotionCoverage,true,'new fighters default to reviewed-motion publication');
+  // This existing smoke exercises the legacy fixed-row fixture, not an approved
+  // video character. Strict publication is covered by publish-readiness tests.
+  await repository.saveDraft(CHARACTER_ID,{...draft,requireMotionCoverage:false});
 
   // The real QA gate requires art for every authored projectile. Keep this
   // fixture complete rather than bypassing that production gate.

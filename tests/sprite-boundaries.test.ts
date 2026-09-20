@@ -15,7 +15,7 @@ test('export rejects padded frames whose original source was clipped',()=>{
 
 test('stale passing QA and force cannot publish newly detected missing source pixels',async()=>{
   let wrote=false;
-  const publisher=createLocalPublisher({storage:{exists:async()=>true,getJson:async()=>({frames:{punch:[{file:'punch.png',sourceClipped:true}]}})},repository:{getLatestQaReport:async()=>({status:'pass'}),createVersion:async()=>{wrote=true;}}});
+  const publisher=createLocalPublisher({storage:{exists:async()=>true,getJson:async()=>({frames:{punch:[{file:'punch.png',sourceClipped:true}]}})},repository:{getDraft:async()=>({}),getLatestQaReport:async()=>({status:'pass'}),createVersion:async()=>{wrote=true;}}});
   await assert.rejects(publisher.publishCharacter({characterId:'test'}),/Source clipping/);
   await assert.rejects(publisher.publishCharacter({characterId:'test',force:true}),/Source clipping/);
   assert.equal(wrote,false);

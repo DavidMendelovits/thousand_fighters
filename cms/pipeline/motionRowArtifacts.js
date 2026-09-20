@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import {loadReviewContext,motionFingerprint} from './reviewFingerprint.js';
 
 const locks=new Map();
 export const REQUIRED_MOTION_STATES=['idle','walk_forward','walk_back','jump','landing','crouch','block','hurt','getup'];
@@ -63,11 +64,17 @@ async function install({characterId,directory,storage,repository,contactFrame,re
   return {action,frameCount:frames.length,status:'needs-visual-review'};
 }
 
-export async function approveMotionRow({repository,characterId,action,notes}){
+export async function approveMotionRow({repository,characterId,action,notes,expectedFingerprint}){
   if(!notes?.trim())throw new Error('Visual review notes are required');
   const draft=await repository.getDraft(characterId),row=draft.motionRows?.[action];
   if(!row||row.uniqueFrames<8||row.clippedFrames?.length)throw new Error('No valid compiled motion candidate');
-  row.status='approved';row.review={notes,at:new Date().toISOString()};
+  const context=await loadReviewContext(repository,characterId,draft);
+  const {fingerprint,missing}=await motionFingerprint(context,action);
+  if(!fingerprint||missing.length||(context.frameData.frames[action]?.length??0)<8)throw new Error('Motion assets are missing or incomplete. Re-extract before reviewing.');
+  if(context.frameData.frames[action].some(frame=>frame.sourceClipped))throw new Error('Source clipping must be corrected before approval.');
+  if(!expectedFingerprint||expectedFingerprint!==fingerprint)throw Object.assign(new Error('Motion changed or review version is missing. Refresh the release check, inspect the current row, then approve.'),{statusCode:409});
+  if(context.conceptHash&&draft.referenceReview?.sha256===context.conceptHash&&draft.referenceReview.status==='rejected')throw new Error('The current identity reference is rejected. Replace it before approving motion.');
+  row.status='approved';row.review={notes:notes.trim().slice(0,4000),at:new Date().toISOString(),fingerprint,schemaVersion:1};
   await repository.saveDraft(characterId,draft,{provider:'motion-review'});return row;
 }
 export function assertMotionCoverage(draft){

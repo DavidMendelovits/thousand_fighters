@@ -1,4 +1,5 @@
 import {requiredMotionRows} from './motionRowArtifacts.js';
+import {loadReviewContext,motionFingerprint,motionReviewStatus} from './reviewFingerprint.js';
 
 /** Pure planning: no writes, submissions or optimistic approval from filenames. */
 export function planAnimations(draft,frameData={}) {
@@ -25,7 +26,20 @@ export async function getAnimationPlan(repository,characterId) {
   async function one(draft){
     const key=`${draft.assets?.rootKey??`characters/${draft.id}/assets/fighter-pack`}/frameData.json`;
     const frames=await repository.storage.exists(key)?await repository.storage.getJson(key):{};
-    return {...planAnimations(draft,frames),displayName:draft.displayName};
+    const plan=planAnimations(draft,frames);
+    // The pure plan reads metadata only. Before showing a green approval in
+    // the workbench, verify that it still describes the current asset bytes.
+    const reviewed=plan.jobs.filter(job=>job.status==='approved');
+    if(reviewed.length){
+      const context=await loadReviewContext(repository,draft.id,draft);
+      for(const job of reviewed){
+        const current=await motionFingerprint(context,job.row);
+        const status=motionReviewStatus(draft.motionRows[job.row],current.fingerprint,current.missing);
+        if(status!=='approved'){job.status=status==='missing-assets'?'missing':status==='rejected'?'rejected':'needs-review';job.nextAction=status==='missing-assets'?'Re-extract missing assets':'Inspect the current version again';}
+      }
+      for(const key of Object.keys(plan.counts))plan.counts[key]=plan.jobs.filter(job=>job.status===key).length;
+    }
+    return {...plan,displayName:draft.displayName};
   }
   const scopes=[await one(parent)];
   for(const form of parent.formDrafts??[]){

@@ -6,6 +6,8 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { digest } from '../storage/LineageStore.js';
 import { currentConceptAssetKey } from '../authoring/referenceArt.js';
+import {assertPublishReadiness} from '../authoring/publishReadiness.js';
+import {loadReviewContext,packFingerprint} from './reviewFingerprint.js';
 
 import { PipelinePort } from './ports.js';
 import { normalizeManifest } from './manifestSchema.js';
@@ -86,7 +88,8 @@ export class CharacterCreationPipeline {
       stats: result.value?.stats ?? {},
       sprite: result.value?.sprite ?? {},
       moves,
-      ...(actors.length ? {actors,requireMotionCoverage:true} : {}),
+      requireMotionCoverage:true,
+      ...(actors.length ? {actors} : {}),
       combos,
       projectiles,
       generation: {
@@ -977,10 +980,19 @@ export class CharacterCreationPipeline {
 
   async validateFighterPack(request) {
     const qa = this.registry.resolve(PipelinePort.FIGHTER_QA);
-    return qa.validateFighterPack({
+    const repository = this.registry.resolve(PipelinePort.CHARACTER_REPOSITORY);
+    const context = await loadReviewContext(repository,request.characterId);
+    if(request.normalizedKey!==`${context.root}/manifest.json`)throw new Error('Validate the current working pack, not an older revision.');
+    const before = await packFingerprint(context);
+    const result = await qa.validateFighterPack({
       requestedAt: this.clock().toISOString(),
       ...request,
     });
+    const after = await packFingerprint(await loadReviewContext(repository,request.characterId));
+    if(before!==after)throw new Error('Assets or rules changed during validation. Run QA again.');
+    const report={...result,inputFingerprint:after};
+    await repository.writeQaReport(request.characterId,`verified-${Date.now()}`,report);
+    return report;
   }
 
   async publishCharacter(request) {
@@ -988,6 +1000,7 @@ export class CharacterCreationPipeline {
     const draft=await repository.getDraft(request.characterId);
     if(draft.parentId)throw new Error('Hidden forms are installed and published through their parent character, not as selectable fighters.');
     assertMotionCoverage(draft);
+    await assertPublishReadiness(repository,request.characterId);
     const publisher = this.registry.resolve(PipelinePort.PUBLISHER);
     return publisher.publishCharacter({
       requestedAt: this.clock().toISOString(),

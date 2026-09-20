@@ -11,6 +11,7 @@ import { reprocessArchivedVideo } from '../pipeline/reprocessArchivedVideo.js';
 import { compareVersions } from '../repositories/characterHistory.js';
 import { resumeArchivedVideo } from '../pipeline/resumeArchivedVideo.js';
 import { workbenchLibrary, workbenchDetail, updateWorkbench, workbenchReviewClip } from '../authoring/workbenchLibrary.js';
+import {publishReadiness} from '../authoring/publishReadiness.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -136,6 +137,11 @@ async function handleApiRequest({ request, response, url, runtime }) {
     return;
   }
 
+  const readinessMatch=url.pathname.match(/^\/api\/characters\/([^/]+)\/readiness$/);
+  if(readinessMatch&&request.method==='GET'){
+    sendJson(response,await publishReadiness(runtime.repository,segment(decodeURIComponent(readinessMatch[1]))));
+    return;
+  }
   const workbenchMatch = url.pathname.match(/^\/api\/characters\/([^/]+)\/workbench$/);
   if (workbenchMatch && ['GET', 'POST'].includes(request.method)) {
     const characterId = segment(decodeURIComponent(workbenchMatch[1]));

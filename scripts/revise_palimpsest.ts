@@ -5,6 +5,7 @@ import {palimpsestMotion} from '../shared/palimpsestMotion.js';
 import {createCmsStorage} from '../cms/storage/createCmsStorage.js';
 import {CharacterContentRepository} from '../cms/repositories/CharacterContentRepository.js';
 import {installMotionRow,approveMotionRow} from '../cms/pipeline/motionRowArtifacts.js';
+import {loadReviewContext,motionFingerprint} from '../cms/pipeline/reviewFingerprint.js';
 import {exportCharacterToRuntime} from '../cms/export/exportCharacterToRuntime.js';
 const plan=JSON.parse(await readFile(process.argv[2],'utf8'));
 const storage=createCmsStorage(),repository=new CharacterContentRepository(storage),characterId='palimpsest';
@@ -14,7 +15,7 @@ await repository.withMutation(characterId,async()=>{
  for(const [action,selection] of Object.entries(plan) as any){
   if(!selection.notes)throw new Error(`Missing review: ${action}`);
   await installMotionRow({characterId,directory:selection.directory,storage,repository,contactFrame:selection.contact,recoveryFrame:selection.recovery});
-  await approveMotionRow({repository,characterId,action,notes:selection.notes});
+  await approveMotionRow({repository,characterId,action,notes:selection.notes,expectedFingerprint:(await motionFingerprint(await loadReviewContext(repository,characterId),action)).fingerprint});
  }
  draft=await repository.getDraft(characterId);
  const pinch=createPalimpsest().moves.find(m=>m.id==='hands_pinch')!;

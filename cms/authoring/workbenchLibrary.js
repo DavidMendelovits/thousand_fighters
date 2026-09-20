@@ -4,6 +4,7 @@ import { digest, segment } from '../storage/LineageStore.js';
 import { assetApiUrl } from '../assets/uploadCharacterAsset.js';
 import { planAnimations } from '../pipeline/animationPlan.js';
 import { currentConceptAssetKey } from './referenceArt.js';
+import {loadReviewContext,motionFingerprint,motionReviewStatus} from '../pipeline/reviewFingerprint.js';
 
 const publicRoot = fileURLToPath(new URL('../../public/', import.meta.url));
 const pngSignature = Buffer.from('89504e470d0a1a0a', 'hex');
@@ -22,7 +23,7 @@ export async function workbenchData(repository, characterId) {
   const rows = Object.entries(frames).map(([row, list]) => ({
     row, frameCount: list.length,
     available: list.filter(frame => frame.file && active.includes(`${root}/${frame.file}`)).length,
-    review: draft.motionRows?.[row]?.status ?? 'unreviewed',
+    review: draft.motionRows?.[row]?.status === 'approved' ? 'review recorded · verify version' : draft.motionRows?.[row]?.status ?? 'unreviewed',
     clipUrl: active.includes(`${root}/sheets/${row}.png`) ? `/api/characters/${encodeURIComponent(characterId)}/review-clip/${encodeURIComponent(row)}` : null,
   })).filter(row => row.frameCount > 0);
   // Legacy packs can lack frameData but still contain extracted frames.
@@ -110,7 +111,11 @@ export async function workbenchReviewClip(repository, characterId, row) {
   const warnings = ['Preview uses the current CMS draft; it is not a published release.'];
   if (!report) warnings.push('No video provenance recorded for this row. These may be image keyposes.');
   if (report?.clippedFrames?.length) warnings.push(`Source clipping reported in ${report.clippedFrames.length} frames.`);
-  const reviewed = report?.status === 'approved' && !report?.clippedFrames?.length;
+  const reviewContext=await loadReviewContext(repository,characterId,draft);
+  const current=await motionFingerprint(reviewContext,row);
+  const reviewStatus=motionReviewStatus(report,current.fingerprint,current.missing);
+  const reviewed=reviewStatus==='approved';
+  if(report?.status==='approved'&&!reviewed)warnings.push(`Recorded review is ${reviewStatus}; inspect this version again before publishing.`);
   const cellAnchor = frame => ({ x: Math.floor((width-frame.width)/2)+(frame.anchor?.x??frame.width/2), y: height-frame.height+(frame.anchor?.y??frame.height) });
   const anchor = cellAnchor(source[0]);
   return {

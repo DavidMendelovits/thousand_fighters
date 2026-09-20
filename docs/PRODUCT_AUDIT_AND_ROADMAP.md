@@ -4,6 +4,16 @@ Audit date: September 19, 2026. Scope: current local working tree, including unc
 
 ## Executive assessment
 
+### September 19 execution update — version-bound review and release checklist
+
+The pending project baseline was committed first as `becf1d5` (not pushed). The workbench now has a read-only publish-readiness checklist and motion review queue, using the shared Animation Lab viewer. An approval pins the actual row/reference pixels, frame metadata, relevant moves and playback settings. Replacing those inputs invalidates the review; older approvals remain explicitly unversioned until inspected again. The animation planner and preview use the same current-version check.
+
+New fighter drafts require complete motion coverage by default. Pack QA follows authored moves and controlled actors rather than requiring a generic punch/kick template. QA also pins the current pack and rules. The supported `publish_character` workflow blocks strict drafts with stale/missing reviews, missing or rejected assets, unverified validator provenance, or stale/failing QA. Published copies are not modified by inspection. Legacy non-strict packs retain an explicitly labeled warning policy.
+
+ART-06 / CREATE-06 are **advanced, not complete**. Authenticated reviewer identities, equivalent hardening of internal export/form-install paths, and a fully generated new-character acceptance run remain open. Palimpsest's 18 historical row reviews now need version-bound reinspection; this is not a new judgment that all 18 animations are bad. No production row was automatically approved and no paid generation ran in this slice.
+
+Verification and a short recorded browser review flow are documented in [release-check evidence](../artifacts/release-check/README.md). This recording demonstrates preview/review navigation, not character creation, approval submission, publication or a new gameplay run.
+
 ### September 19 execution update — live creation attempt
 
 The new-fighter acceptance run was attempted with **Skein** through the browser and recorded. See [recording and evidence](../artifacts/skein-workbench/README.md). A draft and real BFL image attempts exist, but **the end-to-end gate remains open**: no reference was approved, no video animations were generated, and no new gameplay was demonstrated.

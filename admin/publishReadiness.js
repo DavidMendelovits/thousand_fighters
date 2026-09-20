@@ -1,0 +1,16 @@
+const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const labels={'approved':'Approved · current version','missing-assets':'Missing frames or sheet','needs-motion':'Needs compiled motion','needs-review':'Needs visual review','unversioned-review':'Older approval · review again','stale-review':'Changed since review','rejected':'Clipping rejected'};
+
+export function renderReadiness(report) {
+  const pending=report.rows.filter(row=>row.status!=='approved');
+  return `<header class="release-heading"><div><span class="eyebrow">Current draft · release check</span><h3>${report.canPublish?'Ready for a publish decision':'Not ready to publish'}</h3><p>${report.counts.approved}/${report.counts.required} motion rows reviewed against current assets</p></div><button type="button" data-refresh-readiness>Refresh check</button></header>
+    <ul class="release-checks">${report.checks.map(check=>`<li class="release-check ${esc(check.status)}"><span>${check.status==='pass'?'✓':check.status==='blocked'?'!':'•'}</span><div>${esc(check.message)}${check.id==='reference'&&check.status!=='pass'?'<button type="button" data-readiness-reference>Review reference</button>':''}</div></li>`).join('')}</ul>
+    <details class="release-rows"><summary>Motion review queue · ${pending.length} remaining</summary><div>${report.rows.map(row=>`<article><div><strong>${esc(row.row.replaceAll('_',' '))}</strong><span>${esc(labels[row.status]??row.status)} · ${row.frameCount} poses</span></div><button type="button" data-review-row="${esc(row.row)}">${row.canReview?'Review':'Open row'}</button></article>`).join('')}</div></details>
+    <div class="button-row"><button type="button" data-readiness-validate>Run pack validation</button><button type="button" data-readiness-publish ${report.canPublish?'':'disabled'}>Publish reviewed draft</button></div>
+    <p class="move-note">${esc(report.note)}${report.strict?'':' Legacy motion policy: gaps are warnings, not a declaration of release-quality art.'}</p>`;
+}
+
+export function renderMotionReview(row) {
+  return `<header><span class="eyebrow">Visual approval · exact asset version</span><h3>Review ${esc(row.row.replaceAll('_',' '))}</h3></header><p>Watch the row above. Check silhouette and material, facing, complete edges, anchors, and the move’s contact/recovery timing. A changed image or move invalidates this approval.</p>
+    <form data-motion-review-form><input type="hidden" name="action" value="${esc(row.row)}"><input type="hidden" name="fingerprint" value="${esc(row.fingerprint)}"><label>Review notes<textarea name="notes" required rows="3" placeholder="What did you check? What makes this motion usable?">${esc(row.notes)}</textarea></label><label class="review-confirm"><input type="checkbox" name="confirmed" required> I inspected this version, including its edges and contact timing.</label><button type="submit" ${row.canReview?'':'disabled'}>Approve inspected version</button><p role="status">${row.canReview?'Approval is not publishing.':esc(labels[row.status]??'Generate and extract motion before approval.')}</p></form>`;
+}

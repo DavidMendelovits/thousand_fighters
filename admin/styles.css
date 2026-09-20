@@ -2260,3 +2260,21 @@ details[open] .dev-tools-summary {
   .studio-embedded .workspace-grid { grid-template-columns:180px minmax(0,1fr); }
   .studio-embedded .ops-column { grid-column:1/-1; grid-template-columns:1fr; }
 }
+.publish-readiness,.motion-review{padding:18px;border:1px solid var(--border,#273447);border-radius:8px;background:var(--panel,#111b2a);margin-bottom:18px;min-width:0}
+.release-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.release-heading h3,.motion-review h3{margin:5px 0;font-size:18px}
+.release-heading p,.motion-review p{color:var(--muted,#a6b6c8);line-height:1.5;margin:6px 0;font-size:13px}
+.release-checks{padding:0;margin:16px 0;list-style:none;display:grid;gap:8px}
+.release-check{display:flex;gap:10px;font-size:13px;line-height:1.5}
+.release-check>span{flex:0 0 18px;text-align:center;font-weight:700}
+.release-check.pass>span{color:#70dac5}.release-check.blocked>span{color:#ffb19d}.release-check.warning>span{color:#edca87}
+.release-check button{margin-left:10px;padding:3px 7px;font-size:12px}
+.release-rows{border-top:1px solid var(--border,#273447);margin:14px 0;padding-top:12px}
+.release-rows summary{cursor:pointer;font-size:13px;font-weight:600;padding-bottom:8px}
+.release-rows>div{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:8px;max-height:360px;overflow:auto;padding:2px}
+.release-rows article{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px;border:1px solid var(--border,#273447);border-radius:5px;min-width:0}
+.release-rows article>div{min-width:0}.release-rows strong,.release-rows span{display:block;font-size:12px;overflow-wrap:anywhere}.release-rows span{color:var(--muted,#a6b6c8);margin-top:4px}.release-rows button{flex-shrink:0}
+.motion-review{margin:16px 0 0}.motion-review textarea{width:100%;box-sizing:border-box;margin:8px 0}
+.motion-review .review-confirm{display:flex;gap:10px;align-items:flex-start;line-height:1.5;font-size:13px;margin:8px 0 16px}
+.review-confirm input[type=checkbox]{width:auto;flex:0 0 auto;margin-top:3px}
+@media(max-width:600px){.publish-readiness,.motion-review{padding:12px}.release-check button{display:block;margin:6px 0}.release-heading{gap:8px}.release-rows>div{grid-template-columns:1fr}}

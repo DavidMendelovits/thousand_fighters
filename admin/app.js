@@ -6,6 +6,7 @@ import {moveContacts,moveGrabs,frameAdvantage,patchMove,REACTION_FIELDS,GEOMETRY
 import { mountCharacterHistory } from './characterHistory.js';
 import { mountCharacterComponents } from './characterComponents.js';
 import { renderReference, renderPreview, mountPreview } from './workbenchPreview.js';
+import {renderReadiness,renderMotionReview} from './publishReadiness.js';
 const MOVE_ORDER = ['base', 'punch', 'kick', 'special_1', 'special_2', 'jump', 'crouch', 'dash_forward', 'dash_back', 'block', 'grab', 'throw', 'walk_forward', 'walk_back', 'hurt', 'getup', 'projectiles'];
 
 // Where the Vite-served game (and the single-player testbed) lives. The testbed
@@ -94,6 +95,9 @@ const state = {
   currentAssets: [],
   qaReports: {},
   selectSeq: 0,
+  readinessSeq: 0,
+  publishReadiness: null,
+  busy: false,
   movePrompts: {},
   rowGenerators: {},
   assetCacheBust: 0,
@@ -208,6 +212,12 @@ const WORKBENCH_CTA_HANDLERS = {
 };
 
 function handleWorkbenchClick(event) {
+  if(event.target.closest('[data-refresh-readiness]')){void loadPublishReadiness();return;}
+  if(event.target.closest('[data-readiness-reference]')){elements.characterWorkbench.querySelector('.reference-review')?.scrollIntoView({block:'start',behavior:'smooth'});return;}
+  if(event.target.closest('[data-readiness-validate]')){void validatePack().catch(showError);return;}
+  if(event.target.closest('[data-readiness-publish]')){void publishCharacter().catch(showError);return;}
+  const reviewRow=event.target.closest('[data-review-row]');
+  if(reviewRow){void beginMotionReview(reviewRow.dataset.reviewRow).catch(showError);return;}
   const archive = event.target.closest('[data-archive-character]');
   const referenceReview = event.target.closest('[data-reference-review]');
   if (archive || referenceReview) {
@@ -274,8 +284,7 @@ function handleWorkbenchClick(event) {
   }
   const approveMotion=event.target.closest('[data-approve-motion]');
   if(approveMotion){
-    const notes=prompt('Review notes: verify motion, facing, loop seam, body scale and contact timing.');
-    if(notes?.trim())invokeTool('approve_motion_row',{characterId:currentCharacterId(),action:approveMotion.dataset.approveMotion,notes}).then(()=>selectCharacter(currentCharacterId(),{silent:true})).catch(showError);
+    void beginMotionReview(approveMotion.dataset.approveMotion).catch(showError);
     return;
   }
 
@@ -460,6 +469,7 @@ async function selectCharacter(characterId, options = {}) {
   // Parallel row generation refreshes the workbench as each row lands —
   // the sequence token keeps a slow, stale response from clobbering a newer one.
   const seq = ++state.selectSeq;
+  state.publishReadiness=null;
 
   const [draftResult, assetResult, qaReport, workbenchDetail] = await Promise.all([
     getJson(`/api/characters/${encodeURIComponent(characterId)}/draft`),
@@ -489,6 +499,7 @@ async function selectCharacter(characterId, options = {}) {
   elements.selectedCharacter.textContent = `${draft.displayName ?? draft.id} · ${draft.lifecycle ?? 'draft'}`;
   hydratePipelineStateFromAssets(assets);
   renderCharacterWorkbench(draft, assets);
+  void loadPublishReadiness();
 
   if (!options.silent) {
     log(`Loaded ${draft.displayName ?? draft.id}.`);
@@ -894,9 +905,63 @@ async function validatePack() {
   return result;
 }
 
+function syncPublishButtons(){
+  for(const button of [elements.publishCharacter,...elements.characterWorkbench.querySelectorAll('[data-readiness-publish],#cta-publish-character')])if(button)button.disabled=state.busy||!state.publishReadiness?.canPublish;
+}
+
+async function loadPublishReadiness(){
+  const characterId=currentCharacterId(),seq=++state.readinessSeq,selection=state.selectSeq;
+  const host=document.getElementById('publish-readiness');
+  if(!host||!characterId)return null;
+  state.publishReadiness=null;syncPublishButtons();
+  try{
+    const report=await getJson(`/api/characters/${encodeURIComponent(characterId)}/readiness`);
+    if(seq!==state.readinessSeq||selection!==state.selectSeq||characterId!==currentCharacterId())return null;
+    state.publishReadiness=report;host.innerHTML=renderReadiness(report);syncPublishButtons();
+    for(const row of report.rows){
+      const option=elements.characterWorkbench.querySelector(`[data-preview-row] option[value="${CSS.escape(row.row)}"]`);
+      if(option)option.textContent=`${row.row.replaceAll('_',' ')} · ${row.frameCount} poses · ${row.status.replaceAll('-',' ')}`;
+      const label=elements.characterWorkbench.querySelector(`[data-motion-review-state="${CSS.escape(row.row)}"]`);
+      if(label)label.textContent=row.status.replaceAll('-',' ');
+    }
+    return report;
+  }catch(error){
+    if(seq===state.readinessSeq&&selection===state.selectSeq)host.innerHTML=`<h3>Release check unavailable</h3><p>${escapeHtml(error.message)}</p><button type="button" data-refresh-readiness>Retry check</button>`;
+    return null;
+  }
+}
+
+async function beginMotionReview(action){
+  const report=state.publishReadiness??await loadPublishReadiness();
+  const row=report?.rows.find(row=>row.row===action);
+  if(!row)throw new Error('Refresh the release check before reviewing.');
+  const select=elements.characterWorkbench.querySelector('[data-preview-row]');
+  if(!select?.querySelector(`option[value="${CSS.escape(action)}"]`)){
+    elements.characterWorkbench.querySelector(`[data-move-card="${CSS.escape(action)}"]`)?.scrollIntoView({block:'start'});
+    return;
+  }
+  select.value=action;state.preview.open('motion');
+  const panel=document.getElementById('motion-review');
+  panel.hidden=false;panel.innerHTML=renderMotionReview(row);
+  document.getElementById('workbench-preview').scrollIntoView({block:'start'});
+  panel.querySelector('form').addEventListener('submit',async event=>{
+    event.preventDefault();const form=event.currentTarget,data=new FormData(form),status=form.querySelector('[role=status]'),button=form.querySelector('button');
+    if(!data.get('confirmed'))return;
+    const characterId=currentCharacterId();button.disabled=true;status.textContent='Saving version-bound review…';
+    try{
+      await invokeTool('approve_motion_row',{characterId,action:data.get('action'),notes:data.get('notes'),expectedFingerprint:data.get('fingerprint')});
+      await selectCharacter(characterId,{silent:true});
+      document.getElementById('publish-readiness')?.scrollIntoView({block:'start'});
+    }catch(error){status.textContent=error.message;button.disabled=false;}
+  });
+}
+
 async function publishCharacter() {
   const characterId = currentCharacterId();
   if (!characterId) return null;
+  const readiness=await loadPublishReadiness();
+  if(!readiness?.canPublish){document.getElementById('publish-readiness')?.scrollIntoView({block:'start'});throw new Error('Resolve the release-check blockers before publishing.');}
+  if(!confirm('Publish this reviewed draft to the runtime roster? This creates a release and updates the playable copy.'))return null;
 
   const result = await invokeTool('publish_character', {
     characterId,
@@ -1518,14 +1583,11 @@ function renderCharacterWorkbench(draft, assets) {
     `${draft.projectiles?.length ?? assetCounts.projectiles} projectiles`,
   ];
 
-  const stage = detectCharacterStage(draft, assets);
-  const bannerHtml = renderNextStepBanner(stage);
   const conceptAsset = findConceptAsset(assets);
   const qaReport = state.qaReports[draft.id] ?? null;
 
   elements.characterWorkbench.className = 'character-workbench';
   elements.characterWorkbench.innerHTML = `
-    ${bannerHtml}
     <section class="character-summary">
       <div>
         <span class="eyebrow">${escapeHtml(draft.id)}</span>
@@ -1546,6 +1608,7 @@ function renderCharacterWorkbench(draft, assets) {
     </section>
     <details class="combat-rules-editor"><summary>Identity, movement & move definitions</summary><p>Edit without regenerating art. Coordinates are relative to the feet: negative Y is above the floor; jump velocities are positive. Move phases and hitstun / blockstun / stun / hitstop use 60 Hz ticks: 6 ticks = 100 ms. Stun overrides hitstun; hitstop pauses the impact separately.</p><p>Size: sprite.relativeHeight (0.5–1.6; 1 ≈ 160 px tall) and sprite.scaleAdjust (0.25–4) set the authored render size and measured boxes. Advanced combat size scales art and collision together, including temporary power-ups. Pixel rendering stays nearest-neighbor; integer enlargement is crispest, not higher-detail. Publish separately to update the game.</p><textarea id="authoring-json" aria-label="Character authoring JSON" rows="16">${escapeHtml(JSON.stringify({artBrief:draft.artBrief??draft.description,stats:draft.stats??{},sprite:{relativeHeight:draft.sprite?.relativeHeight??1,scaleAdjust:draft.sprite?.scaleAdjust??1},moves:draft.moves??[]},null,2))}</textarea><button type="button" data-save-authoring>Save character definitions</button><span id="authoring-save-status" role="status"></span></details>
     <details class="combat-rules-editor"><summary>Advanced combat rules · stats, power-ups & hidden forms</summary><p>Multipliers use 1 as neutral. Forms contain a complete config with parentId and selectable:false. Save updates the draft; publish separately to ship it.</p><textarea id="advanced-combat-json" aria-label="Advanced combat JSON" rows="12">${escapeHtml(JSON.stringify({combatStats:draft.combatStats??{},powerUps:draft.powerUps??[],forms:draft.forms??[]},null,2))}</textarea><button type="button" data-save-combat>Save combat rules to draft</button><span id="combat-save-status" role="status"></span></details>
+    <section id="publish-readiness" class="publish-readiness" aria-live="polite"><p>Checking current assets, reviews and QA…</p></section>
     <details class="character-history" id="character-history"></details>
     <section id="character-components" class="character-components"></section>
     ${renderPreview(detail)}
@@ -1560,7 +1623,10 @@ function renderCharacterWorkbench(draft, assets) {
   // All workbench buttons are handled by the delegated click handler —
   // no per-render listener attachment.
   const previewHost = document.getElementById('workbench-preview');
-  elements.characterWorkbench.querySelector('.character-summary').after(previewHost, elements.characterWorkbench.querySelector('.reference-review'));
+  elements.characterWorkbench.querySelector('.character-summary').after(document.getElementById('publish-readiness'),previewHost, elements.characterWorkbench.querySelector('.reference-review'));
+  previewHost.insertAdjacentHTML('beforeend','<section id="motion-review" class="motion-review" hidden></section>');
+  previewHost.addEventListener('change',event=>{if(event.target.matches('[data-preview-row]'))document.getElementById('motion-review').hidden=true;});
+  previewHost.addEventListener('click',event=>{if(event.target.closest('[data-preview-testbed],[data-preview-close]'))document.getElementById('motion-review').hidden=true;});
   state.preview = mountPreview({host: previewHost, detail, gameBase: TESTBED_BASE_URL});
   if (detail?.rows?.some(row => row.clipUrl && row.available === row.frameCount)) state.preview.open('motion');
   startAnimationPreviews();
@@ -1803,7 +1869,7 @@ function renderMoveGroup(group) {
           ${canGenerate?`<select data-row-generator="${escapeHtml(group.id)}" aria-label="${escapeHtml(group.id)} generation method"><option value="image" ${generator==='image'?'selected':''}>Image poses</option><option value="video" ${generator==='video'?'selected':''} ${group.id==='base'?'disabled':''}>Video motion · fal</option><option value="pruna-video" ${generator==='pruna-video'?'selected':''} ${group.id==='base'?'disabled':''}>Video motion · Pruna</option></select>`:''}
           ${activityButton}
           ${generateButton}
-          ${state.currentDraftData?.motionRows?.[group.id] ? `<span>${escapeHtml(state.currentDraftData.motionRows[group.id].status)}</span><button type="button" data-approve-motion="${escapeHtml(group.id)}">Approve motion</button>` : ''}
+          ${state.currentDraftData?.motionRows?.[group.id] ? `<span data-motion-review-state="${escapeHtml(group.id)}">Checking review version…</span><button type="button" data-approve-motion="${escapeHtml(group.id)}">Review motion</button>` : ''}
           ${hasFrames && canGenerate ? `<button type="button" data-reextract="${escapeHtml(group.id)}" title="Rebuild transparent frames from the existing source, without a paid generation" ${isLoading?'disabled':''}>Re-extract</button>` : ''}
           <span class="frame-count">${escapeHtml(groupAssetCount(group))} assets</span>
         </div>
@@ -2721,6 +2787,7 @@ async function parseJsonResponse(response) {
 }
 
 function setBusy(isBusy) {
+  state.busy=isBusy;
   const staticButtons = [
     elements.createDraft,
     elements.runChain,
@@ -2744,6 +2811,7 @@ function setBusy(isBusy) {
   for (const button of [...staticButtons, ...ctaButtons]) {
     if (button) button.disabled = isBusy;
   }
+  syncPublishButtons();
 }
 
 function log(message, level = '') {
