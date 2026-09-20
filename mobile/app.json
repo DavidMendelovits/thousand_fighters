@@ -5,7 +5,24 @@
     "version": "0.1.0",
     "orientation": "landscape",
     "userInterfaceStyle": "dark",
-    "ios": { "supportsTablet": true, "bundleIdentifier": "com.thousandfighters.game", "infoPlist": { "NSAppTransportSecurity": { "NSAllowsLocalNetworking": true } } },
-    "android": { "package": "com.thousandfighters.game" }
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.thousandfighters.game",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true
+        }
+      }
+    },
+    "android": {
+      "package": "com.thousandfighters.game"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "f1e9c616-af0c-49af-91c5-d5c942b90488"
+      }
+    },
+    "owner": "dfordavey"
   }
 }

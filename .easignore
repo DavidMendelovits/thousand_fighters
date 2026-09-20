@@ -1,0 +1,33 @@
+# The Expo application is self-contained in mobile/. The game runtime is
+# delivered from EXPO_PUBLIC_GAME_URL, so source-generation media and web
+# build artifacts must never enter an EAS archive.
+# Keep the repository layout EAS expects for this monorepo, but exclude every
+# web/CMS asset tree. The native shell downloads the published fight client.
+.git/
+.claude/
+.cache/
+.gstack/
+admin/
+api/
+artifacts/
+cms/
+cms-data/
+cms-data copy/
+dist/
+dist-fight/
+docs/
+generated/
+node_modules/
+public/
+public copy/
+scripts/
+shared/
+src/
+tests/
+
+mobile/node_modules/
+mobile/.expo/
+mobile/dist-native-check/
+mobile/npm-debug.log*
+mobile/*.log
+mobile/.DS_Store
