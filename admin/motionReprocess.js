@@ -19,7 +19,8 @@ export function renderMotionReprocess(draft, action) {
     </div>
     <label><input data-reprocess-loop type="checkbox" ${row.loop?'checked':''}> Loop interval (omit end pose at seam)</label>
     ${draft.artStyle==='paint'?'<label><input data-reprocess-matte type="checkbox" checked> Remove background color from soft paint edges</label>':''}
-    <p>Contact/recovery also delimit held-grab poses. Inspect them after changing the interval. Cleanup preserves opaque paint and the needle; it does not invent missing motion.</p>
+    ${draft.artStyle==='paint'?`<label><input data-reprocess-refine type="checkbox" ${row.provenance?.options?.refineEdges?'checked':''}> Refine pale boundary pixels using nearby paint colors</label><p>Local-color refinement adjusts compatible edge opacity. Inspect thin props and intentional pale outlines before accepting it.</p>`:''}
+    <p>Contact/recovery also delimit held-grab poses. Inspect them after changing the interval. Verify paint colors and thin props after cleanup; it does not invent missing motion.</p>
     <button type="button" data-reprocess-video="${escape(action)}">Create reprocessed candidate</button>
     <p role="status" data-reprocess-status></p>
   </details>`;
@@ -32,5 +33,5 @@ export function readReprocessControls(host) {
   const hasContact = Boolean(host.querySelector('[data-reprocess-field="contact"]'));
   const contactFrame = hasContact ? number('contact')-1 : undefined, recoveryFrame = hasContact ? number('recovery')-1 : undefined;
   if (hasContact && (![contactFrame,recoveryFrame].every(Number.isInteger) || contactFrame<1 || recoveryFrame<=contactFrame || recoveryFrame>=frames)) throw new Error('Contact must precede recovery, and both poses must fit the output row.');
-  return { frames, start, end, loop, matteCleanup:Boolean(host.querySelector('[data-reprocess-matte]')?.checked), ...(hasContact?{contactFrame,recoveryFrame}:{}) };
+  return { frames, start, end, loop, matteCleanup:Boolean(host.querySelector('[data-reprocess-matte]')?.checked), refineEdges:Boolean(host.querySelector('[data-reprocess-refine]')?.checked), ...(hasContact?{contactFrame,recoveryFrame}:{}) };
 }

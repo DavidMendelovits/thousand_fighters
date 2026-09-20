@@ -4,11 +4,33 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
-from compile_character_motion import clean_components, compile_motion, uniform_corner_key, key_uniform_background, key_paint_background
+from compile_character_motion import clean_components, compile_motion, uniform_corner_key, key_uniform_background, key_paint_background, refine_paint_alpha
 from PIL import Image
 
 
 class MotionComponentsTest(unittest.TestCase):
+    def test_local_refinement_preserves_needle_lavender_and_pale_interior(self):
+        pixels=np.full((70,70,3),255,dtype=np.uint8)
+        pixels[15:25,15:25]=[155,112,180]
+        pixels[35:55,35]=[110,110,110]  # one-pixel needle, not a fat core
+        pixels[40:55,45:60]=[180,180,180]  # intentional pale paint interior
+        pixels[14,15:25]=[205,183,217]  # background-mixed lavender edge
+        base=np.asarray(key_paint_background(Image.fromarray(pixels),True))
+        result=np.asarray(key_paint_background(Image.fromarray(pixels),True,True))
+        for y,x in [(20,20),(45,35),(47,52)]:
+            self.assertTrue(np.array_equal(base[y,x],result[y,x]))
+        self.assertTrue(np.array_equal(base[:,:,3]>0,result[:,:,3]>0))
+        self.assertLess(result[14,20,3],base[14,20,3])
+        self.assertEqual(result[0,0,3],0)
+
+    def test_local_refinement_rejects_incompatible_color_and_empty_seed(self):
+        rgb=np.full((10,10,3),255.,dtype=float); alpha=np.zeros((10,10))
+        rgb[4,4]=[60,30,30]; alpha[4,4]=1
+        rgb[4,5]=[210,230,150]; alpha[4,5]=.8
+        result=refine_paint_alpha(rgb,np.array([255,255,255]),alpha)
+        self.assertEqual(result[4,5],alpha[4,5])
+        self.assertTrue(np.array_equal(refine_paint_alpha(rgb,np.array([255,255,255]),np.zeros((10,10))),np.zeros((10,10))))
+
     def test_matte_cleanup_preserves_alpha_opaque_lavender_and_grey_needle(self):
         pixels=np.full((60,60,3),255,dtype=np.uint8)
         pixels[15:25,15:25]=[155,112,180]

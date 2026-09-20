@@ -60,14 +60,38 @@ def key_magenta_distance(im):
     pixels[np.linalg.norm(rgb-np.array([255,0,255]),axis=2)<115,3]=0
     return Image.fromarray(pixels)
 
-def key_paint_background(im, matte_cleanup=False):
+def refine_paint_alpha(rgb, key, alpha):
+    """Conservative local color-line matte; preserve opaque cores and thin dark props.
+
+    Only revise a near-boundary pixel when a nearby foreground color explains
+    it as a mixture with the known flat backdrop. Non-collinear colors stay put.
+    """
+    distance=np.linalg.norm(rgb-key,axis=2)
+    interior=ndimage.distance_transform_edt(alpha>0)
+    seeds=(alpha>=.98)&((distance>=150)|(interior>=3))
+    if not np.any(seeds):
+        return alpha
+    proximity,indices=ndimage.distance_transform_edt(~seeds,return_indices=True)
+    foreground=rgb[indices[0],indices[1]]
+    direction=foreground-key
+    estimate=np.clip(np.sum((rgb-key)*direction,axis=2)/np.maximum(1,np.sum(direction*direction,axis=2)),0,1)
+    residual=np.linalg.norm(rgb-(key+estimate[:,:,None]*direction),axis=2)
+    compatible=(alpha>0)&~seeds&(proximity<=4)&(residual<=20)
+    result=alpha.copy()
+    result[compatible]=np.minimum(alpha[compatible],np.maximum(1/255,estimate[compatible]))
+    return result
+
+
+def key_paint_background(im, matte_cleanup=False, refine_edges=False):
     """Flat per-frame key with a soft transition; preserve low-saturation lavender."""
     color=uniform_corner_key(im)
     pixels=np.asarray(im.convert('RGBA')).copy()
     key=np.array([int(color[i:i+2],16) for i in (1,3,5)])
     distance=np.linalg.norm(pixels[:,:,:3].astype(float)-key,axis=2)
     alpha=np.clip((distance-65)/45,0,1)
-    if matte_cleanup:
+    if refine_edges:
+        alpha=refine_paint_alpha(pixels[:,:,:3].astype(float),key,alpha)
+    if matte_cleanup or refine_edges:
         # Undo the flat-background contribution in partial-coverage pixels.
         # Do not erode the silhouette or recolor opaque lavender / grey props.
         foreground=(pixels[:,:,:3].astype(float)-(1-alpha[:,:,None])*key)/np.maximum(alpha[:,:,None],1/255)
@@ -77,10 +101,10 @@ def key_paint_background(im, matte_cleanup=False):
     return Image.fromarray(pixels)
 
 
-def compile_motion(video, reference, output, action, count=20, loop=False, start=None, end=None, style='pixel', component_mode='all', ping_pong=False, background='magenta', root_mode='pelvis', expand_canvas=False, matte_cleanup=False):
+def compile_motion(video, reference, output, action, count=20, loop=False, start=None, end=None, style='pixel', component_mode='all', ping_pong=False, background='magenta', root_mode='pelvis', expand_canvas=False, matte_cleanup=False, refine_edges=False):
     if ping_pong and not loop:
         raise ValueError('Ping-pong playback requires an explicit loop')
-    if matte_cleanup and background!='paint-auto':
+    if (matte_cleanup or refine_edges) and background!='paint-auto':
         raise ValueError('Paint matte cleanup requires the paint-auto background key')
     if not 8 <= count <= 48:
         raise ValueError('Choose 8–48 output frames')
@@ -99,7 +123,7 @@ def compile_motion(video, reference, output, action, count=20, loop=False, start
         images=[]
         for path in paths:
             source=Image.open(path)
-            im=key_paint_background(source,matte_cleanup) if background=='paint-auto' else key_uniform_background(source) if background=='auto-frame' else key_magenta_distance(source) if background=='magenta-distance' else key_background(source,'#ff00ff',mode='chroma')
+            im=key_paint_background(source,matte_cleanup,refine_edges) if background=='paint-auto' else key_uniform_background(source) if background=='auto-frame' else key_magenta_distance(source) if background=='magenta-distance' else key_background(source,'#ff00ff',mode='chroma')
             alpha=np.array(im.getchannel('A'))
             # Explicit body-only cleanup: detached sparks are separate VFX, never
             # silently discard disconnected props in the default import path.
@@ -205,6 +229,7 @@ def compile_motion(video, reference, output, action, count=20, loop=False, start
     report['provenance']['options']['rootMode'] = root_mode
     report['provenance']['options']['expandCanvas'] = expand_canvas
     report['provenance']['options']['matteCleanup'] = matte_cleanup
+    report['provenance']['options']['refineEdges'] = refine_edges
     (output/'motion.json').write_text(json.dumps(report,indent=2)+'\n')
     print(json.dumps({k:v for k,v in report.items() if k!='frames'}))
     return report
@@ -220,4 +245,5 @@ if __name__=='__main__':
     p.add_argument('--root-mode',choices=['pelvis','fixed'],default='pelvis',help='Fixed preserves fluid deformation around a nonhuman actor origin')
     p.add_argument('--expand-canvas',action='store_true',help='Grow the canvas and offset its pivot rather than clipping legitimate expansions')
     p.add_argument('--matte-cleanup',action='store_true',help='Remove background color from partial-alpha paint edges without eroding props')
-    a=p.parse_args();compile_motion(a.video,a.reference,a.output,a.action,a.frames,a.loop,a.start,a.end,a.style,a.component_mode,a.ping_pong,a.background,a.root_mode,a.expand_canvas,a.matte_cleanup)
+    p.add_argument('--refine-edges',action='store_true',help='Use nearby foreground colors to refine compatible pale boundary pixels; inspect thin props')
+    a=p.parse_args();compile_motion(a.video,a.reference,a.output,a.action,a.frames,a.loop,a.start,a.end,a.style,a.component_mode,a.ping_pong,a.background,a.root_mode,a.expand_canvas,a.matte_cleanup,a.refine_edges)

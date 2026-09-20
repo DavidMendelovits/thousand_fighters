@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { loadTestbedConfig } from './runtimeConfig';
 import { TestbedScene, type PlaybackMode, type DummyMode } from './TestbedScene';
 import type {CharacterConfig} from '../schema/types';
+import type {ScenarioLayout} from './scenarioLayout';
 
 const $ = <T extends HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
@@ -136,6 +137,11 @@ function wireDummy(scene: TestbedScene): void {
   slider.addEventListener('input', apply);
   const size = $<HTMLSelectElement>('dummy-size');
   size.addEventListener('change', () => scene.setDummySize(Number(size.value)));
+  const layout = $<HTMLSelectElement>('scenario-layout');
+  layout.addEventListener('change', () => scene.setScenarioLayout(layout.value as ScenarioLayout));
+  $('inject-hit').addEventListener('click', () => scene.injectInterruption());
+  $('force-ko').addEventListener('click', () => scene.forceKO());
+  $('expire-summon').addEventListener('click', () => scene.expireSummon());
   // Apply the initial value once the scene has built its fighters.
   window.requestAnimationFrame(() => apply());
 }
@@ -165,8 +171,14 @@ function startHudLoop(scene: TestbedScene): void {
         ['dummy hp', `${s.dummyHp} / ${s.dummyMaxHp}`],
         ['dummy size', `${Math.round(s.dummySize * 100)}%`],
         ['dummy state', s.dummyState],
+        ['summon ticks', s.summonTicks === null ? 'None' : String(s.summonTicks)],
+        ['hold ticks', s.holdTicks === null ? 'None' : String(s.holdTicks)],
         ['distance', `${s.distance}px`],
       ]);
+      $('intervention-status').textContent = s.intervention;
+      $<HTMLButtonElement>('expire-summon').disabled = s.summonTicks === null;
+      $<HTMLButtonElement>('force-ko').disabled = s.playerHp <= 0;
+      $<HTMLButtonElement>('inject-hit').disabled = s.playerHp <= 0;
 
       const errorHtml = s.error
         ? `<div class="hitbox" style="color:var(--hit)">⚠ engine error: ${escapeHtml(s.error)} — paused. Fix the draft and Reset.</div>`

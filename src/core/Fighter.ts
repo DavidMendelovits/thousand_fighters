@@ -26,6 +26,7 @@ import { boxToWorld, type AABB } from '../util/aabb';
 import { interpolateHitboxGeometry } from './hitboxGeometry';
 import { selectTriggeredMove } from './moveSelection';
 import {ComboCounter,effectiveStats,scaledBox} from './combatRules';
+import {heldGripFrame} from './gripPlayback';
 
 const STAGE_LEFT = 96;
 const STAGE_RIGHT = 704;
@@ -715,12 +716,11 @@ export class Fighter {
       if(victim?.grabHold?.actorGrip){
         // Keep the closing/cupped section on the victim, rather than playing
         // the opening recovery while the opponent is still attached.
-        const t=1-victim.grabHold.remaining/victim.grabHold.actorGrip.duration;
         const row=this.currentMove?.animation??'hands_pinch';
         const count=sprite?.frameCounts[row]??24;
         const grip=victim.grabHold.actorGrip;
         const first=grip.holdStartFrame??Math.floor(count*.375),last=grip.holdEndFrame??Math.floor(count*.667);
-        return {sheet:row,frame:Math.min(count-1,first+Math.floor(t*(last-first)))};
+        return {sheet:row,frame:heldGripFrame(first,last,victim.grabHold.remaining,grip.duration,count)};
       }
       if(actor.id!==this.controlledSummon.actor || !this.currentMove?.controlledActor){
         const row=actor.id===this.controlledSummon.actor?'hands_idle':'idle';

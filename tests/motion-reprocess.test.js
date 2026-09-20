@@ -7,7 +7,7 @@ import { motionActorReference, motionCompilerSettings } from '../cms/pipeline/mo
 import { motionMarkers } from '../admin/motionTiming.js';
 
 test('offline options reject invalid ranges, poses and coercion', () => {
-  for (const opts of [{frames:7},{frames:'20'},{start:2.1},{start:30,end:10},{end:5},{loop:'false'},{matteCleanup:1},{contactFrame:0},{contactFrame:19},{contactFrame:6,recoveryFrame:5}]) assert.throws(()=>validateReprocess(opts));
+  for (const opts of [{frames:7},{frames:'20'},{start:2.1},{start:30,end:10},{end:5},{loop:'false'},{matteCleanup:1},{refineEdges:'true'},{contactFrame:0},{contactFrame:19},{contactFrame:6,recoveryFrame:5}]) assert.throws(()=>validateReprocess(opts));
   validateReprocess({frames:20,start:0,end:64,contactFrame:7,recoveryFrame:12,matteCleanup:true});
   assert.throws(()=>validateReprocess({frames:20,start:0,end:19,loop:true}),/loops omit/);
   assert.deepEqual(motionCompilerSettings('paint'),{style:'watercolor',background:'paint-auto',rootMode:'fixed',expandCanvas:true});
@@ -30,7 +30,7 @@ test('real saved video reprocess uses summon art, branches assets, records linea
   for(let i=0;i<201;i++)await storage.lineage.event(characterId,{type:'test-noise'});
   assert.equal((await resolveMotionVideo({storage,characterId,sourceSha256:video.sha256})).id,event.id);
   const initial=await repository.saveDraft(characterId,{...(await repository.getDraft(characterId)),artStyle:'paint',moves:[move],sprite:{basePath:'/fighters/test',frames},actors:[{id:'hands',idleAnimation:'hands_idle',sprite:{basePath:'/fighters/test',frames:{base:[{file:referenceFile}],...frames},frameCounts:{}}}],motionRows:{hands_pinch:{sourceSha256:video.sha256,status:'approved'}}});
-  const request={repository,storage,characterId,action:'hands_pinch',frames:20,start:0,end:64,matteCleanup:true,contactFrame:7,recoveryFrame:12,expectedSourceSha256:video.sha256,expectedUpdatedAt:initial.updatedAt};
+  const request={repository,storage,characterId,action:'hands_pinch',frames:20,start:0,end:64,matteCleanup:true,refineEdges:true,contactFrame:7,recoveryFrame:12,expectedSourceSha256:video.sha256,expectedUpdatedAt:initial.updatedAt};
   await assert.rejects(reprocessArchivedVideo({...request,expectedUpdatedAt:'stale'}),/draft changed/);
   const result=await reprocessArchivedVideo(request);t.after(()=>rm(result.directory,{recursive:true,force:true}));
   assert.equal(result.providerRequests,0);assert.equal(result.frameCount,20);assert.ok(result.compileMs>0);
@@ -38,6 +38,7 @@ test('real saved video reprocess uses summon art, branches assets, records linea
   assert.notEqual(current.assets.rootKey,pack);assert.match(current.assets.rootKey,/revisions/);
   assert.equal(row.status,'needs-visual-review');assert.equal(row.review,undefined);
   assert.equal(row.provenance.options.matteCleanup,true);assert.equal(row.provenance.options.rootMode,'fixed');
+  assert.equal(row.provenance.options.refineEdges,true);
   assert.deepEqual(row.sourceRange,[0,64]);assert.equal(row.uniqueFrames,20);assert.deepEqual(row.clippedFrames,[]);
   assert.deepEqual(motionMarkers(current.moves[0]),{contactFrame:7,recoveryFrame:12});
   assert.equal(current.moves[0].phases[1].events[0].event.grab.actorGrip.holdEndFrame,11);

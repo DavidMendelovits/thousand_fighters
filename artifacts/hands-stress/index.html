@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Palimpsest · edges and grab stress tests</title>
+<style>
+body{margin:0;background:#14191f;color:#eef1f3;font:16px/1.5 system-ui,sans-serif}
+main{max-width:1100px;margin:36px auto;padding:0 24px}h1{font-size:26px;margin-bottom:8px}h2{font-size:20px}
+p{color:#bcc7d0;max-width:82ch}video{display:block;width:100%;max-height:76vh;background:#080a0d}a{color:#66e5bc}img{max-width:100%}
+</style>
+<main>
+  <h1>Better edges. Repeatable grab checks.</h1>
+  <p>Reprocessed the retained video through the workbench, without a provider call. Fixed playback skipping the final held pose and added visible training controls for facing, walls, interruption, KO and expiry. <strong>Still changes requested:</strong> needle continuity, remaining speckles and the return to idle need art correction.</p>
+  <h2>Real engine · five grab drills · 42 seconds</h2>
+  <p>Left wall, right wall, injected six-tick hit, forced summoner KO, then accelerated summon expiry. Slow playback, Reactive mirror dummy, actual training buttons. These explicit test injections check cleanup; this is not a competitive match or proof of all body types.</p>
+  <video id="drills" controls preload="metadata" src="stress-drills.mp4" aria-label="Five real engine grab stress tests"></video>
+  <h2>Workbench refinement · 50 seconds</h2>
+  <p>Enable local-color edge refinement and create a separate candidate from the saved source. The uncut recording retains compilation and history waits, ending with the saved-checkpoint confirmation. No new generation.</p>
+  <video id="workbench" controls preload="metadata" src="workbench-refinement.mp4" aria-label="Actual workbench edge refinement recording"></video>
+  <h2>Inspect the edges</h2>
+  <p>Matched crops on dark, grey and white. The pale-edge coverage heuristic fell 81.4%; that is a diagnostic, not an art score. The source reference itself still needs correction.</p>
+  <img src="edge-comparison.png" alt="Before and refined poses 1, 12 and 20 on three backgrounds">
+  <p><a href="README.md">Evidence, lineage and remaining work</a> · <a href="contact.png">All 20 poses</a> · <a href="motion.json">Compiler provenance</a> · <a href="edge-metrics.json">Edge measurements</a> · <a href="../../testbed.html?id=palimpsest">Open current-draft testbed</a></p>
+</main>
+</html>

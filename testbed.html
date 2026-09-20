@@ -171,10 +171,24 @@
           </div>
           <p class="help">Size changes reset the drill. Scales the dummy’s art and collision together; no draft changes.</p>
           <div class="field">
+            <label for="scenario-layout">Position</label>
+            <select id="scenario-layout"><option value="center-right">Center · face right</option><option value="center-left">Center · face left</option><option value="right-wall">Right wall</option><option value="left-wall">Left wall</option></select>
+          </div>
+          <div class="field">
             <label for="distance">Distance</label>
             <input type="range" id="distance" min="40" max="420" step="2" value="290" />
             <span id="distance-val" class="v">290px</span>
           </div>
+          <details>
+            <summary>Interaction stress tests</summary>
+            <p class="help">Explicit test injections, not opponent attacks. Check a held grab’s cleanup on a hit, summoner KO, or timer expiry. Use Reactive mode. Position and distance changes reset the drill; nothing changes the saved character.</p>
+            <div class="row">
+              <button id="inject-hit">Inject hit · 6 ticks</button>
+              <button id="force-ko">Force summoner KO</button>
+              <button id="expire-summon" disabled>Expire summon next tick</button>
+            </div>
+            <p id="intervention-status" class="help" role="status">None</p>
+          </details>
         </section>
 
         <section class="card">

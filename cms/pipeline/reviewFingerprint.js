@@ -51,10 +51,14 @@ export async function motionFingerprint(context, action) {
   const files = [...new Set([`sheets/${action}.png`, ...frames.map(f => f.file), ...referenceFrames.map(f => f.file)])];
   const assets = await Promise.all(files.map(async file => ({file:relativeFile(file),sha256:await hash(file)})));
   const missing = assets.filter(asset => !asset.sha256).map(asset => asset.file);
+  const moves = (draft.moves ?? []).filter(move => move.animation === action || move.requiredAnimation === action);
+  // Runtime now reaches the last held pose. Reviews made under the old sampler
+  // must be revisited even when pixels and authored collision ticks are unchanged.
+  const hasActorGrip = moves.some(move => move.phases?.some(phase => phase.events?.some(({event}) => event?.grab?.actorGrip || event?.projectile?.grab?.actorGrip)));
   const fingerprint = digest(Buffer.from(stableJson({schema:2, action, frames, assets, conceptHash,
     referenceFrames, artStyle:draft.artStyle, scale:{relativeHeight:draft.sprite?.relativeHeight,scaleAdjust:draft.sprite?.scaleAdjust},
     playback:draft.sprite?.rowPlayback?.[action], actor,
-    moves:(draft.moves ?? []).filter(move => move.animation === action || move.requiredAnimation === action), overrides:draft.overrides,
+    moves, overrides:draft.overrides, heldGripPlayback:hasActorGrip ? 'inclusive-final-tick-v1' : undefined,
     sourceSha256:draft.motionRows?.[action]?.sourceSha256,
   })));
   return {fingerprint, missing};

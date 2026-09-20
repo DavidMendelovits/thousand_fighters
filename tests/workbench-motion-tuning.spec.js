@@ -29,6 +29,7 @@ test('workbench saves contact poses and keeps the selected provider and current 
     await reprocess.locator('[data-reprocess-field="end"]').fill('64');
     await reprocess.locator('[data-reprocess-field="contact"]').fill('8');
     await reprocess.locator('[data-reprocess-field="recovery"]').fill('13');
+    await reprocess.locator('[data-reprocess-refine]').check();
     let request;
     await page.route('**/history/reprocess',async route=>{
       request=route.request().postDataJSON();
@@ -36,7 +37,7 @@ test('workbench saves contact poses and keeps the selected provider and current 
     });
     await reprocess.getByRole('button',{name:'Create reprocessed candidate'}).click();
     await expect(card.locator('[data-reprocess-status]')).toContainText('No provider calls');
-    expect(request).toMatchObject({action:'hands_pinch',frames:20,start:0,end:64,contactFrame:7,recoveryFrame:12,matteCleanup:true,loop:false,expectedSourceSha256:'a'.repeat(64)});
+    expect(request).toMatchObject({action:'hands_pinch',frames:20,start:0,end:64,contactFrame:7,recoveryFrame:12,matteCleanup:true,refineEdges:true,loop:false,expectedSourceSha256:'a'.repeat(64)});
     await expect(card.locator('[data-reprocess-video]')).toBeEnabled();
     await expect(card.locator('[data-reextract]')).toHaveCount(0);
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);

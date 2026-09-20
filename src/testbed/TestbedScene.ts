@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { Fighter } from '../core/Fighter';
 import { HitboxSystem } from '../core/HitboxSystem';
+import { HitResolver } from '../core/HitResolver';
+import { scenarioPositions, type ScenarioLayout } from './scenarioLayout';
 import { ProjectilePool } from '../core/ProjectilePool';
 import { InputReader } from '../core/InputReader';
 import { InputBuffer } from '../core/InputBuffer';
@@ -49,6 +51,9 @@ export type TestbedSnapshot = {
   dummyMaxHp: number;
   dummySize: number;
   dummyState: string;
+  summonTicks: number | null;
+  holdTicks: number | null;
+  intervention: string;
   distance: number;
   hitboxes: HitboxReadout[];
   error: string | null;
@@ -78,6 +83,9 @@ export class TestbedScene extends Phaser.Scene {
   private dummyAnchorX = DUMMY_X;
   private dummyDistance = DUMMY_X - PLAYER_X;
   private dummySize = 1;
+  private layout: ScenarioLayout = 'center-right';
+  private intervention = 'None';
+  private interventionSerial = 0;
 
   private mode: PlaybackMode = 'play';
   private dummyMode: DummyMode = 'post';
@@ -151,6 +159,7 @@ export class TestbedScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown-R', () => this.reset());
 
     this.ready = true;
+    this.reset();
   }
 
   update(time: number): void {
@@ -310,6 +319,9 @@ export class TestbedScene extends Phaser.Scene {
       dummyMaxHp: this.payload.config.maxHealth,
       dummySize: this.dummy.stats.size,
       dummyState: this.dummy.state,
+      summonTicks: this.player.controlledSummon?.remaining ?? null,
+      holdTicks: this.dummy.grabHold?.remaining ?? null,
+      intervention: this.intervention,
       distance: Math.round(Math.abs(this.dummy.x - this.player.x)),
       hitboxes,
       error: this.lastError,
@@ -350,8 +362,36 @@ export class TestbedScene extends Phaser.Scene {
 
   setDummyDistance(distance: number): void {
     this.dummyDistance = Phaser.Math.Clamp(distance, 40, 420);
-    this.dummyAnchorX = Phaser.Math.Clamp((this.player?.x ?? PLAYER_X) + this.dummyDistance, 96, 704);
-    if(this.dummy)this.dummy.x = this.dummyAnchorX;
+    if (this.ready) this.reset();
+  }
+
+  setScenarioLayout(layout: ScenarioLayout): void {
+    if (!['center-right', 'center-left', 'right-wall', 'left-wall'].includes(layout)) return;
+    this.layout = layout;
+    if (this.ready) this.reset();
+  }
+
+  injectInterruption(): void {
+    if (!this.ready) return;
+    const hit = HitResolver.resolve(this.dummy, this.player, {
+      x: 0, y: -100, width: 40, height: 100, damage: 1,
+      hitstun: 6, stun: 6, blockstun: 0, knockback: { x: 0, y: 0 }, unblockable: true,
+    }, `testbed-interruption-${++this.interventionSerial}`);
+    this.intervention = hit ? 'Injected hit · 6 ticks' : 'Injected hit rejected by engine';
+  }
+
+  forceKO(): void {
+    if (!this.ready) return;
+    this.player.health = 0;
+    this.player.changeState('dead');
+    this.player.refreshVisuals();
+    this.intervention = 'Forced summoner KO';
+  }
+
+  expireSummon(): void {
+    if (!this.ready || !this.player.controlledSummon) return;
+    this.player.controlledSummon.remaining = 1;
+    this.intervention = 'Timer set to 1 · expires on next tick';
   }
 
   setDummySize(size: number): void {
@@ -373,11 +413,17 @@ export class TestbedScene extends Phaser.Scene {
     this.hitPauseFrames = 0;
     this.frame = 0;
     this.lastError = null;
+    this.intervention = 'None';
     this.projectiles.clear();
 
-    this.resetFighter(this.player, PLAYER_X);
-    this.dummyAnchorX = Phaser.Math.Clamp(PLAYER_X + this.dummyDistance, 96, 704);
+    const positions = scenarioPositions(this.layout, this.dummyDistance);
+    this.resetFighter(this.player, positions.playerX);
+    this.dummyAnchorX = positions.dummyX;
     this.resetFighter(this.dummy, this.dummyAnchorX);
+    this.player.facing = positions.facing;
+    this.dummy.facing = positions.facing === 1 ? -1 : 1;
+    this.player.refreshVisuals();
+    this.dummy.refreshVisuals();
   }
 
   private resetFighter(fighter: Fighter, x: number): void {
@@ -415,6 +461,9 @@ function emptySnapshot(): TestbedSnapshot {
     dummyMaxHp: 0,
     dummySize: 1,
     dummyState: 'idle',
+    summonTicks: null,
+    holdTicks: null,
+    intervention: 'None',
     distance: 0,
     hitboxes: [],
     error: null,

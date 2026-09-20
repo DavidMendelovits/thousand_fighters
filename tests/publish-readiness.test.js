@@ -6,7 +6,8 @@ import path from 'node:path';
 import {FileCmsStorage} from '../cms/storage/FileCmsStorage.js';
 import {CharacterContentRepository} from '../cms/repositories/CharacterContentRepository.js';
 import {requiredMotionRows,approveMotionRow,requestMotionChanges} from '../cms/pipeline/motionRowArtifacts.js';
-import {loadReviewContext,motionFingerprint,packFingerprint} from '../cms/pipeline/reviewFingerprint.js';
+import {loadReviewContext,motionFingerprint,packFingerprint,stableJson,motionReviewStatus} from '../cms/pipeline/reviewFingerprint.js';
+import {digest} from '../cms/storage/LineageStore.js';
 import {publishReadiness} from '../cms/authoring/publishReadiness.js';
 import {CharacterCreationPipeline} from '../cms/pipeline/CharacterCreationPipeline.js';
 import {PipelinePort} from '../cms/pipeline/ports.js';
@@ -38,6 +39,17 @@ async function ready(repository,id){
   for(const row of requiredMotionRows(await repository.getDraft(id)))await approve(repository,id,row);
   await repository.writeQaReport(id,'test-qa',{status:'pass',provider:'real',inputFingerprint:await packFingerprint(await loadReviewContext(repository,id))});
 }
+
+test('inclusive held-pose playback invalidates pre-fix grip reviews without changing ordinary row reviews',async()=>{
+  const frames=[{file:'sprites/pinch/0.png'}];
+  const moves=[{animation:'pinch',phases:[{events:[{event:{grab:{actorGrip:{actor:'hands'}}}}]}]}];
+  const context={draft:{moves},frameData:{frames:{pinch:frames}},hash:async()=>'a',conceptHash:null};
+  const oldFingerprint=()=>digest(Buffer.from(stableJson({schema:2,action:'pinch',frames,assets:[{file:'sheets/pinch.png',sha256:'a'},{file:'sprites/pinch/0.png',sha256:'a'}],conceptHash:null,referenceFrames:[],scale:{},moves})));
+  const current=(await motionFingerprint(context,'pinch')).fingerprint;
+  assert.equal(motionReviewStatus({status:'approved',uniqueFrames:8,review:{fingerprint:oldFingerprint()}},current),'stale-review');
+  moves[0].phases=[];
+  assert.equal((await motionFingerprint(context,'pinch')).fingerprint,oldFingerprint());
+});
 
 test('current assets approve; replaced pixels, sheets and authored timing invalidate approval',async t=>{
   const {repository,id,root}=await fixture(t);

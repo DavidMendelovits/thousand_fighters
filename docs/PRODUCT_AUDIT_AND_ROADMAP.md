@@ -4,6 +4,14 @@ Audit date: September 19, 2026. Scope: current local working tree, including unc
 
 ## Executive assessment
 
+### September 20 execution update — edge refinement and grab stress tests
+
+Added opt-in local-color edge refinement to the workbench's offline video reprocessor. A recorded reprocess of the same source/reference produced 20 unique poses with no reported clipping, separate working assets and before/after checkpoints: **13.370 seconds compile / 40.736 seconds full history operation; zero provider calls**. Matched dark/grey/white comparisons show less pale boundary contamination (81.4% lower heuristic coverage), but wrist speckles, needle-angle drift and the idle handoff remain. The isolated reference itself is contaminated; it must be corrected before another targeted generation. The exact candidate was marked **changes requested** through the UI; readiness is still **0/20 current approvals**.
+
+Fixed held-grab playback skipping the final authored grip pose. This playback revision invalidates older actor-grip reviews without invalidating ordinary rows. The current-draft testbed now has facing/wall presets, hold/summon tick readouts and explicit hit/KO/expiry test controls. Seven live draft cases pass: natural capture/release in both facings and at both walls, plus cleanup on interruption, summoner KO and expiry. Mobile KO/reset/layout and existing published-game regressions also pass. These are scaled-mirror/training checks, not acceptance of anatomical contact across different fighters.
+
+See the [42-second engine drill and 50-second workbench recording](../artifacts/hands-stress/README.md), with exact lineage, measurements and limitations. 64 focused checks, TypeScript, build and CMS smoke pass. **Next:** version a corrected hands identity reference through the workbench; then address closure/needle/recovery continuity and different-body contact. ART-03/04/06 and PIPE-06 advanced. ART-02 complete art acceptance, off-machine backup and CREATE-07's new-character end-to-end journey remain open.
+
 ### September 20 execution update — offline motion repair and size drills
 
 The full video compiler is now reachable from each video-backed move card as **Reprocess saved video · no generation**. It supports source intervals, output pose counts, paint soft-edge cleanup and contact/recovery timing, shares the generation pipeline's isolated-actor reference and paint settings, and remaps held-grab poses. Compilation happens before installing into a private working root; before/after frozen checkpoints and exact source/reference/compiler provenance preserve the previous draft. Failed compilation or private asset writes leave the existing draft/assets intact. Published gameplay is untouched.

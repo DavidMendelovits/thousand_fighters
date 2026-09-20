@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "runId": "791510a0-b4a7-4621-a14d-4a61f9e7c691",
+  "type": "motion-reprocessed",
+  "moveId": "hands_pinch",
+  "parentEventId": "2026-09-20T04-52-18-501Z-1bc1a7f4-dce2-4424-bb29-9f81b675a5ff",
+  "sourceSha256": "5785d3e25c8f0f48943215ed0ee35ee66c4de3ceac474d55a845cb30e8cae5d1",
+  "safetyVersionId": "2026-09-20T05-24-13-968Z-709d6d63-cb52-48e4-82be-ba05f35f3344",
+  "versionId": "2026-09-20T05-24-32-196Z-e152733c-85ed-4682-9c84-eb0a889a014e",
+  "workingRoot": "characters/palimpsest/assets/revisions/b6ed3277-b4df-46ba-92e3-42f2959485ac",
+  "compileMs": 13370,
+  "providerRequests": 0,
+  "id": "2026-09-20T05-24-40-747Z-c80451a0-3551-4f0b-8901-785b36c5c686",
+  "characterId": "palimpsest",
+  "at": "2026-09-20T05:24:40.747Z"
+}

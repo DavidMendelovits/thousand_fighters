@@ -1,0 +1,17 @@
+{
+  "warning": "Heuristic diagnostic: legitimate pale pigment can be counted. Not a quality gate.",
+  "definition": "RGB min > 175 and channel range < 35, within 3 pixels of positive-alpha boundary; coverage = sum(alpha/255).",
+  "before": {
+    "frames": 20,
+    "paleEdgePixels": 12509,
+    "paleEdgeCoverage": 3636.12,
+    "totalAlphaCoverage": 190173.37
+  },
+  "after": {
+    "frames": 20,
+    "paleEdgePixels": 4490,
+    "paleEdgeCoverage": 676.39,
+    "totalAlphaCoverage": 186444.34
+  },
+  "paleCoverageReductionPercent": 81.4
+}
