@@ -43,7 +43,15 @@ await storage.lineage.run({characterId:'palimpsest',stage:'reviewed-paint-pack-i
  Object.assign(sprite.rowPlayback.crouch,{durationTicks:8});
  Object.assign(sprite.rowPlayback.block,{durationTicks:8});
  config.sprite=sprite;
- config.actors=[{id:'lead',sprite,hurtboxes:config.hurtboxes,defaultVisible:true},{id:'hands',summon:true,defaultVisible:false,sprite:{...sprite,frames:{...frames,base:frames.hands_idle},frameCounts:{...frameCounts,base:frameCounts.hands_idle}},hurtboxes:{idle:{x:-30,y:-85,width:60,height:85}}}];
+ const handRows=new Set(['hands_idle','needle_thrust','hands_pinch','hands_recall']);
+ const actorSprite=(rows:string[])=>({...sprite,
+  frames:Object.fromEntries(rows.map(row=>[row,frames[row]])),
+  frameCounts:Object.fromEntries(rows.map(row=>[row,frameCounts[row]])),
+  rowPlayback:Object.fromEntries(rows.map(row=>[row,sprite.rowPlayback[row]])),
+ });
+ const leadRows=Object.keys(frames).filter(row=>row!=='base'&&!handRows.has(row));
+ const handsRows=[...handRows].filter(row=>frames[row]);
+ config.actors=[{id:'lead',sprite:actorSprite(leadRows),hurtboxes:config.hurtboxes,defaultVisible:true},{id:'hands',summon:true,defaultVisible:false,sprite:actorSprite(handsRows),hurtboxes:{idle:{x:-30,y:-85,width:60,height:85}}}];
  const manifest={id:'palimpsest',artSource:'reviewed-video-motion',frameCounts,sprites:Object.fromEntries(Object.entries(frames).map(([k,v]:any)=>[k,v.map((f:any)=>f.file)])),sheets:{}};
  const draft:any={schemaVersion:1,id:config.id,displayName:config.displayName,description:config.concept!.biography,concept:config.concept,rosterGroup:config.rosterGroup,stats:{walkForwardSpeed:config.walkForwardSpeed,walkBackSpeed:config.walkBackSpeed,jumpVelocity:config.jumpVelocity,jumpForwardVelocity:config.jumpForwardVelocity,jumpBackVelocity:config.jumpBackVelocity,gravity:config.gravity,maxFallSpeed:config.maxFallSpeed,maxHealth:config.maxHealth},combatStats:config.stats,geometryMode:'authored-runtime',hurtboxes:config.hurtboxes,pushboxWidth:config.pushboxWidth,animations:config.animations,moves:config.moves,actors:config.actors,comboRoutes:config.comboRoutes,combos:[],sprite:{...sprite,scaleMode:'authored-reference'},assets:{rootKey:pack,frameDataKey:`${pack}/frameData.json`,manifestKey:`${pack}/manifest.json`},motionRows,requireMotionCoverage:true};
  draft.poseStyle=config.poseStyle;

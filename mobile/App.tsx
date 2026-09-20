@@ -5,9 +5,11 @@ import { useKeepAwake } from 'expo-keep-awake';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import { allowGameNavigation, fightUrl, gameOrigin } from './gameUrl';
+import { analytics, captureEvent } from './analytics';
 
 type Fighter = { id: string; name: string; portrait?: string };
 const origin = gameOrigin(process.env.EXPO_PUBLIC_GAME_URL, __DEV__, Constants.expoConfig?.hostUri);
+const activeFighterIds = new Set((process.env.EXPO_PUBLIC_ACTIVE_FIGHTER_IDS ?? '').split(',').map((id: string) => id.trim()).filter(Boolean));
 const suspendScript = `window.dispatchEvent(new Event('tf:suspend')); true;`;
 
 function Button({ label, onPress, disabled = false }: { label: string; onPress: () => void; disabled?: boolean }) {
@@ -26,12 +28,14 @@ function FightApp() {
   const [error, setError] = useState<string | null>(null);
   const [reload, setReload] = useState(0);
   const web = useRef<WebView>(null);
+  const processRecoveryAttempts = useRef(0);
 
   useEffect(() => {
     if (!origin) return;
     const abort = new AbortController();
     const timeout = setTimeout(() => abort.abort(), 20000);
     setError(null);
+    captureEvent('fighter roster loading', { game_origin: origin });
     (async () => {
       const index = await fetch(`${origin}/assets-index.json`, { signal: abort.signal });
       if (!index.ok) throw new Error('Published roster is unavailable.');
@@ -42,7 +46,7 @@ function FightApp() {
         if (!response.ok) throw new Error(`Could not load fighter ${id}.`);
         return response.json();
       }));
-      const roster: Fighter[] = configs.filter(c => c && c.rosterGroup === 'oddities' && c.selectable !== false && !c.parentId).map(c => {
+      const roster: Fighter[] = configs.filter(c => c && c.rosterGroup === 'oddities' && c.selectable !== false && !c.parentId && (!activeFighterIds.size || activeFighterIds.has(c.id))).map(c => {
         const file = c.sprite?.frames?.base?.[0]?.file;
         const portrait = file ? new URL(`${c.sprite.basePath}/${file}`, origin).href : undefined;
         return { id: c.id, name: c.displayName, portrait: portrait && new URL(portrait).origin === origin ? portrait : undefined };
@@ -50,9 +54,10 @@ function FightApp() {
       if (!roster.length) throw new Error('No published fighters are available.');
       if (abort.signal.aborted) return;
       setFighters(roster);
+      captureEvent('fighter roster loaded', { fighter_count: roster.length, fighter_ids: roster.map(f => f.id) });
       setPlayer(current => roster.some(f => f.id === current) ? current : roster[0].id);
       setOpponent(current => roster.some(f => f.id === current) ? current : roster[Math.min(1, roster.length - 1)].id);
-    })().catch(e => { if (!abort.signal.aborted) setError(e.message); else if (abort.signal.reason?.name === 'AbortError') setError('Loading timed out. Check the game server and retry.'); })
+    })().catch(e => { if (!abort.signal.aborted) { setError(e.message); captureEvent('fighter roster failed', { message: e.message }); } else if (abort.signal.reason?.name === 'AbortError') setError('Loading timed out. Check the game server and retry.'); })
       .finally(() => clearTimeout(timeout));
     return () => { clearTimeout(timeout); abort.abort('unmounted'); };
   }, [reload]);
@@ -60,6 +65,7 @@ function FightApp() {
   useEffect(() => {
     const subscription = AppState.addEventListener('change', state => {
       if (state !== 'active') web.current?.injectJavaScript(suspendScript);
+      captureEvent('mobile app state changed', { state });
     });
     return () => subscription.remove();
   }, []);
@@ -92,19 +98,30 @@ function FightApp() {
       mixedContentMode="never" allowFileAccess={false} webviewDebuggingEnabled={__DEV__}
       onMessage={event => { try {
         const message = JSON.parse(event.nativeEvent.data);
-        if (message.type === 'fight-ready') { setReady(true); setError(null); }
+        if (message.type === 'fight-ready') { processRecoveryAttempts.current = 0; captureEvent('fight ready', { player, opponent }); setReady(true); setError(null); }
         if (message.type === 'select-fighter') { setInFight(false); setReady(false); setError(null); }
       } catch { /* unknown message */ } }}
-      onError={() => setError('Could not reach the arena. Check your connection.')}
-      onHttpError={event => { if (event.nativeEvent.url.includes('/fight.html')) setError(`Arena returned HTTP ${event.nativeEvent.statusCode}.`); }}
-      onContentProcessDidTerminate={() => { setReady(false); setError('The game process stopped. Reload to start a fresh fight.'); }} />
+      onError={event => { captureEvent('fight webview failed', { player, opponent, description: event.nativeEvent.description }); setError('Could not reach the arena. Check your connection.'); }}
+      onHttpError={event => { if (event.nativeEvent.url.includes('/fight.html')) { captureEvent('fight http failed', { player, opponent, status_code: event.nativeEvent.statusCode }); setError(`Arena returned HTTP ${event.nativeEvent.statusCode}.`); } }}
+      onContentProcessDidTerminate={() => {
+        const attempt = ++processRecoveryAttempts.current;
+        captureEvent('fight process terminated', { player, opponent, recovery_attempt: attempt });
+        void analytics?.flush();
+        setReady(false);
+        if (attempt <= 2) {
+          setError(`The arena ran out of memory. Recovering (${attempt}/2)…`);
+          setTimeout(() => { setError(null); setReload(value => value + 1); }, 750);
+        } else {
+          setError('The arena stopped repeatedly. Return to fighter select and try again.');
+        }
+      }} />
     {(!ready || error) && <View style={styles.loading}><ActivityIndicator color="#d2e8a7" /><Text style={styles.copy}>{error ?? 'Loading fighters and arena…'}</Text>
-      {error && <Button label="RETRY FIGHT" onPress={() => { setError(null); setReady(false); setReload(v => v + 1); }} />}</View>}
+      {error && <Button label="RETRY FIGHT" onPress={() => { processRecoveryAttempts.current = 0; captureEvent('fight retried', { player, opponent }); setError(null); setReady(false); setReload(v => v + 1); }} />}</View>}
   </View>;
 
   return <View style={styles.root}>
     <View style={styles.heading}><View><Text style={styles.kicker}>POCKET ARENA / LOCAL VS CPU</Text><Text style={styles.title}>CHOOSE YOUR ODDITY</Text></View>
-      <Button label="FIGHT" disabled={!fighters.length || Boolean(error)} onPress={() => { setReady(false); setError(null); setInFight(true); }} /></View>
+      <Button label="FIGHT" disabled={!fighters.length || Boolean(error)} onPress={() => { processRecoveryAttempts.current = 0; captureEvent('fight started', { player, opponent }); setReady(false); setError(null); setInFight(true); }} /></View>
     <View style={styles.selectors}>
       <Button label={`YOU: ${fighters.find(f => f.id === player)?.name ?? '…'}`} onPress={() => setSelecting('player')} />
       <Text style={styles.vs}>VS</Text>

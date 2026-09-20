@@ -137,6 +137,15 @@ export class TouchControls {
     this.dpadRing.addEventListener('pointerup', (event) => this.onDpadEnd(event));
     this.dpadRing.addEventListener('pointercancel', (event) => this.onDpadEnd(event));
     this.dpadRing.addEventListener('lostpointercapture', (event) => this.onDpadEnd(event));
+
+    // WKWebView can drop pointer capture when a thumb leaves the control,
+    // especially during a simultaneous attack. Catch the terminal event at
+    // the window as a second release path so a lost north/up pointer cannot
+    // remain held for the rest of the round.
+    for (const type of ['pointerup', 'pointercancel'] as const) {
+      window.addEventListener(type, (event) => this.onGlobalPointerEnd(event));
+    }
+    window.addEventListener('pagehide', () => this.releaseAll());
   }
 
   private onButtonDown(event: PointerEvent, element: HTMLElement, name: TouchAttackButton): void {
@@ -201,6 +210,13 @@ export class TouchControls {
     } catch {
       // ignore
     }
+  }
+
+  private onGlobalPointerEnd(event: PointerEvent): void {
+    const binding = this.bindings.get(event.pointerId);
+    if (!binding) return;
+    if (binding.kind === 'dpad') this.onDpadEnd(event);
+    else this.onPointerEnd(event, binding.element);
   }
 
   private updateDpadFromEvent(event: PointerEvent): void {

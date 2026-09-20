@@ -14,6 +14,7 @@ import { TouchInput } from '../core/TouchInput';
 import type { CharacterConfig, CharacterSpriteConfig, SpriteFrameMeta, SpriteSheetId } from '../schema/types';
 import { LayoutShell } from '../ui/LayoutShell';
 import { prefersTouchControls } from '../util/device';
+import { spritePreloadPlan } from '../core/spritePreloadPlan';
 import { isFightOnly } from '../util/fightOnly';
 import { MobileMatchMenu } from '../ui/MobileMatchMenu';
 import { DebugOverlay } from './DebugOverlay';
@@ -186,10 +187,7 @@ export class FightScene extends Phaser.Scene {
     };
 
     for (const character of matchRoster.flatMap(c=>[c,...(c.forms??[]).map(f=>f.config)])) {
-      if (character.sprite) preloadSpriteConfig(character.sprite, character.id);
-      for (const actor of character.actors ?? []) {
-        if (actor.sprite) preloadSpriteConfig(actor.sprite, `${character.id}:${actor.id}`);
-      }
+      for (const entry of spritePreloadPlan(character)) preloadSpriteConfig(entry.sprite, entry.keyPrefix);
     }
 
     this.load.json('assets-index', '/assets-index.json');

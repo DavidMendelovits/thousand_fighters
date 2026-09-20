@@ -6,7 +6,9 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_GAME_URL": "https://thousand-fighters-game.vercel.app"
+        "EXPO_PUBLIC_GAME_URL": "https://thousand-fighters-game.vercel.app",
+        "EXPO_PUBLIC_ACTIVE_FIGHTER_IDS": "palimpsest",
+        "EXPO_PUBLIC_POSTHOG_HOST": "https://us.i.posthog.com"
       },
       "android": { "buildType": "apk" }
     },

@@ -23,6 +23,9 @@
         "projectId": "f1e9c616-af0c-49af-91c5-d5c942b90488"
       }
     },
-    "owner": "dfordavey"
+    "owner": "dfordavey",
+    "plugins": [
+      "expo-localization"
+    ]
   }
 }
