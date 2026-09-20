@@ -4,6 +4,14 @@ Audit date: September 19, 2026. Scope: current local working tree, including unc
 
 ## Executive assessment
 
+### September 20 execution update — persistent web build lane
+
+The roadmap focus has moved from individual hands repairs to reliable web character creation. Identity and animation-row Generate controls now save a durable build request before execution, suppress duplicate submissions, survive browser refresh, and finish frame extraction server-side. The workbench shows saved job status, stage durations, source/history links and explicit interruption resolution. A server restart **does not automatically replay paid work**; old active jobs require investigation. The bulk action confirms before a missing-base purchase and submits sequentially, but its unsubmitted remainder is not yet durable.
+
+52 focused backend/library checks and 8 desktop/mobile browser checks pass, including lost submission responses, refresh during generation, actual saved frames, explicit recovery and duplicate suppression. TypeScript/build and CMS full-flow smoke pass. Live startup checking also removed unnecessary archive scanning from roster discovery: a local request that exceeded 20 seconds returned in 0.172 seconds after the fix (one spot check, not a latency percentile). The recorded demo uses an isolated controlled provider; no external generation credits or production character assets were used.
+
+PIPE-01 and CREATE-06 advanced, **not complete**. This is a single-process executor, not a distributed queue. Full per-attempt fail-closed accounting, provider-task reconciliation, durable budgeted plans, authenticated public hosting and CREATE-07's new-fighter acceptance journey remain open. See [the web pipeline contract and next-step order](WEB_CHARACTER_PIPELINE.md) and [recording evidence](../artifacts/web-build-jobs/README.md). **Next:** safely resume accepted provider tasks and finish the attempt ledger, then build a review-first dependency plan with budget limits and accepted-output benchmarks.
+
 ### September 20 execution update — edge refinement and grab stress tests
 
 Added opt-in local-color edge refinement to the workbench's offline video reprocessor. A recorded reprocess of the same source/reference produced 20 unique poses with no reported clipping, separate working assets and before/after checkpoints: **13.370 seconds compile / 40.736 seconds full history operation; zero provider calls**. Matched dark/grey/white comparisons show less pale boundary contamination (81.4% lower heuristic coverage), but wrist speckles, needle-angle drift and the idle handoff remain. The isolated reference itself is contaminated; it must be corrected before another targeted generation. The exact candidate was marked **changes requested** through the UI; readiness is still **0/20 current approvals**.

@@ -2,6 +2,7 @@ import { normalizeStorageKey } from '../storage/FileCmsStorage.js';
 import { withLineage, digest } from '../storage/LineageStore.js';
 import { snapshotAssets, listVersions, restoreVersion, restoreArtifact } from './characterHistory.js';
 import { randomUUID } from 'node:crypto';
+import { AsyncLocalStorage } from 'node:async_hooks';
 
 const CHARACTER_INDEX_KEY = 'characters/index.json';
 
@@ -14,13 +15,20 @@ export class CharacterContentRepository {
     this.provider = 'file';
     this.capabilities = ['drafts', 'versions', 'assets', 'qa-reports'];
     this.mutations = new Map();
+    this.mutationContext = new AsyncLocalStorage();
   }
 
   // One writer per character in this CMS process; different characters remain
   // parallel. Prevent a restore from racing a long-running generation install.
   async withMutation(characterId, operation) {
+    if (this.mutationContext.getStore()?.get(characterId)?.active) return operation();
     const prior = this.mutations.get(characterId) ?? Promise.resolve();
-    const pending = prior.catch(() => {}).then(operation);
+    const owned = new Map(this.mutationContext.getStore() ?? []);
+    const token = {active:true};
+    owned.set(characterId, token);
+    const pending = prior.catch(() => {}).then(() => this.mutationContext.run(owned, async()=>{
+      try { return await operation(); } finally { token.active=false; }
+    }));
     this.mutations.set(characterId, pending);
     try { return await pending; }
     finally { if (this.mutations.get(characterId) === pending) this.mutations.delete(characterId); }
@@ -223,8 +231,11 @@ export class CharacterContentRepository {
   }
 
   async discoverCharactersFromDrafts() {
-    const keys = await this.storage.list('characters');
-    const draftKeys = keys.filter((key) => /^characters\/[^/]+\/draft\/content\.json$/.test(key));
+    const keys = this.storage.listDirectories
+      ? (await this.storage.listDirectories('characters')).map(key=>`${key}/draft/content.json`)
+      : (await this.storage.list('characters')).filter(key=>/^characters\/[^/]+\/draft\/content\.json$/.test(key));
+    const draftKeys = [];
+    for(const key of keys)if(await this.storage.exists(key))draftKeys.push(key);
     const characters = [];
 
     for (const key of draftKeys) {

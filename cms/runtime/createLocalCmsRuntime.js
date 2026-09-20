@@ -62,9 +62,15 @@ function currentArchitectureGaps() {
     },
     {
       id: 'roster-import-export',
-      status: 'remaining',
+      status: 'implemented',
       title: 'Runtime roster export',
-      detail: 'Existing fighter assets can be imported into the file CMS; next step is exporting CMS releases back into runtime CharacterConfig data.',
+      detail: 'CMS releases export to runtime CharacterConfig, manifest, frames and assets. Strict reviewed-motion publication is enforced separately.',
+    },
+    {
+      id: 'durable-web-builds',
+      status: 'partial',
+      title: 'Persistent web build jobs',
+      detail: 'Workbench identity and row Generate controls persist submissions/results, suppress duplicates and finish extraction server-side. Single-process only; restart requires explicit recovery. Distributed workers, provider reconciliation, budgets and durable batch plans remain.',
     },
     {
       id: 'production-direct-uploads',

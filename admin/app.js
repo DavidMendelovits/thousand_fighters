@@ -4,6 +4,7 @@
 // literal copy. 'projectiles' is a virtual tab (not a sprite row).
 import {moveContacts,moveGrabs,frameAdvantage,patchMove,REACTION_FIELDS,GEOMETRY_FIELDS,GRIP_FIELDS} from './moveInspector.js';
 import { mountCharacterHistory } from './characterHistory.js';
+import {runBuildJob,mountBuildJobs} from './buildJobs.js';
 import { mountCharacterComponents } from './characterComponents.js';
 import { renderReference, renderPreview, mountPreview } from './workbenchPreview.js';
 import {renderReadiness,renderMotionReview} from './publishReadiness.js';
@@ -739,7 +740,7 @@ async function generateMoveRow(moveId) {
     // Auto-extract individual frames from the row sheet
     try {
       logMoveActivity(moveId, 'Extracting individual frames...');
-      const extraction = result.framesReady ? {result:{warnings:[],stageTimings:{}}} : await postJson('/api/tools/extract_row_frames', {
+      const extraction = result.framesReady ? {result:result.extraction??{warnings:[],stageTimings:{}}} : await postJson('/api/tools/extract_row_frames', {
         characterId, sourceAssetKey: result.asset.key, moveId, spriteProfile,
       });
       for (const warning of extraction.result?.warnings ?? []) {
@@ -806,10 +807,15 @@ function formatStageTimings(stages, prefix = '') {
 
 // The base row defines the fighter's look and scale, so it must exist before
 // the other rows generate — they all attach it as a reference image. Once it
-// does, missing state and authored-move rows run in bounded batches.
+// does, missing state and authored-move rows run sequentially. Each submitted
+// job survives refresh; the unsubmitted remainder of this loop does not.
 async function generateAllRows() {
   const characterId = currentCharacterId();
   if (!characterId) return;
+
+  const rows=[...new Set(['idle','walk_forward','walk_back','jump','landing','crouch','block','hurt','getup',...(state.currentDraftData?.moves??[]).map(m=>m.animation)])];
+  const pending=rows.filter(id=>state.currentDraftData?.motionRows?.[id]?.status!=='approved');
+  if(!confirm(`Generate ${pending.length} action videos${hasBaseSheet(characterId)?'':' and a base image'} (paid API calls, one at a time)? Every row needs visual approval. Refreshing keeps the submitted job, but stops the remaining batch.`))return;
 
   if (!hasBaseSheet(characterId)) {
     log('Generating base row first — it anchors the look of every other row.');
@@ -822,15 +828,13 @@ async function generateAllRows() {
     log('Base sheet already exists — generating missing motion rows against it. Regenerate the base row from its card if you want a fresh look.');
   }
 
-  const rows=[...new Set(['idle','walk_forward','walk_back','jump','landing','crouch','block','hurt','getup',...(state.currentDraftData?.moves??[]).map(m=>m.animation)])];
-  const pending=rows.filter(id=>state.currentDraftData?.motionRows?.[id]?.status!=='approved');
-  if(!confirm(`Generate ${pending.length} action videos (paid API calls, up to two at a time)? Every row needs visual approval before publishing.`))return;
+  if(state.currentCharacterId!==characterId)return;
   await invokeTool('update_character_draft',{characterId,patch:{requireMotionCoverage:true},note:'Require complete reviewed motion before publishing'});
-  for(let i=0;i<pending.length;i+=2){
-    const batch=pending.slice(i,i+2);
-    for(const id of batch){const method=state.rowGenerators[`${characterId}:${id}`]??state.currentDraftData?.videoGenerator??'video';state.rowGenerators[`${characterId}:${id}`]=method==='image'?'video':method;const select=elements.characterWorkbench.querySelector(`[data-row-generator="${id}"]`);if(select)select.value=state.rowGenerators[`${characterId}:${id}`];}
-    const results=await Promise.all(batch.map(id=>generateMoveRow(id)));
-    if(results.some(result=>!result)){log('Motion batch stopped after a failure. Completed rows are preserved; inspect the failed job before resuming.','error');return;}
+  for(const id of pending){
+    if(state.currentCharacterId!==characterId){log('Batch paused after navigation. Submitted jobs are preserved.');return;}
+    const method=state.rowGenerators[`${characterId}:${id}`]??state.currentDraftData?.videoGenerator??'video';state.rowGenerators[`${characterId}:${id}`]=method==='image'?'video':method;
+    const select=elements.characterWorkbench.querySelector(`[data-row-generator="${id}"]`);if(select)select.value=state.rowGenerators[`${characterId}:${id}`];
+    if(!await generateMoveRow(id)){log('Motion batch stopped after a failure. Completed rows are preserved; inspect Build activity before resuming.','error');return;}
   }
   log('Motion candidates generated. Review and approve each row; generation alone is not completion.','pass');
 }
@@ -1222,59 +1226,9 @@ async function invokeTool(name, input) {
   }
 }
 
-// SSE variant of invokeTool for long-running generation tools. Progress events
-// (provider stdout/stderr, prompts) stream to onProgress while the call runs.
+// Durable submission + polling. The server owns generation AND extraction.
 async function invokeToolStreaming(name, input, onProgress) {
-  const response = await fetch(`/api/tools/${name}?stream`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(input),
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(text || `HTTP ${response.status}`);
-  }
-
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-  let result = null;
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-
-    // SSE events are separated by blank lines
-    let separatorIndex;
-    while ((separatorIndex = buffer.indexOf('\n\n')) !== -1) {
-      const rawEvent = buffer.slice(0, separatorIndex);
-      buffer = buffer.slice(separatorIndex + 2);
-
-      let eventType = 'message';
-      let eventData = '';
-      for (const line of rawEvent.split('\n')) {
-        if (line.startsWith('event: ')) eventType = line.slice(7).trim();
-        else if (line.startsWith('data: ')) eventData += line.slice(6);
-      }
-      if (!eventData) continue;
-
-      let parsed;
-      try { parsed = JSON.parse(eventData); } catch { continue; }
-
-      if (eventType === 'progress') {
-        try { onProgress?.(parsed); } catch {}
-      } else if (eventType === 'result') {
-        result = parsed.result;
-      } else if (eventType === 'error') {
-        throw new Error(parsed.error ?? 'Unknown streaming error');
-      }
-    }
-  }
-
-  if (result === null || result === undefined) throw new Error('Stream ended without result');
-  return result;
+  return runBuildJob({tool:name,input,onProgress});
 }
 
 function renderCharacter(character) {
@@ -1433,7 +1387,7 @@ async function generateConcept() {
   try {
     const result = await invokeToolStreaming('generate_character_concept', { characterId, prompt });
     log('Concept art generated.', 'pass');
-    await selectCharacter(characterId, { silent: true, pushState: false });
+    if(state.currentCharacterId===characterId)await selectCharacter(characterId, { silent: true, pushState: false });
     return result;
   } catch (error) {
     showError(error);
@@ -1618,6 +1572,7 @@ function renderCharacterWorkbench(draft, assets) {
     <details class="combat-rules-editor"><summary>Identity, movement & move definitions</summary><p>Edit without regenerating art. Coordinates are relative to the feet: negative Y is above the floor; jump velocities are positive. Move phases and hitstun / blockstun / stun / hitstop use 60 Hz ticks: 6 ticks = 100 ms. Stun overrides hitstun; hitstop pauses the impact separately.</p><p>Size: sprite.relativeHeight (0.5–1.6; 1 ≈ 160 px tall) and sprite.scaleAdjust (0.25–4) set the authored render size and measured boxes. Advanced combat size scales art and collision together, including temporary power-ups. Pixel rendering stays nearest-neighbor; integer enlargement is crispest, not higher-detail. Publish separately to update the game.</p><textarea id="authoring-json" aria-label="Character authoring JSON" rows="16">${escapeHtml(JSON.stringify({artBrief:draft.artBrief??draft.description,stats:draft.stats??{},sprite:{relativeHeight:draft.sprite?.relativeHeight??1,scaleAdjust:draft.sprite?.scaleAdjust??1},moves:draft.moves??[]},null,2))}</textarea><button type="button" data-save-authoring>Save character definitions</button><span id="authoring-save-status" role="status"></span></details>
     <details class="combat-rules-editor"><summary>Advanced combat rules · stats, power-ups & hidden forms</summary><p>Multipliers use 1 as neutral. Forms contain a complete config with parentId and selectable:false. Save updates the draft; publish separately to ship it.</p><textarea id="advanced-combat-json" aria-label="Advanced combat JSON" rows="12">${escapeHtml(JSON.stringify({combatStats:draft.combatStats??{},powerUps:draft.powerUps??[],forms:draft.forms??[]},null,2))}</textarea><button type="button" data-save-combat>Save combat rules to draft</button><span id="combat-save-status" role="status"></span></details>
     <section id="publish-readiness" class="publish-readiness" aria-live="polite"><p>Checking current assets, reviews and QA…</p></section>
+    <section id="character-build-jobs" aria-label="Build activity"></section>
     <details class="character-history" id="character-history"></details>
     <section id="character-components" class="character-components"></section>
     ${renderPreview(detail)}
@@ -1632,7 +1587,7 @@ function renderCharacterWorkbench(draft, assets) {
   // All workbench buttons are handled by the delegated click handler —
   // no per-render listener attachment.
   const previewHost = document.getElementById('workbench-preview');
-  elements.characterWorkbench.querySelector('.character-summary').after(document.getElementById('publish-readiness'),previewHost, elements.characterWorkbench.querySelector('.reference-review'));
+  elements.characterWorkbench.querySelector('.character-summary').after(document.getElementById('character-build-jobs'),document.getElementById('publish-readiness'),previewHost, elements.characterWorkbench.querySelector('.reference-review'));
   previewHost.insertAdjacentHTML('beforeend','<section id="motion-review" class="motion-review" hidden></section>');
   previewHost.addEventListener('change',event=>{if(event.target.matches('[data-preview-row]'))document.getElementById('motion-review').hidden=true;});
   previewHost.addEventListener('click',event=>{if(event.target.closest('[data-preview-testbed],[data-preview-close]'))document.getElementById('motion-review').hidden=true;});
@@ -1644,6 +1599,9 @@ function renderCharacterWorkbench(draft, assets) {
     onOpen:async id=>{await selectCharacter(id);document.getElementById('character-components').scrollIntoView({block:'start'});},
     onRow:row=>document.querySelector(`[data-move-card="${CSS.escape(row)}"]`)?.scrollIntoView({block:'start',behavior:'smooth'})});
   mountCharacterHistory({host:document.getElementById('character-history'),characterId:draft.id,getJson,postJson,onRestore:async()=>{await selectCharacter(draft.id,{silent:true});const panel=document.getElementById('character-history');panel.open=true;panel.scrollIntoView({block:'start'});}});
+  mountBuildJobs({host:document.getElementById('character-build-jobs'),characterId:draft.id,
+    onReload:async()=>{await selectCharacter(draft.id,{silent:true,pushState:false});document.getElementById('character-build-jobs')?.scrollIntoView({block:'start'});},
+    onHistory:()=>{const panel=document.getElementById('character-history');panel.open=true;panel.scrollIntoView({block:'start'});}});
 }
 
 async function saveAuthoring() {

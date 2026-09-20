@@ -14,9 +14,11 @@ const pngSignature = Buffer.from('89504e470d0a1a0a', 'hex');
 export async function workbenchData(repository, characterId) {
   segment(characterId);
   const draft = await repository.getDraft(characterId);
-  const keys = await repository.listCharacterAssets(characterId);
   const root = draft.assets?.rootKey ?? `characters/${characterId}/assets/fighter-pack`;
   if (!root.startsWith(`characters/${characterId}/assets/`) || root.split('/').includes('..')) throw new Error('Active pack is outside this character.');
+  // Summaries use only the active pack. References are resolved separately in
+  // workbenchDetail; archived revisions must not slow or inflate the roster.
+  const keys = await repository.storage.list(root);
   const frameDataKey = draft.assets?.frameDataKey ?? `${root}/frameData.json`;
   const frameData = await repository.storage.exists(frameDataKey) ? await repository.storage.getJson(frameDataKey) : {};
   const frames = frameData.frames ?? draft.sprite?.frames ?? {};

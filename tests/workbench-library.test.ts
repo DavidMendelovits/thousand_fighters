@@ -36,6 +36,20 @@ test('library counts active assets only; incomplete and test drafts stay separat
   assert.equal(entries.find(c=>c.id===id).published,false);
 });
 
+test('local roster discovery and summaries never recursively scan archived character trees',async t=>{
+  const {repository,id,pack}=await fixture(t);
+  const list=repository.storage.list.bind(repository.storage),prefixes=[];
+  repository.storage.list=async prefix=>{
+    prefixes.push(prefix);
+    assert.notEqual(prefix,'characters','draft discovery must use directory-only listing');
+    assert.notEqual(prefix,`characters/${id}/assets`,'roster must list only the active pack');
+    return list(prefix);
+  };
+  const entries=await workbenchLibrary(repository);
+  assert.equal(entries.find(entry=>entry.id===id).frameCount,2);
+  assert.deepEqual(prefixes,[pack]);
+});
+
 test('archive and restore preserve assets, moves and lineage',async t=>{
   const {repository,id,pack}=await fixture(t);
   const before=await repository.getDraft(id);

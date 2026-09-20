@@ -106,6 +106,16 @@ export class FileCmsStorage {
       .sort();
   }
 
+  // Directory-only discovery avoids walking every archived sprite just to
+  // find characters/<id>/draft/content.json during workbench startup.
+  async listDirectories(prefix) {
+    const normalized=normalizeStorageKey(prefix);
+    try {
+      return (await readdir(this.absolutePath(normalized),{withFileTypes:true}))
+        .filter(entry=>entry.isDirectory()).map(entry=>`${normalized}/${entry.name}`).sort();
+    } catch(error) { if(error.code==='ENOENT')return [];throw error; }
+  }
+
   async delete(key) {
     const absolutePath = this.absolutePath(key);
     await rm(absolutePath, { force: true, recursive: true });
@@ -151,16 +161,24 @@ export class FileCmsStorage {
     await writeFile(metadataPath, `${JSON.stringify(metadata, null, 2)}\n`, 'utf8');
   }
 
-  async collectKeys(currentPath, entries) {
-    const currentStat = await stat(currentPath);
+  async collectKeys(currentPath, entries, knownType=null) {
+    // Atomic writes publish temporary siblings. They are never storage keys,
+    // and can disappear between readdir and stat while another request polls.
+    const name=path.basename(currentPath);
+    if(/\.[a-f0-9-]{36}\.pending$/.test(name)||(/^\./.test(name)&&/\.[a-f0-9-]{36}\.tmp$/.test(name)))return;
+    let currentStat;
+    try { currentStat = knownType&&!knownType.isSymbolicLink()?knownType:await stat(currentPath); }
+    catch(error) { if(error.code==='ENOENT')return;throw error; }
     if (currentStat.isFile()) {
       entries.push(currentPath);
       return;
     }
 
-    const children = await readdir(currentPath);
+    let children;
+    try { children = await readdir(currentPath,{withFileTypes:true}); }
+    catch(error) { if(error.code==='ENOENT')return;throw error; }
     for (const child of children) {
-      await this.collectKeys(path.join(currentPath, child), entries);
+      await this.collectKeys(path.join(currentPath, child.name), entries,child);
     }
   }
 

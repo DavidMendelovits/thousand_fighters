@@ -12,6 +12,7 @@ import { compareVersions } from '../repositories/characterHistory.js';
 import { resumeArchivedVideo } from '../pipeline/resumeArchivedVideo.js';
 import { workbenchLibrary, workbenchDetail, updateWorkbench, workbenchReviewClip } from '../authoring/workbenchLibrary.js';
 import {publishReadiness} from '../authoring/publishReadiness.js';
+import {CharacterBuildJobs} from '../jobs/CharacterBuildJobs.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -20,13 +21,14 @@ const DEFAULT_ADMIN_ROOT = path.join(REPO_ROOT, 'admin');
 export function createCmsServer(options = {}) {
   const runtime = options.runtime ?? createLocalCmsRuntime(options.runtimeOptions ?? {});
   const adminRoot = path.resolve(options.adminRoot ?? DEFAULT_ADMIN_ROOT);
+  const buildJobs=new CharacterBuildJobs({storage:runtime.storage,repository:runtime.repository,invoke:(name,input)=>invokeTrackedTool(runtime,name,input)});
 
   return http.createServer(async (request, response) => {
     try {
       const url = new URL(request.url ?? '/', `http://${request.headers.host ?? '127.0.0.1'}`);
 
       if (url.pathname.startsWith('/api/')) {
-        await handleApiRequest({ request, response, url, runtime });
+        await handleApiRequest({ request, response, url, runtime, buildJobs });
         return;
       }
 
@@ -37,7 +39,15 @@ export function createCmsServer(options = {}) {
   });
 }
 
-async function handleApiRequest({ request, response, url, runtime }) {
+async function handleApiRequest({ request, response, url, runtime, buildJobs }) {
+  const buildMatch=url.pathname.match(/^\/api\/characters\/([^/]+)\/build-jobs(?:\/([^/]+)(\/resolve)?)?$/);
+  if(buildMatch){
+    const characterId=segment(decodeURIComponent(buildMatch[1])),id=buildMatch[2];
+    if(request.method==='GET'&&!buildMatch[3]){sendJson(response,id?{job:await buildJobs.get(characterId,id)}:{jobs:await buildJobs.list(characterId)});return;}
+    if(request.method==='POST'&&!id){sendJson(response,await buildJobs.submit(characterId,await readJsonBody(request)),202);return;}
+    if(request.method==='POST'&&buildMatch[3]){sendJson(response,{job:await buildJobs.resolve(characterId,id,await readJsonBody(request))});return;}
+    throw Object.assign(new Error('Unsupported build job operation'),{statusCode:405});
+  }
   if (request.method === 'GET' && url.pathname === '/api/status') {
     sendJson(response, { ok: true, service: 'thousand-fighters-cms', storage: runtime.storage.constructor.name });
     return;
