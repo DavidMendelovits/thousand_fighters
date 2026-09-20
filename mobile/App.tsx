@@ -4,6 +4,7 @@ import Constants from 'expo-constants';
 import { useKeepAwake } from 'expo-keep-awake';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
+import { PostHogProvider } from 'posthog-react-native';
 import { allowGameNavigation, fightUrl, gameOrigin } from './gameUrl';
 import { analytics, captureEvent } from './analytics';
 
@@ -35,7 +36,7 @@ function FightApp() {
     const abort = new AbortController();
     const timeout = setTimeout(() => abort.abort(), 20000);
     setError(null);
-    captureEvent('fighter roster loading', { game_origin: origin });
+    captureEvent('fighter_roster_loading');
     (async () => {
       const index = await fetch(`${origin}/assets-index.json`, { signal: abort.signal });
       if (!index.ok) throw new Error('Published roster is unavailable.');
@@ -54,10 +55,10 @@ function FightApp() {
       if (!roster.length) throw new Error('No published fighters are available.');
       if (abort.signal.aborted) return;
       setFighters(roster);
-      captureEvent('fighter roster loaded', { fighter_count: roster.length, fighter_ids: roster.map(f => f.id) });
+      captureEvent('fighter_roster_loaded', { fighter_count: roster.length, fighter_ids: roster.map(f => f.id) });
       setPlayer(current => roster.some(f => f.id === current) ? current : roster[0].id);
       setOpponent(current => roster.some(f => f.id === current) ? current : roster[Math.min(1, roster.length - 1)].id);
-    })().catch(e => { if (!abort.signal.aborted) { setError(e.message); captureEvent('fighter roster failed', { message: e.message }); } else if (abort.signal.reason?.name === 'AbortError') setError('Loading timed out. Check the game server and retry.'); })
+    })().catch(e => { if (!abort.signal.aborted) { setError(e.message); captureEvent('fighter_roster_failed'); } else if (abort.signal.reason?.name === 'AbortError') setError('Loading timed out. Check the game server and retry.'); })
       .finally(() => clearTimeout(timeout));
     return () => { clearTimeout(timeout); abort.abort('unmounted'); };
   }, [reload]);
@@ -65,7 +66,7 @@ function FightApp() {
   useEffect(() => {
     const subscription = AppState.addEventListener('change', state => {
       if (state !== 'active') web.current?.injectJavaScript(suspendScript);
-      captureEvent('mobile app state changed', { state });
+      captureEvent('mobile_app_state_changed', { state });
     });
     return () => subscription.remove();
   }, []);
@@ -74,7 +75,7 @@ function FightApp() {
     web.current?.injectJavaScript(suspendScript);
     Alert.alert('Leave this fight?', 'The current match will end.', [
       { text: 'Stay', style: 'cancel' },
-      { text: 'Leave', style: 'destructive', onPress: () => { setInFight(false); setReady(false); setError(null); } },
+      { text: 'Leave', style: 'destructive', onPress: () => { captureEvent('fight_left', { player_fighter_id: player, opponent_fighter_id: opponent }); setInFight(false); setReady(false); setError(null); } },
     ]);
   };
   useEffect(() => {
@@ -83,7 +84,7 @@ function FightApp() {
   }, [inFight]);
   useEffect(() => {
     if (!inFight || ready) return;
-    const timer = setTimeout(() => setError('The arena did not finish loading. Check your connection and retry.'), 45000);
+    const timer = setTimeout(() => { captureEvent('fight_loading_timed_out', { player_fighter_id: player, opponent_fighter_id: opponent }); setError('The arena did not finish loading. Check your connection and retry.'); }, 45000);
     return () => clearTimeout(timer);
   }, [inFight, ready, reload]);
 
@@ -98,14 +99,14 @@ function FightApp() {
       mixedContentMode="never" allowFileAccess={false} webviewDebuggingEnabled={__DEV__}
       onMessage={event => { try {
         const message = JSON.parse(event.nativeEvent.data);
-        if (message.type === 'fight-ready') { processRecoveryAttempts.current = 0; captureEvent('fight ready', { player, opponent }); setReady(true); setError(null); }
+        if (message.type === 'fight-ready') { processRecoveryAttempts.current = 0; captureEvent('fight_ready', { player_fighter_id: player, opponent_fighter_id: opponent }); setReady(true); setError(null); }
         if (message.type === 'select-fighter') { setInFight(false); setReady(false); setError(null); }
       } catch { /* unknown message */ } }}
-      onError={event => { captureEvent('fight webview failed', { player, opponent, description: event.nativeEvent.description }); setError('Could not reach the arena. Check your connection.'); }}
-      onHttpError={event => { if (event.nativeEvent.url.includes('/fight.html')) { captureEvent('fight http failed', { player, opponent, status_code: event.nativeEvent.statusCode }); setError(`Arena returned HTTP ${event.nativeEvent.statusCode}.`); } }}
+      onError={() => { captureEvent('fight_webview_failed', { player_fighter_id: player, opponent_fighter_id: opponent }); setError('Could not reach the arena. Check your connection.'); }}
+      onHttpError={event => { if (event.nativeEvent.url.includes('/fight.html')) { captureEvent('fight_http_failed', { player_fighter_id: player, opponent_fighter_id: opponent, status_code: event.nativeEvent.statusCode }); setError(`Arena returned HTTP ${event.nativeEvent.statusCode}.`); } }}
       onContentProcessDidTerminate={() => {
         const attempt = ++processRecoveryAttempts.current;
-        captureEvent('fight process terminated', { player, opponent, recovery_attempt: attempt });
+        captureEvent('fight_process_terminated', { player_fighter_id: player, opponent_fighter_id: opponent, recovery_attempt: attempt });
         void analytics?.flush();
         setReady(false);
         if (attempt <= 2) {
@@ -116,23 +117,23 @@ function FightApp() {
         }
       }} />
     {(!ready || error) && <View style={styles.loading}><ActivityIndicator color="#d2e8a7" /><Text style={styles.copy}>{error ?? 'Loading fighters and arena…'}</Text>
-      {error && <Button label="RETRY FIGHT" onPress={() => { processRecoveryAttempts.current = 0; captureEvent('fight retried', { player, opponent }); setError(null); setReady(false); setReload(v => v + 1); }} />}</View>}
+      {error && <Button label="RETRY FIGHT" onPress={() => { processRecoveryAttempts.current = 0; captureEvent('fight_retried', { player_fighter_id: player, opponent_fighter_id: opponent }); setError(null); setReady(false); setReload(v => v + 1); }} />}</View>}
   </View>;
 
   return <View style={styles.root}>
     <View style={styles.heading}><View><Text style={styles.kicker}>POCKET ARENA / LOCAL VS CPU</Text><Text style={styles.title}>CHOOSE YOUR ODDITY</Text></View>
-      <Button label="FIGHT" disabled={!fighters.length || Boolean(error)} onPress={() => { processRecoveryAttempts.current = 0; captureEvent('fight started', { player, opponent }); setReady(false); setError(null); setInFight(true); }} /></View>
+      <Button label="FIGHT" disabled={!fighters.length || Boolean(error)} onPress={() => { processRecoveryAttempts.current = 0; captureEvent('fight_started', { player_fighter_id: player, opponent_fighter_id: opponent }); setReady(false); setError(null); setInFight(true); }} /></View>
     <View style={styles.selectors}>
       <Button label={`YOU: ${fighters.find(f => f.id === player)?.name ?? '…'}`} onPress={() => setSelecting('player')} />
       <Text style={styles.vs}>VS</Text>
       <Button label={`CPU: ${fighters.find(f => f.id === opponent)?.name ?? '…'}`} onPress={() => setSelecting('opponent')} />
       <Text style={styles.copy}>Selecting {selecting === 'player' ? 'your fighter' : 'opponent'}</Text>
     </View>
-    {error ? <View style={styles.center}><Text style={styles.copy}>{error}</Text><Button label="RETRY ROSTER" onPress={() => setReload(v => v + 1)} /></View> :
+    {error ? <View style={styles.center}><Text style={styles.copy}>{error}</Text><Button label="RETRY ROSTER" onPress={() => { captureEvent('fighter_roster_retried'); setReload(v => v + 1); }} /></View> :
       !fighters.length ? <View style={styles.center}><ActivityIndicator color="#d2e8a7" /><Text style={styles.copy}>Loading published roster…</Text></View> :
       <ScrollView horizontal contentContainerStyle={styles.cards} showsHorizontalScrollIndicator>
         {fighters.map(f => <Pressable key={f.id} accessibilityRole="button" accessibilityLabel={`Select ${f.name}`} accessibilityState={{ selected: f.id === (selecting === 'player' ? player : opponent) }}
-          onPress={() => selecting === 'player' ? setPlayer(f.id) : setOpponent(f.id)}
+          onPress={() => { captureEvent('fighter_selected', { selection_role: selecting, fighter_id: f.id }); if (selecting === 'player') setPlayer(f.id); else setOpponent(f.id); }}
           style={[styles.card, f.id === (selecting === 'player' ? player : opponent) && styles.selected]}>
           {f.portrait && <Image source={{ uri: f.portrait }} style={styles.portrait} resizeMode="contain" />}
           <Text style={styles.cardName}>{f.name}</Text><Text style={styles.kicker}>{f.id === player ? 'YOU ' : ''}{f.id === opponent ? 'CPU' : ''}</Text>
@@ -143,7 +144,8 @@ function FightApp() {
 }
 
 export default function App() {
-  return <SafeAreaProvider><StatusBar hidden /><SafeAreaView style={styles.root} edges={['left', 'right', 'top', 'bottom']}><FightApp /></SafeAreaView></SafeAreaProvider>;
+  const app = <SafeAreaProvider><StatusBar hidden /><SafeAreaView style={styles.root} edges={['left', 'right', 'top', 'bottom']}><FightApp /></SafeAreaView></SafeAreaProvider>;
+  return analytics ? <PostHogProvider client={analytics}>{app}</PostHogProvider> : app;
 }
 
 const styles = StyleSheet.create({

@@ -1,14 +1,32 @@
+import Constants from 'expo-constants';
 import PostHog from 'posthog-react-native';
 
-const apiKey = process.env.EXPO_PUBLIC_POSTHOG_API_KEY?.trim();
-const host = process.env.EXPO_PUBLIC_POSTHOG_HOST?.trim() || 'https://us.i.posthog.com';
+type PostHogExtra = {
+  posthogProjectToken?: string;
+  posthogHost?: string;
+};
 
-export const analytics = apiKey ? new PostHog(apiKey, {
+const posthogExtra = Constants.expoConfig?.extra as PostHogExtra | undefined;
+const projectToken = posthogExtra?.posthogProjectToken?.trim();
+const host = posthogExtra?.posthogHost?.trim();
+
+if (__DEV__ && !projectToken) {
+  console.error('POSTHOG_PROJECT_TOKEN variable required by PostHog is missing or un-configured, this causes events to be silently missed. This error stops appearing once POSTHOG_PROJECT_TOKEN is configured');
+}
+
+if (__DEV__ && !host) {
+  console.error('POSTHOG_HOST variable required by PostHog is missing or un-configured, this causes events to be silently missed. This error stops appearing once POSTHOG_HOST is configured');
+}
+
+export const analytics = projectToken && host ? new PostHog(projectToken, {
   host,
-  flushAt: 1,
-  flushInterval: 5_000,
   captureAppLifecycleEvents: true,
-  enableSessionReplay: false,
+  errorTracking: {
+    autocapture: {
+      uncaughtExceptions: true,
+      unhandledRejections: true,
+    },
+  },
 }) : null;
 
 type AnalyticsValue = string | number | boolean | null | AnalyticsValue[] | { [key: string]: AnalyticsValue };
