@@ -19,6 +19,7 @@ await new Promise((resolve, reject) => {
 });
 await writeFile('dist-fight/vercel.json', `${JSON.stringify({
   $schema: 'https://openapi.vercel.sh/vercel.json',
-  cleanUrls: true,
+  cleanUrls: false,
+  rewrites: [{ source: '/fight', destination: '/fight.html' }],
 }, null, 2)}\n`);
 console.log('Fight client ready in dist-fight. Serve at the origin root over HTTPS.');
