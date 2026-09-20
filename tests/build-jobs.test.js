@@ -22,7 +22,7 @@ async function fixture(t,invoke){
 }
 const submission=(extras={})=>({idempotencyKey:randomUUID(),tool:'generate_sprite_sheet',input:{characterId:'probe',moveId:'punch',prompt:'A safe fixture row',generator:'image'},...extras});
 const result={asset:{key:'characters/probe/assets/source.png',apiUrl:'/api/assets/characters/probe/assets/source.png'},warnings:[]};
-const done=async(manager,id)=>until(async()=>{const job=await manager.get('probe',id);return !['queued','running','extracting'].includes(job.status)&&job;});
+const done=async(manager,id)=>until(async()=>{const job=await manager.get('probe',id);return !manager.live.has(id)&&!['queued','running','extracting'].includes(job.status)&&job;});
 
 test('durable admission, concurrent duplicates and server-owned extraction',async t=>{
   const gate=deferred(),calls=[];
@@ -112,10 +112,27 @@ test('claims are execute-once even if an executor is accidentally called twice',
 
 test('only narrow build inputs are admitted',async t=>{
   const f=await fixture(t,async()=>{throw Error('Unexpected provider');});
-  for(const input of [{characterId:'other',prompt:'x'},{characterId:'probe',prompt:'x',context:{apiKey:'no'}},{characterId:'probe',prompt:'x',generator:'unknown'},{characterId:'probe',prompt:''}]){
+  for(const input of [{characterId:'other',prompt:'x'},{characterId:'probe',prompt:'x',context:{apiKey:'no'}},{characterId:'probe',prompt:'x',generator:'unknown'},{characterId:'probe',prompt:''},...['characters/other/assets/ref.png','characters/probe/assets/../private.png','characters/probe/assets/missing.png'].map(key=>({characterId:'probe',prompt:'x',referenceAssetKeys:[key]}))]){
     await assert.rejects(f.manager.submit('probe',submission({input})),{statusCode:400});
   }
   await assert.rejects(f.manager.submit('probe',submission({tool:'publish_character'})),{statusCode:400});
+});
+
+test('explicit character-owned references survive build admission and execution',async t=>{
+  let captured;
+  const f=await fixture(t,async(name,input)=>{captured=input;return {...result,framesReady:true};});
+  const key='characters/probe/assets/build-plan-references/plan/actor.png';await f.storage.putBytes(key,Buffer.from('actor'));
+  const input={characterId:'probe',prompt:'Flow as this actor',moveId:'hands_idle',generator:'video',referenceAssetKeys:[key]};
+  const {job}=await f.manager.submit('probe',submission({input}));await done(f.manager,job.id);
+  assert.deepEqual(captured.referenceAssetKeys,[key]);
+});
+test('changed queued reference blocks before paid execution',async t=>{
+  let calls=0;const f=await fixture(t,async()=>{calls++;return result;});f.manager.drain=async()=>{};
+  const key='characters/probe/assets/build-plan-references/plan/actor.png';await f.storage.putBytes(key,Buffer.from('actor'));
+  const {job}=await f.manager.submit('probe',submission({input:{characterId:'probe',prompt:'Flow',referenceAssetKeys:[key]}}));
+  await f.storage.putBytes(key,Buffer.from('different actor'));
+  await f.manager.execute(f.manager.pending.shift());
+  assert.equal((await f.manager.get('probe',job.id)).status,'blocked');assert.equal(calls,0);
 });
 
 test('nested tool mutations are reentrant but unrelated writers stay serialized',async t=>{
@@ -127,4 +144,19 @@ test('nested tool mutations are reentrant but unrelated writers stay serialized'
   const second=f.repository.withMutation('probe',async()=>order.push('other'));
   await until(()=>order.includes('nested'));assert.deepEqual(order,['start','nested']);
   gate.resolve();await Promise.all([first,second]);assert.deepEqual(order,['start','nested','end','other']);
+});
+
+test('saved-source recovery extracts pinned bytes and never generates a replacement',async t=>{
+  const calls=[];let fail=true;
+  const f=await fixture(t,async name=>{calls.push(name);if(name==='extract_row_frames'&&fail)throw Error('Interrupted extraction');return result;});
+  await f.storage.putBytes(result.asset.key,Buffer.from('pinned-source'),{contentType:'image/png'});
+  const {job}=await f.manager.submit('probe',submission());
+  const stopped=await done(f.manager,job.id);assert.equal(stopped.canResume,true);
+  await f.storage.putBytes(result.asset.key,Buffer.from('changed-source'));
+  await assert.rejects(f.manager.resume('probe',job.id,{confirmed:true}),/source changed/);
+  await f.storage.putBytes(result.asset.key,Buffer.from('pinned-source'));fail=false;
+  const recovered=await f.manager.resume('probe',job.id,{confirmed:true});
+  assert.equal(recovered.status,'completed');assert.equal(calls.filter(name=>name==='generate_sprite_sheet').length,1);
+  assert.equal(calls.filter(name=>name==='extract_row_frames').length,2);
+  await assert.rejects(f.manager.resume('probe',job.id,{confirmed:true}),{statusCode:409});
 });

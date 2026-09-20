@@ -10,6 +10,39 @@ The optimization target is **time and total spend to an accepted, playable chara
 
 ## What this slice delivers
 
+### September 20 follow-up: recovery, plans and measurements
+
+The following supersedes the older bulk-loop and best-effort-attempt limitations below. The earlier section remains a record of the initial job implementation.
+
+- External image/video generation now has a create-only attempt intent before submission, ordered lifecycle events, accepted provider IDs where available, and immutable output artifacts. A failed intent write prevents the external operation. An uncertain submission is not permission to submit again.
+- The workbench can recover saved source frames only if their bytes still match the job's pinned source. Accepted BFL, FAL-image and MiniMax-H3 task recovery polls/downloads into an archived candidate, without generating or automatically installing/approving it. FAL/Pruna video recovery uses its saved checkpoint through History.
+- **Plan animation build** opens a saved itinerary rather than running a browser-owned bulk loop. Plans pin authoring rules and reference bytes, preserve current approvals, reserve estimated spend and submission counts before admission, and reuse stable step/job IDs. Saving or reopening a plan submits nothing. Every continuation is explicit; identity, base-reference and motion reviews gate later work.
+- Plans expose body, actor and linked-form requirements. Independent effect generation and form installation remain explicit blockers, not silently omitted work. Estimated ceilings are not provider billing caps. Unknown prices require opt-in and still consume the maximum-submissions limit.
+- The full-width **Pipeline** workspace now has generation benchmarks, filtered JSON observations and immutable controlled-trial definitions. It deduplicates ledger/legacy observations, separates provider/fixture/unclassified cohorts, reports latency percentiles with sample counts and leaves missing costs unknown. Current review attribution requires matching source hashes and current fingerprints; accepted-output generation cost is distinct from all-in creation cost.
+- Controlled FAL/Pruna source-video trials run in an isolated lane: fixed archived reference, prompt, model and duration; one explicitly confirmed candidate/action; durable slot reservation; asynchronous status and explicit saved-task resume. Outputs never replace working character rows. FAL comparisons require the disclosed `provider-native` resolution mode rather than pretending both adapters expose identical resolution controls. No paid comparison or model winner was produced in this infrastructure pass.
+- Actor identity checkpoints freeze reference frames separately from the actor's animated idle output. Later actor motion uses those exact character-owned references; changed queued reference bytes block execution before a provider call.
+
+New durable storage:
+
+```text
+generation-attempts/<attemptId>/intent.json
+generation-attempts/<attemptId>/events/<ordered-revision>.json
+build-plans/<characterId>/<planId>/events/<revision>.json
+benchmarks/trials/<trialId>.json
+benchmarks/trial-runs/<trialId>/<candidate-action>/request.json
+benchmarks/trial-runs/<trialId>/<candidate-action>/events/<revision>.json
+```
+
+Source/video bytes remain in the content-addressed lineage archive and existing job media stores. These records reference that content; they do not replace the version archive. No legacy generation is relabeled as a newly tracked live attempt.
+
+Trial working directories are under ignored `artifacts/model-trials/`. Their immutable output and checkpoints are archived through the existing lineage transport. See [the controlled-trial contract](../cms/benchmarks/README.md) for enforced settings and recovery limits.
+
+Verified historical read: 148 unique legacy attempts, 19 with known estimates totaling approximately $0.266 and 129 with unknown prices. That subtotal is **not** total historical spend. Missing style/resolution tags and mixed actions mean blended timings cannot choose a winning model.
+
+The executor and reservations remain **single-process**, not distributed tenant quotas. Authentication/authorization, worker isolation, provider billing reconciliation and off-machine restore drills still block public hosting. Existing direct tools/chat are not forced through the plan budget lane. Visual art quality and the complete new-fighter browser-to-published-match acceptance journey are separate gates.
+
+Recording and checks: [pipeline foundations evidence](../artifacts/pipeline-foundations/README.md).
+
 The existing identity and animation-row Generate buttons now use `POST /api/characters/:id/build-jobs`. The server saves an immutable request before execution, claims it once, generates/saves the source, extracts image-row frames, and journals the result. Video rows already return compiled frames and skip the image extractor. Both paths retain the existing tools, checkpoints, provider adapters and publish gates.
 
 - Browser refresh: persisted jobs remain visible. The submitted job continues server-side, including extraction. Reloading saved draft data is an explicit action in the reconnected panel.

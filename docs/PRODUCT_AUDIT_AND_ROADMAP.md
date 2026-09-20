@@ -4,6 +4,16 @@ Audit date: September 19, 2026. Scope: current local working tree, including unc
 
 ## Executive assessment
 
+### September 20 execution update — three parallel pipeline workstreams
+
+Provider-attempt admission/recovery, saved review-first build plans and generation benchmarks are now integrated into the workbench. The bulk animation action opens a durable plan, not a tab-owned loop. Plans pin dependencies and reserve estimated spend/submission counts; identity/base/motion review checkpoints prevent blindly filling an entire moveset. Actor identity frames are frozen independently of animated idle output. Known provider tasks and unchanged saved sources have explicit no-resubmission recovery paths. The Pipeline workspace exposes deduplicated attempt measurements, missing-cost coverage and immutable trial specifications, plus an isolated asynchronous FAL/Pruna source-video runner that never overwrites canonical character rows.
+
+Verification: 62 focused backend/integration checks and 14 desktop/mobile browser checks passed, plus TypeScript/build and CMS full-flow smoke. Tests exercise real storage/tools/extraction and video transport with controlled adapters. No paid requests, automatic art approvals, or production character edits occurred.
+
+These advance PIPE-01/02/03/04/05 and CREATE-04/06; they do not close the entire production roadmap. Single-process reservations are not distributed quotas or billing caps. Direct tools/chat can still bypass plan budgets. Full accepted-character cost cannot be reconstructed from unpriced/unlinked historical attempts. Independent effect generation, form installation, model-quality evidence and a complete new-character browser-to-match acceptance run remain separate work.
+
+See [the updated contract](WEB_CHARACTER_PIPELINE.md) and [actual browser recording](../artifacts/pipeline-foundations/README.md). The recording uses a clearly labeled controlled provider; it demonstrates saving, reloading, one admission and review gating, not generated art quality or paid model performance.
+
 ### September 20 execution update — persistent web build lane
 
 The roadmap focus has moved from individual hands repairs to reliable web character creation. Identity and animation-row Generate controls now save a durable build request before execution, suppress duplicate submissions, survive browser refresh, and finish frame extraction server-side. The workbench shows saved job status, stage durations, source/history links and explicit interruption resolution. A server restart **does not automatically replay paid work**; old active jobs require investigation. The bulk action confirms before a missing-base purchase and submits sequentially, but its unsubmitted remainder is not yet durable.

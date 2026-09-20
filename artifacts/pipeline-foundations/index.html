@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Saved build plans — workflow recording</title>
+<style>body{margin:0;background:#10151b;color:#eef3f7;font:16px/1.6 system-ui}main{max-width:1120px;margin:40px auto;padding:0 24px}a{color:#69dcc5}video{width:100%;background:#000;border:1px solid #374655}p{max-width:850px;color:#b8c6d4}nav{display:flex;gap:18px;flex-wrap:wrap}button{background:#263442;color:inherit;border:1px solid #557086;padding:9px;cursor:pointer}</style></head>
+<body><main><h1>Saved build plans, from the workbench</h1>
+<p>Actual browser interactions with the real CMS, storage, attempt ledger and build executor. The image provider is a controlled test fixture with a 15-second delay: no external requests, credits, or production character changes. This verifies workflow plumbing—not character art quality.</p>
+<video controls preload="metadata" src="workbench.mp4"></video>
+<nav><button data-time="0">Create a plan</button><button data-time="18">Saved after reload</button><button data-time="36">One generation admitted</button><button data-time="55">Completed; review required</button></nav>
+<p>The saved remainder waits for explicit continuation. Refresh never approves art or submits the next generation. Build plans use estimated-spend and submission limits, not provider billing caps.</p>
+<p><a href="/animation-lab.html?workspace=pipeline">Open benchmarks in the studio</a> · <a href="README.md">Verification and limitations</a></p>
+</main><script>document.querySelectorAll('[data-time]').forEach(button=>button.onclick=()=>{const video=document.querySelector('video');video.currentTime=Number(button.dataset.time);video.play();});</script></body></html>

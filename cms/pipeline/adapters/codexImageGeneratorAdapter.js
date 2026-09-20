@@ -89,7 +89,7 @@ export class CodexImageGeneratorAdapter {
             };
           });
         } catch (error) {
-          if (attempt === maxAttempts) throw error;
+          if (error.noRetry || error.code==='ARCHIVE_PERSISTENCE' || error.name==='ArchivePersistenceError' || attempt === maxAttempts) throw error;
         }
       }
     } finally {

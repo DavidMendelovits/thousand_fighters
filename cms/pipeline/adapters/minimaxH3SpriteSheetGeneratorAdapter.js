@@ -153,6 +153,7 @@ export class MinimaxH3SpriteSheetGeneratorAdapter {
     const submissionMs = this.now() - submissionStartedAt;
     const taskId = createResult.task_id;
     if (!taskId) throw new Error('MiniMax H3 did not return a task_id.');
+    await request.generationCheckpoint?.({status:'accepted',providerTaskId:taskId});
 
     request.onProgress?.({ type: 'status', stage: 'queued', taskId, message: `MiniMax H3 task ${taskId} queued.` });
     const queueStartedAt = this.now();

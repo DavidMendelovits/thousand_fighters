@@ -52,6 +52,7 @@ export class FalImageGeneratorAdapter extends ParallelFrameSpriteGenerator {
     const created = await responseJson(response, 'fal');
     const submissionMs = this.now() - submissionStartedAt;
     if (!created.request_id && !created.response_url) throw new Error('fal did not return a request_id or response_url.');
+    await request.generationCheckpoint?.({status:'accepted',providerTaskId:created.request_id??null});
     const statusUrl = created.status_url ?? `${this.queueUrl.replace(/\/$/, '')}/${this.model}/requests/${created.request_id}/status`;
     const responseUrl = created.response_url ?? `${this.queueUrl.replace(/\/$/, '')}/${this.model}/requests/${created.request_id}`;
     const queueStartedAt = this.now();

@@ -64,6 +64,7 @@ export class BflFluxKleinGeneratorAdapter extends ParallelFrameSpriteGenerator {
     const submissionMs = this.now() - submissionStartedAt;
     try {
       if (!created.polling_url && !created.id) throw new Error('BFL did not return an id or polling_url.');
+      await request.generationCheckpoint?.({status:'accepted',providerTaskId:created.id??null});
       const lineage = request.onGenerationAttempt?.lineage ?? currentLineage();
       // Persist acceptance before polling, so timeouts and process restarts do
       // not erase the ID needed to retrieve an already paid-for result.

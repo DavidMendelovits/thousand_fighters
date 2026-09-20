@@ -1,11 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import { createCmsStorage } from '../storage/createCmsStorage.js';
 import { currentLineage, safeProvenance } from '../storage/LineageStore.js';
+import { GenerationAttemptLedger } from './GenerationAttemptLedger.js';
 
 /**
  * Wrap one external, potentially billable generation attempt. The caller's
- * recorder is deliberately best-effort: telemetry must never turn a completed
- * provider request into a failed asset job.
+ * benchmark recorder remains best-effort. The independent durable ledger fails
+ * closed before submission and preserves ambiguous acceptance for recovery.
  */
 export async function runGenerationAttempt(request, metadata, operation) {
   const lineage = request.onGenerationAttempt?.lineage ?? currentLineage() ?? createCmsStorage().lineage;
@@ -16,7 +17,7 @@ export async function runGenerationAttempt(request, metadata, operation) {
     if (bytes) references.push(await lineage.artifact(bytes, { contentType: ref.contentType ?? 'image/png' }));
   }
   return lineage.run({ characterId: identity.characterId, stage: 'external-generation', inputs: { ...safeProvenance(request), references }, provider: identity.provider, model: identity.model }, async () => {
-    const result = await measuredAttempt(request, metadata, operation);
+    const result = await measuredAttempt(request, metadata, operation, lineage);
     // Archive individual frame attempts, not only the final assembled sheet.
     // An archival failure is not retryable as a provider/network failure.
     try {
@@ -26,21 +27,35 @@ export async function runGenerationAttempt(request, metadata, operation) {
     } catch (cause) {
       const error = new Error('Provider completed but archival failed. Do not regenerate automatically; recover the provider result.', { cause });
       error.name = 'ArchivePersistenceError';
+      error.noRetry = true;
       throw error;
     }
     return result;
   });
 }
 
-async function measuredAttempt(request, metadata, operation) {
+async function measuredAttempt(request, metadata, operation, lineage) {
   const now = metadata.now ?? Date.now;
   const startedMs = now();
   const startedAt = new Date().toISOString();
   const attemptId = metadata.attemptId ?? randomUUID();
+  const ledger=new GenerationAttemptLedger(lineage);
+  const identity={...attemptIdentity(request,metadata),attemptId,startedAt};
+  // Fail closed before crossing the external API boundary.
+  try { await ledger.intent({...identity,inputs:safeProvenance(request)}); }
+  catch(error){error.noRetry=true;throw error;}
+  let providerTaskId=null;
+  request.generationCheckpoint=async details=>{
+    providerTaskId=details.providerTaskId??providerTaskId;
+    await ledger.event({...identity,...details,providerTaskId});
+  };
   try {
     const result = await operation();
     const completedMs = now();
-    await emitAttempt(request, {
+    const bytes=result?.bytes??(result?.base64?Buffer.from(result.base64,'base64'):null);
+    const outputArtifact=bytes?await lineage.artifact(bytes,{contentType:result.contentType}):null;
+    const videoArtifact=result?.videoBytes?await lineage.artifact(result.videoBytes,{contentType:'video/mp4'}):null;
+    const event={
       schemaVersion: 1,
       attemptId,
       startedAt,
@@ -48,16 +63,22 @@ async function measuredAttempt(request, metadata, operation) {
       durationMs: completedMs - startedMs,
       status: 'succeeded',
       ...attemptIdentity(request, metadata),
-      providerTaskId: result?.taskId ?? result?.promptRef ?? null,
+      providerTaskId: result?.taskId ?? result?.promptRef ?? providerTaskId,
       stageTimings: result?.stageTimings ?? null,
       usage: result?.usage ?? null,
       estimatedCostUsd: finiteOrNull(result?.estimatedCostUsd),
-    });
+      outputArtifact,videoArtifact,
+    };
+    await ledger.event(event);
+    await emitAttempt(request,event);
     if (result && typeof result === 'object' && !result.generationAttemptId) result.generationAttemptId = attemptId;
     return result;
   } catch (error) {
+    // Transport failures are not proof of non-acceptance. Disable the adapter's
+    // old transient-error retry loop, including timeout and lost response cases.
+    error.noRetry=error.noRetry||Boolean(providerTaskId)||error.statusCode!==429;error.attemptId=attemptId;error.taskId??=providerTaskId;
     const completedMs = now();
-    await emitAttempt(request, {
+    const event={
       schemaVersion: 1,
       attemptId,
       startedAt,
@@ -73,7 +94,9 @@ async function measuredAttempt(request, metadata, operation) {
         statusCode: Number.isInteger(error?.statusCode) ? error.statusCode : null,
         message: safeText(error?.message, 500) || 'Generation attempt failed.',
       },
-    });
+    };
+    try{await ledger.event({...event,status:'needs-recovery'});}catch{ /* durable intent remains unresolved */ }
+    await emitAttempt(request,event);
     throw error;
   }
 }
@@ -104,6 +127,10 @@ function attemptIdentity(request, metadata) {
     frameNumber: metadata.frameNumber ?? request?.frameNumber ?? null,
     attemptNumber: metadata.attemptNumber ?? request?.attemptNumber ?? 1,
     referenceCount: request?.referenceImages?.length ?? null,
+    buildJobId:request?.context?.buildJobId??null,
+    style:request?.context?.artStyle??null,
+    resolution:request?.resolution??metadata.resolution??null,
+    measurementKind:metadata.measurementKind??request?.context?.measurementKind??'provider',
   };
 }
 

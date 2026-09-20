@@ -227,7 +227,7 @@ export class CharacterCreationPipeline {
     };
     const providerStartedAt = Date.now();
     const result = isVideoGenerator
-      ? await generateWorkbenchVideoRow({characterId,moveId:resolvedMoveId,prompt,provider:generator==='pruna-video'?'pruna':'fal',task:request.task,storage,repository,onProgress:context.onProgress,onGenerationAttempt:request.onGenerationAttempt})
+      ? await generateWorkbenchVideoRow({characterId,moveId:resolvedMoveId,prompt,provider:generator==='pruna-video'?'pruna':'fal',task:request.task,storage,repository,referenceAssetKey:referenceAssetKeys[0],buildJobId:context.buildJobId,onProgress:context.onProgress,onGenerationAttempt:request.onGenerationAttempt})
       : await imageGenerator.generateImage(request);
     const providerWallMs = Date.now() - providerStartedAt;
 

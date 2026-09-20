@@ -36,7 +36,7 @@ export class CharacterBuildJobs {
     return {request,state};
   }
   view({request,state}){
-    const disconnected=ACTIVE.has(state.status)&&(request.sessionId!==this.sessionId||(!this.live.has(request.id)&&!this.pending.some(job=>job.request.id===request.id)));
+    const disconnected=ACTIVE.has(state.status)&&!this.live.has(request.id)&&!this.pending.some(job=>job.request.id===request.id);
     return {...state,id:request.id,characterId:request.characterId,tool:request.tool,row:request.input.moveId??null,
       createdAt:request.createdAt,status:disconnected?'needs-recovery':state.status,
       phase:disconnected?'Previous executor not attached; no automatic retry':state.phase,
@@ -44,10 +44,29 @@ export class CharacterBuildJobs {
       durationMs:state.completedAt?Date.parse(state.completedAt)-Date.parse(request.createdAt):Date.now()-Date.parse(request.createdAt),
       progress:this.live.get(request.id)?.progress??null,
       canResolve:['needs-recovery','failed','blocked'].includes(disconnected?'needs-recovery':state.status),
+      canResume:['needs-recovery','failed'].includes(disconnected?'needs-recovery':state.status)&&request.tool==='generate_sprite_sheet'&&Boolean(state.generationResult?.asset?.key&&state.sourceArtifact),
       inputSummary:{generator:request.input.generator??'configured image API',spriteProfile:request.input.spriteProfile??null},
     };
   }
-  async get(characterId,id){return this.view(await this.raw(characterId,id));}
+  async get(characterId,id){
+    const job=this.view(await this.raw(characterId,id));
+    if(job.canResolve){
+      // A process may die before the job callback sees any attempt. The ledger
+      // is authoritative for accepted IDs, independently of job completion.
+      const keys=(await this.storage.list('generation-attempts')).filter(key=>key.endsWith('/intent.json'));
+      const observations=new Map((job.attempts??[]).map(attempt=>[attempt.attemptId,attempt]));
+      for(const key of keys){
+        const intent=await this.storage.getJson(key);
+        if(intent.characterId!==characterId||intent.buildJobId!==id)continue;
+        const eventKeys=await this.storage.list(key.replace('/intent.json','/events'));
+        const events=await Promise.all(eventKeys.sort().map(eventKey=>this.storage.getJson(eventKey)));
+        const accepted=events.findLast(event=>event.providerTaskId);
+        observations.set(intent.attemptId,{...intent,...observations.get(intent.attemptId),providerTaskId:accepted?.providerTaskId??null});
+      }
+      job.attempts=[...observations.values()];
+    }
+    return job;
+  }
   async list(characterId){
     segment(characterId);
     const keys=(await this.storage.list(`build-jobs/${characterId}`)).filter(k=>k.endsWith('/request.json'));
@@ -62,12 +81,16 @@ export class CharacterBuildJobs {
   async admit(characterId,{idempotencyKey:id,tool,input}){
     const root=this.root(characterId,id);
     if(!TOOLS.has(tool))throw failure('This build lane supports identity images and animation rows only.');
-    const allowed=new Set(['characterId','prompt','moveId','spriteProfile','generator']);
+    const allowed=new Set(['characterId','prompt','moveId','spriteProfile','generator','referenceAssetKeys']);
     if(!input||Array.isArray(input)||Object.keys(input).some(k=>!allowed.has(k))||input.characterId!==characterId)throw failure('Invalid build inputs. Use stored references, not credentials or inline uploads.');
     if(typeof input.prompt!=='string'||!input.prompt.trim()||input.prompt.length>16000)throw failure('A prompt of 1–16000 characters is required.');
     if(input.moveId!==undefined&&!/^[a-z][a-z0-9_-]*$/.test(input.moveId))throw failure('Invalid animation row.');
     if(input.generator!==undefined&&!['image','video','pruna-video'].includes(input.generator))throw failure('Invalid generator.');
     if(input.spriteProfile!==undefined&&!['standard','wide'].includes(input.spriteProfile))throw failure('Invalid sprite profile.');
+    if(input.referenceAssetKeys!==undefined){
+      if(!Array.isArray(input.referenceAssetKeys)||input.referenceAssetKeys.length<1||input.referenceAssetKeys.length>4||input.referenceAssetKeys.some(key=>typeof key!=='string'||!key.startsWith(`characters/${characterId}/assets/`)||key.split('/').some(part=>!part||part==='.'||part==='..')||key.includes('\\')))throw failure('Reference assets must be owned by this character.');
+      for(const key of input.referenceAssetKeys)if(!await this.storage.exists(key))throw failure('Pinned reference asset is missing.');
+    }
     const inputHash=digest(Buffer.from(stableJson({tool,input})));
     if(await this.storage.exists(`${root}/request.json`)){
       const prior=await this.raw(characterId,id);
@@ -83,7 +106,8 @@ export class CharacterBuildJobs {
     }
     if(this.pending.length>=20)throw failure('Build lane is full. Try after current jobs finish.',429);
     const draft=await this.repository.getDraft(characterId);
-    const request={schemaVersion:1,id,characterId,tool,input,inputHash,sessionId:this.sessionId,createdAt:new Date().toISOString(),draftUpdatedAt:draft.updatedAt};
+    const referenceDigests=Object.fromEntries(await Promise.all((input.referenceAssetKeys??[]).map(async key=>[key,digest(await this.storage.getBytes(key))])));
+    const request={schemaVersion:1,id,characterId,tool,input,inputHash,referenceDigests,sessionId:this.sessionId,createdAt:new Date().toISOString(),draftUpdatedAt:draft.updatedAt};
     // Persistence must succeed before any executor/provider is invoked.
     await this.storage.lineage.immutable(`${root}/request.json`,Buffer.from(JSON.stringify(request)),{contentType:'application/json'});
     const state=await this.write(request,{status:'queued',phase:'Waiting for build lane',attempts:[]});
@@ -110,12 +134,18 @@ export class CharacterBuildJobs {
         if(draft.updatedAt!==request.draftUpdatedAt){
           state=await this.write(request,{...state,status:'blocked',phase:'Draft changed before execution; no provider call',completedAt:new Date().toISOString()});return;
         }
+        for(const [key,expected] of Object.entries(request.referenceDigests??{})){
+          if(!await this.storage.exists(key)||digest(await this.storage.getBytes(key))!==expected){
+            state=await this.write(request,{...state,status:'blocked',phase:'Pinned reference changed before execution; no provider call',completedAt:new Date().toISOString()});return;
+          }
+        }
         state=await this.write(request,{...state,status:'running',phase:'Generating and saving candidate',startedAt:new Date().toISOString()});
         const generationStart=Date.now();
         const result=await this.invoke(request.tool,{...request.input,context});
         const generationMs=Date.now()-generationStart;
         // Keep the returned source even if extraction subsequently fails.
-        state=await this.write(request,{...state,generationResult:safeProvenance(result),attempts,generationMs});
+        const sourceArtifact=result.asset?.key&&await this.storage.exists(result.asset.key)?await this.storage.lineage.artifact(await this.storage.getBytes(result.asset.key),{contentType:(await this.storage.getMetadata(result.asset.key))?.contentType}):null;
+        state=await this.write(request,{...state,generationResult:safeProvenance(result),sourceArtifact,attempts,generationMs});
         let extraction=null;
         if(request.tool==='generate_sprite_sheet'&&!result.framesReady){
           state=await this.write(request,{...state,status:'extracting',phase:'Extracting saved source · no generation'});
@@ -139,5 +169,27 @@ export class CharacterBuildJobs {
     if(this.live.has(id)||!job.canResolve)throw failure('This job cannot be resolved while it is executing or already complete.',409);
     const state=await this.write(entry.request,{...entry.state,status:'resolved',phase:'Resolved by operator · no retry submitted',resolution:cleanText(note),completedAt:entry.state.completedAt??new Date().toISOString()});
     return this.view({...entry,state});
+  }
+  async resume(characterId,id,{confirmed}={}){
+    if(confirmed!==true)throw failure('Confirm the previous worker has stopped before recovering saved output.');
+    // Serialize against resolution and other recovery requests in this process.
+    const run=()=>this.repository.withMutation(characterId,async()=>{
+      const entry=await this.raw(characterId,id),job=this.view(entry);
+      if(this.live.has(id)||!job.canResume)throw failure('No saved source is available for extraction recovery. Inspect provider history; no generation was submitted.',409);
+      const {request}=entry;let state=entry.state;
+      const source=state.generationResult.asset.key;
+      if(!await this.storage.exists(source))throw failure('Saved source is missing. Recover its archived version from History first.',409);
+      if(digest(await this.storage.getBytes(source))!==state.sourceArtifact.sha256)throw failure('Saved source changed since this job. Restore its pinned archived version from History before extracting.',409);
+      this.live.set(id,{progress:null});
+      try{
+        state=await this.write(request,{...state,status:'extracting',phase:'Recovering saved source · no provider submission'});
+        const extraction=await this.invoke('extract_row_frames',{characterId,sourceAssetKey:source,moveId:request.input.moveId??'base',spriteProfile:request.input.spriteProfile,context:{buildJobId:id}});
+        state=await this.write(request,{...state,status:'completed',phase:'Recovered frames saved · visual review required',result:{...state.generationResult,framesReady:true,extraction},error:null,completedAt:new Date().toISOString()});
+      }catch(error){
+        state=await this.write(request,{...state,status:'needs-recovery',phase:'Saved source recovery stopped · no generation',error:cleanText(error.message)});
+      }finally{this.live.delete(id);}
+      return this.view({request,state});
+    });
+    const result=this.admission.catch(()=>{}).then(run);this.admission=result;return result;
   }
 }

@@ -5,6 +5,8 @@
 import {moveContacts,moveGrabs,frameAdvantage,patchMove,REACTION_FIELDS,GEOMETRY_FIELDS,GRIP_FIELDS} from './moveInspector.js';
 import { mountCharacterHistory } from './characterHistory.js';
 import {runBuildJob,mountBuildJobs} from './buildJobs.js';
+import {mountBuildPlans} from './buildPlans.js';
+import {mountBenchmarks} from './benchmarks.js';
 import { mountCharacterComponents } from './characterComponents.js';
 import { renderReference, renderPreview, mountPreview } from './workbenchPreview.js';
 import {renderReadiness,renderMotionReview} from './publishReadiness.js';
@@ -23,11 +25,22 @@ const ROUTE_PREFIX=location.pathname.startsWith('/cms-admin')?'/cms-admin':'';
 if(EMBEDDED)document.body.classList.add('studio-embedded');
 window.addEventListener('message', event => {
   if(event.origin !== location.origin || event.source !== window.parent || event.data?.type !== 'studio-workspace') return;
+  if(event.data.workspace==='pipeline'){
+    if(getCurrentRoute().page!=='pipeline')navigateTo('/pipeline');
+    document.getElementById('pipeline-benchmarks')?.scrollIntoView({block:'start'});
+    return;
+  }
+  if(getCurrentRoute().page==='pipeline')navigateTo(state.currentCharacterId?`/roster/${state.currentCharacterId}`:'/roster');
   setOpsTab(event.data.workspace === 'pipeline' ? 'pipeline' : 'activity');
   document.querySelector(event.data.workspace === 'pipeline'?'.ops-panel':'#character-workbench')?.scrollIntoView({block:'start'});
 });
 const animationLabLink = document.getElementById('animation-lab-link');
 if (animationLabLink) animationLabLink.href = `${TESTBED_BASE_URL}/animation-lab.html`;
+const benchmarkLink=document.querySelector('.benchmark-route');
+if(benchmarkLink){
+  benchmarkLink.href=`${ROUTE_PREFIX}/pipeline`;
+  benchmarkLink.addEventListener('click',event=>{event.preventDefault();navigateTo('/pipeline');});
+}
 
 function openTestbed(characterId) {
   if (!characterId) return;
@@ -66,8 +79,11 @@ function navigateTo(path) {
 function handleRouteChange() {
   const route = getCurrentRoute();
   if (route.page === 'pipeline') {
-    // Legacy route: pipeline now lives in the ops column, no workbench detour.
     renderEmptyWorkbench('Select a fighter to inspect moves, frames, animation, stats, and assets.');
+    elements.characterWorkbench.classList.remove('empty-state');
+    elements.selectedCharacter.textContent='Generation benchmarks';
+    elements.characterWorkbench.innerHTML='<section id="pipeline-benchmarks" aria-label="Generation benchmarks"></section>';
+    mountBenchmarks({host:document.getElementById('pipeline-benchmarks')});
     setOpsTab('pipeline');
   } else if (route.isNew) {
     renderNewFighterWorkbench();
@@ -805,38 +821,13 @@ function formatStageTimings(stages, prefix = '') {
   return values.join(' · ');
 }
 
-// The base row defines the fighter's look and scale, so it must exist before
-// the other rows generate — they all attach it as a reference image. Once it
-// does, missing state and authored-move rows run sequentially. Each submitted
-// job survives refresh; the unsubmitted remainder of this loop does not.
+// Bulk work is planned durably, with review and spending checkpoints.
 async function generateAllRows() {
-  const characterId = currentCharacterId();
-  if (!characterId) return;
-
-  const rows=[...new Set(['idle','walk_forward','walk_back','jump','landing','crouch','block','hurt','getup',...(state.currentDraftData?.moves??[]).map(m=>m.animation)])];
-  const pending=rows.filter(id=>state.currentDraftData?.motionRows?.[id]?.status!=='approved');
-  if(!confirm(`Generate ${pending.length} action videos${hasBaseSheet(characterId)?'':' and a base image'} (paid API calls, one at a time)? Every row needs visual approval. Refreshing keeps the submitted job, but stops the remaining batch.`))return;
-
-  if (!hasBaseSheet(characterId)) {
-    log('Generating base row first — it anchors the look of every other row.');
-    const base = await generateMoveRow('base');
-    if (!base) {
-      log('Base row failed — skipping the remaining rows. Fix the base row and try again.', 'error');
-      return;
-    }
-  } else {
-    log('Base sheet already exists — generating missing motion rows against it. Regenerate the base row from its card if you want a fresh look.');
-  }
-
-  if(state.currentCharacterId!==characterId)return;
-  await invokeTool('update_character_draft',{characterId,patch:{requireMotionCoverage:true},note:'Require complete reviewed motion before publishing'});
-  for(const id of pending){
-    if(state.currentCharacterId!==characterId){log('Batch paused after navigation. Submitted jobs are preserved.');return;}
-    const method=state.rowGenerators[`${characterId}:${id}`]??state.currentDraftData?.videoGenerator??'video';state.rowGenerators[`${characterId}:${id}`]=method==='image'?'video':method;
-    const select=elements.characterWorkbench.querySelector(`[data-row-generator="${id}"]`);if(select)select.value=state.rowGenerators[`${characterId}:${id}`];
-    if(!await generateMoveRow(id)){log('Motion batch stopped after a failure. Completed rows are preserved; inspect Build activity before resuming.','error');return;}
-  }
-  log('Motion candidates generated. Review and approve each row; generation alone is not completion.','pass');
+  if(!currentCharacterId())return;
+  const panel=document.getElementById('character-build-plans');
+  panel?.querySelectorAll('details').forEach(details=>{details.open=true;});
+  panel?.scrollIntoView({block:'start',behavior:'smooth'});
+  log('Create or continue a saved build plan. Review its dependencies and budget before submitting a generation.');
 }
 
 async function generateSheet() {
@@ -1287,7 +1278,7 @@ function renderNextStepBanner(stage) {
         </div>
         <div style="display:flex;gap:8px;flex-direction:column;align-items:stretch">
           <button id="cta-generate-concept" class="next-step-action" type="button">Generate Concept</button>
-          <button id="cta-generate-sheet" class="next-step-action" type="button" style="font-size:12px;padding:7px 14px;background:#26303c;border-color:var(--accent-2);color:var(--accent-2)">Skip — Generate Rows</button>
+          <button id="cta-generate-sheet" class="next-step-action" type="button" style="font-size:12px;padding:7px 14px;background:#26303c;border-color:var(--accent-2);color:var(--accent-2)">Plan animation build</button>
         </div>
       </div>
     `;
@@ -1299,9 +1290,9 @@ function renderNextStepBanner(stage) {
         <div>
           <div class="next-step-label">Next Step</div>
           <p class="next-step-title">Generate Sprite Rows</p>
-          <p class="next-step-detail">The base locks the look and scale. Movement, reactions, and each authored move then get video motion candidates, two at a time. Review each candidate before publishing.</p>
+          <p class="next-step-detail">Review the identity first, then a representative motion before the remaining rows. A saved plan tracks dependencies, spending limits and review checkpoints.</p>
         </div>
-        <button id="cta-generate-sheet" class="next-step-action" type="button">Generate All Rows</button>
+        <button id="cta-generate-sheet" class="next-step-action" type="button">Plan animation build</button>
       </div>
     `;
   }
@@ -1573,6 +1564,7 @@ function renderCharacterWorkbench(draft, assets) {
     <details class="combat-rules-editor"><summary>Advanced combat rules · stats, power-ups & hidden forms</summary><p>Multipliers use 1 as neutral. Forms contain a complete config with parentId and selectable:false. Save updates the draft; publish separately to ship it.</p><textarea id="advanced-combat-json" aria-label="Advanced combat JSON" rows="12">${escapeHtml(JSON.stringify({combatStats:draft.combatStats??{},powerUps:draft.powerUps??[],forms:draft.forms??[]},null,2))}</textarea><button type="button" data-save-combat>Save combat rules to draft</button><span id="combat-save-status" role="status"></span></details>
     <section id="publish-readiness" class="publish-readiness" aria-live="polite"><p>Checking current assets, reviews and QA…</p></section>
     <section id="character-build-jobs" aria-label="Build activity"></section>
+    <section id="character-build-plans" aria-label="Build plans"></section>
     <details class="character-history" id="character-history"></details>
     <section id="character-components" class="character-components"></section>
     ${renderPreview(detail)}
@@ -1587,7 +1579,7 @@ function renderCharacterWorkbench(draft, assets) {
   // All workbench buttons are handled by the delegated click handler —
   // no per-render listener attachment.
   const previewHost = document.getElementById('workbench-preview');
-  elements.characterWorkbench.querySelector('.character-summary').after(document.getElementById('character-build-jobs'),document.getElementById('publish-readiness'),previewHost, elements.characterWorkbench.querySelector('.reference-review'));
+  elements.characterWorkbench.querySelector('.character-summary').after(document.getElementById('character-build-plans'),document.getElementById('character-build-jobs'),document.getElementById('publish-readiness'),previewHost, elements.characterWorkbench.querySelector('.reference-review'));
   previewHost.insertAdjacentHTML('beforeend','<section id="motion-review" class="motion-review" hidden></section>');
   previewHost.addEventListener('change',event=>{if(event.target.matches('[data-preview-row]'))document.getElementById('motion-review').hidden=true;});
   previewHost.addEventListener('click',event=>{if(event.target.closest('[data-preview-testbed],[data-preview-close]'))document.getElementById('motion-review').hidden=true;});
@@ -1602,6 +1594,8 @@ function renderCharacterWorkbench(draft, assets) {
   mountBuildJobs({host:document.getElementById('character-build-jobs'),characterId:draft.id,
     onReload:async()=>{await selectCharacter(draft.id,{silent:true,pushState:false});document.getElementById('character-build-jobs')?.scrollIntoView({block:'start'});},
     onHistory:()=>{const panel=document.getElementById('character-history');panel.open=true;panel.scrollIntoView({block:'start'});}});
+  mountBuildPlans({host:document.getElementById('character-build-plans'),characterId:draft.id,
+    onReload:async()=>{await selectCharacter(draft.id,{silent:true,pushState:false});document.getElementById('character-build-plans')?.scrollIntoView({block:'start'});}});
 }
 
 async function saveAuthoring() {

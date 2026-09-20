@@ -8,6 +8,7 @@ import { FalVideoGeneratorAdapter, FAL_VIDEO_MODELS, videoPayload, publicHttpsUr
 import { emitAttempt } from '../cms/pipeline/generationAttemptTelemetry.js';
 import {PrunaVideoGeneratorAdapter,PRUNA_VIDEO_MODEL,prunaVideoPayload} from '../cms/pipeline/adapters/prunaVideoGeneratorAdapter.js';
 import { createCmsStorage } from '../cms/storage/createCmsStorage.js';
+import {GenerationAttemptLedger} from '../cms/pipeline/GenerationAttemptLedger.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -46,7 +47,8 @@ export function parseVideoArgs(args) {
   return result;
 }
 
-export async function runVideoJob(options, { adapter, log = console.log, onGenerationAttempt, storage = createCmsStorage(), characterId = null, moveId = null } = {}) {
+export async function runVideoJob(options, { adapter, log = console.log, onGenerationAttempt, storage = createCmsStorage(), characterId = null, moveId = null, buildJobId = null } = {}) {
+  const ledger=new GenerationAttemptLedger(storage.lineage);
   onGenerationAttempt ??= async event=>{
     const key=`benchmarks/generation-attempts/${event.startedAt.slice(0,10)}/${event.attemptId}-${event.completedAt.replaceAll(':','-').replaceAll('.','-')}.json`;
     await storage.putJson(key,{...event,characterId,moveId,benchmarkKey:key});
@@ -77,6 +79,7 @@ export async function runVideoJob(options, { adapter, log = console.log, onGener
   const archiveCheckpoint = async () => {
     const artifact = await storage.lineage.artifact(Buffer.from(`${JSON.stringify(job, null, 2)}\n`), { contentType: 'application/json' });
     await storage.lineage.event(characterId, { type: 'video-checkpoint', stage: 'video-generation', moveId, attemptId: job.generationAttempt?.attemptId, provider, model: job.model, transportStatus: job.transportStatus, artifact, directory, references: job.archivedReferences ?? [], output: job.archivedOutput ?? null });
+    await ledger.event({...videoAttemptEvent(job),characterId,moveId,buildJobId:job.buildJobId??buildJobId,status:job.transportStatus==='downloaded'?'succeeded':job.task?.requestId?'accepted':'needs-recovery',checkpointArtifact:artifact,outputArtifact:job.archivedOutput??null});
   };
   try {
     if (options.resume) {
@@ -107,7 +110,7 @@ export async function runVideoJob(options, { adapter, log = console.log, onGener
       // Validate payload and files before reserving or making a billable request.
       const payload = provider==='pruna'?prunaVideoPayload(request):videoPayload(request);
       job = {
-        schemaVersion: 1, provider, model: provider==='pruna'?PRUNA_VIDEO_MODEL:FAL_VIDEO_MODELS[options.mode], mode: options.mode,
+        schemaVersion: 1, provider, buildJobId, model: provider==='pruna'?PRUNA_VIDEO_MODEL:FAL_VIDEO_MODELS[options.mode], mode: options.mode,
         createdAt: new Date().toISOString(), transportStatus: 'submitting', qualityStatus: 'unreviewed',
         request: { prompt: options.prompt, duration: payload.duration ?? null, resolution:payload.resolution??null,recipe:payload.mode??null,orientation: payload.character_orientation ?? null, audio: provider==='pruna', references, payloadSha256: sha256(JSON.stringify(payload)) },
         submissionAttempts: 1,
@@ -120,6 +123,7 @@ export async function runVideoJob(options, { adapter, log = console.log, onGener
       }
       // An existing job is never overwritten, even if the prior submit was uncertain.
       await durableWrite(jobPath, `${JSON.stringify(job, null, 2)}\n`, 'wx');
+      await ledger.intent({...videoAttemptEvent(job),characterId,moveId,buildJobId,style:null,resolution:payload.resolution??null,measurementKind:adapter.provider==='fixture'?'fixture':'provider'});
       await archiveCheckpoint(); // storage must work BEFORE the paid submission
       const submissionStartedAt = Date.now();
       job.task = await adapter.submit(request);

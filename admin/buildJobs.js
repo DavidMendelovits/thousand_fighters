@@ -46,7 +46,8 @@ function renderJob(job){
     <p>${escape(job.phase)}</p>
     <p class="build-metrics"><time data-build-duration="${escape(job.id)}">${elapsed(job.durationMs)}</time> elapsed${Number.isFinite(job.generationMs)?` · generation & save ${elapsed(job.generationMs)}`:''}${Number.isFinite(job.extractionMs)?` · extraction ${elapsed(job.extractionMs)}`:''} · ${escape(job.inputSummary.generator)}${cost}</p>
     ${job.error?`<p class="build-error">${escape(job.error)}</p>`:''}
-    <div class="build-job-actions">${job.status==='completed'?'<button type="button" data-build-reload>Reload saved draft</button>':''}<button type="button" data-build-history>Open asset history</button>${typeof source==='string'&&source.startsWith('/api/assets/')?`<a href="${escape(source)}" target="_blank" rel="noopener">Saved source ↗</a>`:''}</div>
+    ${job.canResolve?attempts.filter(a=>a.attemptId&&a.providerTaskId).map(a=>['bfl-klein','minimax-h3'].includes(a.provider)||(a.provider==='fal'&&a.kind==='image')?`<p><button type="button" data-attempt-recover="${escape(a.attemptId)}">Recover ${escape(a.provider)} result</button> Task ${escape(a.providerTaskId)} · archives a candidate; does not install or approve it.</p>`:`<p>${escape(a.provider)} task ${escape(a.providerTaskId)}: use Open asset history, select its video checkpoint, then Resume. No new submission.</p>`).join(''):''}
+    <div class="build-job-actions">${job.status==='completed'?'<button type="button" data-build-reload>Reload saved draft</button>':''}${job.canResume?`<button type="button" data-build-resume="${escape(job.id)}">Recover saved frames</button>`:''}<button type="button" data-build-history>Open asset history</button>${typeof source==='string'&&source.startsWith('/api/assets/')?`<a href="${escape(source)}" target="_blank" rel="noopener">Saved source ↗</a>`:''}</div>
     ${job.canResolve?`<details class="build-recovery"><summary>Resolve interrupted build</summary><p>Check asset history and the provider task first. If a video or image was saved, recover it from History instead of paying to regenerate. This action only unlocks the build lane; it does not retry or recover assets.</p><label><input type="checkbox" data-build-confirm> I confirmed the previous worker has stopped and checked its output.</label><label>What did you check?<textarea data-build-note rows="2" minlength="10" maxlength="1000" placeholder="Record the saved output or failed task you checked"></textarea></label><button type="button" data-build-resolve="${escape(job.id)}">Resolve without retrying</button><p data-build-resolution-status role="status"></p></details>`:''}
     ${job.resolution?`<p>Resolution: ${escape(job.resolution)}</p>`:''}
     <details class="build-diagnostics"><summary>Job details</summary><p>${escape(job.id)} · ${escape(job.createdAt)}</p><p>${attempts.length} recorded attempt observation(s). Detailed attempt benchmarks and lineage remain in History; missing cost is unknown, not free.</p></details>
@@ -78,6 +79,20 @@ export function mountBuildJobs({host,characterId,onReload,onHistory}){
     const button=event.target.closest('button');if(!button)return;
     if(button.matches('[data-build-refresh]'))return void refresh();
     if(button.matches('[data-build-history]'))return onHistory();
+    if(button.matches('[data-attempt-recover]')){
+      if(!confirm('Confirm the previous worker has stopped. Poll and archive the existing provider task? This does not submit a new generation or install the recovered candidate.'))return;
+      button.disabled=true;
+      try{const result=await json(`/api/characters/${encodeURIComponent(characterId)}/generation-attempts/${encodeURIComponent(button.dataset.attemptRecover)}/recover`,{confirmed:true});message.textContent=`Recovered candidate archived at ${result.outputArtifact?.key??'asset history'}. Installation and visual review are still required.`;}
+      catch(error){message.textContent=error.message;}finally{button.disabled=false;}
+      return;
+    }
+    if(button.matches('[data-build-resume]')){
+      if(!confirm('Confirm the previous worker has stopped. Recover frames from the saved source? No new generation will be submitted.'))return;
+      button.disabled=true;
+      try{await json(`${endpoint(characterId)}/${button.dataset.buildResume}/resume`,{confirmed:true});await refresh();}
+      catch(error){message.textContent=error.message;}finally{button.disabled=false;}
+      return;
+    }
     if(button.matches('[data-build-reload]')){
       if(confirm('Reload the saved draft? Unsaved edits in this workbench will be discarded.'))await onReload();
       return;

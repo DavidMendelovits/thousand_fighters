@@ -13,6 +13,9 @@ import { resumeArchivedVideo } from '../pipeline/resumeArchivedVideo.js';
 import { workbenchLibrary, workbenchDetail, updateWorkbench, workbenchReviewClip } from '../authoring/workbenchLibrary.js';
 import {publishReadiness} from '../authoring/publishReadiness.js';
 import {CharacterBuildJobs} from '../jobs/CharacterBuildJobs.js';
+import {CharacterBuildPlans} from '../plans/CharacterBuildPlans.js';
+import {BenchmarkService} from '../benchmarks/BenchmarkService.js';
+import {recoverGenerationAttempt} from '../pipeline/recoverGenerationAttempt.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -22,13 +25,15 @@ export function createCmsServer(options = {}) {
   const runtime = options.runtime ?? createLocalCmsRuntime(options.runtimeOptions ?? {});
   const adminRoot = path.resolve(options.adminRoot ?? DEFAULT_ADMIN_ROOT);
   const buildJobs=new CharacterBuildJobs({storage:runtime.storage,repository:runtime.repository,invoke:(name,input)=>invokeTrackedTool(runtime,name,input)});
+  const buildPlans=new CharacterBuildPlans({storage:runtime.storage,repository:runtime.repository,buildJobs});
+  const benchmarks=new BenchmarkService({storage:runtime.storage,repository:runtime.repository,...options.benchmarkOptions});
 
   return http.createServer(async (request, response) => {
     try {
       const url = new URL(request.url ?? '/', `http://${request.headers.host ?? '127.0.0.1'}`);
 
       if (url.pathname.startsWith('/api/')) {
-        await handleApiRequest({ request, response, url, runtime, buildJobs });
+        await handleApiRequest({ request, response, url, runtime, buildJobs, buildPlans, benchmarks });
         return;
       }
 
@@ -39,13 +44,37 @@ export function createCmsServer(options = {}) {
   });
 }
 
-async function handleApiRequest({ request, response, url, runtime, buildJobs }) {
-  const buildMatch=url.pathname.match(/^\/api\/characters\/([^/]+)\/build-jobs(?:\/([^/]+)(\/resolve)?)?$/);
+async function handleApiRequest({ request, response, url, runtime, buildJobs, buildPlans, benchmarks }) {
+  const recoveryMatch=url.pathname.match(/^\/api\/characters\/([^/]+)\/generation-attempts\/([^/]+)\/recover$/);
+  if(recoveryMatch&&request.method==='POST'){
+    const body=await readJsonBody(request);
+    sendJson(response,await recoverGenerationAttempt({storage:runtime.storage,characterId:segment(decodeURIComponent(recoveryMatch[1])),attemptId:recoveryMatch[2],confirmed:body.confirmed,
+      isBuildActive:id=>buildJobs.live.has(id)||buildJobs.pending.some(job=>job.request.id===id)}));return;
+  }
+  if(url.pathname==='/api/benchmarks'&&request.method==='GET'){
+    sendJson(response,await benchmarks.report(Object.fromEntries(url.searchParams)));return;
+  }
+  const trialMatch=url.pathname.match(/^\/api\/benchmark-trials(?:\/([^/]+)(\/(?:run|resume))?)?$/);
+  if(trialMatch){
+    if(request.method==='GET'&&!trialMatch[2]){sendJson(response,trialMatch[1]?{trial:await benchmarks.getTrial(trialMatch[1])}:{trials:await benchmarks.listTrials()});return;}
+    if(request.method==='POST'&&!trialMatch[1]){sendJson(response,{trial:await benchmarks.createTrial(await readJsonBody(request))},201);return;}
+    if(request.method==='POST'&&trialMatch[2]){sendJson(response,await benchmarks[trialMatch[2]==='/run'?'runTrial':'resumeTrial'](trialMatch[1],await readJsonBody(request)),202);return;}
+    throw Object.assign(new Error('Unsupported benchmark trial operation'),{statusCode:405});
+  }
+  const planMatch=url.pathname.match(/^\/api\/characters\/([^/]+)\/build-plans(?:\/([^/]+)(\/(?:advance|review))?)?$/);
+  if(planMatch){
+    const characterId=segment(decodeURIComponent(planMatch[1])),id=planMatch[2];
+    if(request.method==='GET'&&!planMatch[3]){sendJson(response,id?{plan:await buildPlans.get(characterId,id)}:{plans:await buildPlans.list(characterId)});return;}
+    if(request.method==='POST'&&!id){sendJson(response,{plan:await buildPlans.create(characterId,await readJsonBody(request))},201);return;}
+    if(request.method==='POST'&&planMatch[3]){sendJson(response,{plan:await buildPlans[planMatch[3].slice(1)](characterId,id,await readJsonBody(request))},202);return;}
+    throw Object.assign(new Error('Unsupported build plan operation'),{statusCode:405});
+  }
+  const buildMatch=url.pathname.match(/^\/api\/characters\/([^/]+)\/build-jobs(?:\/([^/]+)(\/(?:resolve|resume))?)?$/);
   if(buildMatch){
     const characterId=segment(decodeURIComponent(buildMatch[1])),id=buildMatch[2];
     if(request.method==='GET'&&!buildMatch[3]){sendJson(response,id?{job:await buildJobs.get(characterId,id)}:{jobs:await buildJobs.list(characterId)});return;}
     if(request.method==='POST'&&!id){sendJson(response,await buildJobs.submit(characterId,await readJsonBody(request)),202);return;}
-    if(request.method==='POST'&&buildMatch[3]){sendJson(response,{job:await buildJobs.resolve(characterId,id,await readJsonBody(request))});return;}
+    if(request.method==='POST'&&buildMatch[3]){sendJson(response,{job:await buildJobs[buildMatch[3].slice(1)](characterId,id,await readJsonBody(request))});return;}
     throw Object.assign(new Error('Unsupported build job operation'),{statusCode:405});
   }
   if (request.method === 'GET' && url.pathname === '/api/status') {

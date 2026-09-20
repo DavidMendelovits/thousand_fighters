@@ -24,7 +24,7 @@ export async function generateWorkbenchVideoRow(request) {
   finally { inFlight.delete(key); }
 }
 
-async function generateExclusive({characterId,moveId,prompt,task,storage,repository,onProgress,onGenerationAttempt,provider='fal'}) {
+async function generateExclusive({characterId,moveId,prompt,task,storage,repository,onProgress,onGenerationAttempt,buildJobId,referenceAssetKey,provider='fal'}) {
   const started=Date.now();
   const stageTimings={};
   const keyName=provider==='pruna'?'PRUNA_API_KEY':'FAL_KEY';
@@ -34,7 +34,7 @@ async function generateExclusive({characterId,moveId,prompt,task,storage,reposit
   const packRoot=draft.assets?.rootKey??`characters/${characterId}/assets/fighter-pack`;
   const frameData=await storage.exists(`${packRoot}/frameData.json`)?await storage.getJson(`${packRoot}/frameData.json`):null;
   const {actorId,referenceFile}=motionActorReference(draft,moveId,frameData);
-  const referenceKey=`${draft.assets?.rootKey??`characters/${characterId}/assets/fighter-pack`}/${referenceFile}`;
+  const referenceKey=referenceAssetKey??`${draft.assets?.rootKey??`characters/${characterId}/assets/fighter-pack`}/${referenceFile}`;
   const referenceLoadStartedAt=Date.now();
   if(!await storage.exists(referenceKey))throw new Error('Generate and extract the base row before creating video motion.');
   const bytes=await storage.getBytes(referenceKey);
@@ -71,7 +71,7 @@ async function generateExclusive({characterId,moveId,prompt,task,storage,reposit
     resume?{resume:directory}:{provider,mode:'image-to-video',image:path.join(directory,'reference.png'),...(provider==='pruna'?{recipe:'quality',...(artStyle==='paint'?{resolution:'768p'}:{}),...(profile.loop?{'end-image':path.join(directory,'reference.png')}:{})}:{}),prompt:motionPrompt,duration:provider==='pruna'?5:profile.duration,output:directory},
     {
       log:message=>onProgress?.({type:'status',message}),
-      storage, characterId, moveId,
+      storage, characterId, moveId, buildJobId,
       ...(onGenerationAttempt?{onGenerationAttempt:event=>onGenerationAttempt({...event,characterId,moveId,operation:'fighter-video-row'})}:{}),
     },
   );
