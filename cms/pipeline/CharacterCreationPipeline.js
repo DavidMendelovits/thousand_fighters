@@ -303,7 +303,7 @@ export class CharacterCreationPipeline {
       generator,
       provider: result.provider ?? imageGenerator.provider ?? 'unknown',
       model: result.model ?? null,
-      referenceCount: referenceImages.length,
+      referenceCount: isVideoGenerator ? (result.referenceKey ? 1 : 0) : referenceImages.length,
       stages: {
         referenceLoadMs,
         providerWallMs,
@@ -324,8 +324,8 @@ export class CharacterCreationPipeline {
 
     // Non-base rows generated without the base sheet drift visually — surface
     // that so callers can warn or regenerate once the base row exists.
-    const referencesUsed = isVideoGenerator?[result.referenceKey??`characters/${characterId}/assets/fighter-pack/sprites/base/base_001.png`]:referenceImages.map((image) => image.sourceKey);
-    const baseReferenceAttached = referencesUsed.some((key) => key.endsWith(`${characterId}_base_sheet.png`)||key.endsWith('/base/base_001.png'));
+    const referencesUsed = isVideoGenerator ? [result.referenceKey].filter(Boolean) : referenceImages.map((image) => image.sourceKey);
+    const baseReferenceAttached = isVideoGenerator ? referencesUsed.length > 0 : referencesUsed.some((key) => key.endsWith(`${characterId}_base_sheet.png`)||key.endsWith('/base/base_001.png'));
 
     return {
       asset,

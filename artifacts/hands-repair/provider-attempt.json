@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "attemptId": "823d7f4e-0c11-4af8-b60d-52614e4b4f54",
+  "startedAt": "2026-09-20T04:04:49.738Z",
+  "completedAt": "2026-09-20T04:06:49.951Z",
+  "durationMs": 120321,
+  "status": "succeeded",
+  "kind": "video",
+  "provider": "pruna",
+  "model": "p-video-2-pro",
+  "operation": "fighter-video-row",
+  "characterId": "palimpsest",
+  "arenaId": null,
+  "moveId": "hands_pinch",
+  "projectileId": null,
+  "frameNumber": null,
+  "attemptNumber": 1,
+  "referenceCount": 1,
+  "providerTaskId": "fja38mqvw5rmr0d0qkybez1rgr",
+  "stageTimings": {
+    "inputPreparationMs": 108,
+    "submissionMs": 1629,
+    "referenceUploadMs": 1308,
+    "predictionSubmissionMs": 321,
+    "providerQueueAndGenerationMs": 117653,
+    "resultLookupMs": 230,
+    "downloadMs": 616,
+    "transportInvocationMs": 120321
+  },
+  "usage": null,
+  "estimatedCostUsd": null,
+  "benchmarkKey": "benchmarks/generation-attempts/2026-09-20/823d7f4e-0c11-4af8-b60d-52614e4b4f54-2026-09-20T04-06-49-951Z.json"
+}

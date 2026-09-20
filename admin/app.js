@@ -7,6 +7,8 @@ import { mountCharacterHistory } from './characterHistory.js';
 import { mountCharacterComponents } from './characterComponents.js';
 import { renderReference, renderPreview, mountPreview } from './workbenchPreview.js';
 import {renderReadiness,renderMotionReview} from './publishReadiness.js';
+import {motionMarkers} from './motionTiming.js';
+import {activeSpriteAssets} from './activeSpriteAssets.js';
 const MOVE_ORDER = ['base', 'punch', 'kick', 'special_1', 'special_2', 'jump', 'crouch', 'dash_forward', 'dash_back', 'block', 'grab', 'throw', 'walk_forward', 'walk_back', 'hurt', 'getup', 'projectiles'];
 
 // Where the Vite-served game (and the single-player testbed) lives. The testbed
@@ -201,6 +203,10 @@ elements.characterWorkbench.addEventListener('input', (event) => {
   const promptInput = event.target.closest('[data-move-prompt]');
   if (!promptInput) return;
   state.movePrompts[`${state.currentCharacterId}:${promptInput.dataset.movePrompt}`] = promptInput.value;
+});
+elements.characterWorkbench.addEventListener('change', event => {
+  const select=event.target.closest('[data-row-generator]');
+  if(select)state.rowGenerators[`${state.currentCharacterId}:${select.dataset.rowGenerator}`]=select.value;
 });
 
 const WORKBENCH_CTA_HANDLERS = {
@@ -624,15 +630,16 @@ const ROW_PROMPT_DESCRIPTIONS = {
 // server still applies the per-row frame arc (rowPromptProfiles.js) on top, so
 // frame roles are NOT duplicated here.
 function buildRowPrompt(moveId) {
+  const saved=state.currentDraftData?.motionPrompts?.[moveId];
+  if(typeof saved==='string'&&saved.trim())return saved.trim();
   const moveDescription = ROW_PROMPT_DESCRIPTIONS[moveId];
-  const actor=(state.currentDraftData?.actors??[]).find(a=>a.idleAnimation===moveId);
   const authoredMoves = (state.currentDraftData?.moves ?? []).filter((move) => move.animation === moveId);
+  const actor=(state.currentDraftData?.actors??[]).find(a=>a.idleAnimation===moveId||authoredMoves.some(m=>m.controlledActor===a.id)||state.currentDraftData?.motionActors?.[moveId]===a.id);
   return [
-    spriteBrief(),
-    actor?`ISOLATED SUMMON REFERENCE: ${actor.description??actor.id}. Show only this entity, not the fighter or an opponent. Idle loop with clear silhouette; this row becomes its own video reference.`:'',
+    actor?`ISOLATED SUMMON: ${actor.description??actor.id}. Show only this entity, not the fighter or an opponent. Preserve its reference silhouette and props.`:spriteBrief(),
     moveDescription ? `Move: ${moveDescription}.` : '',
     ...authoredMoves.map((move) => `Character-specific action: ${move.displayName ?? move.id}. ${move.description ?? ''}`),
-    'Side-view fighting game sprite row. Magenta background, full body visible, generous gutters, no cropping.',
+    `Side-view fighting game action. ${state.currentDraftData?.artStyle==='paint'?'Uniform white':'Magenta'} background, full subject visible, generous margins, no cropping.`,
   ].filter(Boolean).join(' ');
 }
 
@@ -684,14 +691,12 @@ async function generateMoveRow(moveId) {
   logMoveActivity(moveId, 'Generating sprite row…');
   log(`> generate_sprite_sheet (${moveId})`);
 
-  if (moveId !== 'base' && !hasBaseSheet(characterId)) {
-    logMoveActivity(moveId, 'No base sheet yet — generating without the base reference may drift from the fighter\'s look.', 'error');
-  }
-
   try {
     const prompt = rowPromptFor(moveId);
     const spriteProfile = moveSpriteProfile(moveId);
     const generator=elements.characterWorkbench.querySelector(`[data-row-generator="${moveId}"]`)?.value??(moveId==='base'?'image':'video');
+    state.rowGenerators[`${characterId}:${moveId}`]=generator;
+    if(generator==='image'&&moveId!=='base'&&!hasBaseSheet(characterId))logMoveActivity(moveId,'No base sheet yet — image poses may drift without a reference.','error');
     const result = await invokeToolStreaming('generate_sprite_sheet',
       { characterId, prompt, moveId, spriteProfile, generator },
       (event) => {
@@ -2093,10 +2098,14 @@ function renderMoveInspector(move) {
   const fx=move.phases?.flatMap(p=>p.events??[]).map(e=>e.event).find(e=>e.type==='spawn_effect'&&e.effect.id===`${move.id}_authored_fx`);
   const field=(label,key,value,step=1)=>`<label><span>${escapeHtml(label)}</span><input type="number" data-tune="${key}" aria-label="${escapeHtml(move.displayName??move.id)} ${escapeHtml(label)}" step="${step}" value="${value??''}"></label>`;
   const signed=v=>`${v>=0?'+':''}${v}f`;
+  const count=state.currentDraftData?.sprite?.frames?.[move.animation]?.length??0;
+  const markers=motionMarkers(move);
+  const retimable=count>=3&&move.phases?.length===3&&move.phases.every((p,i)=>p.name===['startup','active','recovery'][i]);
   return `<details class="move-inspector" data-move-inspector="${escapeHtml(move.id)}"><summary>Tune ${escapeHtml(move.displayName??move.id)}</summary>
     <p>60 Hz · 6 frames = 100 ms. Save updates the draft; publish separately.</p>
     <p>Geometry uses world pixels relative to the fighter pivot; +X faces the opponent, negative Y is up. Grip frame numbers start at zero.</p>
     <div class="tune-grid">${move.phases.map((p,i)=>field(`${p.name} frames`,`phase-${i}`,p.frames)).join('')}${field('Meter cost','meter',move.cost?.meter??0)}</div>
+    ${retimable?`<fieldset data-motion-timing><legend>Visual pose timing · ${count} poses</legend><div class="tune-grid">${field('Contact pose (1-based)','contactPose',markers.contactFrame===null?'':markers.contactFrame+1)}${field('Recovery pose (1-based)','recoveryPose',markers.recoveryFrame===null?'':markers.recoveryFrame+1)}</div><p>Contact starts the active phase; recovery starts its own phase. These change animation timing, not damage or collision ticks. Inspect the numbered poses in Review motion, then save and review again.</p></fieldset>`:''}
     ${moveGrabs(move,state.currentDraftData?.projectiles).map((g,i)=>`<fieldset data-grab-contact="${i}"><legend>Grab ${i+1} · hold and release</legend><div class="tune-grid">${['damage','holdDuration','pullFrames','releaseHitstun'].map(k=>field(k,k,g[k]??0)).join('')}</div>${g.actorGrip?`<fieldset data-grip><legend>Paired grip · ${escapeHtml(g.actorGrip.actor)}</legend><div class="tune-grid">${GRIP_FIELDS.map(k=>field(k,`grip-${k}`,g.actorGrip[k])).join('')}</div><p>Socket meets the opponent’s torso. Upper artwork behind layerSplitY renders behind the opponent; lower artwork renders in front. Leave the split blank for one layer.</p></fieldset>`:''}<p>Hold includes the pull. Release hitstun is additional, not part of the hold.</p></fieldset>`).join('')}
     ${contacts.map((c,i)=>`<fieldset data-contact="${i}"><legend>${c.entityId?`Projectile ${escapeHtml(c.entityId)} · shared entity`:c.projectile?'Projectile contact':'Melee contact'} ${i+1}</legend><div class="tune-grid">${GEOMETRY_FIELDS.map(k=>field(`Hitbox ${k}`,k,c.hitbox[k])).join('')}${REACTION_FIELDS.map(k=>field(k,k,c.hitbox[k])).join('')}${field('Knockback X','knockbackX',c.hitbox.knockback?.x??c.hitbox.knockbackX??0,.1)}${field('Knockback Y','knockbackY',c.hitbox.knockback?.y??c.hitbox.knockbackY??0,.1)}</div>${!c.projectile?`<label>Motion track · active ticks (advanced JSON)<textarea data-geometry-track aria-label="${escapeHtml(move.displayName??move.id)} motion track">${escapeHtml(JSON.stringify(move.phases[c.phaseIndex].events[c.eventIndex].event.keyframes??[]))}</textarea></label><p>Ordered entries: atFrame, x, y, width, height. Ticks start at activation; [] keeps a static box.</p>`:''}<p>Blank stun uses hitstun. Blank hitstop uses the engine default; zero means no pause.</p></fieldset>`).join('')}
     <p class="frame-advantage">${advantage?`Estimated advantage: hit ${signed(advantage.hit)} · block ${signed(advantage.block)}. ${advantage.projectile?'Projectile estimate assumes immediate contact; travel changes it.':'First active contact, no cancel.'}`:'Grab / utility move: no ordinary hit advantage.'} Spacing, collision timing and cancels must be tested in the arena.</p>
@@ -2116,6 +2125,9 @@ function readEffectEditor(root){
 }
 async function saveMoveInspector(id){
   const root=[...document.querySelectorAll('[data-move-inspector]')].find(e=>e.dataset.moveInspector===id),status=root.querySelector('.move-save-status');
+  const saveButton=root.querySelector('[data-save-move]');
+  if(saveButton.disabled)return;
+  saveButton.disabled=true;status.textContent='Saving draft and version checkpoints…';
   try{
     const move=state.currentDraftData.moves.find(m=>m.id===id),read=k=>root.querySelector(`[data-tune="${k}"]`).value;
     let next=patchMove(state.currentDraftData,id,{phases:move.phases.map((_,i)=>Number(read(`phase-${i}`))),meter:Number(read('meter')),cancelInto:read('cancelInto').split(',').map(v=>v.trim()).filter(Boolean),cancelOn:read('cancelOn'),effect:root.querySelector('[data-fx="enabled"]').checked?readEffectEditor(root):null});
@@ -2136,12 +2148,21 @@ async function saveMoveInspector(id){
       if(!grab.querySelector('[data-grip]'))delete patch.actorGrip;
       next=patchMove(next,id,{grab:patch});
     }
-    await invokeTool('update_character_draft',{characterId:state.currentCharacterId,patch:{moves:next.moves,...(next.projectiles?{projectiles:next.projectiles}:{})},note:'Move inspector: timing, reaction, cancels and independent VFX'});
-    state.currentDraftData=next;
-    root.outerHTML=renderMoveInspector(next.moves.find(m=>m.id===id));
+    if(root.querySelector('[data-motion-timing]')){
+      const contact=read('contactPose'),recovery=read('recoveryPose'),before=motionMarkers(move);
+      if((contact==='')!==(recovery===''))throw new Error('Set both contact and recovery poses, or leave both blank.');
+      // Do not flatten an authored, possibly non-linear timeline merely because
+      // the creator edited damage or grip geometry in the same inspector.
+      if(contact!==''&&(Number(contact)-1!==before.contactFrame||Number(recovery)-1!==before.recoveryFrame))next=patchMove(next,id,{motion:{contactFrame:Number(contact)-1,recoveryFrame:Number(recovery)-1}});
+    }
+    await invokeTool('update_character_draft',{characterId:state.currentCharacterId,patch:{moves:next.moves,...(next.motionRows?{motionRows:next.motionRows}:{}),...(next.projectiles?{projectiles:next.projectiles}:{})},note:'Move inspector: timing, reaction, cancels and independent VFX'});
+    await selectCharacter(state.currentCharacterId,{silent:true});
     const saved=[...document.querySelectorAll('[data-move-inspector]')].find(e=>e.dataset.moveInspector===id);
+    saved.closest('[data-move-card]')?.querySelector('[data-move-tab="data"]')?.click();
     saved.open=true;saved.querySelector('.move-save-status').textContent='Saved to draft. Run QA and publish to update the arena.';
+    saved.scrollIntoView({block:'start'});
   }catch(error){status.textContent=error.message;}
+  finally{if(saveButton.isConnected)saveButton.disabled=false;}
 }
 function previewMoveEffect(root){
   const canvas=root.querySelector('canvas'),ctx=canvas.getContext('2d'),e=readEffectEditor(root),scale=Math.min(.65,170/(Math.abs(e.x)+e.radius*1.7),90/(Math.abs(e.y)+e.radius*1.7));
@@ -2291,6 +2312,7 @@ function renderChatToolCalls(toolCalls, messageIndex) {
 }
 
 function buildMoveGroups(draft, assets) {
+  assets=activeSpriteAssets(draft,assets);
   if((draft.artRevision || draft.history?.workingRoot) && draft.assets?.rootKey)assets=assets.filter(asset=>asset.key.startsWith(`${draft.assets.rootKey}/`));
   const groups = new Map();
   const ensureGroup = (id) => {

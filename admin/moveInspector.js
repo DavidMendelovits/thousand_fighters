@@ -1,4 +1,5 @@
 // Pure authoring model, shared by the real form and its regression tests.
+import {retimeMotion} from './motionTiming.js';
 export const REACTION_FIELDS = ['damage','hitstun','blockstun','stun','hitstop'];
 export const GEOMETRY_FIELDS = ['x','y','width','height'];
 export const GRIP_FIELDS = ['socketX','socketY','lift','swing','holdStartFrame','holdEndFrame','layerSplitY'];
@@ -77,13 +78,21 @@ export function patchMove(draft,moveId,patch) {
       for(const key of GRIP_FIELDS){const v=patch.grab.actorGrip[key];if(v===undefined)continue;
         if(v===null){delete g.actorGrip[key];continue;}
         if(!Number.isFinite(v)||Math.abs(v)>200)throw new Error('Grip coordinates must be within ±200.');
-        if(key.includes('Frame')&&(!Number.isInteger(v)||v<0||v>=(draft.sprite?.frameCounts?.[move.animation]??1)))throw new Error('Grip frame must exist in the animation.');
+        if(key.includes('Frame')&&(!Number.isInteger(v)||v<0||v>=(draft.sprite?.frames?.[move.animation]?.length??draft.sprite?.frameCounts?.[move.animation]??1)))throw new Error('Grip frame must exist in the animation.');
         g.actorGrip[key]=v;
       }
       if((g.actorGrip.holdEndFrame??Infinity)<(g.actorGrip.holdStartFrame??0))throw new Error('Grip end frame must follow its start frame.');
     }
     for(const k of ['damage','holdDuration','pullFrames','releaseHitstun']){const v=patch.grab[k];if(v===undefined)continue;if(!Number.isInteger(v)||v<0||(k!=='damage'&&v>180)||(k==='holdDuration'&&v===0))throw new Error('Grab timers must be whole ticks from 0 to 180; hold must be at least 1.');g[k]=v;}
     if((g.pullFrames??0)>g.holdDuration)throw new Error('Pull time cannot exceed grab hold time.');
+  }
+  if(patch.motion){
+    const count=draft.sprite?.frames?.[move.animation]?.length??draft.sprite?.frameCounts?.[move.animation]??0;
+    const {contactFrame,recoveryFrame}=patch.motion;
+    if(!Number.isInteger(contactFrame)||!Number.isInteger(recoveryFrame)||contactFrame<1||contactFrame>=count-1||recoveryFrame<=contactFrame||recoveryFrame>=count)throw new Error('Contact must follow the first pose; recovery must follow contact and both must exist in this row.');
+    if(move.phases.length!==3||move.phases.some((p,i)=>p.name!==['startup','active','recovery'][i]))throw new Error('Pose retiming requires startup, active and recovery phases.');
+    move.visualTimeline=retimeMotion(move,count,contactFrame,recoveryFrame);
+    if(result.motionRows?.[move.animation])Object.assign(result.motionRows[move.animation],{contactFrame,recoveryFrame,status:'needs-visual-review'});
   }
   if(patch.meter!==undefined){if(!Number.isFinite(patch.meter)||patch.meter<0||patch.meter>100)throw new Error('Meter cost must be 0–100.');move.cost={...move.cost,meter:patch.meter};}
   if(patch.cancelInto){if(patch.cancelInto.some(id=>id===move.id||!result.moves.some(m=>m.id===id)))throw new Error('Cancel targets must be other existing moves.');if(!['hit','contact','always'].includes(patch.cancelOn??'hit'))throw new Error('Invalid cancel condition.');move.cancelInto=patch.cancelInto;move.cancelOn=patch.cancelOn??'hit';move.phases.forEach(p=>{if(p.name!=='startup')p.cancellable=Boolean(patch.cancelInto.length);});}

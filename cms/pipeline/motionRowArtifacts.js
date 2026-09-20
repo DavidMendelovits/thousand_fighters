@@ -1,26 +1,12 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import {loadReviewContext,motionFingerprint} from './reviewFingerprint.js';
+import {retimeMotion} from '../../admin/motionTiming.js';
+export {retimeMotion} from '../../admin/motionTiming.js';
 
 const locks=new Map();
 export const REQUIRED_MOTION_STATES=['idle','walk_forward','walk_back','jump','landing','crouch','block','hurt','getup'];
 export function requiredMotionRows(draft){return [...new Set([...REQUIRED_MOTION_STATES,...['dash_forward','dash_back','hands_idle'].filter(row=>draft.sprite?.frames?.[row]?.length||draft.motionRows?.[row]),...(draft.actors??[]).flatMap(a=>a.idleAnimation?[a.idleAnimation]:[]),...(draft.moves??[]).flatMap(m=>[m.animation,...(m.requiredAnimation?[m.requiredAnimation]:[])])])];}
-
-/** Retiming changes visual playback only. Collision/event ticks remain authored. */
-export function retimeMotion(move, count, contact=Math.floor(count*.45), recoveryFrame) {
-  contact=Math.max(1,Math.min(count-2,contact));
-  const total=move.phases.reduce((n,p)=>n+p.frames,0);
-  const startup=move.phases[0]?.frames??1;
-  const active=move.phases[1]?.frames??1;
-  const activeEnd=Math.max(contact+1,Math.min(count-1,recoveryFrame??contact+Math.max(1,Math.round(count*.15))));
-  const timeline=[];
-  for(let tick=0;tick<total;tick++){
-    let frame=tick<startup?Math.floor(tick/startup*contact):tick<startup+active?contact+Math.floor((tick-startup)/active*(activeEnd-contact)):activeEnd+Math.floor((tick-startup-active)/Math.max(1,total-startup-active)*(count-activeEnd));
-    frame=Math.min(count-1,frame);
-    if(timeline.at(-1)?.frame===frame)timeline.at(-1).duration++;else timeline.push({frame,duration:1});
-  }
-  return timeline;
-}
 
 /** Serialized merges prevent parallel rows losing one another's metadata. */
 export async function installMotionRow({characterId,directory,storage,repository,contactFrame,recoveryFrame}){

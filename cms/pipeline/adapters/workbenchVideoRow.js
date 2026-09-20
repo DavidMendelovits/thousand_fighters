@@ -4,10 +4,8 @@ import path from 'node:path';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {runVideoJob} from '../../../scripts/generate_animation_video.mjs';
-import {motionProfile} from '../motionProfiles.js';
 import {installMotionRow} from '../motionRowArtifacts.js';
-import {characterArtDirection} from './pixelArtDirection.js';
-import {withMotionReviewFeedback} from '../../../shared/motionReviewFeedback.js';
+import {workbenchMotionPrompt} from './workbenchMotionPrompt.js';
 const exec=promisify(execFile);
 const inFlight = new Map();
 // A definitive HTTP rejection is different from an ambiguous lost response.
@@ -51,13 +49,7 @@ async function generateExclusive({characterId,moveId,prompt,task,storage,reposit
   if(!await storage.exists(referenceKey))throw new Error('Generate and extract the base row before creating video motion.');
   const bytes=await storage.getBytes(referenceKey);
   stageTimings.referenceLoadMs=Date.now()-referenceLoadStartedAt;
-  const profile=motionProfile(moveId,prompt,{artStyle});
-  const authoredMove=draft.moves?.find(m=>m.id===moveId||m.animation===moveId);
-  const grip=authoredMove?.phases?.flatMap(p=>p.events??[]).map(e=>e.event?.grab?.actorGrip).find(Boolean);
-  if(grip)profile.prompt+=` Paired capture: close opposing palms around empty torso space, keep a clear upper/back palm and lower/front palm, maintain a stable grip while lifting and swinging, then visibly open to release. Do not generate an opponent into this actor pass.`;
-  const motionPrompt=withMotionReviewFeedback(artStyle==='paint'
-    ? `Animate only this exact painted ${actorId?'summoned entity':'nonhuman creature'}. ${draft.motionPrompts?.[moveId]??profile.prompt} ${grip?profile.prompt:''} ${characterArtDirection(artStyle)} Fixed side camera, animate in place; engine supplies translation. Preserve palette and identity. Background stays uniform white. Entire subject visible with generous margins.`
-    : `Animate ONLY the reference fighter, always facing RIGHT, fixed side-view camera. ${characterArtDirection(artStyle)} Identical costume, silhouette, palette and proportions. Flat #ff00ff background, no floor shadow, no camera motion, no opponent or text. Keep the entire actor at least 15% from every edge. Animate in place; the engine supplies world movement. BODY PASS ONLY: projectiles and long extensions are separate game entities. ${profile.prompt}`,draft,moveId);
+  const {profile,motionPrompt}=workbenchMotionPrompt({draft,row:moveId,prompt,actorId});
   const fingerprint=createHash('sha256').update(bytes).update(motionPrompt).update(task).update(provider).update(artStyle==='paint'?'paint-wide-0.35-v2':'ref-occupancy-0.65-quality-loop-endlock-v1').digest('hex');
   const pointerKey=`${draft.history?.workingRoot ?? `characters/${characterId}/assets`}/jobs/${moveId}_${provider}_video.json`;
   const previous = await storage.exists(pointerKey) ? await storage.getJson(pointerKey) : null;

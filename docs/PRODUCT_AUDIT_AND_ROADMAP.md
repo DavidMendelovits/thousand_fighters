@@ -4,6 +4,16 @@ Audit date: September 19, 2026. Scope: current local working tree, including unc
 
 ## Executive assessment
 
+### September 20 execution update — one real hands correction attempt
+
+Palimpsest's rejected `hands_pinch` was regenerated **once through the browser workbench**, using Pruna `p-video-2-pro`, then installed as a 20-pose draft candidate. The action brief now actually reaches the provider: edited workbench prompts previously lost to a hidden paint recipe. Summon prompts use the isolated actor instead of the fighter-body brief. The attempt ledger records 117.653 seconds in provider queue/generation, 120.321 seconds transport, 8.780 seconds composition/installation, and 143.828 seconds for the complete tool run including checkpoints. Cost was not returned and remains unknown.
+
+The workbench now offers contact/recovery pose retiming without changing collision ticks. We used it to put contact at pose 5 / tick 11, recovery at pose 8, and the held interval at zero-based frames 4–6. A recorded current-draft Reactive testbed run shows capture, lift and release against a Palimpsest dummy. Current thumbnails exclude superseded files without deleting history; provider selection survives workbench rerenders; video reference reporting no longer falsely warns about a missing base sheet when the isolated summon reference was used.
+
+**Not accepted or published.** Two-hand continuity is improved and all 20 poses pass the clipping check, but pale edge contamination, the needle's changing angle and a face-on lower-palm recovery still need work. The exact candidate was marked changes requested through the UI. Original provider video, attempt accounting and before/after generation, tuning and review checkpoints are preserved. See [recorded attempt and live test evidence](../artifacts/hands-repair/README.md).
+
+Next: expose/reuse the full motion compiler for a **no-provider-cost reprocessing branch**, clean the matte and select a coherent release/recovery interval from this saved source, then recheck grip alignment/occlusion against varied opponents. If source frames cannot satisfy the visual contract, explicitly generate another candidate with the saved feedback. ART-02/06 and CREATE-06 advanced; ART-02 acceptance and CREATE-07's complete new-character journey remain open. The legacy six-pose Re-extract button is not a substitute for this full motion recompilation.
+
 ### September 19 execution update — trustworthy motion review and correction loop
 
 The current-draft viewer now samples the same visual-frame function and converted move phases as the runtime. Game timing includes variant selection and phase/contact markers; **All extracted poses** remains available to inspect poses combat skips. It is explicitly not original source-video speed. Held grabs, hitstop, airborne travel and interruptions still require a real playtest. Fit artwork uses stable bounds across all poses, ignoring transparent padding without editing the sprites.

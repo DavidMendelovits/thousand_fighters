@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Palimpsest · generation, tuning and live grab</title>
+<style>
+  body{margin:0;background:#14191f;color:#eef1f3;font:16px/1.5 system-ui,sans-serif}
+  main{max-width:1100px;margin:36px auto;padding:0 24px}
+  h1{font-size:24px;margin-bottom:8px}h2{font-size:20px}p{color:#bcc7d0;max-width:80ch}
+  video{display:block;width:100%;max-height:76vh;background:#080a0d}
+  a{color:#66e5bc}
+</style>
+<main>
+  <h1>Palimpsest: one real generation, inspected in the workbench</h1>
+  <p>Recorded application footage. This candidate is <strong>changes requested, not published</strong>: contact timing is repaired, but white edging and recovery continuity still need work. No staged/generated gameplay.</p>
+  <h2>Live grab test · current draft</h2>
+  <p>Training move buttons drive the engine against a reactive Palimpsest dummy. Summon, capture, lift and throw at the testbed's slow speed, then return to normal playback. This is not a competitive match or a roster-wide grab acceptance. Eight seconds of initial loading/idle time were trimmed.</p>
+  <video id="live" controls preload="metadata" src="live-grab.mp4" aria-label="Live current-draft grab test"></video>
+  <h2>Contact and grip tuning · uncut browser session</h2>
+  <p>Choose Pruna, edit contact/recovery and held poses, save the draft, inspect the active marker, open Play current draft, and test the paired grab. Pauses are real inspection time.</p>
+  <video id="tuning" controls preload="metadata" src="workbench-tuning.mp4" aria-label="Recorded workbench tuning and testbed session"></video>
+  <details><summary>Original generation attempt · 6½ minutes, including waits</summary>
+    <p>Edit the action brief and submit one Pruna request. The 118-second provider wait, checkpoint wait and subsequent inspection pauses are retained. This recording predates the thumbnail/provider-state fixes.</p>
+    <video controls preload="none" src="workbench-attempt.webm" aria-label="Original paid generation workflow"></video>
+  </details>
+  <details><summary>Final saved review decision</summary>
+    <video controls preload="none" src="workbench-verdict.webm" aria-label="Recorded changes requested verdict"></video>
+  </details>
+  <p><a href="README.md">Evidence, exact timings, version IDs and next steps</a> · <a href="provider-source.mp4">Generated source video (not gameplay)</a> · <a href="contact.png">All 20 extracted poses</a></p>
+</main>
+</html>
