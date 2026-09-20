@@ -9,6 +9,19 @@ from PIL import Image
 
 
 class MotionComponentsTest(unittest.TestCase):
+    def test_matte_cleanup_preserves_alpha_opaque_lavender_and_grey_needle(self):
+        pixels=np.full((60,60,3),255,dtype=np.uint8)
+        pixels[15:25,15:25]=[155,112,180]
+        pixels[35:45,35:45]=[110,110,110]
+        pixels[14,15:25]=[220,195,220]
+        original=np.asarray(key_paint_background(Image.fromarray(pixels)))
+        clean=np.asarray(key_paint_background(Image.fromarray(pixels),True))
+        self.assertTrue(np.array_equal(original[:,:,3],clean[:,:,3]))
+        self.assertTrue(np.array_equal(original[20,20],clean[20,20]))
+        self.assertTrue(np.array_equal(original[40,40],clean[40,40]))
+        self.assertTrue(np.all(clean[14,20,:3]<original[14,20,:3]))
+        self.assertEqual(clean[0,0,3],0)
+
     def test_paint_key_preserves_lavender_and_both_detached_hands(self):
         im=Image.new('RGB',(60,60),(255,0,255));p=np.asarray(im).copy()
         p[15:25,15:25]=[155,112,180];p[35:45,35:45]=[215,140,50]

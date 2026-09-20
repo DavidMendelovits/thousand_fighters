@@ -6,23 +6,13 @@ import {promisify} from 'node:util';
 import {runVideoJob} from '../../../scripts/generate_animation_video.mjs';
 import {installMotionRow} from '../motionRowArtifacts.js';
 import {workbenchMotionPrompt} from './workbenchMotionPrompt.js';
+import {motionActorReference, motionCompilerSettings, motionCompilerArgs} from '../motionReference.js';
+export {motionActorReference} from '../motionReference.js';
 const exec=promisify(execFile);
 const inFlight = new Map();
 // A definitive HTTP rejection is different from an ambiguous lost response.
 // Only a later explicit Generate/Regen click may submit a replacement.
 export function isRejectedSubmission(job){return !job.task?.requestId&&[400,401,403,422].includes(job.lastError?.statusCode);}
-
-export function motionActorReference(draft, row, frameData) {
-  const move=draft.moves?.find(m=>m.id===row||m.animation===row);
-  const actorId=draft.motionActors?.[row]??move?.controlledActor??draft.actors?.find(a=>a.idleAnimation===row)?.id;
-  const actor=actorId?draft.actors?.find(a=>a.id===actorId):null;
-  if(actorId&&!actor)throw new Error(`Unknown motion actor: ${actorId}`);
-  const referenceFile=actor
-    ? actor.sprite?.frames?.base?.[0]?.file??frameData?.frames?.[actor.idleAnimation]?.[0]?.file??draft.sprite?.frames?.[actor.idleAnimation]?.[0]?.file
-    : draft.sprite?.frames?.base?.[0]?.file??'sprites/base/base_001.png';
-  if(!referenceFile)throw new Error(`Create and extract the isolated ${actorId} idle reference before generating its video. The body reference will not be substituted.`);
-  return {actorId,referenceFile};
-}
 
 /** Same durable video transport as the CLI, now reachable through the authoring UI. */
 export async function generateWorkbenchVideoRow(request) {
@@ -93,7 +83,7 @@ async function generateExclusive({characterId,moveId,prompt,task,storage,reposit
   const compositionStartedAt=Date.now();
   const compiled=path.join(directory,'motion-v2');
   let exists=false;try{await readFile(path.join(compiled,'motion.json'));exists=true;}catch{}
-  if(!exists)await storage.lineage.run({characterId,stage:'compile-motion',moveId,inputs:{video:job.archivedOutput,reference:await storage.lineage.artifact(bytes,{contentType:'image/png'}),style:artStyle,frames:profile.frames,loop:profile.loop,compiler:await storage.lineage.artifact(await readFile('scripts/compile_character_motion.py'),{contentType:'text/x-python'})}},()=>exec('python3',['scripts/compile_character_motion.py',path.join(directory,'source.mp4'),'--reference',path.join(directory,'sprite.png'),'--output',compiled,'--action',moveId,'--style',artStyle==='paint'?'watercolor':artStyle,'--frames',String(profile.frames),...(artStyle==='paint'?['--root-mode','fixed','--expand-canvas','--background','paint-auto']:[]),...(profile.loop?['--loop']:[])],{timeout:120000,maxBuffer:2*1024*1024}));
+  if(!exists)await storage.lineage.run({characterId,stage:'compile-motion',moveId,inputs:{video:job.archivedOutput,reference:await storage.lineage.artifact(bytes,{contentType:'image/png'}),style:artStyle,frames:profile.frames,loop:profile.loop,compiler:await storage.lineage.artifact(await readFile('scripts/compile_character_motion.py'),{contentType:'text/x-python'})}},()=>exec('python3',['scripts/compile_character_motion.py',path.join(directory,'source.mp4'),'--reference',path.join(directory,'sprite.png'),'--output',compiled,'--action',moveId,...motionCompilerArgs(motionCompilerSettings(artStyle)),'--frames',String(profile.frames),...(profile.loop?['--loop']:[])],{timeout:120000,maxBuffer:2*1024*1024}));
   const motionRow=await installMotionRow({characterId,directory:compiled,storage,repository});
   const sheet=await readFile(path.join(compiled,'sheet.png'));
   stageTimings.spriteCompositionMs=Date.now()-compositionStartedAt;

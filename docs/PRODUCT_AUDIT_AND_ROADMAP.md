@@ -4,6 +4,16 @@ Audit date: September 19, 2026. Scope: current local working tree, including unc
 
 ## Executive assessment
 
+### September 20 execution update — offline motion repair and size drills
+
+The full video compiler is now reachable from each video-backed move card as **Reprocess saved video · no generation**. It supports source intervals, output pose counts, paint soft-edge cleanup and contact/recovery timing, shares the generation pipeline's isolated-actor reference and paint settings, and remaps held-grab poses. Compilation happens before installing into a private working root; before/after frozen checkpoints and exact source/reference/compiler provenance preserve the previous draft. Failed compilation or private asset writes leave the existing draft/assets intact. Published gameplay is untouched.
+
+One actual browser reprocess of the retained Palimpsest hands video selected source frames 0–64: 20 unique poses, no clipping, 4.984 seconds compile / 25.465 seconds including history checkpoints, **zero provider requests**. It excludes the unwanted face-on recovery tail but does not eliminate opaque pale fringe or the needle's angle drift. The candidate was marked **changes requested** through the UI, not approved.
+
+A new testbed dummy-size control drives art and collision together without editing the draft. Recorded 100%, 70% and 140% Reactive mirror drills demonstrate capture, shared lift/swing, overlap and release. These do not establish different-body-type, left-facing, wall, interruption, KO or expiry acceptance. The 32-second workbench flow and 29-second real-engine drill are in [offline repair evidence](../artifacts/hands-reprocess/README.md). Tests/build passed; local archival is not verified off-machine backup.
+
+Next: address opaque source/reference edge contamination and idle/attack continuity without eroding the grey needle, then extend paired-grab acceptance to the cases above. If source continuity cannot meet the contract, make one explicit targeted regeneration using saved feedback. ART-02/03/04/06 and PIPE-06 advanced; complete art acceptance and CREATE-07's new-fighter end-to-end journey remain open.
+
 ### September 20 execution update — one real hands correction attempt
 
 Palimpsest's rejected `hands_pinch` was regenerated **once through the browser workbench**, using Pruna `p-video-2-pro`, then installed as a 20-pose draft candidate. The action brief now actually reaches the provider: edited workbench prompts previously lost to a hidden paint recipe. Summon prompts use the isolated actor instead of the fighter-body brief. The attempt ledger records 117.653 seconds in provider queue/generation, 120.321 seconds transport, 8.780 seconds composition/installation, and 143.828 seconds for the complete tool run including checkpoints. Cost was not returned and remains unknown.

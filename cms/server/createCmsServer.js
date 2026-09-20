@@ -179,7 +179,7 @@ async function handleApiRequest({ request, response, url, runtime }) {
         if (action === 'checkpoint') return runtime.repository.createVersion(characterId, await runtime.repository.getDraft(characterId), { label: String(input.label ?? 'Manual checkpoint').slice(0, 160) });
         if (action === 'restore') return runtime.repository.restoreVersion(characterId, input.versionId);
         if (action === 'branch') return runtime.repository.branchArtifact(characterId, input.eventId);
-        if (action === 'reprocess') return reprocessArchivedVideo({ repository: runtime.repository, storage: runtime.storage, characterId, eventId: input.eventId, action: input.action, frames: input.frames, loop: input.loop });
+        if (action === 'reprocess') return reprocessArchivedVideo({ ...input, repository: runtime.repository, storage: runtime.storage, characterId });
         if (action === 'resume') return resumeArchivedVideo({ storage: runtime.storage, characterId, eventId: input.eventId });
         throw new Error('Unknown history operation.');
       }));

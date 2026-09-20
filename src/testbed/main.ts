@@ -134,6 +134,8 @@ function wireDummy(scene: TestbedScene): void {
     scene.setDummyDistance(distance);
   };
   slider.addEventListener('input', apply);
+  const size = $<HTMLSelectElement>('dummy-size');
+  size.addEventListener('change', () => scene.setDummySize(Number(size.value)));
   // Apply the initial value once the scene has built its fighters.
   window.requestAnimationFrame(() => apply());
 }
@@ -161,6 +163,8 @@ function startHudLoop(scene: TestbedScene): void {
         ['facing', s.facing === 1 ? '▶ right' : '◀ left'],
         ['player hp', String(s.playerHp)],
         ['dummy hp', `${s.dummyHp} / ${s.dummyMaxHp}`],
+        ['dummy size', `${Math.round(s.dummySize * 100)}%`],
+        ['dummy state', s.dummyState],
         ['distance', `${s.distance}px`],
       ]);
 

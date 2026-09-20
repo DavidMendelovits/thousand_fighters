@@ -51,7 +51,8 @@ export async function listVersions(repository, characterId) {
   return versions.sort((a, b) => (b.at ?? '').localeCompare(a.at ?? ''));
 }
 
-export async function restoreVersion(repository, characterId, versionId) {
+/** Materialize privately. The caller decides when (and whether) to switch the draft. */
+export async function prepareVersionWorkingCopy(repository, characterId, versionId) {
   segment(characterId); segment(versionId);
   const { storage } = repository;
   const version = await repository.getVersion(characterId, versionId);
@@ -68,13 +69,19 @@ export async function restoreVersion(repository, characterId, versionId) {
     if (entry.pinnedKey.endsWith('.json')) bytes = Buffer.from(`${JSON.stringify(rewrite(JSON.parse(bytes), source, destination), null, 2)}\n`);
     await storage.putBytes(destination + entry.pinnedKey.slice(source.length), bytes, entry.metadata);
   }
-  const current = await repository.getDraft(characterId);
-  const safety = await repository.createVersion(characterId, current, { label: `Before restoring ${version.history.label ?? versionId}` });
   const restored = rewrite(version, source, destination);
   delete restored.versionId;
-  restored.history = { schemaVersion: 1, restoredFromVersionId: versionId, parentVersionId: versionId, safetyVersionId: safety.versionId, workingRoot: destination };
+  restored.history = { schemaVersion: 1, restoredFromVersionId: versionId, parentVersionId: versionId, workingRoot: destination };
+  return restored;
+}
+
+export async function restoreVersion(repository, characterId, versionId) {
+  const restored = await prepareVersionWorkingCopy(repository, characterId, versionId);
+  const current = await repository.getDraft(characterId);
+  const safety = await repository.createVersion(characterId, current, { label: `Before restoring ${versionId}` });
+  restored.history.safetyVersionId = safety.versionId;
   const result = await repository.saveDraft(characterId, restored, { operation: 'restore-version', versionId });
-  await storage.lineage.event(characterId, { type: 'version-restored', versionId, safetyVersionId: safety.versionId, workingRoot: destination });
+  await repository.storage.lineage.event(characterId, { type: 'version-restored', versionId, safetyVersionId: safety.versionId, workingRoot: restored.history.workingRoot });
   return result;
 }
 

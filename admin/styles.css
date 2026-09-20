@@ -42,6 +42,13 @@
 .combat-rules-editor summary{cursor:pointer;font-weight:600;font-size:13px}
 .combat-rules-editor p,.combat-rules-editor [role=status]{font-size:12px;color:var(--muted);line-height:1.6}
 .combat-rules-editor textarea{display:block;width:100%;font:12px monospace;margin:12px 0}
+.motion-reprocess{margin:0 16px 16px;padding:14px;border:1px solid var(--line);font-size:12px;line-height:1.6}
+.motion-reprocess summary{cursor:pointer;font-weight:600}.motion-reprocess p{color:var(--muted);max-width:85ch}
+.motion-reprocess a{color:inherit;text-decoration:underline}.motion-reprocess>label{display:flex;align-items:center;gap:8px;margin:10px 0}
+.motion-reprocess input[type=checkbox]{width:auto;min-height:auto;margin:0}
+.motion-reprocess-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:12px 0}
+.motion-reprocess-fields label{min-width:0}.motion-reprocess-fields input{display:block;width:100%;margin-top:4px}
+.motion-reprocess [role=status]{overflow-wrap:anywhere}
 
 * {
   box-sizing: border-box;

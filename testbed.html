@@ -99,6 +99,7 @@
       }
       .field { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
       .field label { color: var(--muted); min-width: 64px; }
+      .field select { min-width:0; max-width:100%; border:1px solid var(--line); border-radius:4px; background:var(--panel-2); color:var(--text); font:inherit; padding:6px; }
       input[type="range"] { flex: 1; }
       .hud-grid { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; }
       .hud-grid .k { color: var(--muted); }
@@ -164,6 +165,11 @@
             <button data-dummy="post" class="active">Measuring post</button>
             <button data-dummy="reactive">Reactive</button>
           </div>
+          <div class="field">
+            <label for="dummy-size">Dummy size</label>
+            <select id="dummy-size" aria-label="Dummy size"><option value="0.7">Small · 70%</option><option value="1" selected>Normal · 100%</option><option value="1.4">Large · 140%</option></select>
+          </div>
+          <p class="help">Size changes reset the drill. Scales the dummy’s art and collision together; no draft changes.</p>
           <div class="field">
             <label for="distance">Distance</label>
             <input type="range" id="distance" min="40" max="420" step="2" value="290" />

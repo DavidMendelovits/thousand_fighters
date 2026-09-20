@@ -60,20 +60,30 @@ def key_magenta_distance(im):
     pixels[np.linalg.norm(rgb-np.array([255,0,255]),axis=2)<115,3]=0
     return Image.fromarray(pixels)
 
-def key_paint_background(im):
+def key_paint_background(im, matte_cleanup=False):
     """Flat per-frame key with a soft transition; preserve low-saturation lavender."""
     color=uniform_corner_key(im)
     pixels=np.asarray(im.convert('RGBA')).copy()
     key=np.array([int(color[i:i+2],16) for i in (1,3,5)])
     distance=np.linalg.norm(pixels[:,:,:3].astype(float)-key,axis=2)
     alpha=np.clip((distance-65)/45,0,1)
+    if matte_cleanup:
+        # Undo the flat-background contribution in partial-coverage pixels.
+        # Do not erode the silhouette or recolor opaque lavender / grey props.
+        foreground=(pixels[:,:,:3].astype(float)-(1-alpha[:,:,None])*key)/np.maximum(alpha[:,:,None],1/255)
+        edge=(alpha>0)&(alpha<1)
+        pixels[edge,:3]=np.clip(np.rint(foreground[edge]),0,255).astype(np.uint8)
     pixels[:,:,3]=(pixels[:,:,3]*alpha).astype(np.uint8)
     return Image.fromarray(pixels)
 
 
-def compile_motion(video, reference, output, action, count=20, loop=False, start=None, end=None, style='pixel', component_mode='all', ping_pong=False, background='magenta', root_mode='pelvis', expand_canvas=False):
+def compile_motion(video, reference, output, action, count=20, loop=False, start=None, end=None, style='pixel', component_mode='all', ping_pong=False, background='magenta', root_mode='pelvis', expand_canvas=False, matte_cleanup=False):
     if ping_pong and not loop:
         raise ValueError('Ping-pong playback requires an explicit loop')
+    if matte_cleanup and background!='paint-auto':
+        raise ValueError('Paint matte cleanup requires the paint-auto background key')
+    if not 8 <= count <= 48:
+        raise ValueError('Choose 8–48 output frames')
     output = Path(output)
     if output.exists():
         raise ValueError('Candidate exists; use a new output version, never overwrite an accepted row')
@@ -82,10 +92,14 @@ def compile_motion(video, reference, output, action, count=20, loop=False, start
         paths=sorted(Path(temp).glob('*.png'))
         if not 8 <= len(paths) <= 360:
             raise ValueError('Expected 8–360 source frames')
+        first_index=0 if start is None else start
+        last_index=len(paths)-1 if end is None else end
+        if not 0 <= first_index < last_index < len(paths) or last_index-first_index+(0 if loop else 1) < count:
+            raise ValueError('Selected source range must contain at least the requested number of output frames')
         images=[]
         for path in paths:
             source=Image.open(path)
-            im=key_paint_background(source) if background=='paint-auto' else key_uniform_background(source) if background=='auto-frame' else key_magenta_distance(source) if background=='magenta-distance' else key_background(source,'#ff00ff',mode='chroma')
+            im=key_paint_background(source,matte_cleanup) if background=='paint-auto' else key_uniform_background(source) if background=='auto-frame' else key_magenta_distance(source) if background=='magenta-distance' else key_background(source,'#ff00ff',mode='chroma')
             alpha=np.array(im.getchannel('A'))
             # Explicit body-only cleanup: detached sparks are separate VFX, never
             # silently discard disconnected props in the default import path.
@@ -128,18 +142,18 @@ def compile_motion(video, reference, output, action, count=20, loop=False, start
         b=small.getbbox()
         if min(x+b[0],y+b[1],size[0]-x-b[2],size[1]-y-b[3])<4: clipping.append(i)
         frame=Image.new('RGBA',size);frame.alpha_composite(small,(x,y));normalized.append(frame)
-    if clipping: raise ValueError(f'Source/canvas clipping at frames {sorted(set(clipping))}; widen canvas or regenerate')
+    clipping=sorted({i for i in clipping if first_index<=i<=last_index})
+    if clipping: raise ValueError(f'Source/canvas clipping at frames {clipping}; widen canvas or regenerate')
     # Compare normalized body/leg masks; no static-pose motion acceptance from
     # video compression noise, animated background or image translation alone.
     masks=np.array([np.array(im.getchannel('A'))>0 for im in normalized])
     region=masks[:,round(55*size[1]/192):round(177*size[1]/192),round(40*size[0]/224):round(180*size[0]/224)]
-    diversity=float(np.mean(np.any(region,axis=0)!=np.all(region,axis=0)))
-    legs=region[:,round(65*size[1]/192):]
+    selected_region=region[first_index:last_index+1]
+    diversity=float(np.mean(np.any(selected_region,axis=0)!=np.all(selected_region,axis=0)))
+    legs=selected_region[:,round(65*size[1]/192):]
     leg_diversity=float(np.mean(np.any(legs,axis=0)!=np.all(legs,axis=0)))
     if diversity<.015 or (root_mode=='pelvis' and action.startswith('walk') and leg_diversity<.04):
         raise ValueError(f'Insufficient articulated motion: body={diversity:.3f}, legs={leg_diversity:.3f}')
-    first_index=0 if start is None else start
-    last_index=len(images)-1 if end is None else end
     seam=None
     if loop and start is None and end is None:
         # Find one complete moving cycle, not a short near-static tail.
@@ -190,6 +204,7 @@ def compile_motion(video, reference, output, action, count=20, loop=False, start
     report['provenance']['options']['background'] = background
     report['provenance']['options']['rootMode'] = root_mode
     report['provenance']['options']['expandCanvas'] = expand_canvas
+    report['provenance']['options']['matteCleanup'] = matte_cleanup
     (output/'motion.json').write_text(json.dumps(report,indent=2)+'\n')
     print(json.dumps({k:v for k,v in report.items() if k!='frames'}))
     return report
@@ -204,4 +219,5 @@ if __name__=='__main__':
     p.add_argument('--background',choices=['magenta','auto-frame','magenta-distance','paint-auto'],default='magenta',help='Auto-frame requires reviewed solid backgrounds and matching corner colors')
     p.add_argument('--root-mode',choices=['pelvis','fixed'],default='pelvis',help='Fixed preserves fluid deformation around a nonhuman actor origin')
     p.add_argument('--expand-canvas',action='store_true',help='Grow the canvas and offset its pivot rather than clipping legitimate expansions')
-    a=p.parse_args();compile_motion(a.video,a.reference,a.output,a.action,a.frames,a.loop,a.start,a.end,a.style,a.component_mode,a.ping_pong,a.background,a.root_mode,a.expand_canvas)
+    p.add_argument('--matte-cleanup',action='store_true',help='Remove background color from partial-alpha paint edges without eroding props')
+    a=p.parse_args();compile_motion(a.video,a.reference,a.output,a.action,a.frames,a.loop,a.start,a.end,a.style,a.component_mode,a.ping_pong,a.background,a.root_mode,a.expand_canvas,a.matte_cleanup)

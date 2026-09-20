@@ -1,0 +1,270 @@
+{
+  "schemaVersion": 1,
+  "action": "hands_pinch",
+  "status": "needs-visual-review",
+  "source": "/Users/davidmendelovits/space/thousand_fighters/artifacts/workbench-video-jobs/reprocess-tTmfdc/source.mp4",
+  "sourceSha256": "5785d3e25c8f0f48943215ed0ee35ee66c4de3ceac474d55a845cb30e8cae5d1",
+  "sourceFrameCount": 124,
+  "frameCount": 20,
+  "uniqueFrames": 20,
+  "scale": 1.5537190082644627,
+  "bodyMotion": 0.1887289629748357,
+  "legMotion": 0.3122298221614227,
+  "loop": false,
+  "loopSeamError": null,
+  "sourceRange": [
+    0,
+    64
+  ],
+  "rootTravelPixels": 0.0,
+  "suggestedContactFrame": 19,
+  "clippedFrames": [],
+  "frames": [
+    {
+      "file": "frames/hands_pinch_001.png",
+      "width": 679,
+      "height": 577,
+      "anchor": {
+        "x": 291,
+        "y": 529
+      },
+      "durationFrames": 3,
+      "sourceFrame": 0
+    },
+    {
+      "file": "frames/hands_pinch_002.png",
+      "width": 679,
+      "height": 577,
+      "anchor": {
+        "x": 291,
+        "y": 529
+      },
+      "durationFrames": 3,
+      "sourceFrame": 3
+    },
+    {
+      "file": "frames/hands_pinch_003.png",
+      "width": 679,
+      "height": 577,
+      "anchor": {
+        "x": 291,
+        "y": 529
+      },
+      "durationFrames": 3,
+      "sourceFrame": 6
+    },
+    {
+      "file": "frames/hands_pinch_004.png",
+      "width": 679,
+      "height": 577,
+      "anchor": {
+        "x": 291,
+        "y": 529
+      },
+      "durationFrames": 3,
+      "sourceFrame": 10
+    },
+    {
+      "file": "frames/hands_pinch_005.png",
+      "width": 679,
+      "height": 577,
+      "anchor": {
+        "x": 291,
+        "y": 529
+      },
+      "durationFrames": 3,
+      "sourceFrame": 13
+    },
+    {
+      "file": "frames/hands_pinch_006.png",
+      "width": 679,
+      "height": 577,
+      "anchor": {
+        "x": 291,
+        "y": 529
+      },
+      "durationFrames": 3,
+      "sourceFrame": 16
+    },
+    {
+      "file": "frames/hands_pinch_007.png",
+      "width": 679,
+      "height": 577,
+      "anchor": {
+        "x": 291,
+        "y": 529
+      },
+      "durationFrames": 3,
+      "sourceFrame": 20
+    },
+    {
+      "file": "frames/hands_pinch_008.png",
+      "width": 679,
+      "height": 577,
+      "anchor": {
+        "x": 291,
+        "y": 529
+      },
+      "durationFrames": 3,
+      "sourceFrame": 23
+    },
+    {
+      "file": "frames/hands_pinch_009.png",
+      "width": 679,
+      "height": 577,
+      "anchor": {
+        "x": 291,
+        "y": 529
+      },
+      "durationFrames": 3,
+      "sourceFrame": 26
+    },
+    {
+      "file": "frames/hands_pinch_010.png",
+      "width": 679,
+      "height": 577,
+      "anchor": {
+        "x": 291,
+        "y": 529
+      },
+      "durationFrames": 3,
+      "sourceFrame": 30
+    },
+    {
+      "file": "frames/hands_pinch_011.png",
+      "width": 679,
+      "height": 577,
+      "anchor": {
+        "x": 291,
+        "y": 529
+      },
+      "durationFrames": 3,
+      "sourceFrame": 33
+    },
+    {
+      "file": "frames/hands_pinch_012.png",
+      "width": 679,
+      "height": 577,
+      "anchor": {
+        "x": 291,
+        "y": 529
+      },
+      "durationFrames": 3,
+      "sourceFrame": 37
+    },
+    {
+      "file": "frames/hands_pinch_013.png",
+      "width": 679,
+      "height": 577,
+      "anchor": {
+        "x": 291,
+        "y": 529
+      },
+      "durationFrames": 3,
+      "sourceFrame": 40
+    },
+    {
+      "file": "frames/hands_pinch_014.png",
+      "width": 679,
+      "height": 577,
+      "anchor": {
+        "x": 291,
+        "y": 529
+      },
+      "durationFrames": 3,
+      "sourceFrame": 43
+    },
+    {
+      "file": "frames/hands_pinch_015.png",
+      "width": 679,
+      "height": 577,
+      "anchor": {
+        "x": 291,
+        "y": 529
+      },
+      "durationFrames": 3,
+      "sourceFrame": 47
+    },
+    {
+      "file": "frames/hands_pinch_016.png",
+      "width": 679,
+      "height": 577,
+      "anchor": {
+        "x": 291,
+        "y": 529
+      },
+      "durationFrames": 3,
+      "sourceFrame": 50
+    },
+    {
+      "file": "frames/hands_pinch_017.png",
+      "width": 679,
+      "height": 577,
+      "anchor": {
+        "x": 291,
+        "y": 529
+      },
+      "durationFrames": 3,
+      "sourceFrame": 53
+    },
+    {
+      "file": "frames/hands_pinch_018.png",
+      "width": 679,
+      "height": 577,
+      "anchor": {
+        "x": 291,
+        "y": 529
+      },
+      "durationFrames": 3,
+      "sourceFrame": 57
+    },
+    {
+      "file": "frames/hands_pinch_019.png",
+      "width": 679,
+      "height": 577,
+      "anchor": {
+        "x": 291,
+        "y": 529
+      },
+      "durationFrames": 3,
+      "sourceFrame": 60
+    },
+    {
+      "file": "frames/hands_pinch_020.png",
+      "width": 679,
+      "height": 577,
+      "anchor": {
+        "x": 291,
+        "y": 529
+      },
+      "durationFrames": 3,
+      "sourceFrame": 64
+    }
+  ],
+  "provenance": {
+    "compilerSha256": "6229814846fc0af2f3ad661d3ac111ec315cc722d989f5d57c23db881d8e2636",
+    "keyerSha256": "bfc4a4781c3587122862f6b146beb8e30952ad08ceff2cf7b16b02b786805ac9",
+    "referenceSha256": "1e47f308072a2ee0db4408a495f0bfe702ce6dfadb0fdb00975a01f19a193d31",
+    "options": {
+      "action": "hands_pinch",
+      "count": 20,
+      "loop": false,
+      "start": 0,
+      "end": 64,
+      "style": "watercolor",
+      "componentMode": "all",
+      "pingPong": false,
+      "background": "paint-auto",
+      "rootMode": "fixed",
+      "expandCanvas": true,
+      "matteCleanup": true
+    },
+    "environment": {
+      "python": "3.11.10",
+      "numpy": "2.2.6",
+      "pillow": "12.0.0",
+      "scipy": "1.16.3",
+      "ffmpeg": "ffmpeg version 7.1.1 Copyright (c) 2000-2025 the FFmpeg developers"
+    }
+  }
+}

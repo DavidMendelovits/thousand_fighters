@@ -9,6 +9,7 @@ import { renderReference, renderPreview, mountPreview } from './workbenchPreview
 import {renderReadiness,renderMotionReview} from './publishReadiness.js';
 import {motionMarkers} from './motionTiming.js';
 import {activeSpriteAssets} from './activeSpriteAssets.js';
+import {renderMotionReprocess,readReprocessControls} from './motionReprocess.js';
 const MOVE_ORDER = ['base', 'punch', 'kick', 'special_1', 'special_2', 'jump', 'crouch', 'dash_forward', 'dash_back', 'block', 'grab', 'throw', 'walk_forward', 'walk_back', 'hurt', 'getup', 'projectiles'];
 
 // Where the Vite-served game (and the single-player testbed) lives. The testbed
@@ -246,6 +247,8 @@ function handleWorkbenchClick(event) {
   if(previewFx){previewMoveEffect(previewFx.closest('[data-move-inspector]'));return;}
   const reextract = event.target.closest('[data-reextract]');
   if (reextract) { void reextractRow(reextract.dataset.reextract); return; }
+  const reprocess = event.target.closest('[data-reprocess-video]');
+  if (reprocess) { void reprocessMotion(reprocess); return; }
   const resample=event.target.closest('[data-resample]');
   if(resample){const row=resample.dataset.resample;const input=document.querySelector(`[data-sample-times="${row}"]`);void reextractRow(row,input.value.split(',').map(v=>Number(v.trim())));return;}
   if(event.target.closest('[data-save-combat]')){void saveCombatRules();return;}
@@ -1876,11 +1879,11 @@ function renderMoveGroup(group) {
           ${activityButton}
           ${generateButton}
           ${state.currentDraftData?.motionRows?.[group.id] ? `<span data-motion-review-state="${escapeHtml(group.id)}">Checking review version…</span><button type="button" data-approve-motion="${escapeHtml(group.id)}">Review motion</button>` : ''}
-          ${hasFrames && canGenerate ? `<button type="button" data-reextract="${escapeHtml(group.id)}" title="Rebuild transparent frames from the existing source, without a paid generation" ${isLoading?'disabled':''}>Re-extract</button>` : ''}
+          ${hasFrames && canGenerate && !state.currentDraftData?.motionRows?.[group.id]?.sourceSha256 ? `<button type="button" data-reextract="${escapeHtml(group.id)}" title="Rebuild transparent frames from the existing source, without a paid generation" ${isLoading?'disabled':''}>Re-extract</button>` : ''}
           <span class="frame-count">${escapeHtml(groupAssetCount(group))} assets</span>
         </div>
       </header>
-
+      ${renderMotionReprocess(state.currentDraftData ?? {},group.id)}
       <div class="move-card-body">
         <div class="animation-pane">
           ${renderAnimationPlayer(animationId, previewFrames, group)}
@@ -1893,6 +1896,23 @@ function renderMoveGroup(group) {
       </div>
     </article>
   `;
+}
+
+async function reprocessMotion(button) {
+  const host=button.closest('[data-motion-reprocess]'), status=host.querySelector('[data-reprocess-status]');
+  const action=button.dataset.reprocessVideo, characterId=state.currentCharacterId;
+  if(state.generatingMoves.size){status.textContent='Wait for the current generation before reprocessing.';return;}
+  try {
+    const input=readReprocessControls(host);
+    button.disabled=true; state.generatingMoves.add(action);
+    status.textContent='Compiling saved video locally, then saving isolated checkpoints… No provider request.';
+    const {result}=await postJson(`/api/characters/${encodeURIComponent(characterId)}/history/reprocess`,{...input,action,expectedSourceSha256:state.currentDraftData.motionRows[action].sourceSha256,expectedUpdatedAt:state.currentDraftData.updatedAt});
+    state.generatingMoves.delete(action);
+    await selectCharacter(characterId,{silent:true});
+    const next=elements.characterWorkbench.querySelector(`[data-motion-reprocess="${action}"]`);
+    if(next){next.open=true;next.querySelector('[data-reprocess-status]').textContent=`${result.frameCount} poses compiled in ${(result.compileMs/1000).toFixed(1)}s. No provider calls. New working copy needs visual review; checkpoints saved.`;next.scrollIntoView({block:'center'});}
+  } catch(error){status.textContent=error.message;}
+  finally{button.disabled=false;state.generatingMoves.delete(action);}
 }
 
 function renderMoveCardTabs(group) {

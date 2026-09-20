@@ -47,6 +47,8 @@ export type TestbedSnapshot = {
   playerHp: number;
   dummyHp: number;
   dummyMaxHp: number;
+  dummySize: number;
+  dummyState: string;
   distance: number;
   hitboxes: HitboxReadout[];
   error: string | null;
@@ -74,6 +76,8 @@ export class TestbedScene extends Phaser.Scene {
   private debugGfx!: Phaser.GameObjects.Graphics;
   private combatVisuals!: CombatVisuals;
   private dummyAnchorX = DUMMY_X;
+  private dummyDistance = DUMMY_X - PLAYER_X;
+  private dummySize = 1;
 
   private mode: PlaybackMode = 'play';
   private dummyMode: DummyMode = 'post';
@@ -135,7 +139,8 @@ export class TestbedScene extends Phaser.Scene {
     createCombatTextures(this,[this.payload.config,...(this.payload.config.forms??[]).map(f=>f.config)]);
     this.combatVisuals=new CombatVisuals(this);
     this.player = new Fighter(this, this.payload.config, 1, { x: PLAYER_X, y: FLOOR_Y });
-    this.dummy = new Fighter(this, this.payload.config, 2, { x: this.dummyAnchorX, y: FLOOR_Y });
+    this.dummy = new Fighter(this, structuredClone(this.payload.config), 2, { x: this.dummyAnchorX, y: FLOOR_Y });
+    this.applyDummySize();
     this.fighters = [this.player, this.dummy];
 
     this.debugGfx = this.add.graphics().setDepth(60);
@@ -303,6 +308,8 @@ export class TestbedScene extends Phaser.Scene {
       playerHp: Math.ceil(this.player.health),
       dummyHp: Math.ceil(this.dummy.health),
       dummyMaxHp: this.payload.config.maxHealth,
+      dummySize: this.dummy.stats.size,
+      dummyState: this.dummy.state,
       distance: Math.round(Math.abs(this.dummy.x - this.player.x)),
       hitboxes,
       error: this.lastError,
@@ -342,8 +349,20 @@ export class TestbedScene extends Phaser.Scene {
   }
 
   setDummyDistance(distance: number): void {
-    this.dummyAnchorX = Phaser.Math.Clamp((this.player?.x ?? PLAYER_X) + distance, 96, 704);
+    this.dummyDistance = Phaser.Math.Clamp(distance, 40, 420);
+    this.dummyAnchorX = Phaser.Math.Clamp((this.player?.x ?? PLAYER_X) + this.dummyDistance, 96, 704);
     if(this.dummy)this.dummy.x = this.dummyAnchorX;
+  }
+
+  setDummySize(size: number): void {
+    if (![0.7, 1, 1.4].includes(size)) return;
+    this.dummySize = size;
+    if (this.ready) { this.reset(); this.applyDummySize(); }
+  }
+
+  private applyDummySize(): void {
+    this.dummy.baseConfig.stats = { ...this.payload.config.stats, size: (this.payload.config.stats?.size ?? 1) * this.dummySize };
+    this.dummy.refreshVisuals();
   }
 
   reset(): void {
@@ -357,8 +376,8 @@ export class TestbedScene extends Phaser.Scene {
     this.projectiles.clear();
 
     this.resetFighter(this.player, PLAYER_X);
-    this.dummyAnchorX = DUMMY_X;
-    this.resetFighter(this.dummy, DUMMY_X);
+    this.dummyAnchorX = Phaser.Math.Clamp(PLAYER_X + this.dummyDistance, 96, 704);
+    this.resetFighter(this.dummy, this.dummyAnchorX);
   }
 
   private resetFighter(fighter: Fighter, x: number): void {
@@ -394,6 +413,8 @@ function emptySnapshot(): TestbedSnapshot {
     playerHp: 0,
     dummyHp: 0,
     dummyMaxHp: 0,
+    dummySize: 1,
+    dummyState: 'idle',
     distance: 0,
     hitboxes: [],
     error: null,
