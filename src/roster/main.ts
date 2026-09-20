@@ -2,7 +2,7 @@ import type { CharacterConfig } from '../schema/types';
 import './style.css';
 
 const root = document.querySelector<HTMLDivElement>('#roster-app')!;
-root.innerHTML = `<header><a class="wordmark" href="/">THOUSAND FIGHTERS<span>COMBAT COLLECTION / 01</span></a><nav><a href="/animation-lab.html">Animation lab ↗</a><a href="/?select=1">All fighters ↗</a></nav></header>
+root.innerHTML = `<header><a class="wordmark" href="/">THOUSAND FIGHTERS<span>COMBAT COLLECTION / 01</span></a><nav><a href="/animation-lab">Animation lab ↗</a><a href="/?select=1">All fighters ↗</a></nav></header>
 <main><section class="intro"><p class="eyebrow">TEN ORIGINAL FIGHTERS · PLAYABLE PROTOTYPE</p><h1>The Oddities<span>.</span></h1><p class="lede">Wrong-shaped heroes. Unfair-looking limbs. Very real hitboxes.</p><div class="legend"><span>↗ EXTEND</span><span>◎ CAPTURE</span><span>ϟ STUN</span><span>↠ LAUNCH</span></div></section>
 <section class="matchup" aria-label="Match setup"><div class="slot-switch"><button id="slot1" aria-pressed="true">01 / YOUR FIGHTER</button><button id="slot2" aria-pressed="false">02 / OPPONENT</button></div><div class="matchline"><p id="versus"></p><label><input id="cpu" type="checkbox" checked> CPU opponent</label><a id="fight" class="primary" href="/">Enter the arena ↗</a></div></section>
 <section id="cards" class="cards" aria-label="Ten-person roster"></section>

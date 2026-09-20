@@ -1,6 +1,6 @@
 # The Oddities: playable roster and motion provenance
 
-Open `/roster.html` to select any two of ten original fighters. Existing fighters remain available in the game's full selector. No CMS records were replaced.
+Open `/roster` to select any two of ten original fighters. Existing fighters remain available in the game's full selector. No CMS records were replaced.
 
 | Fighter | Identity | Distinct mechanic |
 | --- | --- | --- |
@@ -32,7 +32,7 @@ This is a playable prototype, **not a completed animation set**: walk, jump, nor
 - `src/characters/oddities.ts`: authored combat kits and character concepts.
 - `public/fighters/<id>/art-provenance.json`: key-pose source and prompts.
 - `public/fighters/<id>/video-signature/`: selected frames, fixed-anchor atlas, clip manifest, QA, preview and runtime fragment.
-- `/animation-lab.html`: inspect all ten video signatures plus existing animation experiments.
+- `/animation-lab`: inspect all ten video signatures plus existing animation experiments.
 - `artifacts/animation-video/oddities/`: local source movies, persisted provider jobs and compilation specifications (not the public deployment payload).
 - `scripts/generate_oddities_videos.mjs`: resumable additional seven-character video batch; uses the existing Doppler FAL_KEY.
 - `python3 scripts/compile_oddities_video.py`: compile retained source movies; preserves existing output directories.

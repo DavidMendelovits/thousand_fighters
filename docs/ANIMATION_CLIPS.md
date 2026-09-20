@@ -1,12 +1,12 @@
 # Animation clips: source motion to normalized sprites
 
-The Animation Lab is available at `/animation-lab.html` in the Vite app (`npm run dev`). The CMS header links to it using the same configurable base URL as the Character Gym. It is a review workspace, not an automatic fighter publisher.
+The Animation Lab is available at `/animation-lab` in the Vite app (`npm run dev`). The CMS header links to it using the same configurable base URL as the Character Gym. It is a review workspace, not an automatic fighter publisher.
 
 This implementation supports arbitrary action ids, variable frame counts/holds, intentionally changing anatomy and size, disconnected parts, shared-coordinate layers, root displacement, sockets and event markers. Existing six-frame provider adapters and shipped fighter assets remain available.
 
 ## Try it
 
-Open `http://127.0.0.1:5173/animation-lab.html`. Select a clip, scrub or step through poses, slow playback, switch the background, inspect anchors, and hide/show individual effects. Root displacement is independently switchable for extracted-motion clips. Open any compiled clip URL with the Open clip button or `?clip=/path/clip.json`.
+Open `http://127.0.0.1:5173/animation-lab`. Select a clip, scrub or step through poses, slow playback, switch the background, inspect anchors, and hide/show individual effects. Root displacement is independently switchable for extracted-motion clips. Open any compiled clip URL with the Open clip button or `?clip=/path/clip.json`.
 
 The included library clearly distinguishes:
 
@@ -85,7 +85,7 @@ npm run animation:compile -- artifacts/animation-video/my-action-v1/compile.json
   --output public/animation-lab/elastic-strike-v1
 ```
 
-Open `/animation-lab.html?clip=/animation-lab/elastic-strike-v1/clip.json`. Output directories are immutable: choose a new version for revisions. Compilation writes to staging and publishes only when complete, leaving accepted assets untouched.
+Open `/animation-lab?clip=/animation-lab/elastic-strike-v1/clip.json`. Output directories are immutable: choose a new version for revisions. Compilation writes to staging and publishes only when complete, leaving accepted assets untouched.
 
 ### Selection and timing
 

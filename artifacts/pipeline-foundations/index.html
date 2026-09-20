@@ -6,5 +6,5 @@
 <video controls preload="metadata" src="workbench.mp4"></video>
 <nav><button data-time="0">Create a plan</button><button data-time="18">Saved after reload</button><button data-time="36">One generation admitted</button><button data-time="55">Completed; review required</button></nav>
 <p>The saved remainder waits for explicit continuation. Refresh never approves art or submits the next generation. Build plans use estimated-spend and submission limits, not provider billing caps.</p>
-<p><a href="/animation-lab.html?workspace=pipeline">Open benchmarks in the studio</a> · <a href="README.md">Verification and limitations</a></p>
+<p><a href="/animation-lab?workspace=pipeline">Open benchmarks in the studio</a> · <a href="README.md">Verification and limitations</a></p>
 </main><script>document.querySelectorAll('[data-time]').forEach(button=>button.onclick=()=>{const video=document.querySelector('video');video.currentTime=Number(button.dataset.time);video.play();});</script></body></html>

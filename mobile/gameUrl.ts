@@ -12,12 +12,12 @@ export function gameOrigin(configured: string | undefined, development: boolean,
 }
 
 export function fightUrl(origin: string, player: string, opponent: string): string {
-  const url = new URL('/fight.html', origin);
+  const url = new URL('/fight', origin);
   url.search = new URLSearchParams({ p1: player, p2: opponent, cpu: 'on', touch: '1' }).toString();
   return url.href;
 }
 
 export function allowGameNavigation(target: string, origin: string): boolean {
-  try { const url = new URL(target); return url.origin === origin && url.pathname === '/fight.html'; }
+  try { const url = new URL(target); return url.origin === origin && ['/fight', '/fight.html'].includes(url.pathname); }
   catch { return false; }
 }

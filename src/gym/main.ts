@@ -86,7 +86,7 @@ async function main(): Promise<void> {
   const params = new URLSearchParams(window.location.search);
   const idParam = params.get('id');
   if (!idParam) {
-    showStatus('No character id. Open as gym.html?id=<characterId>', true);
+    showStatus('No character id. Open as /gym?id=<characterId>', true);
     return;
   }
   characterId = idParam;

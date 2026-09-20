@@ -1,4 +1,5 @@
 {
+  "cleanUrls": true,
   "buildCommand": "npm run cms:vercel:build",
   "outputDirectory": "dist",
   "functions": {
@@ -14,6 +15,10 @@
     }
   },
   "rewrites": [
+    {
+      "source": "/workbench",
+      "destination": "/index.html"
+    },
     {
       "source": "/api/:path*",
       "destination": "/api/cms?path=:path*"

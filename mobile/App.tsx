@@ -103,7 +103,7 @@ function FightApp() {
         if (message.type === 'select-fighter') { setInFight(false); setReady(false); setError(null); }
       } catch { /* unknown message */ } }}
       onError={() => { captureEvent('fight_webview_failed', { player_fighter_id: player, opponent_fighter_id: opponent }); setError('Could not reach the arena. Check your connection.'); }}
-      onHttpError={event => { if (event.nativeEvent.url.includes('/fight.html')) { captureEvent('fight_http_failed', { player_fighter_id: player, opponent_fighter_id: opponent, status_code: event.nativeEvent.statusCode }); setError(`Arena returned HTTP ${event.nativeEvent.statusCode}.`); } }}
+      onHttpError={event => { if (new URL(event.nativeEvent.url).pathname.replace(/\.html$/, '') === '/fight') { captureEvent('fight_http_failed', { player_fighter_id: player, opponent_fighter_id: opponent, status_code: event.nativeEvent.statusCode }); setError(`Arena returned HTTP ${event.nativeEvent.statusCode}.`); } }}
       onContentProcessDidTerminate={() => {
         const attempt = ++processRecoveryAttempts.current;
         captureEvent('fight_process_terminated', { player_fighter_id: player, opponent_fighter_id: opponent, recovery_attempt: attempt });

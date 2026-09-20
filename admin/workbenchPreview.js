@@ -31,7 +31,7 @@ export function mountPreview({ host, detail, gameBase }) {
     const row = host.querySelector('[data-preview-row]')?.value;
     const entry = detail.rows.find(item => item.row === row);
     if (kind === 'motion' && !entry?.clipUrl) return;
-    const url = new URL(kind === 'motion' ? '/animation-lab.html' : '/testbed.html', gameBase);
+    const url = new URL(kind === 'motion' ? '/animation-lab' : '/testbed', gameBase);
     if (kind === 'motion') {
       if(lastRow!==row){
         moveSelect.innerHTML=(entry.moves??[]).map(move=>`<option value="${esc(move.id)}">${esc(move.name)}</option>`).join('');

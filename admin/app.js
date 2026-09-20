@@ -35,7 +35,7 @@ window.addEventListener('message', event => {
   document.querySelector(event.data.workspace === 'pipeline'?'.ops-panel':'#character-workbench')?.scrollIntoView({block:'start'});
 });
 const animationLabLink = document.getElementById('animation-lab-link');
-if (animationLabLink) animationLabLink.href = `${TESTBED_BASE_URL}/animation-lab.html`;
+if (animationLabLink) animationLabLink.href = `${TESTBED_BASE_URL}/animation-lab`;
 const benchmarkLink=document.querySelector('.benchmark-route');
 if(benchmarkLink){
   benchmarkLink.href=`${ROUTE_PREFIX}/pipeline`;
@@ -45,7 +45,7 @@ if(benchmarkLink){
 function openTestbed(characterId) {
   if (!characterId) return;
   if (state.preview && characterId === state.currentCharacterId) { state.preview.open('testbed'); document.getElementById('workbench-preview')?.scrollIntoView({block:'start'}); return; }
-  const url = `${TESTBED_BASE_URL}/testbed.html?id=${encodeURIComponent(characterId)}`;
+  const url = `${TESTBED_BASE_URL}/testbed?id=${encodeURIComponent(characterId)}`;
   window.open(url, `testbed-${characterId}`);
 }
 
@@ -53,7 +53,7 @@ function openTestbed(characterId) {
 // the testbed — admin is static JS and can't host Phaser itself.
 function openGym(characterId) {
   if (!characterId) return;
-  const url = `${TESTBED_BASE_URL}/gym.html?id=${encodeURIComponent(characterId)}`;
+  const url = `${TESTBED_BASE_URL}/gym?id=${encodeURIComponent(characterId)}`;
   window.open(url, `gym-${characterId}`);
 }
 

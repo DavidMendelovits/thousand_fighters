@@ -1,3 +1,3 @@
 export function isFightOnly(): boolean {
-  return window.location.pathname.endsWith('/fight.html');
+  return ['/fight', '/fight.html'].includes(window.location.pathname.replace(/\/$/, ''));
 }

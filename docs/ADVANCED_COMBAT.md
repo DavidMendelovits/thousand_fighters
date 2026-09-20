@@ -2,7 +2,7 @@
 
 ## Try it
 
-- Studio: `/animation-lab.html?workspace=combat` (Brine selected).
+- Studio: `/animation-lab?workspace=combat` (Brine selected).
 - Arena: `/?p1=brine&p2=meridian&cpu=off`.
 - P1: WASD movement; F punch; G linking kick; H signature; down+H alternate; down+G launcher; F+G grab. Shift dashes; jump then down+Shift performs a downward air dodge into a wavedash. Direction chooses forward/back. Double-tap a direction also dashes.
 - E activates the fighter's power-up; Q transforms Brine or Taffy. P2 equivalents: arrows, J/K/L, N dash, O power, U form.

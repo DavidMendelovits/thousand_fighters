@@ -10,7 +10,7 @@ app.innerHTML = `
   <header class="masthead">
     <a class="brand" href="/" aria-label="Thousand Fighters home"><span class="brand-mark" aria-hidden="true">TF</span><span>THOUSAND<br>FIGHTERS</span></a>
     <div class="workspace"><span class="status-dot"></span> MOTION WORKSPACE <span class="version">/ 01</span></div>
-    <a class="game-link" href="/roster.html">Play the Oddities <span aria-hidden="true">↗</span></a>
+    <a class="game-link" href="/roster">Play the Oddities <span aria-hidden="true">↗</span></a>
   </header>
   <main>
     <section class="page-heading"><div><div class="eyebrow">FROM MOTION TO MOVESET</div><h1>Animation lab<span>.</span></h1><p>Inspect every pose. Keep the motion that matters.</p></div><button class="button open-button" id="open-clip"><span aria-hidden="true">↗</span> Open clip</button></section>

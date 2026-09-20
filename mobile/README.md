@@ -40,7 +40,7 @@ Expo's `EXPO_PUBLIC_` values are compiled into the client and are not secrets.
    on actual iOS and Android hardware before store submission.
 
 Production rejects absent, credential-bearing, non-HTTPS, or localhost URLs.
-Top-level WebView navigation stays on the configured origin's `/fight.html`.
+Top-level WebView navigation stays on the configured origin's canonical `/fight` route. Legacy `/fight.html` links remain compatible.
 Matches run locally after assets load, but this first version needs network
 access to start: assets are hosted, **not packaged for offline play**. A pinned,
 versioned offline asset pack is a subsequent release task. Do not point production

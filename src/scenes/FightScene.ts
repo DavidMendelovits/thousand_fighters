@@ -808,7 +808,7 @@ export class FightScene extends Phaser.Scene {
       ...this.createPauseButton(208,398,'P2',()=>{player=2;draw();}),
       ...this.createPauseButton(330,398,'NEXT',()=>{page=(page+1)%pages;draw();}),
       ...this.createPauseButton(452,398,'CPU',()=>{this.singlePlayer=!this.singlePlayer;draw();}),
-      ...this.createPauseButton(574,398,isFightOnly()?'BACK':'ROSTER',()=>{if(isFightOnly())this.scene.restart({p1Id:this.selectedP1Id,p2Id:this.selectedP2Id,cpu:this.singlePlayer});else window.location.href='/roster.html';}),
+      ...this.createPauseButton(574,398,isFightOnly()?'BACK':'ROSTER',()=>{if(isFightOnly())this.scene.restart({p1Id:this.selectedP1Id,p2Id:this.selectedP2Id,cpu:this.singlePlayer});else window.location.href='/roster';}),
       ...this.createPauseButton(706,398,'FIGHT',()=>{this.scene.restart({p1Id,p2Id,cpu:this.singlePlayer,p1Rounds:0,p2Rounds:0,roundNumber:1} satisfies FightSceneData);}),
     ]);
     draw();

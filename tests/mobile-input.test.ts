@@ -43,5 +43,8 @@ test('mobile production requires HTTPS and limits navigation to the fight client
   const url = fightUrl('https://example.com', 'brine', 'meridian');
   assert.equal(allowGameNavigation(url, 'https://example.com'), true);
   assert.equal(allowGameNavigation('https://example.com/cms-admin', 'https://example.com'), false);
+  assert.equal(fightUrl('https://example.com', 'brine', 'meridian').startsWith('https://example.com/fight?'), true);
+  assert.equal(allowGameNavigation('https://example.com/fight', 'https://example.com'), true);
+  assert.equal(allowGameNavigation('https://example.com/fight.html', 'https://example.com'), true);
   assert.equal(allowGameNavigation('https://evil.example/fight.html', 'https://example.com'), false);
 });

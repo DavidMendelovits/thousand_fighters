@@ -25,7 +25,7 @@ async function main(): Promise<void> {
   const params = new URLSearchParams(window.location.search);
   const characterId = params.get('id');
   if (!characterId) {
-    showStatus('No character id. Open as testbed.html?id=<characterId>', true);
+    showStatus('No character id. Open as /testbed?id=<characterId>', true);
     return;
   }
 
