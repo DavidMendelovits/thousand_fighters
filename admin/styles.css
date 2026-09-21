@@ -2330,8 +2330,8 @@ details[open] .dev-tools-summary {
   [data-roster-toggle] { display:inline-flex; }
   .roster-collapsed > :not(.panel-heading),.roster-collapsed #refresh-roster { display:none; }
   .roster-collapsed .panel-heading { margin:0; }
-  .workbench-sections { gap:4px; }
-  .workbench-sections button { font-size:11px;padding:8px; }
+  .workbench-sections { gap:4px;flex-wrap:nowrap;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:thin; }
+  .workbench-sections button { flex:0 0 auto;font-size:11px;padding:8px;scroll-snap-align:start; }
   .workbench-preview { padding:10px; }
   .workbench-preview iframe { height:clamp(560px,72svh,720px); }
   .workbench-preview iframe[data-preview-kind="gym"] { height:clamp(680px,82svh,820px); }
