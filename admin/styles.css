@@ -2101,7 +2101,7 @@ details[open] .dev-tools-summary {
 .preview-toolbar { display:flex; gap:10px; align-items:end; flex-wrap:wrap; }
 .preview-toolbar label { display:grid; gap:6px; font-size:12px; flex:1 1 220px; min-width:0; }
 .preview-toolbar select { width:100%; min-width:0; }
-.workbench-preview iframe { width:100%; height:830px; border:1px solid var(--line); margin-top:16px; background:#111214; }
+.workbench-preview iframe { width:100%; border:1px solid var(--line); margin-top:16px; background:#111214; }
 .workbench-preview iframe[hidden] { display:none; }
 .preview-empty { padding:18px; background:#151b24; color:var(--muted); line-height:1.7; border-radius:6px; }
 .kit-check input[type="checkbox"] { width:auto; flex:0 0 auto; }
@@ -2288,8 +2288,8 @@ details[open] .dev-tools-summary {
 .move-data-pane, .animation-pane, .variant-row, .move-tab-pane { min-width:0; }
 .kit-row { flex-wrap:wrap; }
 .kit-row-main { min-width:0;overflow-wrap:anywhere; }
-.workbench-preview iframe { height:760px; }
-.workbench-preview iframe[data-preview-kind="gym"] { height:850px; }
+.workbench-preview iframe { height:clamp(560px,72svh,760px); }
+.workbench-preview iframe[data-preview-kind="gym"] { height:clamp(680px,84svh,850px); }
 .workbench-preview .preview-toolbar { flex-wrap:wrap; }
 .workbench-preview select { max-width:100%; }
 .workbench-preview:not([data-mode="motion"]) .preview-timing { display:none; }
@@ -2325,8 +2325,8 @@ details[open] .dev-tools-summary {
   .workbench-sections { gap:4px; }
   .workbench-sections button { font-size:11px;min-height:42px;padding:8px; }
   .workbench-preview { padding:10px; }
-  .workbench-preview iframe { height:1100px; }
-  .workbench-preview iframe[data-preview-kind="gym"] { height:1350px; }
+  .workbench-preview iframe { height:clamp(560px,72svh,720px); }
+  .workbench-preview iframe[data-preview-kind="gym"] { height:clamp(680px,82svh,820px); }
   .move-card-actions { flex-wrap:wrap; }
   .animation-browser { padding:14px; }
 }
