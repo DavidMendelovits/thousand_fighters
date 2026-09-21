@@ -8,8 +8,11 @@ test('real workbench submission survives reload and extracts on the server',asyn
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   try{
     await page.goto(`${fixture.url}/roster/${fixture.characterId}?standalone=1`);
+    await page.locator('[data-studio-section="build"]').click();
     await expect(page.locator('#character-build-jobs')).toContainText('No tracked builds yet');
+    await page.locator('[data-studio-section="motion"]').click();
     const row=page.locator('[data-gen-move="base"]');await row.click();
+    await page.locator('[data-studio-section="build"]').click();
     await expect(page.locator('[data-build-status="running"]')).toBeVisible();
     await page.reload();
     await expect(page.locator('[data-build-status="running"]')).toBeVisible();
@@ -48,6 +51,7 @@ test('an interrupted build requires an explicit checked resolution, with no paid
     previous.drain=async()=>{};
     await previous.submit(fixture.characterId,{idempotencyKey:randomUUID(),tool:'generate_character_concept',input:{characterId:fixture.characterId,prompt:'Interrupted fixture'}});
     await page.goto(`${fixture.url}/roster/${fixture.characterId}?standalone=1`);
+    await page.locator('[data-studio-section="build"]').click();
     const card=page.locator('[data-build-status="needs-recovery"]');await expect(card).toBeVisible();
     await card.locator('.build-recovery summary').click();
     const note='Checked fixture worker stopped; no external request was ever submitted.';
@@ -66,6 +70,7 @@ test('a lost submission response retains the nonce and reuses the paid job',asyn
   const fixture=await buildFixture({delayMs:1500});
   try{
     await page.goto(`${fixture.url}/roster/${fixture.characterId}?standalone=1`);
+    await page.locator('[data-studio-section="identity"]').click();
     let dropped=false;
     await page.route('**/build-jobs',async route=>{
       if(route.request().method()==='POST'&&!dropped){dropped=true;await route.fetch();await route.abort();}
@@ -74,6 +79,7 @@ test('a lost submission response retains the nonce and reuses the paid job',asyn
     await page.locator('[data-gen-concept]').click();
     await expect(page.locator('[data-gen-concept]')).toBeEnabled();
     await page.locator('[data-gen-concept]').click();
+    await page.locator('[data-studio-section="build"]').click();
     await expect(page.locator('[data-build-status="completed"]')).toBeVisible();
     expect(fixture.calls).toBe(1);
     const {jobs}=await (await page.request.get(`${fixture.url}/api/characters/${fixture.characterId}/build-jobs`)).json();

@@ -5,6 +5,8 @@ const routeFiles = new Map([
   ['/testbed', '/testbed.html'],
   ['/gym', '/gym.html'],
   ['/animation-lab', '/animation-lab.html'],
+  ['/workbench', '/animation-lab.html'],
+  ['/artifacts/studio-audit', '/artifacts/studio-audit/index.html'],
   ['/roster', '/roster.html'],
 ]);
 

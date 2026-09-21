@@ -19,7 +19,6 @@ import {
   validateProjectileReferences,
   normalizeInputToken,
 } from '../export/convertDraftToCharacterConfig.js';
-import { MOVE_SHEET_IDS } from '../../shared/animationRows.js';
 import { rowPromptProfile } from './rowPromptProfiles.js';
 import { assertMotionCoverage } from './motionRowArtifacts.js';
 import { projectileImpact } from '../../shared/projectileImpact.js';
@@ -78,6 +77,7 @@ export class CharacterCreationPipeline {
       combos: result.value?.combos ?? [],
       projectiles: result.value?.projectiles ?? [],
     });
+    applyGeneratedComboExclusivity(moves, combos, warnings);
 
     const content = {
       schemaVersion,
@@ -401,15 +401,10 @@ export class CharacterCreationPipeline {
   /**
    * Author a combo from intent: each segment is either an EXISTING move id or a
    * NEW move described in words. New segments are authored by the text model
-   * (phases, hitbox numbers, a chainable input), the server assigns each a sprite
-   * row, the combo descriptor stitches them (convert derives the cancel graph),
-   * and — best effort — the new rows' sprites are generated in-flow.
-   *
-   * Row budget is the hard constraint: there are only 6 move-animation rows, and
-   * generating onto a row OVERWRITES whatever animates there. So the server (not
-   * the model) assigns rows, preferring rows no kept move uses, and NEVER
-   * regenerates a row an existing move depends on — overflow shares an
-   * already-generated row instead. The 6-row ceiling is surfaced in warnings.
+   * (phases, hitbox numbers, a chainable input), the server assigns every new
+   * action its own stable custom sprite row, and the combo descriptor stitches
+   * them into the runtime cancel graph. Follow-ups are true cancel-only moves:
+   * they are absent from neutral move selection and exist only inside the string.
    *
    * The draft (new moves + combo descriptor) is persisted in ONE write, then
    * sprites are generated as a follow-on that warns on failure but never rolls
@@ -421,10 +416,10 @@ export class CharacterCreationPipeline {
    * @param {string} [args.comboDisplayName]
    * @param {Array<{ moveId?: string, description?: string, displayName?: string }>} args.segments
    *   Ordered. `moveId` references an existing move; otherwise `description` creates one.
-   * @param {boolean} [args.generateSprites=true]
+   * @param {boolean} [args.generateSprites=false]
    * @param {object} [args.context]
    */
-  async authorCombo({ characterId, comboId, comboDisplayName, segments, generateSprites = true, context = {} }) {
+  async authorCombo({ characterId, comboId, comboDisplayName, segments, generateSprites = false, context = {} }) {
     if (!comboId) throw new Error('authorCombo: comboId is required');
     if (!Array.isArray(segments) || segments.length < 2) {
       throw new Error('authorCombo: a combo needs at least 2 segments');
@@ -435,7 +430,11 @@ export class CharacterCreationPipeline {
     if (!draft) throw new Error(`authorCombo: no draft found for "${characterId}"`);
 
     const warnings = [];
-    const existingMoves = draft.moves ?? [];
+    const priorCombo=(draft.combos??[]).find(combo=>combo.id===comboId);
+    const priorOwnedIds=new Set(priorCombo?.ownedMoveIds??[]);
+    // Re-authoring replaces moves owned by this combo instead of accumulating
+    // unreachable attacks and animation rows in the draft.
+    const existingMoves = (draft.moves ?? []).filter(move=>move.comboOwner!==comboId&&!priorOwnedIds.has(move.id));
     const existingIds = new Set(existingMoves.map((move) => move.id));
 
     // Validate existing-id segments up front.
@@ -445,37 +444,20 @@ export class CharacterCreationPipeline {
       }
     }
 
-    // --- Row assignment (server-side, collision-aware) -----------------------
-    // Rows any KEPT move animates on are off-limits for regeneration.
-    const keptRows = new Set(existingMoves.map((move) => move.animation).filter(Boolean));
-    const freeRows = MOVE_SHEET_IDS.filter((row) => !keptRows.has(row));
+    // --- Stable custom row assignment ----------------------------------------
+    // Custom animation rows are data-driven throughout the current engine,
+    // Gym and build planner. Give every new action a distinct row; never reuse
+    // one of the legacy six and never overwrite another move's artwork.
+    const usedRows = new Set(existingMoves.map((move) => move.animation).filter(Boolean));
+    const usedIds = new Set(existingIds);
     const createSegs = segments
       .map((seg, index) => ({ seg, index }))
       .filter(({ seg }) => !seg.moveId);
-
-    let freeCursor = 0;
-    let lastFreeRow = null;
     const assignments = createSegs.map(({ seg, index }) => {
-      let animation;
-      let willGenerate;
-      if (freeCursor < freeRows.length) {
-        animation = freeRows[freeCursor++];
-        lastFreeRow = animation;
-        willGenerate = true;
-      } else if (lastFreeRow) {
-        // Out of distinct free rows: share an already-claimed free row (its sprite
-        // is generated once by the first claimant). Don't regenerate.
-        animation = lastFreeRow;
-        willGenerate = false;
-        warnings.push(`combo "${comboId}" has more new moves than free animation rows — "${seg.description ?? `segment ${index + 1}`}" shares row "${animation}" (no distinct sprite). Only 6 move rows exist.`);
-      } else {
-        // No free rows at all: reuse an owned row WITHOUT regenerating, so we
-        // never clobber an existing move's sprites. It will look like that move.
-        animation = MOVE_SHEET_IDS[0];
-        willGenerate = false;
-        warnings.push(`combo "${comboId}": no free animation rows — "${seg.description ?? `segment ${index + 1}`}" reuses "${animation}" and will look like the existing move on that row.`);
-      }
-      return { seg, index, animation, willGenerate };
+      const stem=`combo_${slugifyMoveId(comboId)}_${index+1}`;
+      const id=uniqueId(stem,usedIds);usedIds.add(id);
+      const animation=uniqueId(stem,usedRows);usedRows.add(animation);
+      return { seg, index, id, animation, willGenerate:true };
     });
 
     // --- Author the new moves via the text model -----------------------------
@@ -505,31 +487,28 @@ export class CharacterCreationPipeline {
     // Map authored moves onto assignments; the server owns `animation`. Guarantee
     // unique ids (don't silently replace an existing move) and fall back to a
     // minimal move if the model returned too few.
-    const usedIds = new Set(existingIds);
+    const createdIdByIndex = new Map(assignments.map((a) => [a.index, a.id]));
+    const orderedIds = segments.map((seg, i) => (seg.moveId ? seg.moveId : createdIdByIndex.get(i)));
     const createdMoves = assignments.map((a, idx) => {
       const authored = authoredMoves[idx] ?? {};
-      const baseId = authored.id || slugifyMoveId(a.seg.displayName ?? a.seg.description ?? `${comboId}_${idx + 1}`);
-      const id = uniqueId(baseId, usedIds);
-      usedIds.add(id);
-      // Follow-ups (any segment after the first) are CANCEL-ONLY: allowedStates
-      // is just 'attack', so they can't be done from neutral — they're reachable
-      // only through the combo. That keeps the dynamism (a hidden follow-up, not
-      // another move on the button). The first segment stays neutral-accessible
-      // so the combo has a real starter. (existing-move segments are untouched.)
       const isFollowUp = a.index > 0;
       const trigger = { sequence: Array.isArray(authored.trigger?.sequence) ? authored.trigger.sequence : ['lp'] };
       if(authored.trigger?.directions)trigger.directions=authored.trigger.directions;
-      if (isFollowUp) trigger.allowedStates = ['attack'];
+      if (isFollowUp) Object.assign(trigger,{allowedStates:['attack'],cancelOnly:true,cancelFrom:[orderedIds[a.index-1]],cancelOn:'hit'});
       const move = {
-        id,
-        displayName: authored.displayName ?? a.seg.displayName ?? id,
+        id:a.id,
+        displayName: authored.displayName ?? a.seg.displayName ?? a.id,
         description: authored.description ?? a.seg.description ?? '',
         animation: a.animation,
+        requiredAnimation:a.animation,
+        artStatus:'proxy',
+        category:'string',
+        comboOwner:comboId,
+        comboStage:a.index,
         ...(authored.controlledActor?{controlledActor:authored.controlledActor}:{}),
         trigger,
         phases: Array.isArray(authored.phases) && authored.phases.length ? authored.phases : defaultComboPhases(idx),
       };
-      a.createdId = id;
       return move;
     });
 
@@ -552,11 +531,9 @@ export class CharacterCreationPipeline {
     }
 
     // --- Single draft write: merge moves + combo descriptor ------------------
-    const createdIdByIndex = new Map(assignments.map((a) => [a.index, a.createdId]));
-    const orderedIds = segments.map((seg, i) => (seg.moveId ? seg.moveId : createdIdByIndex.get(i)));
     const createdIds = new Set(createdMoves.map((move) => move.id));
     const mergedMoves = [...existingMoves.filter((move) => !createdIds.has(move.id)), ...createdMoves];
-    const combo = { id: comboId, segments: orderedIds, ...(comboDisplayName ? { displayName: comboDisplayName } : {}) };
+    const combo = { id: comboId, segments: orderedIds, ownedMoveIds:[...createdIds], exclusiveFrom:1, displayName:comboDisplayName??titleCaseComboId(comboId) };
     const combos = [...(draft.combos ?? []).filter((existing) => existing.id !== comboId), combo];
     const comboErrors = validateCombos(combos, mergedMoves.map((move) => move.id));
     if (comboErrors.length) throw new Error(`authorCombo rejected: ${comboErrors.join('; ')}`);
@@ -1201,9 +1178,54 @@ function healGeneratedKit({ characterId, moves, combos, projectiles }) {
   return { combos: validCombos, projectiles: validProjectiles, warnings };
 }
 
+/**
+ * Turns model-declared exclusive combo stages into the same first-class move
+ * contract used by the workbench authoring tool. This keeps initial character
+ * creation and later CMS editing on one runtime model: dedicated rows,
+ * cancel-only activation, and an explicit predecessor for every link.
+ */
+function applyGeneratedComboExclusivity(moves, combos, warnings) {
+  const byId=new Map((moves??[]).map(move=>[move.id,move]));
+  const owned=new Map();
+  for(const combo of combos??[]){
+    if(!Number.isInteger(combo.exclusiveFrom))continue;
+    if(combo.exclusiveFrom<1||combo.exclusiveFrom>=combo.segments.length){
+      warnings.push(`combo "${combo.id}" has invalid exclusiveFrom ${combo.exclusiveFrom}; expected a segment index from 1 to ${combo.segments.length-1}`);
+      continue;
+    }
+    for(let index=combo.exclusiveFrom;index<combo.segments.length;index+=1){
+      const id=combo.segments[index];
+      const priorOwner=owned.get(id);
+      if(priorOwner&&priorOwner!==combo.id){
+        warnings.push(`move "${id}" was declared combo-only by both "${priorOwner}" and "${combo.id}"; keeping its first owner`);
+        continue;
+      }
+      const move=byId.get(id);if(!move)continue;
+      owned.set(id,combo.id);
+      move.comboOwner=combo.id;
+      move.comboStage=index;
+      move.category='string';
+      move.requiredAnimation=move.requiredAnimation??move.animation;
+      move.artStatus=move.artStatus??'proxy';
+      move.trigger={
+        ...(move.trigger??{}),
+        allowedStates:['attack'],
+        cancelOnly:true,
+        cancelFrom:[combo.segments[index-1]],
+        cancelOn:'hit',
+      };
+    }
+    combo.ownedMoveIds=combo.segments.slice(combo.exclusiveFrom);
+  }
+}
+
 function slugifyMoveId(text) {
   const slug = String(text ?? 'move').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40);
   return slug || 'move';
+}
+
+function titleCaseComboId(value){
+  return String(value??'combo').split(/[_-]+/).filter(Boolean).map(part=>part.charAt(0).toUpperCase()+part.slice(1)).join(' ')||'Combo';
 }
 
 function uniqueId(baseId, used) {

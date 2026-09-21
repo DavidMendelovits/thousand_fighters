@@ -4,6 +4,12 @@ Audit date: September 19, 2026. Scope: current local working tree, including unc
 
 ## Executive assessment
 
+### September 20 execution update — unified draft editor audit
+
+The workbench now groups motion/move specs, combo previews, anchors/bounds, identity/forms, build/publish and history around one selected draft at `/workbench`. It replaces the published-only combat panel, removes phantom generic rows, and offers two mutually exclusive motion workspaces: **Focus one move** pairs one live preview with one move editor, while **All moves** removes the duplicate preview and exposes the complete scrollable sheet library. The responsive Gym remains embedded with custom-row navigation and active-revision metadata. Generation reports immediate admission/progress/errors, including on HTTP tailnet URLs. Combo previews distinguish complete move sequences from real engine hit-confirm cancels and report failures instead of forcing them through. Authored combos can now own dedicated cancel-only moves and animation rows, so a route can reveal attacks that are impossible to perform from neutral instead of merely replaying ordinary moves.
+
+See [findings, verification and remaining gates](WORKBENCH_AUDIT_2026-09-20.md) and `/artifacts/studio-audit/` for the actual browser recording. CREATE-05/06 and GAME-02 advanced, not fully closed. Art acceptance, general timed grip/socket editing, a new-character browser-to-match run and production hosting remain open.
+
 ### September 20 execution update — three parallel pipeline workstreams
 
 Provider-attempt admission/recovery, saved review-first build plans and generation benchmarks are now integrated into the workbench. The bulk animation action opens a durable plan, not a tab-owned loop. Plans pin dependencies and reserve estimated spend/submission counts; identity/base/motion review checkpoints prevent blindly filling an entire moveset. Actor identity frames are frozen independently of animated idle output. Known provider tasks and unchanged saved sources have explicit no-resubmission recovery paths. The Pipeline workspace exposes deduplicated attempt measurements, missing-cost coverage and immutable trial specifications, plus an isolated asynchronous FAL/Pruna source-video runner that never overwrites canonical character rows.

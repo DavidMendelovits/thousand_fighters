@@ -109,8 +109,8 @@ export async function loadGymData(characterId: string): Promise<GymData> {
   const warnings: string[] = [];
   const id = encodeURIComponent(characterId);
 
-  const [{ config }, { assets }, draftResult] = await Promise.all([
-    getJson<{ config: CharacterConfig }>(`/api/characters/${id}/runtime-config`),
+  const [{ config,assetRoot }, { assets:allAssets }, draftResult] = await Promise.all([
+    getJson<{ config: CharacterConfig;assetRoot?:string }>(`/api/characters/${id}/runtime-config`),
     getJson<{ assets: AssetRecord[] }>(`/api/characters/${id}/assets`),
     // The draft carries the editable overrides + hitbox numbers (Phase 2). It is
     // advisory for the gym's render (runtime-config already folds it in), so a
@@ -120,13 +120,16 @@ export async function loadGymData(characterId: string): Promise<GymData> {
 
   if (!config) throw new Error(`runtime-config for "${characterId}" returned no config`);
   const draft = draftResult?.draft ?? null;
+  // Frame metadata and pixels must come from the same active revision. A
+  // suffix match across archived packs can silently edit the wrong anchors.
+  const assets=allAssets.filter(asset=>!assetRoot||asset.key.startsWith(`${assetRoot}/`)||(!/\/(sprites|sheets)\//.test(asset.key)&&!/(frameData|normalization-report)\.json$/.test(asset.key)));
 
   const byRelativePath = new Map<string, AssetRecord>();
   for (const asset of assets ?? []) byRelativePath.set(asset.relativePath, asset);
 
   // Locate + load the editable frameData.json (before warnings, so warnings can
   // be keyed by the frame's stable `file` — they then travel through reorder).
-  const frameDataAsset = (assets ?? []).find((a) => a.relativePath.endsWith('frameData.json'));
+  const frameDataAsset = assets.find(a=>assetRoot?a.key===`${assetRoot}/frameData.json`:a.relativePath.endsWith('frameData.json'));
   let frameData: FrameData | null = null;
   if (frameDataAsset) {
     try {
@@ -165,8 +168,8 @@ export async function loadGymData(characterId: string): Promise<GymData> {
   // frameData `file` suffix, falling back to the conventional sprites/ naming.
   const frameUrls: Partial<Record<SpriteSheetId, string[]>> = {};
   const frameCounts = config.sprite?.frameCounts ?? {};
-  for (const sheet of SHEET_IDS) {
-    const count = frameCounts[sheet] ?? frameData?.frames?.[sheet]?.length ?? 0;
+  for (const sheet of Object.keys(frameData?.frames??frameCounts)) {
+    const count = frameData?.frames?.[sheet]?.length ?? frameCounts[sheet] ?? 0;
     if (!count) continue;
     const metas = frameData?.frames?.[sheet];
     const urls: string[] = [];
@@ -175,6 +178,7 @@ export async function loadGymData(characterId: string): Promise<GymData> {
       if (asset) urls[index] = asset.apiUrl;
     }
     frameUrls[sheet] = urls;
+    if(urls.filter(Boolean).length!==count)warnings.push(`${sheet}: ${count-urls.filter(Boolean).length} missing frame images in the active revision.`);
   }
 
   return { config, draft, frameData, frameUrls, frameDataKey: frameDataAsset?.key ?? null, warnings, frameWarnings };

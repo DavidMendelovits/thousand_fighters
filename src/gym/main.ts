@@ -162,8 +162,16 @@ async function main(): Promise<void> {
   wireSave();
   wireUndo();
   renderWarnings();
-  selectSheet('base');
+  const available=Object.keys(data.frameUrls).filter(row=>data.frameUrls[row]?.length);
+  const requested=params.get('row');
+  selectSheet(requested&&available.includes(requested)?requested:available.includes('idle')?'idle':available[0]??'base');
   startHud();
+  window.parent.postMessage({type:'studio-preview-ready'},location.origin);
+  window.addEventListener('message',event=>{
+    if(event.origin!==location.origin||event.source!==window.parent)return;
+    if(event.data?.type==='studio-select-row'&&available.includes(event.data.row))selectSheet(event.data.row);
+    if(event.data?.type==='studio-preview-visibility'&&!event.data.visible){scene.setPlaying(false);setPlayButton(false);}
+  });
 }
 
 let currentSheet: SpriteSheetId = 'base';
@@ -172,7 +180,9 @@ let currentMode: BoundsMode = 'anchor';
 function buildNavigator(): void {
   const list = $('move-list');
   list.innerHTML = '';
-  for (const group of SHEET_GROUPS) {
+  const registered=new Set(SHEET_GROUPS.flatMap(g=>g.sheets));
+  const custom=Object.keys(data.frameUrls).filter(row=>!registered.has(row));
+  for (const group of [...SHEET_GROUPS,{label:'Character-specific',sheets:custom}]) {
     // Only render rows the loaded fighter actually owns. The registry now lists
     // all 12 rows (T21), but a fighter owns a subset — show "what exists" so the
     // navigator isn't cluttered with frameless jump/crouch/grab/... rows and
@@ -193,7 +203,7 @@ function buildNavigator(): void {
       row.className = 'nav-move';
       row.dataset.sheet = sheet;
       const status = anchorStatus(sheet);
-      row.innerHTML = `<span class="dot ${status}"></span><span class="label">${SHEET_LABELS[sheet]}</span><span class="count">${count}</span>`;
+      row.innerHTML = `<span class="dot ${status}"></span><span class="label">${escapeHtml(SHEET_LABELS[sheet]??sheet.replaceAll('_',' '))}</span><span class="count">${count}</span>`;
       row.addEventListener('click', () => selectSheet(sheet));
       groupEl.appendChild(row);
     }
@@ -434,7 +444,7 @@ function setPlayButton(playing: boolean): void {
 
 function wireKeyboard(): void {
   window.addEventListener('keydown', (e) => {
-    if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
+    if ((e.target as HTMLElement)?.closest('input,textarea,select,button,[contenteditable="true"]')) return;
     const snap = scene.getSnapshot();
     const meta = snap.anchor;
     const step = e.shiftKey ? 10 : 1;
@@ -506,6 +516,7 @@ function markDraftDirty(): void {
 }
 function refreshDirty(): void {
   const d = anyDirty();
+  window.parent.postMessage({type:'studio-gym-dirty',dirty:d},location.origin);
   $('dirty').classList.toggle('on', d);
   ($('save-btn') as HTMLButtonElement).disabled = !d;
   if (d) window.addEventListener('beforeunload', beforeUnload);
@@ -690,6 +701,7 @@ async function save(): Promise<void> {
     }
 
     if (frameOk && draftOk) {
+      window.parent.postMessage({type:'studio-gym-saved'},location.origin);
       btn.textContent = 'Saved';
       window.setTimeout(() => { if (!anyDirty()) btn.textContent = 'Save'; }, 1200);
     } else {

@@ -44,7 +44,7 @@ async function install({characterId,directory,storage,repository,contactFrame,re
     actor.sprite.frameCounts[action]=frames.length;
   }
   draft.sprite.rowPlayback={...draft.sprite.rowPlayback,[action]:{ticksPerFrame:action.startsWith('walk')?2:3,loop:report.loop}};
-  for(const move of draft.moves??[])if(move.animation===action)move.visualTimeline=retimeMotion(move,frames.length,contactFrame??report.suggestedContactFrame,recoveryFrame);
+  for(const move of draft.moves??[])if(move.animation===action){move.visualTimeline=retimeMotion(move,frames.length,contactFrame??report.suggestedContactFrame,recoveryFrame);if(move.requiredAnimation===action)move.artStatus='ready';}
   draft.motionRows={...draft.motionRows,[action]:{...report,frames:undefined,status:'needs-visual-review',contactFrame:contactFrame??report.suggestedContactFrame,...(recoveryFrame!==undefined?{recoveryFrame}:{})}};
   await repository.saveDraft(characterId,draft,{provider:'video-motion-compiler'});
   return {action,frameCount:frames.length,status:'needs-visual-review'};

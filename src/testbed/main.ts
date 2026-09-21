@@ -69,6 +69,21 @@ async function main(): Promise<void> {
   wireDummy(scene);
   renderWarnings(warnings);
   startHudLoop(scene);
+  window.addEventListener('message',event=>{
+    if(event.origin!==location.origin||event.source!==window.parent)return;
+    if(event.data?.type==='studio-preview-combo'&&Array.isArray(event.data.moves)&&event.data.moves.every((id:unknown)=>typeof id==='string')){
+      scene.previewCombo(event.data.moves);syncComboControls();
+    }
+    if(event.data?.type==='studio-preview-visibility'){
+      const mode=event.data.visible?'play':'pause';scene.setMode(mode);
+      document.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
+    }
+  });
+}
+
+function syncComboControls():void{
+  document.querySelectorAll<HTMLButtonElement>('[data-dummy]').forEach(b=>b.classList.toggle('active',b.dataset.dummy==='reactive'));
+  document.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode==='play'));
 }
 
 function buildMoveButtons(scene: TestbedScene, config: CharacterConfig): void {
@@ -77,14 +92,15 @@ function buildMoveButtons(scene: TestbedScene, config: CharacterConfig): void {
     container.innerHTML = '<span class="help">No moves in this draft.</span>';
     return;
   }
-  const legend=document.createElement('p');legend.className='help move-legend';legend.textContent='J = jab (F) · K = kick (G) · S = special (H). Arrows are relative to facing. Buttons preview individual moves; enter strings using the keyboard. Timings: startup / active / recovery, in 60 Hz ticks.';container.appendChild(legend);
-  const categories=[...new Set(config.moves.map(m=>m.category??'special'))];
+  const legend=document.createElement('p');legend.className='help move-legend';legend.textContent='F / G / H are the three attack buttons. Arrows are relative to facing. Combo-only follow-ups appear inside their route, not as neutral moves. Timings: startup / active / recovery, in 60 Hz ticks.';container.appendChild(legend);
+  const neutralMoves=config.moves.filter(move=>!move.trigger.cancelOnly);
+  const categories=[...new Set(neutralMoves.map(m=>m.category??'special'))];
   for(const category of categories){
   const heading=document.createElement('h3');heading.className='move-category';heading.textContent=category;container.appendChild(heading);
-  for (const move of config.moves.filter(m=>(m.category??'special')===category)) {
+  for (const move of neutralMoves.filter(m=>(m.category??'special')===category)) {
     const button = document.createElement('button');
     button.className = 'move';
-    const labels:Record<string,string>={lp:'J',lk:'K',hp:'S'};
+    const labels:Record<string,string>={lp:'F',mk:'F',mp:'G',lk:'G',hp:'H',hk:'H'};
     const command=move.inputLabel??move.trigger.sequence.map(t=>labels[t]??t).join(' + ');
     button.innerHTML = `${escapeHtml(move.displayName || move.id)}<br /><span class="anim">${escapeHtml(command)} · ${move.phases.map(p=>p.frames).join(' / ')}</span>${move.artStatus==='proxy'?'<br /><span class="proxy">Temporary art</span>':''}`;
     button.title = `Trigger ${move.id}`;
@@ -97,8 +113,21 @@ function buildMoveButtons(scene: TestbedScene, config: CharacterConfig): void {
   }
   if(config.comboRoutes?.length){
     const heading=document.createElement('h3');heading.className='move-category';heading.textContent='Strings & hit-confirm routes';container.appendChild(heading);
-    for(const route of config.comboRoutes){const row=document.createElement('div');row.className='combo-route';row.innerHTML=`<strong>${escapeHtml(route.name)}</strong><br /><span class="help">${escapeHtml(route.purpose)}</span>`;container.appendChild(row);}
+    for(const route of config.comboRoutes){
+      const row=document.createElement('div');row.className='combo-route';
+      const chain=route.moves.map(id=>{const move=config.moves.find(candidate=>candidate.id===id);return move?`${move.displayName || move.id} [${formatMoveCommand(move)}]`:id;});
+      row.innerHTML=`<strong>${escapeHtml(route.name)}</strong><br /><span class="help">${escapeHtml(route.purpose??'')}<br>${chain.map(escapeHtml).join(' → ')}</span><div><button data-sequence>Sequence</button><button data-confirm>Hit-confirm route</button></div>`;
+      row.querySelector('[data-sequence]')!.addEventListener('click',()=>{scene.previewCombo(route.moves);syncComboControls();});
+      row.querySelector('[data-confirm]')!.addEventListener('click',()=>{scene.previewCombo(route.moves,true);syncComboControls();});
+      container.appendChild(row);
+    }
   }
+  const status=document.createElement('p');status.id='combo-preview-status';status.setAttribute('role','status');status.className='help';container.prepend(status);
+}
+
+function formatMoveCommand(move:CharacterConfig['moves'][number]):string{
+  const labels:Record<string,string>={lp:'F',mk:'F',mp:'G',lk:'G',hp:'H',hk:'H'};
+  return [...(move.trigger.directions??[]),...move.trigger.sequence].map(token=>labels[token]??token).join(' + ')||'—';
 }
 
 function wirePlayback(scene: TestbedScene): void {
@@ -176,6 +205,7 @@ function startHudLoop(scene: TestbedScene): void {
         ['distance', `${s.distance}px`],
       ]);
       $('intervention-status').textContent = s.intervention;
+      const comboStatus=document.getElementById('combo-preview-status');if(comboStatus)comboStatus.textContent=s.comboPreview;
       $<HTMLButtonElement>('expire-summon').disabled = s.summonTicks === null;
       $<HTMLButtonElement>('force-ko').disabled = s.playerHp <= 0;
       $<HTMLButtonElement>('inject-hit').disabled = s.playerHp <= 0;

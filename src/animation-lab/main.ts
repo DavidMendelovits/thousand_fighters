@@ -180,6 +180,7 @@ async function openClip(path: string): Promise<void> {
     address.searchParams.set('clip', new URL(url).origin === location.origin ? new URL(url).pathname + new URL(url).search : url);
     history.replaceState(null, '', address);
     setStatus('');
+    window.parent.postMessage({type:'studio-preview-ready'},location.origin);
     setPlaying(!document.querySelector('main')?.hidden && !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     draw();
   } catch (error) {
@@ -423,9 +424,19 @@ async function start(): Promise<void> {
   } catch { /* The URL loader remains available without a library index. */ }
   renderGallery();
   const requested = new URLSearchParams(location.search).get('clip');
+  const params=new URLSearchParams(location.search);
+  if(params.get('embed')!=='1' && (location.pathname.includes('workbench') || (!requested&&params.get('workspace')!=='motion') || (params.get('workspace') && params.get('workspace')!=='motion')))return;
   if (requested) await openClip(requested);
   else if (gallery.length) await openClip(gallery[0].url);
 }
 void start();
 if (new URLSearchParams(location.search).get('embed') === '1') document.body.classList.add('motion-embedded');
 else mountWorkspace(()=>setPlaying(false));
+let pausedByWorkbench=false, resumeWorkbenchMotion=false;
+window.addEventListener('message',event=>{
+  if(event.origin!==location.origin||event.source!==window.parent||event.data?.type!=='studio-preview-visibility')return;
+  if(!event.data.visible){
+    if(!pausedByWorkbench)resumeWorkbenchMotion=playing;
+    pausedByWorkbench=true;setPlaying(false);
+  }else if(pausedByWorkbench){pausedByWorkbench=false;setPlaying(resumeWorkbenchMotion);}
+});

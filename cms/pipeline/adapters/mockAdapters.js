@@ -201,8 +201,8 @@ export function createMockTextModel(overrides = {}) {
             },
           ],
           combos: [
-            { id: 'jab_cross', displayName: 'Jab → Cross', segments: ['jab', 'cross'] },
-            { id: 'grab_suplex', displayName: 'Command Grab → Suplex', segments: ['command_grab', 'suplex'] },
+            { id: 'jab_cross', displayName: 'Jab → Cross', segments: ['jab', 'cross'], exclusiveFrom: 1 },
+            { id: 'grab_suplex', displayName: 'Command Grab → Suplex', segments: ['command_grab', 'suplex'], exclusiveFrom: null },
           ],
           projectiles: [
             {

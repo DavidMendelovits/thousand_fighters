@@ -13,24 +13,29 @@ import {renderReadiness,renderMotionReview} from './publishReadiness.js';
 import {motionMarkers} from './motionTiming.js';
 import {activeSpriteAssets} from './activeSpriteAssets.js';
 import {renderMotionReprocess,readReprocessControls} from './motionReprocess.js';
+import {mountWorkbenchLayout} from './workbenchLayout.js';
 const MOVE_ORDER = ['base', 'punch', 'kick', 'special_1', 'special_2', 'jump', 'crouch', 'dash_forward', 'dash_back', 'block', 'grab', 'throw', 'walk_forward', 'walk_back', 'hurt', 'getup', 'projectiles'];
 
 // Where the Vite-served game (and the single-player testbed) lives. The testbed
 // reads this character's draft + assets back through the admin API via a Vite
 // proxy, so the game dev server (npm run dev) must be running alongside the CMS
 // admin server. Override with window.TESTBED_BASE_URL if your ports differ.
-const TESTBED_BASE_URL = window.TESTBED_BASE_URL || (location.pathname.startsWith('/cms-admin') ? location.origin : 'http://127.0.0.1:5173');
+const TESTBED_BASE_URL = window.TESTBED_BASE_URL || (location.pathname.startsWith('/cms-admin') ? location.origin : `${location.protocol}//${location.hostname}:5173`);
 const EMBEDDED=window.self!==window.top;
 const ROUTE_PREFIX=location.pathname.startsWith('/cms-admin')?'/cms-admin':'';
 if(EMBEDDED)document.body.classList.add('studio-embedded');
 window.addEventListener('message', event => {
   if(event.origin !== location.origin || event.source !== window.parent || event.data?.type !== 'studio-workspace') return;
+  if(event.data.workspace==='motion'){state.preview?.suspend();return;}
+  if(event.data.workspace==='combat' && state.studio){state.studio.choose('combos');return;}
   if(event.data.workspace==='pipeline'){
+    if(state.studio && getCurrentRoute().page!=='pipeline'){state.studio.choose('build');return;}
     if(getCurrentRoute().page!=='pipeline')navigateTo('/pipeline');
     document.getElementById('pipeline-benchmarks')?.scrollIntoView({block:'start'});
     return;
   }
   if(getCurrentRoute().page==='pipeline')navigateTo(state.currentCharacterId?`/roster/${state.currentCharacterId}`:'/roster');
+  else state.studio?.choose('motion');
   setOpsTab(event.data.workspace === 'pipeline' ? 'pipeline' : 'activity');
   document.querySelector(event.data.workspace === 'pipeline'?'.ops-panel':'#character-workbench')?.scrollIntoView({block:'start'});
 });
@@ -44,7 +49,7 @@ if(benchmarkLink){
 
 function openTestbed(characterId) {
   if (!characterId) return;
-  if (state.preview && characterId === state.currentCharacterId) { state.preview.open('testbed'); document.getElementById('workbench-preview')?.scrollIntoView({block:'start'}); return; }
+  if (state.preview && characterId === state.currentCharacterId) { state.studio?.choose('motion',{open:false});state.preview.open('testbed'); document.getElementById('workbench-preview')?.scrollIntoView({block:'start'}); return; }
   const url = `${TESTBED_BASE_URL}/testbed?id=${encodeURIComponent(characterId)}`;
   window.open(url, `testbed-${characterId}`);
 }
@@ -53,6 +58,7 @@ function openTestbed(characterId) {
 // the testbed — admin is static JS and can't host Phaser itself.
 function openGym(characterId) {
   if (!characterId) return;
+  if(state.studio && characterId===state.currentCharacterId){state.studio.choose('anchors');return;}
   const url = `${TESTBED_BASE_URL}/gym?id=${encodeURIComponent(characterId)}`;
   window.open(url, `gym-${characterId}`);
 }
@@ -72,6 +78,7 @@ function getCurrentRoute() {
 }
 
 function navigateTo(path) {
+  if(state.preview&&!state.preview.canLeave())return;
   history.pushState(null, '', `${ROUTE_PREFIX}${path}`);
   handleRouteChange();
 }
@@ -333,16 +340,18 @@ function handleWorkbenchClick(event) {
   }
 
   if (event.target.closest('[data-combo-add]')) { addComboFromForm(); return; }
-  if (event.target.closest('[data-author-combo]')) { authorComboFromForm(); return; }
+  const comboPreview=event.target.closest('[data-combo-preview]');
+  if(comboPreview){state.preview?.open('testbed',{combo:JSON.parse(comboPreview.dataset.comboPreview)});document.getElementById('workbench-preview')?.scrollIntoView({block:'start',behavior:'smooth'});return;}
+  if (event.target.closest('[data-author-combo]')) { void runSectionAction(event.target.closest('[data-author-combo]'),authorComboFromForm); return; }
   const comboDelete = event.target.closest('[data-combo-delete]');
   if (comboDelete) { deleteCombo(comboDelete.dataset.comboDelete); return; }
-  if (event.target.closest('[data-projectile-generate]')) { generateProjectileFromForm(); return; }
+  if (event.target.closest('[data-projectile-generate]')) { void runSectionAction(event.target.closest('[data-projectile-generate]'),generateProjectileFromForm); return; }
   const projSave = event.target.closest('[data-projectile-save]');
   if (projSave) { saveProjectileNumbers(projSave.dataset.projectileSave); return; }
   const projDelete = event.target.closest('[data-projectile-delete]');
   if (projDelete) { deleteProjectile(projDelete.dataset.projectileDelete); return; }
   const projRegen = event.target.closest('[data-projectile-regenerate]');
-  if (projRegen) { regenerateProjectile(projRegen.dataset.projectileRegenerate); return; }
+  if (projRegen) { void runSectionAction(projRegen,()=>regenerateProjectile(projRegen.dataset.projectileRegenerate)); return; }
 
   const tabButton = event.target.closest('[data-move-tab]');
   if (tabButton) {
@@ -478,7 +487,8 @@ function renderLibrary() {
 }
 
 async function selectCharacter(characterId, options = {}) {
-  if (state.currentCharacterId !== characterId) { state.artBriefSaveError = null; state.preview = null; }
+  if(state.preview && !state.preview.canLeave())return;
+  if (state.currentCharacterId !== characterId) { state.artBriefSaveError = null; }
   state.currentCharacterId = characterId;
   const entry = state.characters.find(c => c.id === characterId);
   if (entry && entry.group !== state.rosterFilter) { state.rosterFilter = entry.group; renderLibrary(); }
@@ -497,12 +507,19 @@ async function selectCharacter(characterId, options = {}) {
   const seq = ++state.selectSeq;
   state.publishReadiness=null;
 
-  const [draftResult, assetResult, qaReport, workbenchDetail] = await Promise.all([
+  elements.characterWorkbench.inert=true;
+  elements.selectedCharacter.textContent=`Loading ${characterId}…`;
+  let results;
+  try{results=await Promise.all([
     getJson(`/api/characters/${encodeURIComponent(characterId)}/draft`),
     getJson(`/api/characters/${encodeURIComponent(characterId)}/assets`),
     getJson(`/api/assets/${encodeURIComponent(`characters/${characterId}/qa/latest.json`)}`).catch(() => null),
     getJson(`/api/characters/${encodeURIComponent(characterId)}/workbench`),
-  ]);
+  ]);}catch(error){
+    if(seq===state.selectSeq){renderEmptyWorkbench(`Could not load ${characterId}. Select it again to retry.`);showError(error);}
+    return;
+  }finally{if(seq===state.selectSeq)elements.characterWorkbench.inert=false;}
+  const [draftResult, assetResult, qaReport, workbenchDetail]=results;
   if (seq !== state.selectSeq || state.currentCharacterId !== characterId) return;
 
   const draft = draftResult.draft;
@@ -571,6 +588,8 @@ function logMoveActivity(moveId, message, level = '') {
   state.moveActivity[moveId].push({ message, level, ts: Date.now() });
   if (state.moveActivity[moveId].length > 50) state.moveActivity[moveId].shift();
   refreshMoveActivityPanel(moveId);
+  const status=elements.characterWorkbench.querySelector(`[data-generation-status="${CSS.escape(moveId)}"]`);
+  if(status){status.textContent=message;status.dataset.level=level;}
 }
 
 // Prominent "this row is generating" veil drawn over the card body. Kept as a
@@ -655,10 +674,12 @@ function buildRowPrompt(moveId) {
   const moveDescription = ROW_PROMPT_DESCRIPTIONS[moveId];
   const authoredMoves = (state.currentDraftData?.moves ?? []).filter((move) => move.animation === moveId);
   const actor=(state.currentDraftData?.actors??[]).find(a=>a.idleAnimation===moveId||authoredMoves.some(m=>m.controlledActor===a.id)||state.currentDraftData?.motionActors?.[moveId]===a.id);
+  const comboOnly=authoredMoves.some(move=>move.trigger?.cancelOnly||move.comboOwner);
   return [
     actor?`ISOLATED SUMMON: ${actor.description??actor.id}. Show only this entity, not the fighter or an opponent. Preserve its reference silhouette and props.`:spriteBrief(),
     moveDescription ? `Move: ${moveDescription}.` : '',
     ...authoredMoves.map((move) => `Character-specific action: ${move.displayName ?? move.id}. ${move.description ?? ''}`),
+    comboOnly?'COMBO-ONLY MORPH: make the hit silhouette dramatically distinct and readable, keep it as one coherent material transformation, return cleanly to the base silhouette, and do not invent detached hands, props, or human limbs unless the move description explicitly requests them.': '',
     `Side-view fighting game action. ${state.currentDraftData?.artStyle==='paint'?'Uniform white':'Magenta'} background, full subject visible, generous margins, no cropping.`,
   ].filter(Boolean).join(' ');
 }
@@ -935,6 +956,7 @@ async function loadPublishReadiness(){
 }
 
 async function beginMotionReview(action){
+  state.studio?.choose('motion',{open:false});
   const report=state.publishReadiness??await loadPublishReadiness();
   const row=report?.rows.find(row=>row.row===action);
   if(!row)throw new Error('Refresh the release check before reviewing.');
@@ -943,7 +965,7 @@ async function beginMotionReview(action){
     elements.characterWorkbench.querySelector(`[data-move-card="${CSS.escape(action)}"]`)?.scrollIntoView({block:'start'});
     return;
   }
-  select.value=action;elements.characterWorkbench.querySelector('[data-preview-timing]').value='game';state.preview.open('motion');
+  select.value=action;elements.characterWorkbench.querySelector('[data-preview-timing]').value='game';select.dispatchEvent(new Event('change',{bubbles:true}));
   const panel=document.getElementById('motion-review');
   panel.hidden=false;panel.innerHTML=renderMotionReview(row);
   document.getElementById('workbench-preview').scrollIntoView({block:'start'});
@@ -955,6 +977,7 @@ async function beginMotionReview(action){
     try{
       await invokeTool(changes?'request_motion_changes':'approve_motion_row',{characterId,action:data.get('action'),notes:data.get('notes'),expectedFingerprint:data.get('fingerprint')});
       await selectCharacter(characterId,{silent:true});
+      state.studio?.choose('build');
       document.getElementById('publish-readiness')?.scrollIntoView({block:'start'});
     }catch(error){status.textContent=error.message;buttons.forEach((button,index)=>button.disabled=disabled[index]);}
   });
@@ -1015,19 +1038,22 @@ async function authorComboFromForm() {
   const col = kitCol('combos');
   const comboId = col?.querySelector('[data-author-combo-id]')?.value.trim();
   const raw = col?.querySelector('[data-author-combo-segments]')?.value ?? '';
-  const generateSprites = col?.querySelector('[data-author-combo-sprites]')?.checked ?? true;
-  if (!comboId) { showError(new Error('Combo id is required.')); return; }
+  if (!comboId) throw new Error('Combo id is required.');
   // Each non-empty line is a segment: an existing move id (reference) or a
   // description (create). Match against current move ids to decide.
   const moveIds = new Set((state.currentDraftData?.moves ?? []).map((m) => m.id));
   const segments = raw.split('\n').map((line) => line.trim()).filter(Boolean)
     .map((line) => (moveIds.has(line) ? { moveId: line } : { description: line }));
-  if (segments.length < 2) { showError(new Error('A combo needs at least 2 segments (one per line).')); return; }
+  if (segments.length < 2) throw new Error('A combo needs at least 2 segments (one per line).');
   try {
-    const result = await invokeTool('author_combo', { characterId, comboId, segments, generateSprites });
+    // Author mechanics first. Every described segment gets a dedicated custom
+    // row which appears in Motion & moves and uses the durable, reviewable row
+    // build path. The old synchronous sprite side effect was easy to lose on a
+    // disconnect and could not express the selected video provider.
+    const result = await invokeTool('author_combo', { characterId, comboId, segments, generateSprites:false });
     for (const w of result?.warnings ?? []) log(`author_combo: ${w}`, 'error');
     await selectCharacter(characterId, { silent: true });
-  } catch { /* surfaced by invokeTool */ }
+  } catch(error) { throw error; }
 }
 
 async function deleteCombo(comboId) {
@@ -1046,12 +1072,12 @@ async function generateProjectileFromForm() {
   const col = kitCol('projectiles');
   const projectileId = col?.querySelector('[data-projectile-new-id]')?.value.trim();
   const prompt = col?.querySelector('[data-projectile-new-prompt]')?.value.trim();
-  if (!projectileId) { showError(new Error('Projectile id is required.')); return; }
-  if (!prompt) { showError(new Error('A sprite prompt is required.')); return; }
+  if (!projectileId) throw new Error('Projectile id is required.');
+  if (!prompt) throw new Error('A sprite prompt is required.');
   try {
     await invokeTool('generate_projectile', { characterId, projectileId, prompt });
     await selectCharacter(characterId, { silent: true });
-  } catch { /* surfaced by invokeTool */ }
+  } catch(error) { throw error; }
 }
 
 async function regenerateProjectile(projectileId) {
@@ -1060,11 +1086,11 @@ async function regenerateProjectile(projectileId) {
   const row = [...elements.characterWorkbench.querySelectorAll('.kit-projectile')]
     .find((r) => r.dataset.projectileId === projectileId);
   const prompt = row?.querySelector(`[data-projectile-reprompt="${projectileId}"]`)?.value.trim();
-  if (!prompt) { showError(new Error('A sprite prompt is required for regeneration.')); return; }
+  if (!prompt) throw new Error('A sprite prompt is required for regeneration.');
   try {
     await invokeTool('generate_projectile', { characterId, projectileId, prompt });
     await selectCharacter(characterId, { silent: true });
-  } catch { /* surfaced by invokeTool */ }
+  } catch(error) { throw error; }
 }
 
 async function saveProjectileNumbers(projectileId) {
@@ -1222,6 +1248,17 @@ async function invokeToolStreaming(name, input, onProgress) {
   return runBuildJob({tool:name,input,onProgress});
 }
 
+async function runSectionAction(button, action) {
+  if(button.dataset.pending)return;
+  button.dataset.pending='true';button.disabled=true;
+  const label=button.textContent;button.textContent='Starting…';
+  const status=button.nextElementSibling?.classList.contains('generation-status')?button.nextElementSibling:document.createElement('p');
+  status.className='generation-status';status.setAttribute('role','status');status.textContent='Starting request…';delete status.dataset.level;button.after(status);
+  try{await action();status.textContent='Request finished. Saved results are shown in this draft.';}
+  catch(error){status.textContent=error.message;status.dataset.level='error';showError(error);}
+  finally{delete button.dataset.pending;button.disabled=false;button.textContent=label;}
+}
+
 function renderCharacter(character) {
   const button = document.createElement('button');
   button.type = 'button';
@@ -1357,37 +1394,38 @@ function renderQaSection(report) {
 }
 
 async function generateConcept() {
-  if(state.artBriefSave)await state.artBriefSave;
-  if(state.artBriefSaveError){showError(new Error('Save the visual brief successfully before generating.'));return null;}
+  if(state.conceptPending)return null;
   const characterId = currentCharacterId();
   if (!characterId) return null;
-
-  const prompt = spriteBrief();
-  if (!prompt) {
-    log('Add a character description before generating concept art.', 'error');
-    return null;
-  }
-
   const button = elements.characterWorkbench.querySelector('[data-gen-concept]');
+  const buttonLabel=button?.textContent;
+  const status=document.createElement('p');status.className='generation-status';status.setAttribute('role','status');
+  button?.closest('section')?.querySelector('[data-concept-status]')?.remove();status.dataset.conceptStatus='';button?.closest('header')?.after(status);
+  state.conceptPending=true;
   if (button) {
     button.disabled = true;
-    button.textContent = 'Generating…';
+    button.textContent = 'Starting…';
   }
   log('> generate_character_concept');
 
   try {
-    const result = await invokeToolStreaming('generate_character_concept', { characterId, prompt });
+    status.textContent='Starting reference generation…';
+    if(state.artBriefSave){status.textContent='Waiting for the visual brief to save…';await state.artBriefSave;}
+    if(state.artBriefSaveError)throw new Error('Save the visual brief successfully before generating.');
+    const prompt=spriteBrief();if(!prompt)throw new Error('Add a visual identity brief before generating reference art.');
+    const result = await invokeToolStreaming('generate_character_concept', { characterId, prompt },event=>{if(event.message)status.textContent=event.message;});
     log('Concept art generated.', 'pass');
     if(state.currentCharacterId===characterId)await selectCharacter(characterId, { silent: true, pushState: false });
     return result;
   } catch (error) {
+    status.textContent=error.message;status.dataset.level='error';
     showError(error);
     if (button) {
       button.disabled = false;
       button.textContent = 'Generate';
     }
     return null;
-  }
+  } finally {state.conceptPending=false;if(button){button.disabled=false;button.textContent=buttonLabel;}}
 }
 
 // ---------------------------------------------------------------------------
@@ -1398,6 +1436,7 @@ let newFighterRefImage = null;
 
 function renderNewFighterWorkbench() {
   clearAnimationTimers();
+  state.preview?.dispose();state.preview=null;state.studio=null;
   state.currentCharacterId = '';
   state.currentDraftData = null;
   state.currentAssets = [];
@@ -1524,10 +1563,12 @@ async function onCreateNewFighter(event) {
 
 function renderCharacterWorkbench(draft, assets) {
   clearAnimationTimers();
+  state.preview?.dispose();
   const detail = state.workbenchDetail;
   // Keep references/projectiles, but exclude superseded frame/sheet packs.
   if (draft.assets?.rootKey) assets = assets.filter(asset => !/\/(sprites|sheets)\//.test(asset.key) || asset.key.startsWith(`${draft.assets.rootKey}/`));
   const moveGroups = buildMoveGroups(draft, assets);
+  const previewDetail={...detail,rows:moveGroups.filter(group=>group.id!=='projectiles').map(group=>detail?.rows?.find(row=>row.row===group.id)??{row:group.id,frameCount:0,available:0,review:'needs frames'})};
   const assetCounts = summarizeAssets(assets);
   const stats = draft.gameplay?.stats ?? draft.stats ?? {};
   const characterStatus = [
@@ -1550,8 +1591,8 @@ function renderCharacterWorkbench(draft, assets) {
         <div class="summary-pills">${characterStatus.map((item) => `<span>${escapeHtml(item)}</span>`).join('')}</div>
         <div class="summary-actions">
           <button type="button" class="playtest-btn" data-playtest="${escapeHtml(draft.id)}" ${detail?.frameCount ? '' : 'disabled'} title="Play the current draft">▶ Playtest</button>
-          <button type="button" class="gym-btn" data-gym="${escapeHtml(draft.id)}" title="Open the Character Gym to align frames and tune bounds">🛠 Gym</button>
-          ${detail?.published ? `<a class="playtest-btn" href="${escapeHtml(TESTBED_BASE_URL)}/?p1=${encodeURIComponent(draft.id)}&p2=brine" target="_top">Play published copy ↗</a>` : ''}
+          <button type="button" class="gym-btn" data-gym="${escapeHtml(draft.id)}" title="Align frames and tune collision bounds in this workspace">Anchors & bounds</button>
+          ${detail?.published ? `<a class="playtest-btn" href="${escapeHtml(TESTBED_BASE_URL)}/fight?p1=${encodeURIComponent(draft.id)}&p2=${encodeURIComponent(draft.id)}" target="_top">Published fight ↗</a>` : ''}
           <button type="button" data-archive-character="${!detail?.archived}">${detail?.archived ? 'Restore to workbench' : 'Archive draft'}</button>
         </div>
       </div>
@@ -1567,7 +1608,7 @@ function renderCharacterWorkbench(draft, assets) {
     <section id="character-build-plans" aria-label="Build plans"></section>
     <details class="character-history" id="character-history"></details>
     <section id="character-components" class="character-components"></section>
-    ${renderPreview(detail)}
+    ${renderPreview(previewDetail)}
     ${renderConceptSection(conceptAsset)}
     <section class="move-board">
       ${moveGroups.map(renderMoveGroup).join('')}
@@ -1579,21 +1620,20 @@ function renderCharacterWorkbench(draft, assets) {
   // All workbench buttons are handled by the delegated click handler —
   // no per-render listener attachment.
   const previewHost = document.getElementById('workbench-preview');
-  elements.characterWorkbench.querySelector('.character-summary').after(document.getElementById('character-build-plans'),document.getElementById('character-build-jobs'),document.getElementById('publish-readiness'),previewHost, elements.characterWorkbench.querySelector('.reference-review'));
   previewHost.insertAdjacentHTML('beforeend','<section id="motion-review" class="motion-review" hidden></section>');
   previewHost.addEventListener('change',event=>{if(event.target.matches('[data-preview-row]'))document.getElementById('motion-review').hidden=true;});
   previewHost.addEventListener('click',event=>{if(event.target.closest('[data-preview-testbed],[data-preview-close]'))document.getElementById('motion-review').hidden=true;});
-  state.preview = mountPreview({host: previewHost, detail, gameBase: TESTBED_BASE_URL});
-  if (detail?.rows?.some(row => row.clipUrl && row.available === row.frameCount)) state.preview.open('motion');
+  state.preview = mountPreview({host: previewHost, detail:previewDetail, gameBase: TESTBED_BASE_URL});
+  state.studio=mountWorkbenchLayout({host:elements.characterWorkbench,characterId:draft.id,groups:moveGroups,preview:state.preview});
   startAnimationPreviews();
   mountCharacterComponents({host:document.getElementById('character-components'),draft,invoke:(name,input)=>name==='get_animation_plan'?postJson(`/api/tools/${name}`,input).then(r=>r.result):invokeTool(name,input),
     onSaved:async()=>{await selectCharacter(draft.id,{silent:true});const panel=document.getElementById('character-components');panel.querySelectorAll('.component-editor').forEach(d=>d.open=true);panel.scrollIntoView({block:'start'});},
     onOpen:async id=>{await selectCharacter(id);document.getElementById('character-components').scrollIntoView({block:'start'});},
-    onRow:row=>document.querySelector(`[data-move-card="${CSS.escape(row)}"]`)?.scrollIntoView({block:'start',behavior:'smooth'})});
+    onRow:row=>state.studio.selectRow(row)});
   mountCharacterHistory({host:document.getElementById('character-history'),characterId:draft.id,getJson,postJson,onRestore:async()=>{await selectCharacter(draft.id,{silent:true});const panel=document.getElementById('character-history');panel.open=true;panel.scrollIntoView({block:'start'});}});
   mountBuildJobs({host:document.getElementById('character-build-jobs'),characterId:draft.id,
     onReload:async()=>{await selectCharacter(draft.id,{silent:true,pushState:false});document.getElementById('character-build-jobs')?.scrollIntoView({block:'start'});},
-    onHistory:()=>{const panel=document.getElementById('character-history');panel.open=true;panel.scrollIntoView({block:'start'});}});
+    onHistory:()=>{state.studio.choose('history');const panel=document.getElementById('character-history');panel.open=true;panel.scrollIntoView({block:'start'});}});
   mountBuildPlans({host:document.getElementById('character-build-plans'),characterId:draft.id,
     onReload:async()=>{await selectCharacter(draft.id,{silent:true,pushState:false});document.getElementById('character-build-plans')?.scrollIntoView({block:'start'});}});
 }
@@ -1646,6 +1686,7 @@ async function saveCombatRules(){
 
 function renderEmptyWorkbench(message) {
   clearAnimationTimers();
+  state.preview?.dispose();state.preview=null;state.studio=null;
   elements.characterWorkbench.className = 'character-workbench empty-state';
   elements.characterWorkbench.textContent = message;
   elements.selectedCharacter.textContent = 'No draft loaded';
@@ -1697,7 +1738,7 @@ function renderAnimationBindings(animations = {}) {
 // posts to the existing CMS tools via the delegated workbench click handler.
 function renderKitSection(draft) {
   const moves = draft.moves ?? [];
-  const combos = draft.combos ?? [];
+  const combos = [...(draft.comboRoutes??[]).map(route=>({...route,id:route.name,segments:route.moves,route:true})),...(draft.combos ?? [])];
   const projectiles = draft.projectiles ?? [];
   const warnings = draft.generation?.warnings ?? [];
   const moveIdHint = moves.map((m) => m.id).filter(Boolean).join(', ') || 'none yet';
@@ -1710,10 +1751,12 @@ function renderKitSection(draft) {
     ? combos.map((combo) => `
         <li class="kit-row">
           <span class="kit-row-main">
-            <strong>${escapeHtml(combo.id)}</strong>
-            <span class="kit-chain">${(combo.segments ?? []).map((s) => escapeHtml(s)).join(' → ')}</span>
+            <strong>${escapeHtml(combo.displayName??combo.id)}</strong>
+            <span class="kit-chain">${(combo.segments ?? []).map((id) => {const move=moves.find(candidate=>candidate.id===id);return `<span>${escapeHtml(move?.displayName??id)}${move?` <small>${escapeHtml(formatMoveInput(move))}</small>`:''}${move?.trigger?.cancelOnly?` <em>combo-only · ${escapeHtml(move.animation)}</em>`:''}</span>`;}).join(' <b aria-hidden="true">→</b> ')}</span>
+            ${combo.purpose?`<span class="move-note">${escapeHtml(combo.purpose)}</span>`:''}
           </span>
-          <button type="button" class="kit-del" data-combo-delete="${escapeHtml(combo.id)}" title="Delete combo">✕</button>
+          <button type="button" data-combo-preview="${escapeHtml(JSON.stringify(combo.segments??[]))}">Preview combo</button>
+          ${combo.route?'':`<button type="button" class="kit-del" data-combo-delete="${escapeHtml(combo.id)}" title="Delete combo">✕</button>`}
         </li>`).join('')
     : '<li class="empty-inline">No combos yet.</li>';
 
@@ -1737,11 +1780,10 @@ function renderKitSection(draft) {
           <p class="move-note">Link existing move ids. Available: ${escapeHtml(moveIdHint)}.</p>
           <div class="kit-form kit-author">
             <input type="text" data-author-combo-id placeholder="combo id (e.g. kick_string)" />
-            <textarea data-author-combo-segments rows="3" placeholder="one segment per line — an existing move id (e.g. jab) or a description to CREATE (e.g. roundhouse kick)"></textarea>
-            <label class="kit-check"><input type="checkbox" data-author-combo-sprites checked /> generate sprites</label>
-            <button type="button" data-author-combo>Author combo (create + stitch)</button>
+            <textarea data-author-combo-segments rows="4" placeholder="First line: existing opener id, e.g. ribbon_jab&#10;Next lines: describe exclusive follow-ups, e.g. split into three paint ribbons that corkscrew upward"></textarea>
+            <button type="button" data-author-combo>Create combo moves + animation rows</button>
           </div>
-          <p class="move-note">Author from intent: lines matching an existing move id are linked; other lines become NEW AI-authored moves with assigned rows + inputs. Only 6 move rows exist, so extra new moves share rows.</p>
+          <p class="move-note">Each described follow-up becomes a distinct cancel-only move with its own animation row. It cannot be selected from neutral. Generate and review those rows in Motion & moves before publishing.</p>
         </div>
         <div class="kit-col" data-kit="projectiles">
           <h4>Projectiles</h4>
@@ -1756,6 +1798,11 @@ function renderKitSection(draft) {
       </div>
     </section>
   `;
+}
+
+function formatMoveInput(move){
+  const labels={lp:'F',mk:'F',mp:'G',lk:'G',hp:'H',hk:'H'};
+  return [...(move.trigger?.directions??[]).map(titleize),...(move.trigger?.sequence??[]).map(token=>labels[token]??token)].join(' + ')||'—';
 }
 
 function renderProjectileEntity(entity) {
@@ -1806,7 +1853,7 @@ function renderMoveGroup(group) {
     state.previewFrames.set(animationId, previewFrames.map((asset) => asset.apiUrl));
   }
 
-  const canGenerate = MOVE_IDS.includes(group.id) || group.moves.length > 0 || Boolean(group.summonReference);
+  const canGenerate = group.id!=='projectiles';
   const hasFrames = groupAssetCount(group) > 0;
   const isLoading = state.generatingMoves.has(group.id);
   const activityEntries = state.moveActivity[group.id] ?? [];
@@ -1827,6 +1874,7 @@ function renderMoveGroup(group) {
           ${group.summonReference?'<p class="move-note">Generate isolated image poses first, then extract frames before creating video motion.</p>':''}
         </div>
         <div class="move-card-actions">
+          <button type="button" data-inspect-row="${escapeHtml(group.id)}">Inspect motion</button>
           ${canGenerate?`<select data-row-generator="${escapeHtml(group.id)}" aria-label="${escapeHtml(group.id)} generation method"><option value="image" ${generator==='image'?'selected':''}>Image poses</option><option value="video" ${generator==='video'?'selected':''} ${group.id==='base'?'disabled':''}>Video motion · fal</option><option value="pruna-video" ${generator==='pruna-video'?'selected':''} ${group.id==='base'?'disabled':''}>Video motion · Pruna</option></select>`:''}
           ${activityButton}
           ${generateButton}
@@ -1836,6 +1884,7 @@ function renderMoveGroup(group) {
         </div>
       </header>
       ${renderMotionReprocess(state.currentDraftData ?? {},group.id)}
+      <p class="generation-status" data-generation-status="${escapeHtml(group.id)}" role="status" aria-live="polite">${escapeHtml(activityEntries.at(-1)?.message??'')}</p>
       <div class="move-card-body">
         <div class="animation-pane">
           ${renderAnimationPlayer(animationId, previewFrames, group)}
@@ -1872,7 +1921,7 @@ function renderMoveCardTabs(group) {
   const hasFrames = frameCount > 0 || group.projectiles.length > 0;
   const sounds = collectMoveSounds(group);
   const primarySheet = groupPrimarySheet(group);
-  const canGenerate = MOVE_IDS.includes(group.id) || group.moves.length > 0 || Boolean(group.summonReference);
+  const canGenerate = group.id!=='projectiles';
   const defaultTab = hasFrames ? 'frames' : 'data';
 
   const tab = (id, label, badge) => `
@@ -1919,7 +1968,7 @@ function renderMoveCardTabs(group) {
     ${pane('data', renderMoveData(group))}
     ${canGenerate ? pane('prompt', promptPane) : ''}
     ${pane('sounds', soundsPane)}
-    ${pane('source', (motionAsset?`<p>Video-derived motion · fal Kling. Six sampled poses; review before publishing.</p><video controls preload="metadata" style="width:100%;max-height:320px" src="${escapeHtml(motionAsset.apiUrl)}"></video>${sampling}`:'')+sourcePane)}
+    ${pane('source', (motionAsset?`<p>Saved source video · check History for provider, timing and generation lineage. Review before publishing.</p><video controls preload="metadata" style="width:100%;max-height:320px" src="${escapeHtml(motionAsset.apiUrl)}"></video>${sampling}`:'')+sourcePane)}
   `;
 }
 
@@ -2300,11 +2349,10 @@ function buildMoveGroups(draft, assets) {
     return groups.get(id);
   };
 
-  // Seed a card for EVERY registry row so state/movement rows (walk_forward,
-  // walk_back, jump, crouch, dash_forward, dash_back, block, grab, throw) are
-  // generatable even before any sprite exists — otherwise there's no card to
-  // generate from (chicken-and-egg) and they stay invisible in the admin.
-  for (const id of MOVE_IDS) ensureGroup(id);
+  // Authored animation contracts win over the legacy five-row template. Empty
+  // generic punch/grab/base cards must not masquerade as missing character art.
+  const bindings=Object.values(draft.animations??{}).map(value=>typeof value==='string'?value:value?.sheet).filter(Boolean);
+  for (const id of bindings.length ? [...bindings,...Object.keys(draft.motionRows??{})] : MOVE_IDS) ensureGroup(id);
   for (const actor of draft.actors??[])if(actor.idleAnimation)ensureGroup(actor.idleAnimation).summonReference=actor;
   for (const move of draft.moves ?? []) {
     const animation = move.animation ?? inferAnimationId(move.id);
@@ -2329,7 +2377,7 @@ function buildMoveGroups(draft, assets) {
     }
 
     const sourceRow = parseSourceRowSheet(asset);
-    if (sourceRow && MOVE_IDS.includes(sourceRow.moveId)) {
+    if (sourceRow) {
       const group = ensureGroup(sourceRow.moveId);
       const variant = ensureVariant(group, 'source');
       variant.sheet = asset;
@@ -2358,7 +2406,7 @@ function buildMoveGroups(draft, assets) {
   return [...groups.values()]
     // Keep every registry row (so each is generatable) + the projectiles group
     // when it has assets. Drop only stray empty non-registry groups.
-    .filter((group) => MOVE_IDS.includes(group.id) || group.id === 'base' || group.summonReference || group.moves.length > 0 || group.variants.length > 0 || group.projectiles.length > 0)
+    .filter((group) => group.id!=='projectiles' || group.projectiles.length > 0)
     .sort((left, right) => moveSortKey(left.id).localeCompare(moveSortKey(right.id)));
 }
 
@@ -2408,6 +2456,8 @@ function parseProjectileAsset(asset) {
 }
 
 function actorFromPrefix(prefix = '') {
+  const root=state.currentDraftData?.assets?.rootKey?.split('/assets/')[1];
+  if(prefix===root || /(^|\/)fighter-pack[^/]*$/.test(prefix))return 'main';
   const meaningful = prefix.split('/').filter((part) => part && part !== 'fighter-pack');
   return meaningful.length > 0 ? meaningful.join('/') : 'main';
 }
@@ -2966,7 +3016,15 @@ document.addEventListener('keydown', (event) => {
 });
 
 function showError(error) {
-  log(error.message ?? String(error), 'error');
+  const message=error.message ?? String(error);
+  log(message, 'error');
+  let notice=document.getElementById('workbench-error-notice');
+  if(!notice){
+    notice=document.createElement('aside');notice.id='workbench-error-notice';notice.setAttribute('role','alert');
+    notice.innerHTML='<span></span><button type="button" aria-label="Dismiss error">Dismiss</button>';
+    notice.querySelector('button').addEventListener('click',()=>{notice.hidden=true;});document.body.append(notice);
+  }
+  notice.querySelector('span').textContent=message;notice.hidden=false;
 }
 
 function escapeHtml(value) {

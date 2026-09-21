@@ -82,6 +82,22 @@ test('creation persists summon blueprint and commands and requires motion review
   assert.throws(()=>convertDraftToCharacterConfig({draft}),/missing animation/);
 });
 
+test('creation turns declared exclusive combo stages into dedicated cancel-only moves',async()=>{
+  const source=fixture();
+  source.combos=[{id:'paint_string',displayName:'Paint String',segments:['ribbon_jab','undertow','impasto'],exclusiveFrom:1}];
+  const draft=await pipeline(source,d=>d).createCharacterDraft({characterId:'combo_paint',brief:'Paint fighter with exclusive combo branches'});
+  const opener=draft.moves.find((m:any)=>m.id==='ribbon_jab');
+  const link=draft.moves.find((m:any)=>m.id==='undertow');
+  const ender=draft.moves.find((m:any)=>m.id==='impasto');
+  assert.equal(opener.trigger.cancelOnly,undefined);
+  assert.deepEqual(link.trigger.cancelFrom,['ribbon_jab']);
+  assert.deepEqual(ender.trigger.cancelFrom,['undertow']);
+  assert.equal(link.trigger.cancelOnly,true);
+  assert.equal(link.requiredAnimation,link.animation);
+  assert.equal(ender.comboOwner,'paint_string');
+  assert.deepEqual(draft.combos[0].ownedMoveIds,['undertow','impasto']);
+});
+
 test('creation persists an explicit art style and rejects unsupported styles before model work',async()=>{
   for(const artStyle of ['paint','watercolor','pixel']){
     const draft=await pipeline(fixture(),d=>d).createCharacterDraft({characterId:'style_test',brief:'Material-specific motion',artStyle});

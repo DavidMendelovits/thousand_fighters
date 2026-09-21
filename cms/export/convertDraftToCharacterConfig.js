@@ -61,7 +61,7 @@ export function convertDraftToCharacterConfig({ draft, frameData, manifest: rawM
     powerUps: draft.powerUps ?? [],
     forms: draft.forms ?? [],
     ...(draft.actors?.length?{actors:resolveDraftActors(draft,sprite)}:{}),
-    comboRoutes: draft.comboRoutes ?? [],
+    comboRoutes: [...(draft.comboRoutes ?? []),...(draft.combos??[]).filter(combo=>!(draft.comboRoutes??[]).some(route=>route.name===combo.id)).map(combo=>({name:combo.id,moves:combo.segments,purpose:'Authored move sequence. Preview spacing and cancel windows in the workbench.'}))],
     walkForwardSpeed: stats.walkForwardSpeed ?? 2.8,
     walkBackSpeed: stats.walkBackSpeed ?? 1.8,
     jumpVelocity: Math.abs(stats.jumpVelocity ?? 10.2),

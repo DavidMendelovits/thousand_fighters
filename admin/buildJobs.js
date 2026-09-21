@@ -1,10 +1,11 @@
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+import {sha256,submissionNonce} from './submissionKey.js';
 const active=new Set(['queued','running','extracting']);
 const endpoint=characterId=>`/api/characters/${encodeURIComponent(characterId)}/build-jobs`;
 const elapsed=ms=>Number.isFinite(ms)?`${(ms/1000).toFixed(1)}s`:'—';
 async function json(url,body){
-  const response=await fetch(url,body?{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}:undefined);
-  const data=await response.json();
+  const response=await fetch(url,{signal:AbortSignal.timeout(20000),...(body?{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}:{})});
+  const data=await response.json().catch(()=>({error:`Server returned an unreadable response (HTTP ${response.status}).`}));
   if(!response.ok)throw new Error(data.error??`HTTP ${response.status}`);
   return data;
 }
@@ -12,11 +13,13 @@ async function json(url,body){
 // Store the submission nonce before the POST. A lost response can then be
 // recovered without silently purchasing another generation. No SSE fallback.
 export async function runBuildJob({tool,input,onProgress}){
+  onProgress?.({type:'status',message:'Starting: securing a recoverable submission…'});
   const canonical=JSON.stringify({tool,input:Object.fromEntries(Object.entries(input).sort(([a],[b])=>a.localeCompare(b)))});
-  const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(canonical))),v=>v.toString(16).padStart(2,'0')).join('');
+  const hash=sha256(canonical);
   const key=`tf-build:${input.characterId}:${hash}`;
   let id=localStorage.getItem(key);
-  if(!id){id=crypto.randomUUID();localStorage.setItem(key,id);}
+  if(!id){id=submissionNonce();localStorage.setItem(key,id);}
+  onProgress?.({type:'status',message:'Submitting job… Your submission key is saved; please do not submit a duplicate.'});
   let job;
   try{({job}=await json(endpoint(input.characterId),{idempotencyKey:id,tool,input}));}
   catch(error){throw new Error(`${error.message} Check Build activity before submitting again; your submission key has been kept.`);}
@@ -67,7 +70,7 @@ export function mountBuildJobs({host,characterId,onReload,onHistory}){
       if(!host.isConnected)return;
       const visible=[...jobs.filter(j=>active.has(j.status)||j.canResolve),...jobs.filter(j=>!active.has(j.status)&&!j.canResolve)].slice(0,8);
       const next=JSON.stringify(visible.map(({durationMs,progress,...job})=>job));
-      if(next!==signature){host.querySelector('[data-build-list]').innerHTML=visible.length?visible.map(renderJob).join(''):'<p class="build-empty">No tracked builds yet. Use Generate in the identity or animation cards below.</p>';signature=next;}
+      if(next!==signature){host.querySelector('[data-build-list]').innerHTML=visible.length?visible.map(renderJob).join(''):'<p class="build-empty">No tracked builds yet. Use Generate in Identity & forms or Motion & moves.</p>';signature=next;}
       for(const job of visible){const time=host.querySelector(`[data-build-duration="${CSS.escape(job.id)}"]`);if(time)time.textContent=elapsed(job.durationMs);}
       message.textContent=jobs.length>8?`Showing 8 of ${jobs.length} jobs, with unresolved work first.`:'';
     }catch(error){if(host.isConnected)message.textContent=`Status unavailable: ${error.message}. This does not mean the build stopped.`;}

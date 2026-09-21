@@ -30,5 +30,5 @@ export async function historyFixture({ port = 0, useDavid = false } = {}) {
   await runtime.repository.saveDraft(characterId, draft);
   const server = createCmsServer({ runtime });
   await new Promise(resolve => server.listen(port, '127.0.0.1', resolve));
-  return { root, runtime, characterId, pack, url: `http://127.0.0.1:${server.address().port}`, close: async () => { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); await rm(root, { recursive: true, force: true }); } };
+  return { root, runtime, characterId, pack, url: `http://127.0.0.1:${server.address().port}`, close: async () => { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); await Promise.allSettled([...runtime.repository.mutations.values()]); await rm(root, { recursive: true, force: true, maxRetries:5, retryDelay:100 }); } };
 }

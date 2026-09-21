@@ -128,17 +128,20 @@ function moveSchema() {
   };
 }
 
-// Combo = ordered list of EXISTING move ids that chain. Convert wires the cancel
-// graph from this descriptor.
+// Combo = ordered list of EXISTING move ids that chain. `exclusiveFrom` is a
+// zero-based segment index: when it is 1, every move after the opener is a
+// combo-only branch and cannot be selected from neutral. Convert wires the
+// cancel graph from this descriptor.
 function comboSchema() {
   return {
     type: 'object',
     additionalProperties: false,
-    required: ['id', 'displayName', 'segments'],
+    required: ['id', 'displayName', 'segments', 'exclusiveFrom'],
     properties: {
       id: { type: 'string' },
       displayName: nullable({ type: 'string' }),
       segments: { type: 'array', minItems: 2, items: { type: 'string' } },
+      exclusiveFrom: nullable({ type: 'integer', minimum: 1 }),
     },
   };
 }
@@ -205,7 +208,7 @@ export function characterContentDraftGuidance() {
     'Grabs use grab_check with a grab payload and grab_end to clear contact. A summon grip names the same actor in event.actor and grab.actorGrip.actor, with torso socket and lift/swing trajectory; never bake an opponent into the sprite. Ordinary grabs use actor:null and actorGrip:null.',
     'Directional commands use trigger.directions as a facing-relative held-direction filter; use null for unrestricted commands. Keep sequence for button/motion history. Actor control separates body and summon commands, so the same button may be reused in those different contexts.',
     'Projectiles may also use spawn_projectile_at_target, spawn_projectile_from_sky, or spawn_projectile_behind_target with their explicit offset/distance fields and a defined projectileId.',
-    'Combos: in `combos`, list ordered chains of EXISTING move ids (2+ segments each). Do NOT author cancel windows, allowed states, or cancelFrom — the engine derives the cancel graph from the combo order. Just give the move-id sequence.',
+    'Combos: in `combos`, list ordered chains of EXISTING move ids (2+ segments each). Set exclusiveFrom to 1 when the moves after the opener are dedicated combo-only actions; those moves must have their own animation rows and must not appear in another combo or serve as neutral moves. Use null only for a route intentionally made entirely from neutral-accessible moves. At least one combo should use exclusiveFrom:1. Do NOT author cancel windows, allowed states, or cancelFrom — the pipeline derives those from the combo order.',
     'Projectiles: for any move that throws something, add a projectile ENTITY to `projectiles` (id, width, height, speed, velocity, lifetime, hitbox) and reference it from that move\'s spawn_projectile event by setting the event `projectileId` to the entity id (keep the event `projectile` field null). Set the spawn event offsetX/offsetY to where it leaves the body.',
     'Event nullability: for a hitbox_active event set hitbox and leave projectileId/offsetX/offsetY null; for a spawn_projectile event set projectileId/offsetX/offsetY and leave hitbox null; for hitbox_end leave them all null.',
     'frameCounts: use 6 frames per row unless the brief says otherwise. walk_forward/walk_back are looping walk cycles; grab/throw are the grab and throw animations.',

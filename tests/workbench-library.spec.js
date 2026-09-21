@@ -8,8 +8,9 @@ test('empty drafts, uncropped reference review and reversible archive survive re
   const reference=await request.post('/api/tools/generate_character_concept',{data:{characterId:id,prompt:'One isolated paint creature'}});
   expect(reference.ok()).toBeTruthy();
   await page.goto(`/roster/${id}?standalone=1`);
-  await expect(page.locator('[data-preview-motion]')).toHaveCount(0);
+  await expect(page.locator('[data-preview-status]')).toContainText('no complete motion clip');
   await expect(page.locator('[data-playtest]')).toBeDisabled();
+  await page.locator('[data-studio-section="identity"]').click();
   await expect(page.locator('.reference-stage img')).toHaveCount(1);
   await expect(page.locator('.reference-stage img')).toHaveCSS('object-fit','contain');
   await expect(page.locator('.concept-panels')).toHaveCount(0);

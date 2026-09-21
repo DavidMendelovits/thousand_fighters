@@ -34,17 +34,12 @@
       }
       .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
 
-      /* Below the minimum usable width this is not a real tool. Be honest. */
       #too-narrow {
         display: none;
         position: fixed; inset: 0;
         align-items: center; justify-content: center;
         text-align: center; padding: 24px;
         background: var(--bg); color: var(--muted); z-index: 100;
-      }
-      @media (max-width: 1099px) {
-        #too-narrow { display: flex; }
-        #app { display: none !important; }
       }
 
       #app {
@@ -225,6 +220,21 @@
 
       /* Filmstrip: frame whose hit is deleted for the current activation */
       .frame-tile.hit-disabled { box-shadow: inset 0 0 0 2px #ff6b6b; filter: grayscale(0.45) brightness(0.72); }
+      #app > * { min-width:0; }
+      @media (max-width: 1150px) {
+        body { overflow:auto; }
+        #app { height:auto;min-height:100vh;grid-template-columns:170px minmax(0,1fr);grid-template-rows:auto 360px 180px auto;grid-template-areas:"topbar topbar" "nav canvas" "nav timeline" "inspector inspector"; }
+        #inspector { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;overflow:visible; }
+        #topbar { flex-wrap:wrap; }
+        #topbar .legend { display:none; }
+        #transport { flex-wrap:wrap; }
+      }
+      @media (max-width: 600px) {
+        #app { grid-template-columns:minmax(0,1fr);grid-template-rows:auto 260px 170px auto 200px;grid-template-areas:"topbar" "canvas" "timeline" "inspector" "nav";padding:6px; }
+        #inspector { grid-template-columns:minmax(0,1fr); }
+        #nav { max-height:200px; }
+        button { min-height:36px; }
+      }
     </style>
   </head>
   <body>
@@ -252,7 +262,7 @@
         <input type="search" id="move-search" placeholder="Search moves…" aria-label="Search moves" />
         <div id="move-list"></div>
         <button id="add-move" disabled>+ Move</button>
-        <div id="add-move-note">Engine supports 5 sheets today. Combos/dashes are staged until the sprite-sheet contract is lifted (T16).</div>
+        <div id="add-move-note">Rows come from this character’s active sprite pack. Save edits to update the draft; publish separately.</div>
       </nav>
 
       <div id="canvas-wrap"><div id="game"></div></div>
@@ -267,7 +277,7 @@
             <button data-mode="hitbox">Hitbox</button>
             <button data-mode="guard">Guard</button>
           </div>
-          <div class="ro-note" id="mode-note">Anchor: drag the feet pivot on the canvas, or type below. Other modes are read-only in Phase 1.</div>
+          <div class="ro-note" id="mode-note">Anchor: drag the feet pivot on the canvas, or type below.</div>
         </section>
 
         <section class="panel" id="anchor-panel">

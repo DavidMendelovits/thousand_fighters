@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Workbench audit · Thousand Fighters</title>
+<style>
+body{margin:0;background:#111214;color:#eeeae2;font:16px/1.6 system-ui,sans-serif}main{max-width:1100px;margin:40px auto;padding:0 24px}h1{font-size:clamp(28px,5vw,44px);line-height:1.15;letter-spacing:-1px}a{color:#e9eb9a}video{display:block;width:100%;max-height:80vh;background:#090a0c;border:1px solid #303136}p{max-width:80ch;color:#b3b5bc}.label{font:12px monospace;color:#e9eb9a;text-transform:uppercase;letter-spacing:1px}nav{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:24px}.note{border-left:2px solid #e9eb9a;padding-left:16px}li{margin:8px 0}
+</style>
+<main>
+  <span class="label">September 20, 2026 · Recorded UI walkthrough</span>
+  <h1>One draft. Motion, moves, anchors and combos.</h1>
+  <nav><a href="/workbench?character=palimpsest">Open Palimpsest’s workbench</a><a href="walkthrough.mp4" download>Download recording</a></nav>
+  <video controls playsinline preload="metadata" src="walkthrough.mp4"></video>
+  <p>Actual browser interaction with Palimpsest: focused motion review, move specifications, scrollable rows, custom-row anchor adjustment and undo, full move sequences, engine hit-confirm cancels, publish checks and asset history.</p>
+  <p>0:00 focused motion · 0:03 move specifications · 0:06 anchors + undo · 0:11 full sequence · 0:15 hit-confirm route · 0:18 release checks · 0:20 history.</p>
+  <p class="note">No new art was generated or approved. The anchor adjustment was undone, not saved. Generation success, server extraction, refresh recovery and lost-response deduplication were tested separately with an isolated controlled provider; provider-error UI was tested with an intercepted error response. Neither spent external API credits.</p>
+  <h2>What the preview proves</h2>
+  <p>At 80 px, the three-move sequence makes three contacts and the hit-confirm route completes using engine cancel rules. At 120 px, the opening jab misses and the strict route stops. These checks do not establish frame-perfect true-combo balance, every matchup, or production art approval.</p>
+</main>
+</html>

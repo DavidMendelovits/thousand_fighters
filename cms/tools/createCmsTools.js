@@ -249,7 +249,7 @@ export function createCmsTools({ pipeline, repository, registry }) {
     },
     {
       name: 'author_combo',
-      description: 'Author a combo from intent: each segment either references an EXISTING move id or DESCRIBES a new move to create. New moves are authored by the text model (phases, hitbox numbers, a distinct chainable input); the server assigns each a sprite row (preferring rows no existing move uses — it never regenerates a row an existing move depends on); the combo descriptor stitches them so the chain fires; and the new rows\' sprites are generated in-flow (best effort). There are only 6 move-animation rows, so combos with many new moves will share rows — surfaced in warnings. Returns the created moves (with assigned inputs) and any warnings.',
+      description: 'Author a first-class combo from intent. Existing move ids may open or branch the route; every described segment becomes a combo-owned move with its own stable custom animation row. Follow-ups are cancel-only and cannot fire from neutral. Re-authoring replaces this combo\'s owned moves instead of leaving dead content. Sprite generation is optional and defaults off so the durable row builder can generate/review each animation.',
       inputSchema: objectSchema({
         characterId: stringSchema('Character id.'),
         comboId: stringSchema('Combo id (stable key; re-authoring the same id replaces the descriptor).'),
@@ -266,7 +266,7 @@ export function createCmsTools({ pipeline, repository, registry }) {
           },
           description: 'Ordered combo segments (>= 2). Each is either { moveId } (existing) or { description } (create new).',
         },
-        generateSprites: { type: 'boolean', description: 'Generate sprites for created moves in-flow (default true).' },
+        generateSprites: { type: 'boolean', description: 'Generate draft sprite strips synchronously. Defaults false; prefer the durable row builder after authoring.' },
       }, ['characterId', 'comboId', 'segments']),
       execute: async ({ characterId, comboId, comboDisplayName, segments, generateSprites, context }) => {
         const result = await pipeline.authorCombo({
@@ -274,7 +274,7 @@ export function createCmsTools({ pipeline, repository, registry }) {
           comboId,
           comboDisplayName: comboDisplayName || undefined,
           segments: segments ?? [],
-          generateSprites: generateSprites !== false,
+          generateSprites: generateSprites === true,
           context: context ?? {},
         });
         return {

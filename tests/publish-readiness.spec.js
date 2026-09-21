@@ -22,6 +22,7 @@ test('review queue approves an exact version and detects replacement without pub
       await route.fulfill({response:await route.fetch({url:fixture.url+url.pathname+url.search})});
     });
     await page.goto(`${fixture.url}/roster/${characterId}?standalone=1`);
+    await page.locator('[data-studio-section="build"]').click();
     await expect(page.locator('[data-readiness-publish]')).toBeDisabled();
     await page.locator('.release-rows summary').click();
     await page.locator('[data-review-row="idle"]').click();
@@ -46,7 +47,7 @@ test('review queue approves an exact version and detects replacement without pub
     await form.locator('[name=notes]').fill('Controlled test: approval persistence and version checks, not a new art acceptance.');
     await form.locator('[name=confirmed]').check();
     await form.getByRole('button',{name:'Approve inspected version'}).click();
-    await expect(page.locator('.release-heading')).toContainText('1/9');
+    await expect(page.locator('#publish-readiness .release-heading')).toContainText('1/9');
     const reviewed=await runtime.repository.getDraft(characterId),fingerprint=reviewed.motionRows.idle.review.fingerprint;
     expect(fingerprint).toMatch(/^[a-f0-9]{64}$/);
     await page.locator('.release-rows summary').click();
@@ -56,7 +57,7 @@ test('review queue approves an exact version and detects replacement without pub
     await expect(form.locator('[role=status]')).toContainText('Confirm that you inspected');
     await form.locator('[name=confirmed]').check();
     await form.getByRole('button',{name:'Request changes'}).click();
-    await expect(page.locator('.release-heading')).toContainText('0/9');
+    await expect(page.locator('#publish-readiness .release-heading')).toContainText('0/9');
     await page.reload();
     await page.locator('.release-rows summary').click();
     await expect(page.locator('.release-rows')).toContainText('Changes requested');
@@ -64,11 +65,11 @@ test('review queue approves an exact version and detects replacement without pub
     await expect(form.locator('[name=notes]')).toHaveValue('Test feedback: release pose needs revision.');
     await form.locator('[name=confirmed]').check();
     await form.getByRole('button',{name:'Approve inspected version'}).click();
-    await expect(page.locator('.release-heading')).toContainText('1/9');
+    await expect(page.locator('#publish-readiness .release-heading')).toContainText('1/9');
     const key=`${pack}/${frames[0].file}`;
     await runtime.storage.putBytes(key,Buffer.concat([await runtime.storage.getBytes(key),Buffer.from('changed')]));
     await page.locator('[data-refresh-readiness]').click();
-    await expect(page.locator('.release-heading')).toContainText('0/9');
+    await expect(page.locator('#publish-readiness .release-heading')).toContainText('0/9');
     await page.locator('.release-rows summary').click();
     await expect(page.locator('.release-rows')).toContainText('Changed since review');
     await expect(page.locator('[data-readiness-publish]')).toBeDisabled();

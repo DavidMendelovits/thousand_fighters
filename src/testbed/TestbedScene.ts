@@ -7,6 +7,7 @@ import { ProjectilePool } from '../core/ProjectilePool';
 import { InputReader } from '../core/InputReader';
 import { InputBuffer } from '../core/InputBuffer';
 import { GameLoop } from '../core/GameLoop';
+import {MoveExecutor} from '../core/MoveExecutor';
 import { CombatVisuals, createCombatTextures } from '../core/CombatVisuals';
 import type { CharacterConfig, RawInput, SpriteSheetId } from '../schema/types';
 import type { AABB } from '../util/aabb';
@@ -57,6 +58,7 @@ export type TestbedSnapshot = {
   distance: number;
   hitboxes: HitboxReadout[];
   error: string | null;
+  comboPreview: string;
 };
 
 type Payload = {
@@ -93,6 +95,8 @@ export class TestbedScene extends Phaser.Scene {
   private frame = 0;
   private ready = false;
   private lastError: string | null = null;
+  private previewRoute: {moves:string[];index:number;ticks:number;contacts:Set<number>;strict:boolean} | null=null;
+  private previewStatus='Select a combo to preview the full sequence.';
 
   private snapshot: TestbedSnapshot = emptySnapshot();
 
@@ -134,9 +138,23 @@ export class TestbedScene extends Phaser.Scene {
       this.loop.reset();
       if (this.input.keyboard) InputReader.reset(this.input.keyboard);
     };
+    // Phaser captures both players' arrows globally. Editor inputs must keep
+    // native keyboard behavior (especially the distance slider and selects).
+    const editing=(target:EventTarget|null)=>target instanceof HTMLElement&&Boolean(target.closest('input,textarea,select,[contenteditable="true"]'));
+    const guardEditorKey=(event:KeyboardEvent)=>{if(editing(event.target))event.stopPropagation();};
+    const editorFocus=(event:FocusEvent)=>{if(editing(event.target))clearTimingAndInput();};
+    document.addEventListener('keydown',guardEditorKey,true);
+    document.addEventListener('keyup',guardEditorKey,true);
+    document.addEventListener('focusin',editorFocus);
+    document.addEventListener('focusout',editorFocus);
+    this.game.canvas.tabIndex=0;
     this.game.events.on(Phaser.Core.Events.BLUR, clearTimingAndInput);
     this.game.events.on(Phaser.Core.Events.FOCUS, clearTimingAndInput);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      document.removeEventListener('keydown',guardEditorKey,true);
+      document.removeEventListener('keyup',guardEditorKey,true);
+      document.removeEventListener('focusin',editorFocus);
+      document.removeEventListener('focusout',editorFocus);
       this.game.events.off(Phaser.Core.Events.BLUR, clearTimingAndInput);
       this.game.events.off(Phaser.Core.Events.FOCUS, clearTimingAndInput);
     });
@@ -160,6 +178,7 @@ export class TestbedScene extends Phaser.Scene {
 
     this.ready = true;
     this.reset();
+    window.parent.postMessage({type:'studio-preview-ready'},location.origin);
   }
 
   update(time: number): void {
@@ -200,13 +219,17 @@ export class TestbedScene extends Phaser.Scene {
     // updates so reach readings stay stable.
     if (this.dummyMode === 'post') this.pinDummy();
 
-    const playerInput = this.input.keyboard ? InputReader.read(1, this.input.keyboard) : NEUTRAL;
+    this.tickComboPreview();
+
+    const editing=document.activeElement instanceof HTMLElement&&document.activeElement.matches('input,textarea,select,[contenteditable="true"]');
+    const playerInput = !this.previewRoute && !editing && this.input.keyboard ? InputReader.read(1, this.input.keyboard) : NEUTRAL;
     this.player.update(playerInput, this.dummy, this.projectiles);
     this.dummy.update(NEUTRAL, this.player, this.projectiles);
 
     this.projectiles.update();
     this.combatVisuals.tick();
     HitboxSystem.checkAll(this.fighters, this.projectiles);
+    if(this.previewRoute && this.player.contactThisMove)this.previewRoute.contacts.add(this.previewRoute.index);
 
     // Invincible dummy: keep it alive so you can keep landing moves.
     this.dummy.health = this.payload.config.maxHealth;
@@ -325,6 +348,7 @@ export class TestbedScene extends Phaser.Scene {
       distance: Math.round(Math.abs(this.dummy.x - this.player.x)),
       hitboxes,
       error: this.lastError,
+      comboPreview:this.previewStatus,
     };
   }
 
@@ -336,7 +360,46 @@ export class TestbedScene extends Phaser.Scene {
 
   triggerMove(moveId: string): void {
     if (!this.ready) return;
+    this.previewRoute=null;
     this.player.debugStartMove(moveId);
+  }
+
+  previewCombo(ids:string[], strict=false):void {
+    if(!this.ready)return;
+    if(ids.length<2 || ids.length>32 || ids.some(id=>!this.payload.config.moves.some(m=>m.id===id))){this.previewStatus='Cannot preview: the combo contains a missing move or invalid length.';return;}
+    this.reset();this.dummyMode='reactive';this.setMode('play');
+    this.previewRoute={moves:[...ids],index:-1,ticks:0,contacts:new Set(),strict};
+    this.previewStatus=`Starting ${strict?'hit-confirm route':'motion sequence'}…`;
+  }
+
+  private tickComboPreview():void {
+    const route=this.previewRoute;if(!route)return;
+    if(++route.ticks>1800 || this.player.state==='dead' || ['hitstun','stunned','grabbed','juggle'].includes(this.player.state)){
+      this.previewStatus='Preview stopped: interrupted or timed out.';this.previewRoute=null;return;
+    }
+    const nextId=route.moves[route.index+1];
+    if(!nextId){
+      if(!this.player.currentMove){this.previewStatus=`Sequence complete · ${route.moves.length} moves · ${route.contacts.size} made contact. ${route.strict?'Engine cancel rules respected.':'Full-move playback; this is not proof of an unbroken combo.'}`;this.previewRoute=null;}return;
+    }
+    const next=this.payload.config.moves.find(m=>m.id===nextId)!;
+    if((next.controlledActor??null)!==(this.player.controlledSummon?.actor??null)){
+      // A summon may appear later in the current move; wait until it resolves.
+      if(this.player.currentMove)return;
+      this.previewStatus=`Stopped before ${next.displayName}: required controlled entity is not active.`;this.previewRoute=null;return;
+    }
+    if(this.player.currentMove){
+      if(route.strict&&MoveExecutor.tryCancel(this.player,next)){
+        route.index++;this.previewStatus=`${route.index+1}/${route.moves.length} · ${next.displayName} · legal engine cancel`;
+      }
+      return;
+    }
+    if(route.index>=0&&(route.strict||next.trigger.cancelOnly)){
+      this.previewStatus=`Route stopped before ${next.displayName}: no legal cancel in these conditions. Adjust distance or use Sequence to inspect every move.`;this.previewRoute=null;return;
+    }
+    if(this.player.meter<(next.cost?.meter??0)){this.previewStatus=`Stopped before ${next.displayName}: insufficient meter.`;this.previewRoute=null;return;}
+    if(!['idle','crouch','airborne'].includes(this.player.state))return;
+    this.player.debugStartMove(nextId);route.index++;
+    this.previewStatus=`${route.index+1}/${route.moves.length} · ${next.displayName} · ${route.strict?'engine route':'full move sequence'}`;
   }
 
   setMode(mode: PlaybackMode): void {
@@ -413,6 +476,7 @@ export class TestbedScene extends Phaser.Scene {
     this.hitPauseFrames = 0;
     this.frame = 0;
     this.lastError = null;
+    this.previewRoute=null;this.previewStatus='Ready for combo preview.';
     this.intervention = 'None';
     this.projectiles.clear();
 
@@ -448,6 +512,7 @@ export class TestbedScene extends Phaser.Scene {
 
 function emptySnapshot(): TestbedSnapshot {
   return {
+    comboPreview:'Loading engine…',
     ready: false,
     frame: 0,
     mode: 'play',
