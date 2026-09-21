@@ -31,16 +31,16 @@ export function mountWorkbenchLayout({host,characterId,groups,preview}){
     if(matchMedia('(max-width:700px)').matches)roster.classList.add('roster-collapsed');
   }
 
-  nav.className='workbench-sections';nav.setAttribute('aria-label','Character workspace');
+  nav.className='workbench-sections';nav.setAttribute('aria-label','Character workspace');nav.setAttribute('role','tablist');
   const labels={motion:'Motion & moves',combos:'Combos & effects',anchors:'Anchors & bounds',identity:'Identity & forms',build:'Build & publish',history:'History'};
-  nav.innerHTML=Object.entries(labels).map(([id,label])=>`<button type="button" data-studio-section="${id}" aria-pressed="false">${label}</button>`).join('');
+  nav.innerHTML=Object.entries(labels).map(([id,label])=>`<button type="button" role="tab" id="studio-tab-${id}" aria-controls="${id==='anchors'?'workbench-preview':`studio-panel-${id}`}" aria-selected="false" aria-pressed="false" tabindex="-1" data-studio-section="${id}">${label}</button>`).join('');
   host.querySelector('.character-summary').after(nav);
 
   const previewHost=host.querySelector('#workbench-preview');
   const sections={};
   const selectors={motion:'.move-board',combos:'.kit-board',identity:'.reference-review, .combat-rules-editor, #character-components',build:'#character-build-plans, #character-build-jobs, #publish-readiness, .qa-section',history:'#character-history'};
   for(const [id,selector] of Object.entries(selectors)){
-    const section=document.createElement('div');section.dataset.studioPanel=id;section.className='studio-section-content';
+    const section=document.createElement('div');section.dataset.studioPanel=id;section.className='studio-section-content';section.id=`studio-panel-${id}`;section.setAttribute('role','tabpanel');section.setAttribute('aria-labelledby',`studio-tab-${id}`);
     for(const node of host.querySelectorAll(selector))section.append(node);
     host.append(section);sections[id]=section;
   }
@@ -106,7 +106,12 @@ export function mountWorkbenchLayout({host,characterId,groups,preview}){
 
   function choose(id,{open=true}={}){
     if(!labels[id])id='motion';preference.section=id;
-    nav.querySelectorAll('button').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.studioSection===id)));
+    nav.querySelectorAll('button').forEach(button=>{
+      const selected=button.dataset.studioSection===id;
+      button.setAttribute('aria-selected',String(selected));
+      button.setAttribute('aria-pressed',String(selected));
+      button.tabIndex=selected?0:-1;
+    });
     for(const [name,section] of Object.entries(sections))section.hidden=name!==id;
     comboControls.hidden=id!=='combos';syncPreviewVisibility();
     if(open&&id==='anchors')preview.open('gym');
@@ -117,6 +122,13 @@ export function mountWorkbenchLayout({host,characterId,groups,preview}){
   }
 
   nav.addEventListener('click',event=>{const button=event.target.closest('[data-studio-section]');if(button)choose(button.dataset.studioSection);});
+  nav.addEventListener('keydown',event=>{
+    if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+    const buttons=[...nav.querySelectorAll('[role="tab"]')];
+    const current=Math.max(0,buttons.indexOf(event.target.closest('[role="tab"]')));
+    const next=event.key==='Home'?0:event.key==='End'?buttons.length-1:(current+(event.key==='ArrowRight'?1:-1)+buttons.length)%buttons.length;
+    event.preventDefault();buttons[next].focus();choose(buttons[next].dataset.studioSection);
+  });
   toolbar.addEventListener('click',event=>{const button=event.target.closest('[data-animation-view]');if(button)view(button.dataset.animationView);});
   host.addEventListener('preview-row-change',event=>{row(event.detail.row,false);if(preference.section==='combos')choose('motion',{open:false});});
   previewHost.querySelector('[data-preview-motion]')?.addEventListener('click',()=>choose('motion',{open:false}));
