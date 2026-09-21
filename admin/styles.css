@@ -2319,11 +2319,16 @@ details[open] .dev-tools-summary {
   .studio-embedded .admin-shell { padding:8px; }
   .studio-embedded .workspace-grid { grid-template-columns:minmax(0,1fr); }
   .studio-embedded .roster-panel { max-height:240px;overflow:auto; }
+  .character-workbench button,
+  .character-workbench .summary-actions a,
+  .roster-panel button,
+  .roster-panel .ghost-link,
+  .topbar-actions .ghost-link { min-height:44px; }
   [data-roster-toggle] { display:inline-flex; }
   .roster-collapsed > :not(.panel-heading),.roster-collapsed #refresh-roster { display:none; }
   .roster-collapsed .panel-heading { margin:0; }
   .workbench-sections { gap:4px; }
-  .workbench-sections button { font-size:11px;min-height:42px;padding:8px; }
+  .workbench-sections button { font-size:11px;padding:8px; }
   .workbench-preview { padding:10px; }
   .workbench-preview iframe { height:clamp(560px,72svh,720px); }
   .workbench-preview iframe[data-preview-kind="gym"] { height:clamp(680px,82svh,820px); }
