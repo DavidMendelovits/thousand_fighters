@@ -77,3 +77,22 @@ npm run cms:chat:smoke         # Smoke test chat agent
 - The `play_sound` event type in MoveExecutor and `hitSound` on Hitbox are the only two paths for game audio
 - Debug visualization is controlled by `DebugPanel` (F1 master toggle, F3 panel) — per-actor, per-category
 - `public/assets-index.json` is the canonical asset catalog, regenerated at build time
+
+## Skill routing
+
+When the user's request matches an available skill, invoke it via the Skill tool. When in doubt, invoke the skill.
+
+Key routing rules:
+- Product ideas/brainstorming → invoke /office-hours
+- Strategy/scope → invoke /plan-ceo-review
+- Architecture → invoke /plan-eng-review
+- Design system/plan review → invoke /design-consultation or /plan-design-review
+- Full review pipeline → invoke /autoplan
+- Bugs/errors → invoke /investigate
+- QA/testing site behavior → invoke /qa or /qa-only
+- Code review/diff check → invoke /review
+- Visual polish → invoke /design-review
+- Ship/deploy/PR → invoke /ship or /land-and-deploy
+- Save progress → invoke /context-save
+- Resume context → invoke /context-restore
+- Author a backlog-ready spec/issue → invoke /spec
