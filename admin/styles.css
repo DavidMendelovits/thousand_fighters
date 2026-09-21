@@ -2308,6 +2308,13 @@ details[open] .dev-tools-summary {
 .kit-chain { display:flex;align-items:center;gap:6px;flex-wrap:wrap; }
 .kit-chain > span { display:inline-flex;align-items:center;gap:5px; }
 .kit-chain em { border:1px solid var(--line);border-radius:999px;padding:1px 6px;color:var(--accent-2);font:10px/1.5 monospace;font-style:normal;text-transform:uppercase; }
+@media (max-width:900px) {
+  .animation-browser { grid-template-columns:minmax(0,1fr);gap:12px; }
+  .animation-browser-choice { justify-content:stretch; }
+  .animation-browser [role="group"] { flex:1; }
+  .animation-browser [role="group"] button { flex:1; }
+  .animation-browser [data-animation-count] { width:100%; }
+}
 @media (max-width:700px) {
   .studio-embedded .admin-shell { padding:8px; }
   .studio-embedded .workspace-grid { grid-template-columns:minmax(0,1fr); }
@@ -2321,11 +2328,7 @@ details[open] .dev-tools-summary {
   .workbench-preview iframe { height:1100px; }
   .workbench-preview iframe[data-preview-kind="gym"] { height:1350px; }
   .move-card-actions { flex-wrap:wrap; }
-  .animation-browser { grid-template-columns:1fr;gap:12px;padding:14px; }
-  .animation-browser-choice { justify-content:stretch; }
-  .animation-browser [role="group"] { flex:1; }
-  .animation-browser [role="group"] button { flex:1; }
-  .animation-browser [data-animation-count] { width:100%; }
+  .animation-browser { padding:14px; }
 }
 .studio-embedded .combat-rules-editor { max-width:100%; box-sizing:border-box; }
 .studio-embedded .combat-rules-editor textarea { width:100%; box-sizing:border-box; }
