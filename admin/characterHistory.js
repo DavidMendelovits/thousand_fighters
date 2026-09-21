@@ -1,6 +1,13 @@
 const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const assetUrl = artifact => `/api/assets/${encodeURIComponent(artifact.key)}`;
 
+const progressiveList = ({ items, initialCount, render, olderLabel }) => {
+  const visible = items.slice(0, initialCount).map(render).join('');
+  const older = items.slice(initialCount);
+  if (!older.length) return visible;
+  return `${visible}<details class="history-more"><summary>Show ${older.length} older ${olderLabel}</summary><div>${older.map(render).join('')}</div></details>`;
+};
+
 export function mountCharacterHistory({ host, characterId, getJson, postJson, onRestore }) {
   host.innerHTML = `<summary>History & versions <span>Checkpoints · source videos · generation lineage</span></summary>
     <div class="history-content"><p class="history-storage">Loading storage status…</p>
@@ -22,11 +29,12 @@ export function mountCharacterHistory({ host, characterId, getJson, postJson, on
     host.querySelector('.history-storage').textContent = data.storage.remote
       ? `Archive backend: ${data.storage.provider}. No automatic deletion. Provider backups must be configured separately.`
       : 'Local archive only — immutable history is enabled, but this is not an off-machine backup.';
-    host.querySelector('.history-versions').innerHTML = `<h3>Character checkpoints</h3>${data.versions.length ? data.versions.map(version => `<article class="history-card"><div><strong>${escape(version.label)}</strong><small>${escape(version.at)} · ${version.restorable ? `${version.assetCount} frozen assets` : 'Legacy JSON only — exact restore unavailable'}</small></div><button type="button" data-history="restore" data-version="${escape(version.versionId)}" ${version.restorable ? '' : 'disabled'}>Restore as working copy</button></article>`).join('') : '<p>No checkpoints yet. Save one before experimenting.</p>'}`;
+    const renderVersion = version => `<article class="history-card"><div><strong>${escape(version.label)}</strong><small>${escape(version.at)} · ${version.restorable ? `${version.assetCount} frozen assets` : 'Legacy JSON only — exact restore unavailable'}</small></div><button type="button" data-history="restore" data-version="${escape(version.versionId)}" ${version.restorable ? '' : 'disabled'}>Restore as working copy</button></article>`;
+    host.querySelector('.history-versions').innerHTML = `<h3>Character checkpoints</h3>${data.versions.length ? progressiveList({ items: data.versions, initialCount: 8, render: renderVersion, olderLabel: 'checkpoints' }) : '<p>No checkpoints yet. Save one before experimenting.</p>'}`;
     const comparable = data.versions.filter(version => version.restorable);
     host.querySelector('.history-compare').innerHTML = comparable.length > 1 ? `<div class="history-actions"><label>Checkpoint A <select data-compare-left>${comparable.map(v => `<option value="${escape(v.versionId)}">${escape(v.label)} · ${escape(v.at)}</option>`).join('')}</select></label><label>Checkpoint B <select data-compare-right>${comparable.map((v, i) => `<option ${i === 1 ? 'selected' : ''} value="${escape(v.versionId)}">${escape(v.label)} · ${escape(v.at)}</option>`).join('')}</select></label><button type="button" data-history="compare">Compare checkpoints</button></div>` : '';
     const events = data.events.filter(event => (event.type !== 'artifact-written' || /source\/|sources\/|concept\/|draft\//.test(event.logicalKey ?? '')) && !(event.type === 'legacy-import' && /\/(frames|compiled[^/]*\/frames)\//.test(event.logicalKey ?? '')));
-    const html = events.map(event => {
+    const renderEvent = event => {
       const artifact = event.output ?? event.artifact;
       const video = artifact?.contentType === 'video/mp4';
       const preview = artifact ? `<a href="${assetUrl(artifact)}" target="_blank" rel="noreferrer">Open ${video ? 'source video' : artifact.contentType.startsWith('image/') ? 'image' : 'artifact'} ↗</a>${video || artifact.contentType.startsWith('image/') ? `<details><summary>Preview</summary>${video ? `<video controls preload="none" src="${assetUrl(artifact)}"></video>` : `<img loading="lazy" alt="Archived generation" src="${assetUrl(artifact)}">`}</details>` : ''}` : '';
@@ -34,7 +42,8 @@ export function mountCharacterHistory({ host, characterId, getJson, postJson, on
         <details><summary>Provenance & settings</summary><pre>${escape(JSON.stringify(event, null, 2))}</pre></details></div>
         <div class="history-event-actions">${preview}${event.type === 'video-checkpoint' ? `<button type="button" data-history="resume" data-event="${escape(event.id)}">Recover / resume existing job</button>` : ''}${['artifact-written', 'generation-output', 'legacy-import'].includes(event.type) && artifact ? `<button type="button" data-history="branch" data-event="${escape(event.id)}">Branch source</button>` : ''}
         ${video ? `<details><summary>Re-extract without generation</summary><label>Action <input data-action value="${escape(event.moveId ?? 'idle')}" pattern="[a-z][a-z0-9_-]*"></label><label>Frames <input data-frames type="number" min="8" max="48" value="20"></label><label><input data-loop type="checkbox"> Loop</label><p>Uses this row’s body or summon reference and art style. Creates an isolated draft working copy and before/after checkpoints. For interval, paint cleanup and grab timing controls, use “Reprocess saved video” on the move card.</p><button type="button" data-history="reprocess" data-event="${escape(event.id)}">Re-extract candidate</button></details>` : ''}</div></article>`;
-    }).join('');
+    };
+    const html = older ? events.map(renderEvent).join('') : progressiveList({ items: events, initialCount: 12, render: renderEvent, olderLabel: 'events from this page' });
     const container = host.querySelector('.history-events');
     if (older) container.insertAdjacentHTML('beforeend', html);
     else container.innerHTML = html || '<p>No recorded events yet. Older files can be imported with the archive migration script.</p>';

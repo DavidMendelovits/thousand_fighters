@@ -30,6 +30,9 @@
 .history-card>div{min-width:0}.history-card strong{font-size:13px}.history-card small{display:block;overflow-wrap:anywhere}
 .history-card button{align-self:flex-start;white-space:normal}.history-card details{margin-top:8px;font-size:12px}
 .history-card summary{cursor:pointer}.history-card pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:260px;overflow:auto;font-size:11px}
+.history-more{border-top:1px solid var(--line);padding:12px 0}
+.history-more>summary{display:flex;align-items:center;min-height:44px;cursor:pointer;color:var(--accent);font-size:12px;font-weight:700}
+.history-more>div>.history-card:first-child{border-top:0}
 .history-event-actions{display:flex;flex-direction:column;gap:8px;min-width:160px;max-width:260px;font-size:12px}
 .history-event-actions a{color:inherit;text-decoration:underline}.history-event-actions label{display:block;margin:8px 0}
 .history-event-actions input:not([type=checkbox]){display:block;width:100%;box-sizing:border-box}
