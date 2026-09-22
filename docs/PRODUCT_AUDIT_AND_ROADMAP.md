@@ -4,6 +4,55 @@ Audit date: September 19, 2026. Scope: current local working tree, including unc
 
 ## Executive assessment
 
+### September 22 requirement — final recorded new-fighter acceptance run
+
+**CREATE-07 remains open and is the final acceptance exercise for the current
+workbench/pipeline implementation process.** Once the prerequisite authoring,
+recovery and review paths work, create a genuinely new fighter from a blank
+draft through the CMS workbench, not by cloning Palimpsest or hand-installing
+assets/configuration. Preserve existing archived characters.
+
+Working creative direction (not yet generated): **Eventide, the living abyssal
+observatory** — a creature of liquid glass, bioluminescent ribbons and orbiting
+lanterns. Its silhouette pours, unfurls, coils and reforms rather than moving
+like a human in a costume. Distinct facets can become a swift ribbon body, a
+defensive reef-like body and a luminous predatory bloom. Favor a coherent,
+readable moveset over an indiscriminate collection of effects.
+
+Acceptance checklist:
+
+- [ ] Start recording before entering the concept or creating the blank draft.
+  Use the browser workbench for references, move specifications, character-
+  appropriate inputs, generation, review, tuning, recovery and local publication.
+- [ ] Build and review identity/reference art, locomotion, defense/reactions,
+  attacks and combo-exclusive follow-ups with genuinely distinct motion.
+  Use the production API/video-to-animation pipeline, not mocked providers or
+  local-only image generation as a substitute for the production workflow.
+- [ ] Include projectiles with distinct trajectories/impacts, a summonable with
+  visible spawn/control/despawn behavior, and an extension/grab that visibly
+  interacts with the opponent. Exercise ground/sky/rear attacks and at least one
+  sustained form with its own coherent moves and animations, without base-form
+  flicker. Define readable startup, recovery and counterplay for each mechanic.
+- [ ] Tune anchors, bounds, contact poses, hitboxes and timing through the UI;
+  inspect effects for clipping/bleed and verify continuity across animations.
+- [ ] Show saved lineage, attempt durations, provider/model identifiers and
+  known/unknown costs. Use a bounded reviewed generation plan; do not silently
+  buy unlimited retries. Demonstrate reload/reconnect, rejection/revision and
+  restore without deliberately wasting paid generations.
+- [ ] Treat any required off-interface authoring operation as a workbench gap.
+  Fix the product, then repeat that step through the UI. Disclose engineering
+  pauses rather than presenting them as a seamless successful workflow.
+- [ ] Retain the complete chronological browser recording, including waits,
+  errors and retries. If recording must restart, preserve numbered segments and
+  a timestamp index; an optional edited highlight cannot replace the full record.
+- [ ] Finish with recorded real-engine gameplay against another fighter proving
+  the new attacks, combo-only moves, summon, grab and form actually function.
+  Deliver the playable character, full creation recording, gameplay clip and
+  generation/lineage report. A preview montage or generated fight video does
+  not close this gate. Public deployment remains a separate action.
+
+No generation or new-character creation was started when adding this requirement.
+
 ### September 20 execution update — unified draft editor audit
 
 The workbench now groups motion/move specs, combo previews, anchors/bounds, identity/forms, build/publish and history around one selected draft at `/workbench`. It replaces the published-only combat panel, removes phantom generic rows, and offers two mutually exclusive motion workspaces: **Focus one move** pairs one live preview with one move editor, while **All moves** removes the duplicate preview and exposes the complete scrollable sheet library. The responsive Gym remains embedded with custom-row navigation and active-revision metadata. Generation reports immediate admission/progress/errors, including on HTTP tailnet URLs. Combo previews distinguish complete move sequences from real engine hit-confirm cancels and report failures instead of forcing them through. Authored combos can now own dedicated cancel-only moves and animation rows, so a route can reveal attacks that are impossible to perform from neutral instead of merely replaying ordinary moves.

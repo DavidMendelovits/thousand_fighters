@@ -17,6 +17,7 @@ This is a local implementation checkpoint, **not a production/mobile release**.
 | T8 Indexed heads and status delivery | Implemented | Indexed heads/attempts, replayable revisioned SSE, shared UI subscription per job, polling fallback, terminal/reordered-event tests. |
 | T9 Phaser core / budgets | Implemented, release gate open | No Matter/Arcade; automated 250 KB gzip budget. Desktop/mobile-emulation renderer smoke passes. See performance report; physical-phone measurements are still required. |
 | T10 Local verification complete; release gates open | Local checkpoint verified | Focused suites and paired desktop performance gates pass. Broad-suite limitations, physical-phone measurement and artwork review remain open below. No deployment or EAS build performed. |
+| T11 Final new-character browser acceptance | Pending, explicitly required September 22 | Create an ambitious original fighter from scratch entirely through the workbench; record the complete workflow and real gameplay. See CREATE-07's expanded acceptance checklist in [the product roadmap](PRODUCT_AUDIT_AND_ROADMAP.md). Existing Palimpsest walkthrough does not satisfy this gate. |
 
 ## Operating contracts
 
