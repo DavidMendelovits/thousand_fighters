@@ -538,7 +538,7 @@ export function createCmsTools({ pipeline, repository, registry, runtimePublicDi
       execute: async (input) => {
         const published = await pipeline.publishCharacter(input);
         // Bridge publish -> the static artifacts the game roster reads
-        // (public/fighters/<id>/config.json + assets-index.json). Best-effort:
+        // (public/fighters/<id>/config.json + runtime-roster.json). Best-effort:
         // a read-only/serverless filesystem just means the game picks the
         // fighter up on the next local build instead. Never fail the publish.
         // ponytail: dev-time convenience; prod is a static build, not a live write.
