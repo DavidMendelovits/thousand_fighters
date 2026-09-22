@@ -1,0 +1,272 @@
+{
+  "schemaVersion": 1,
+  "action": "ribbon_lasso_throw",
+  "status": "needs-visual-review",
+  "source": "artifacts/workbench-video-jobs/3f3e3fdc-4d49-4b97-a43a-2ec24c842938/source.mp4",
+  "sourceSha256": "c307266d94bbbb0650c5e64c3ee084be0de6aec746ecb2f2927cd0cf3c8fb5b6",
+  "sourceFrameCount": 124,
+  "frameCount": 20,
+  "uniqueFrames": 20,
+  "scale": 3.0970149253731343,
+  "bodyMotion": 0.898989898989899,
+  "legMotion": 0.9538251751539945,
+  "loop": false,
+  "loopSeamError": null,
+  "sourceRange": [
+    0,
+    123
+  ],
+  "rootTravelPixels": 103.0,
+  "suggestedContactFrame": 9,
+  "clippedFrames": [],
+  "frames": [
+    {
+      "file": "frames/ribbon_lasso_throw_001.png",
+      "width": 734,
+      "height": 467,
+      "anchor": {
+        "x": 435,
+        "y": 432
+      },
+      "durationFrames": 3,
+      "sourceFrame": 0
+    },
+    {
+      "file": "frames/ribbon_lasso_throw_002.png",
+      "width": 734,
+      "height": 467,
+      "anchor": {
+        "x": 435,
+        "y": 432
+      },
+      "durationFrames": 3,
+      "sourceFrame": 6
+    },
+    {
+      "file": "frames/ribbon_lasso_throw_003.png",
+      "width": 734,
+      "height": 467,
+      "anchor": {
+        "x": 435,
+        "y": 432
+      },
+      "durationFrames": 3,
+      "sourceFrame": 12
+    },
+    {
+      "file": "frames/ribbon_lasso_throw_004.png",
+      "width": 734,
+      "height": 467,
+      "anchor": {
+        "x": 435,
+        "y": 432
+      },
+      "durationFrames": 3,
+      "sourceFrame": 19
+    },
+    {
+      "file": "frames/ribbon_lasso_throw_005.png",
+      "width": 734,
+      "height": 467,
+      "anchor": {
+        "x": 435,
+        "y": 432
+      },
+      "durationFrames": 3,
+      "sourceFrame": 25
+    },
+    {
+      "file": "frames/ribbon_lasso_throw_006.png",
+      "width": 734,
+      "height": 467,
+      "anchor": {
+        "x": 435,
+        "y": 432
+      },
+      "durationFrames": 3,
+      "sourceFrame": 32
+    },
+    {
+      "file": "frames/ribbon_lasso_throw_007.png",
+      "width": 734,
+      "height": 467,
+      "anchor": {
+        "x": 435,
+        "y": 432
+      },
+      "durationFrames": 3,
+      "sourceFrame": 38
+    },
+    {
+      "file": "frames/ribbon_lasso_throw_008.png",
+      "width": 734,
+      "height": 467,
+      "anchor": {
+        "x": 435,
+        "y": 432
+      },
+      "durationFrames": 3,
+      "sourceFrame": 45
+    },
+    {
+      "file": "frames/ribbon_lasso_throw_009.png",
+      "width": 734,
+      "height": 467,
+      "anchor": {
+        "x": 435,
+        "y": 432
+      },
+      "durationFrames": 3,
+      "sourceFrame": 51
+    },
+    {
+      "file": "frames/ribbon_lasso_throw_010.png",
+      "width": 734,
+      "height": 467,
+      "anchor": {
+        "x": 435,
+        "y": 432
+      },
+      "durationFrames": 3,
+      "sourceFrame": 58
+    },
+    {
+      "file": "frames/ribbon_lasso_throw_011.png",
+      "width": 734,
+      "height": 467,
+      "anchor": {
+        "x": 435,
+        "y": 432
+      },
+      "durationFrames": 3,
+      "sourceFrame": 64
+    },
+    {
+      "file": "frames/ribbon_lasso_throw_012.png",
+      "width": 734,
+      "height": 467,
+      "anchor": {
+        "x": 435,
+        "y": 432
+      },
+      "durationFrames": 3,
+      "sourceFrame": 71
+    },
+    {
+      "file": "frames/ribbon_lasso_throw_013.png",
+      "width": 734,
+      "height": 467,
+      "anchor": {
+        "x": 435,
+        "y": 432
+      },
+      "durationFrames": 3,
+      "sourceFrame": 77
+    },
+    {
+      "file": "frames/ribbon_lasso_throw_014.png",
+      "width": 734,
+      "height": 467,
+      "anchor": {
+        "x": 435,
+        "y": 432
+      },
+      "durationFrames": 3,
+      "sourceFrame": 84
+    },
+    {
+      "file": "frames/ribbon_lasso_throw_015.png",
+      "width": 734,
+      "height": 467,
+      "anchor": {
+        "x": 435,
+        "y": 432
+      },
+      "durationFrames": 3,
+      "sourceFrame": 90
+    },
+    {
+      "file": "frames/ribbon_lasso_throw_016.png",
+      "width": 734,
+      "height": 467,
+      "anchor": {
+        "x": 435,
+        "y": 432
+      },
+      "durationFrames": 3,
+      "sourceFrame": 97
+    },
+    {
+      "file": "frames/ribbon_lasso_throw_017.png",
+      "width": 734,
+      "height": 467,
+      "anchor": {
+        "x": 435,
+        "y": 432
+      },
+      "durationFrames": 3,
+      "sourceFrame": 103
+    },
+    {
+      "file": "frames/ribbon_lasso_throw_018.png",
+      "width": 734,
+      "height": 467,
+      "anchor": {
+        "x": 435,
+        "y": 432
+      },
+      "durationFrames": 3,
+      "sourceFrame": 110
+    },
+    {
+      "file": "frames/ribbon_lasso_throw_019.png",
+      "width": 734,
+      "height": 467,
+      "anchor": {
+        "x": 435,
+        "y": 432
+      },
+      "durationFrames": 3,
+      "sourceFrame": 116
+    },
+    {
+      "file": "frames/ribbon_lasso_throw_020.png",
+      "width": 734,
+      "height": 467,
+      "anchor": {
+        "x": 435,
+        "y": 432
+      },
+      "durationFrames": 3,
+      "sourceFrame": 123
+    }
+  ],
+  "provenance": {
+    "compilerSha256": "2a9dc01b4dd0c977ed7f2bbfcd9bda75b755334e3a90a034a3ff980ea214d395",
+    "keyerSha256": "bfc4a4781c3587122862f6b146beb8e30952ad08ceff2cf7b16b02b786805ac9",
+    "referenceSha256": "40fd1fbedefb0c43e7fbb223485d17eacd7c330841f8e70ac3d22d54a2e52c37",
+    "options": {
+      "action": "ribbon_lasso_throw",
+      "count": 20,
+      "loop": false,
+      "start": null,
+      "end": null,
+      "style": "pixel",
+      "componentMode": "largest",
+      "pingPong": false,
+      "background": "magenta-distance",
+      "rootMode": "pelvis",
+      "expandCanvas": true,
+      "matteCleanup": false,
+      "refineEdges": false,
+      "despillMagenta": true
+    },
+    "environment": {
+      "python": "3.11.10",
+      "numpy": "2.2.6",
+      "pillow": "12.0.0",
+      "scipy": "1.16.3",
+      "ffmpeg": "ffmpeg version 7.1.1 Copyright (c) 2000-2025 the FFmpeg developers"
+    }
+  }
+}

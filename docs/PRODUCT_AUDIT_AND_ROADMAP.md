@@ -12,7 +12,7 @@ recovery and review paths work, create a genuinely new fighter from a blank
 draft through the CMS workbench, not by cloning Palimpsest or hand-installing
 assets/configuration. Preserve existing archived characters.
 
-Working creative direction (not yet generated): **Eventide, the living abyssal
+Creative direction now in a browser-created draft: **Eventide, the living abyssal
 observatory** — a creature of liquid glass, bioluminescent ribbons and orbiting
 lanterns. Its silhouette pours, unfurls, coils and reforms rather than moving
 like a human in a costume. Distinct facets can become a swift ribbon body, a
@@ -51,7 +51,26 @@ Acceptance checklist:
   generation/lineage report. A preview montage or generated fight video does
   not close this gate. Public deployment remains a separate action.
 
-No generation or new-character creation was started when adding this requirement.
+### September 22 Eventide acceptance checkpoint
+
+The browser CMS now contains an Eventide draft with 16 authored moves, three
+combos, three generated BFL projectile sprites, a controllable Surveyor summon,
+and a hidden Totality form draft. The source-preserving video pipeline has
+produced 110 frames across six rows. Ribbon Lash, Surveyor idle, and the
+fal/Kling idle passed visual review; the walk and lasso candidates were
+explicitly rejected for continuity/duplicated-reach defects. A real-engine
+draft testbed can exercise the authored mechanics, but uses labeled stand-ins
+for missing animation rows. The three projectile sprites and their centered
+collision boxes were saved through the workbench; saved-source recovery did
+not make a second paid request. Browser creation and recovery footage is
+indexed in [the Eventide recording](../artifacts/eventide-workbench/index.html).
+
+**CREATE-07 is not complete:** 23 of 26 required animation rows still need
+generation or review, Totality needs independent art and full interaction
+coverage, and the fighter has not passed pack validation or publication. The
+recording has disclosed gaps from recorder interruptions, so it is not a
+continuous full-process record. No generated video alone is evidence of a
+playable, finished fighter.
 
 ### September 20 execution update — unified draft editor audit
 

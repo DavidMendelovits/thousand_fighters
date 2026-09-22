@@ -70,3 +70,12 @@ test('imported author-owned geometry and move extensions survive extraction/expo
   const c=convertDraftToCharacterConfig({draft:d,frameData:{frames:{base:[{silhouetteHeight:300}],punch:[{attackBox:{x:99,y:99,width:999,height:999}}]}}});
   assert.equal(c.sprite.scale,1);assert.deepEqual(c.hurtboxes.idle,d.hurtboxes.idle);assert.equal(c.moves[0].phases[1].events[0].event.hitbox.width,20);assert.deepEqual(c.moves[0].extension,d.moves[0].extension);assert.equal(c.moves[0].airOk,true);
 });
+test('move inspector extension authoring validates and exports a removable reach',()=>{
+  const draft=fixture();
+  const extension={kind:'ribbon',color:0x31546c,accent:0xa9e8df,thickness:11};
+  const saved=patchMove(draft,'jab',{extension});
+  assert.deepEqual(saved.moves[0].extension,extension);
+  assert.deepEqual(convertDraftToCharacterConfig({draft:saved}).moves[0].extension,extension);
+  assert.equal(patchMove(saved,'jab',{extension:null}).moves[0].extension,undefined);
+  assert.throws(()=>patchMove(draft,'jab',{extension:{...extension,thickness:0}}),/thickness/);
+});

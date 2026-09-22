@@ -489,7 +489,10 @@ export function resolveDraftActors(draft, sprite) {
     frames.base=frames[actor.idleAnimation];
     frameCounts.base=frames.base.length;
     if(sheets[actor.idleAnimation])sheets.base=sheets[actor.idleAnimation];
-    return {...actor,defaultVisible:false,sprite:{...sprite,frames,frameCounts,sheets,
+    // Summoned satellites must not inherit the main fighter's on-screen size.
+    // A declarative override remains available for unusually large summons.
+    const size=Number.isFinite(actor.relativeSize)?Math.min(1.5,Math.max(0.2,actor.relativeSize)):0.4;
+    return {...actor,defaultVisible:false,sprite:{...sprite,scale:sprite.scale*size,frames,frameCounts,sheets,
       rowPlayback:{...select(sprite.rowPlayback),base:{ticksPerFrame:3,loop:true}}}};
   });
   if(!resolved.some(actor=>!actor.summon))resolved.unshift({id:'lead',defaultVisible:true,sprite});

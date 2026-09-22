@@ -2283,9 +2283,10 @@ details[open] .dev-tools-summary {
 .move-board[data-animation-view="focus"] .move-card.selected-move [data-inspect-row] { display:none; }
 .generation-status { margin:0;padding:10px 14px;color:var(--accent);font-size:12px;line-height:1.6;overflow-wrap:anywhere; }
 .generation-status:empty { display:none; }
-#workbench-error-notice { position:fixed;bottom:16px;right:16px;z-index:100;display:flex;gap:16px;align-items:center;max-width:min(640px,calc(100vw - 32px));padding:16px;border:1px solid #cf846c;border-radius:8px;background:#30221f;color:#ffcfbd;box-shadow:0 8px 35px #0008;font-size:13px;line-height:1.5; }
+#workbench-error-notice { position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:100;display:flex;gap:16px;align-items:center;max-width:min(640px,calc(100vw - 32px));max-height:min(35vh,280px);overflow:auto;padding:16px;border:1px solid #cf846c;border-radius:8px;background:#30221f;color:#ffcfbd;box-shadow:0 8px 35px #0008;font-size:13px;line-height:1.5;pointer-events:none; }
 #workbench-error-notice[hidden] { display:none; }
 #workbench-error-notice span { overflow-wrap:anywhere;min-width:0; }
+#workbench-error-notice button { pointer-events:auto; }
 .generation-status[data-level="error"] { color:#ffb39e;background:#382620;border-left:3px solid #e8846c; }
 .variant-heading strong, .sheet-link { overflow-wrap:anywhere; }
 .move-data-pane, .animation-pane, .variant-row, .move-tab-pane { min-width:0; }
@@ -2373,3 +2374,5 @@ details[open] .dev-tools-summary {
 .build-recovery{margin-top:12px;padding:12px;border:1px solid #67513a;border-radius:5px;font-size:13px}
 .build-recovery label{display:block;line-height:1.5;margin:12px 0}.build-recovery input[type=checkbox]{width:auto;margin-right:6px}.build-recovery textarea{width:100%;box-sizing:border-box;margin:6px 0}
 @media(max-width:600px){.character-build-jobs{padding:12px}.character-build-jobs button,.build-job-actions a{min-height:44px}.build-recovery summary,.build-diagnostics summary{min-height:36px}}
+.kit-projectile-preview { display: flex; align-items: center; gap: 12px; margin: 8px 0; color: var(--muted, #9fb0b7); font-size: .78rem; }
+.kit-projectile-preview img { width: 92px; height: 72px; object-fit: contain; image-rendering: pixelated; background: repeating-conic-gradient(#303946 0 25%, #1a222d 0 50%) 0 0 / 16px 16px; border: 1px solid #52636b; border-radius: 5px; }

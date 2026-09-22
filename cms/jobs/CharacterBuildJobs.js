@@ -253,8 +253,8 @@ export class CharacterBuildJobs {
       });
     }catch(error){
       // No automatic replay, even for a network error: it may already be billed.
-      try{await writes.catch(()=>{});const observed=await this.attempts(request,{attempts});const uncertain=['submitting','provider-active'].includes(state.status)&&!observed.some(a=>a.providerTaskId||a.outputArtifact);
-        state=await this.write(request,{...state,status:uncertain?'submission-uncertain':'needs-recovery',phase:state.status==='extracting'?'Saved source needs extraction recovery':uncertain?'Submission outcome unknown · no automatic retry':'Build stopped; inspect history before another attempt',
+      try{await writes.catch(()=>{});const observed=await this.attempts(request,{attempts});const preflight=error.preflight===true&&observed.length===0;const uncertain=!preflight&&['submitting','provider-active'].includes(state.status)&&!observed.some(a=>a.providerTaskId||a.outputArtifact);
+        state=await this.write(request,{...state,status:preflight?'failed':uncertain?'submission-uncertain':'needs-recovery',phase:preflight?'Local preparation failed · no provider request':state.status==='extracting'?'Saved source needs extraction recovery':uncertain?'Submission outcome unknown · no automatic retry':'Build stopped; inspect history before another attempt',
         error:cleanText(error.message),attempts:observed,providerTaskId:error.taskId??null,completedAt:new Date().toISOString()});}
       catch{ /* An old running/admission record stays visibly unresolved. */ }
     }finally{this.live.delete(request.id);}

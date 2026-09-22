@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Eventide · CMS creation recording</title>
+  <style>
+    :root { color-scheme: dark; font: 16px/1.5 system-ui, sans-serif; background: #0b1118; color: #eef6f6; }
+    body { max-width: 1120px; margin: 0 auto; padding: 24px; }
+    h1 { margin: 0 0 8px; font-size: clamp(2rem, 5vw, 3.5rem); }
+    h2 { margin-top: 36px; }
+    p { color: #bac9cf; }
+    a { color: #89e8dc; }
+    .tag { display: inline-block; border: 1px solid #a87540; color: #f7c48a; padding: 4px 10px; border-radius: 99px; font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 20px; align-items: start; }
+    video { width: 100%; aspect-ratio: 1200/984; background: #06080c; border: 1px solid #344c54; border-radius: 10px; }
+    nav { display: grid; gap: 8px; }
+    button { width: 100%; border: 1px solid #30434b; background: #17232d; color: #f4fafa; border-radius: 8px; padding: 12px; text-align: left; cursor: pointer; }
+    button:hover, button[aria-current="true"] { border-color: #77d8ce; background: #203c43; }
+    small { display: block; color: #a4b8bd; }
+    .facts { display: flex; flex-wrap: wrap; gap: 10px; padding: 0; list-style: none; }
+    .facts li { background: #17232d; border: 1px solid #30434b; border-radius: 8px; padding: 9px 12px; }
+    @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } nav { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  </style>
+</head>
+<body>
+  <span class="tag">Recorded browser workflow · draft</span>
+  <h1>Building Eventide</h1>
+  <p>The actual CMS workbench session, including generation attempts, review decisions, failures, recovery, and draft playtest. This is not a polished simulation. The latest segment repairs and validates three generated projectiles in the game engine.</p>
+  <div class="layout">
+    <main>
+      <video id="player" controls preload="metadata" playsinline src="creation-15-projectile-recovery-validation.webm"></video>
+      <h2 id="clip-title">15 · Projectile recovery and playtest</h2>
+      <p id="clip-note">Saved-source reprocessing, three projectile previews, hitbox alignment, and pack validation.</p>
+      <p><a id="download" href="creation-15-projectile-recovery-validation.webm">Open this clip directly</a> · <a href="/cms-admin/roster/eventide">Open Eventide in CMS</a> · <a href="/testbed?id=eventide">Open draft playtest</a></p>
+    </main>
+    <nav aria-label="Recording chapters" id="chapters"></nav>
+  </div>
+  <h2>What you are seeing</h2>
+  <ul class="facts">
+    <li>16 authored moves</li><li>3 combo routes</li><li>3 generated projectile sprites</li><li>Controlled Surveyor summon</li><li>Hidden Totality form draft</li><li>110 Eventide frames in 6 rows</li>
+  </ul>
+  <p>Ribbon Lash, Surveyor idle, and the fal/Kling idle are reviewed. Walk changes were requested because its eyes disappear during the morph; lasso changes were requested because its video arc doubles the engine-rendered reach. The latest pack validation reports 23 of 26 required rows still needing generation or review and missing Totality form assets. All three authored projectile sprites are present. Publishing remains blocked. The testbed explicitly uses visual stand-ins for missing rows; they are not shipped assets.</p>
+  <p>Recording coverage: the first six clips capture creation through Surveyor review, and clip seven captures a CMS walkthrough. A recorder interruption left a gap between them; the draft playtest, Ribbon Lash approval, and two rejected lasso attempts in that interval remain documented in CMS history but were not captured live. Clip 14 is a watchable repair of a recorder-interrupted segment; clip 15 resumes live capture for projectile recovery and validation. The full creation is therefore not continuously recorded.</p>
+  <script>
+    const clips = [
+      ['01 · Start in the workbench', 'creation-01.webm', '05:21 · New fighter creation and the first CMS steps.'],
+      ['02 · Identity iteration', 'creation-02.webm', '00:36 · Short continuation of the reference workflow.'],
+      ['03 · Character kit', 'creation-03.webm', '03:50 · Move, actor, and form authoring in the workbench.'],
+      ['04 · Generation setup', 'creation-04.webm', '02:11 · Build controls and asset review.'],
+      ['05 · Motion workflow', 'creation-05.webm', '06:26 · Recorded motion generation and review.'],
+      ['06 · Long creation session', 'creation-06-watchable.webm', '60:09 · Provider jobs, clip inspection, recovery, and CMS iteration. Losslessly repaired WebM index.'],
+      ['07 · Current draft walkthrough', 'creation-07-final-walkthrough.webm', '02:16 · Identity, motion, combos, release check, and the draft game testbed.'],
+      ['08 · Connected lasso in CMS', 'creation-08-lasso-cms.webm', '02:36 · Move inspector reach, saved draft, prompt revision, and live Pruna generation.'],
+      ['09 · Lasso review decision', 'creation-09-lasso-review.webm', '00:36 · The source is inspected and changes are requested with specific feedback.'],
+      ['10 · Lasso in the game engine', 'creation-10-lasso-playtest.webm', '01:49 · Reactive dummy is grabbed, pulled from 72px to 36px, and released using paused engine steps. The video art remains unapproved.'],
+      ['11 · Idle motion attempt', 'creation-11-idle-motion.webm', '09:50 · Pruna idle generation, compile error, and source diagnosis.'],
+      ['12 · Recovery and model comparison', 'creation-12-idle-reprocess.webm', '10:03 · No-cost Pruna reprocess, visual rejection, fal/Kling generation, saved-source recovery, and idle approval.'],
+      ['13 · Idle in the game engine', 'creation-13-combat-validation.webm', '02:49 · Real testbed playback, walk-row review and publish validation.'],
+      ['14 · Projectile generation', 'creation-14-projectiles-watchable.webm', '09:32 · Browser-CMS projectile generation and review. Recorder-interrupted segment repaired for playback.'],
+      ['15 · Projectile recovery and playtest', 'creation-15-projectile-recovery-validation.webm', '08:55 · Saved-source reprocessing, three projectile previews, hitbox alignment, and pack validation.'],
+    ];
+    const player = document.getElementById('player');
+    const nav = document.getElementById('chapters');
+    function choose(index) {
+      const [title, file, note] = clips[index];
+      player.pause(); player.src = file; player.load();
+      document.getElementById('clip-title').textContent = title;
+      document.getElementById('clip-note').textContent = note;
+      document.getElementById('download').href = file;
+      [...nav.children].forEach((button, i) => button.setAttribute('aria-current', String(i === index)));
+      history.replaceState(null, '', `#part-${index + 1}`);
+    }
+    clips.forEach(([title, , note], i) => {
+      const button = document.createElement('button');
+      button.type = 'button'; button.innerHTML = `${title}<small>${note}</small>`;
+      button.addEventListener('click', () => choose(i)); nav.append(button);
+    });
+    const requestedPart = /^#part-(?:[1-9]|1[0-5])$/.test(location.hash) ? Number(location.hash.slice(6)) : 15;
+    choose(requestedPart - 1);
+    player.addEventListener('ended', () => {
+      const index = [...nav.children].findIndex(button => button.getAttribute('aria-current') === 'true');
+      if (index < clips.length - 1) { choose(index + 1); player.play().catch(() => {}); }
+    });
+  </script>
+</body>
+</html>

@@ -60,6 +60,16 @@ test('failed durable admission cannot invoke a provider',async t=>{
   assert.equal(calls,0);
 });
 
+test('local reference preflight failure is not reported as an uncertain paid submission',async t=>{
+  const f=await fixture(t,async()=>{const error=new Error('Sprite exceeds motion-safe canvas');error.preflight=true;throw error;});
+  const {job}=await f.manager.submit('probe',submission());
+  const failed=await done(f.manager,job.id);
+  assert.equal(failed.status,'failed');
+  assert.match(failed.phase,/no provider request/);
+  assert.equal(failed.attempts.length,0);
+  assert.equal(failed.canResolve,true);
+});
+
 test('restarted queued or claimed jobs require explicit resolution, never paid replay',async t=>{
   let calls=0;const f=await fixture(t,async()=>{calls++;return result;});
   f.manager.drain=async()=>{};

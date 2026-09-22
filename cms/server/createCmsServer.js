@@ -13,6 +13,7 @@ import { resumeArchivedVideo } from '../pipeline/resumeArchivedVideo.js';
 import { workbenchLibrary, workbenchDetail, updateWorkbench, workbenchReviewClip } from '../authoring/workbenchLibrary.js';
 import {publishReadiness} from '../authoring/publishReadiness.js';
 import {CharacterBuildJobs} from '../jobs/CharacterBuildJobs.js';
+import {prepareDraftPreview} from '../export/prepareDraftPreview.js';
 import {CharacterBuildPlans} from '../plans/CharacterBuildPlans.js';
 import {BenchmarkService} from '../benchmarks/BenchmarkService.js';
 import {recoverGenerationAttempt} from '../pipeline/recoverGenerationAttempt.js';
@@ -285,8 +286,11 @@ async function handleApiRequest({ request, response, url, runtime, buildJobs, bu
     const manifestKey = draft.assets?.manifestKey ?? keys.find((key) => key.endsWith('manifest.json'));
     const frameData = frameDataKey ? await runtime.storage.getJson(frameDataKey) : null;
     const manifest = manifestKey ? await runtime.storage.getJson(manifestKey) : null;
-    const config = convertDraftToCharacterConfig({ draft, frameData, manifest });
-    sendJson(response, { config, assetRoot: draft.assets?.rootKey ?? null });
+    const preview=url.searchParams.get('preview')==='1';
+    const prepared=preview?prepareDraftPreview({draft,frameData,manifest}):{frameData,manifest,fallbackRows:[]};
+    const config = convertDraftToCharacterConfig({ draft, frameData:prepared.frameData, manifest:prepared.manifest });
+    const projectileSourceKeys = Object.fromEntries((draft.projectiles ?? []).filter(entity => entity.animation && entity.sourceKey).map(entity => [entity.animation, entity.sourceKey]));
+    sendJson(response, { config, assetRoot: draft.assets?.rootKey ?? null, projectileSourceKeys, ...(preview?{previewFallbacks:prepared.fallbackRows}: {}) });
     return;
   }
 

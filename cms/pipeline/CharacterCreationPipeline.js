@@ -41,6 +41,21 @@ const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..
 const EXTRACT_SCRIPT_PATH = path.join(REPO_ROOT, 'scripts', 'extract_row_frames.py');
 const NORMALIZE_PROJECTILE_SCRIPT_PATH = path.join(REPO_ROOT, 'scripts', 'normalize_projectile.py');
 
+async function normalizeProjectileBytes(rawBytes) {
+  const tmpDir = await mkdtemp(path.join(os.tmpdir(), 'tf-proj-norm-'));
+  try {
+    const rawPath = path.join(tmpDir, 'raw.png');
+    const normPath = path.join(tmpDir, 'norm.png');
+    await writeFile(rawPath, rawBytes);
+    await execFileAsync('python3', [NORMALIZE_PROJECTILE_SCRIPT_PATH, rawPath, normPath], {
+      timeout: 30_000, maxBuffer: 10 * 1024 * 1024,
+    });
+    return await readFile(normPath);
+  } finally {
+    await rm(tmpDir, { recursive: true, force: true });
+  }
+}
+
 export class CharacterCreationPipeline {
   constructor(registry, options = {}) {
     this.registry = registry;
@@ -166,6 +181,9 @@ export class CharacterCreationPipeline {
     let characterDraft;
     try{characterDraft=await repository.getDraft(characterId);}
     catch(error){if(error.code!=='ENOENT')throw error;}
+    const actorReference = !isVideoGenerator
+      ? (characterDraft?.actors??[]).find(actor=>actor.idleAnimation===resolvedMoveId)
+      : null;
     prompt=withMotionReviewFeedback(prompt,characterDraft,resolvedMoveId);
     const conceptKey = await currentConceptAssetKey(repository, characterId, storage);
     const referenceReview = characterDraft?.referenceReview;
@@ -180,7 +198,9 @@ export class CharacterCreationPipeline {
     // and every other row anchors to the approved base row plus concept art.
     let referenceKeys = referenceAssetKeys;
     if (!referenceKeys.length) {
-      referenceKeys = (characterDraft?.artRevision || characterDraft?.history?.workingRoot) && characterDraft.assets?.rootKey
+      // An independent summon needs an isolated identity. Feeding the full
+      // fighter base to an image-to-image model tends to reproduce the fighter.
+      referenceKeys = actorReference ? [] : (characterDraft?.artRevision || characterDraft?.history?.workingRoot) && characterDraft.assets?.rootKey
         ? [`${characterDraft.assets.rootKey}/sprites/base/base_001.png`]
         : resolvedMoveId === 'base'
         ? [conceptKey].filter(Boolean)
@@ -221,7 +241,7 @@ export class CharacterCreationPipeline {
       spriteProfile: resolvedProfile,
       referenceAssetKeys: referenceKeys,
       referenceImages,
-      context: { characterId, ...context, artStyle },
+      context: { characterId, ...context, artStyle, ...(actorReference?{actorReference:{id:actorReference.id,description:actorReference.description}}:{}) },
       onProgress: context.onProgress,
       onGenerationAttempt: createGenerationAttemptRecorder(storage, context.onGenerationAttempt),
     };
@@ -635,32 +655,28 @@ export class CharacterCreationPipeline {
       onGenerationAttempt: createGenerationAttemptRecorder(storage, context.onGenerationAttempt),
     });
 
-    // Normalize the raw image: chroma-key magenta → transparent, despill edges,
-    // crop to content, downscale longest side to ≤ 256px. Raw bytes are always
-    // treated as PNG (the generator always returns PNG for sprites).
+    // Keep the paid source before any compiler work so an imperfect matte can
+    // be reprocessed without another provider call.
     const rawBytes = bytesFromImageResult(result);
-    let normalizedBytes = rawBytes;
+    const rawAsset = await repository.writeAsset(characterId, `source/${characterId}_${projectileId}_projectile_raw_${digest(rawBytes).slice(0, 12)}.png`, rawBytes, {
+      contentType: 'image/png', provider: result.provider ?? imageGenerator.provider ?? 'unknown',
+      adapterId: imageGenerator.id ?? 'imageGenerator', model: result.model ?? null, prompt,
+    });
+    let normalizedBytes;
     try {
-      const tmpDir = await mkdtemp(path.join(os.tmpdir(), 'tf-proj-norm-'));
-      try {
-        const rawPath = path.join(tmpDir, 'raw.png');
-        const normPath = path.join(tmpDir, 'norm.png');
-        await writeFile(rawPath, rawBytes);
-        await execFileAsync('python3', [NORMALIZE_PROJECTILE_SCRIPT_PATH, rawPath, normPath], {
-          timeout: 30_000,
-          maxBuffer: 10 * 1024 * 1024,
-        });
-        normalizedBytes = await readFile(normPath);
-      } finally {
-        await rm(tmpDir, { recursive: true, force: true });
-      }
+      normalizedBytes = await normalizeProjectileBytes(rawBytes);
     } catch (normError) {
-      // Non-fatal: fall back to raw bytes if normalization fails.
-      context.onProgress?.({ type: 'warning', message: `Projectile normalization failed (using raw): ${normError.message}` });
+      const failedDraft = await repository.getDraft(characterId);
+      const failedEntity = (failedDraft.projectiles ?? []).find(entity => entity.id === projectileId);
+      if (failedEntity) await repository.saveDraft(characterId, {
+        ...failedDraft,
+        projectiles: (failedDraft.projectiles ?? []).map(entity => entity.id === projectileId ? { ...entity, sourceImageKey: rawAsset.key, prompt } : entity),
+      }, { provider: 'cms-tool', adapterId: 'projectile-source-retained' });
+      throw new Error(`Projectile source was retained at ${rawAsset.key}, but normalization failed: ${normError.message}. Reprocess the saved sprite; do not regenerate.`);
     }
 
     const contentType = result.contentType ?? 'image/png';
-    const key = `source/${characterId}_${projectileId}_projectile${extensionForContentType(contentType)}`;
+    const key = `source/${characterId}_${projectileId}_projectile_${digest(normalizedBytes).slice(0, 12)}${extensionForContentType(contentType)}`;
     const asset = await repository.writeAsset(characterId, key, normalizedBytes, {
       contentType,
       provider: result.provider ?? imageGenerator.provider ?? 'unknown',
@@ -675,11 +691,12 @@ export class CharacterCreationPipeline {
     const draft = await repository.getDraft(characterId);
     const existing = (draft.projectiles ?? []).find((entity) => entity.id === projectileId);
     const projectile = existing
-      ? { ...existing, animation, sourceKey: asset.key, prompt }
+      ? { ...existing, animation, sourceKey: asset.key, sourceImageKey: rawAsset.key, prompt }
       : {
           id: projectileId,
           animation,
           sourceKey: asset.key,
+          sourceImageKey: rawAsset.key,
           prompt,
           width: 48,
           height: 32,
@@ -697,6 +714,36 @@ export class CharacterCreationPipeline {
     });
 
     return { asset, projectile };
+  }
+
+  async reprocessProjectile({ characterId, projectileId, sourceAssetKey }) {
+    const repository = this.registry.resolve(PipelinePort.CHARACTER_REPOSITORY);
+    const storage = this.registry.resolve(PipelinePort.ASSET_STORAGE);
+    const draft = await repository.getDraft(characterId);
+    const existing = (draft.projectiles ?? []).find(entity => entity.id === projectileId);
+    if (!existing) throw new Error('Define the projectile before reprocessing its sprite.');
+    const sourceKey = sourceAssetKey ?? existing.sourceImageKey ?? existing.sourceKey;
+    if (!sourceKey) throw new Error('Choose a retained projectile source to reprocess.');
+    const allowedRoot = draft.history?.workingRoot ?? `characters/${characterId}/assets`;
+    if (sourceKey !== existing.sourceKey && sourceKey !== existing.sourceImageKey && !sourceKey.startsWith(`${allowedRoot}/source/${characterId}_${projectileId}_projectile_raw_`)) throw new Error('Projectile source is outside this character or projectile.');
+    const sourceBytes = await storage.getBytes(sourceKey);
+    const source = await storage.lineage.artifact(sourceBytes, { contentType: 'image/png' });
+    const normalizer = await storage.lineage.artifact(await readFile(NORMALIZE_PROJECTILE_SCRIPT_PATH), { contentType: 'text/x-python' });
+    return storage.lineage.run({ characterId, stage: 'reprocess-projectile', moveId: projectileId, inputs: { source, sourceKey, normalizer } }, async () => {
+      const normalized = await normalizeProjectileBytes(sourceBytes);
+      if ((await repository.getDraft(characterId)).updatedAt !== draft.updatedAt) throw new Error('Draft changed while reprocessing. Refresh and retry the saved source.');
+      const safety = await repository.createVersion(characterId, draft, { label: `Before reprocessing projectile ${projectileId}` });
+      const asset = await repository.writeAsset(characterId, `source/${characterId}_${projectileId}_projectile_${digest(normalized).slice(0, 12)}.png`, normalized, {
+        contentType: 'image/png', provider: 'local', adapterId: 'projectile-reprocess', sourceKey,
+      });
+      const projectile = { ...existing, sourceKey: asset.key, sourceImageKey: sourceKey };
+      const saved = await repository.saveDraft(characterId, {
+        ...draft, projectiles: (draft.projectiles ?? []).map(entity => entity.id === projectileId ? projectile : entity),
+      }, { provider: 'local', adapterId: 'projectile-reprocess' });
+      const after = await repository.createVersion(characterId, saved, { label: `Reprocessed projectile ${projectileId}` });
+      await storage.lineage.event(characterId, { type: 'projectile-reprocessed', moveId: projectileId, sourceSha256: source.sha256, safetyVersionId: safety.versionId, versionId: after.versionId, providerRequests: 0, output: await storage.lineage.artifact(normalized, { contentType: 'image/png' }) });
+      return { asset, projectile, safetyVersionId: safety.versionId, versionId: after.versionId, providerRequests: 0 };
+    });
   }
 
   async extractRowFrames(request) {

@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 
@@ -44,29 +44,39 @@ export class CodexTextModelAdapter {
 
     onProgress?.({ type: 'prompt', task: request.task ?? 'structured-output', prompt });
 
-    const output = await spawnWithStdin(
-      this.codexBin,
-      ['exec', '--sandbox', 'read-only'],
-      prompt,
-      {
-        timeout: this.timeoutMs,
-        onData: onProgress ? (chunk) => onProgress({ type: chunk.stream, data: chunk.data }) : undefined,
-      },
-    );
+    const tmpDir = await mkdtemp(path.join(os.tmpdir(), 'codex-structured-'));
+    try {
+      const finalMessagePath = path.join(tmpDir, 'final.json');
+      await spawnWithStdin(
+        this.codexBin,
+        ['exec', '--sandbox', 'read-only', '--output-last-message', finalMessagePath],
+        prompt,
+        {
+          timeout: this.timeoutMs,
+          onData: onProgress ? (chunk) => onProgress({ type: chunk.stream, data: chunk.data }) : undefined,
+        },
+      );
+      // CLI stderr may echo the entire prompt, including the JSON schema. Its
+      // first brace is not the answer. Read only the dedicated final message.
+      const finalMessage = await readFile(finalMessagePath, 'utf8');
+      const json = extractJson(finalMessage);
+      if (!json) throw new Error('Codex did not return a valid JSON final message.');
+      if (request.task === 'character-content-draft' &&
+        (typeof json.displayName !== 'string' || !Array.isArray(json.moves) || json.moves.length < 4)) {
+        throw new Error('Codex returned an incomplete character kit. Draft was not saved.');
+      }
 
-    const json = extractJson(output);
-    if (!json) {
-      throw new Error(`Codex did not return valid JSON. Output:\n${output.slice(0, 500)}`);
+      onProgress?.({ type: 'complete' });
+
+      return {
+        provider: 'codex',
+        model: 'codex-text',
+        promptRef: null,
+        value: json,
+      };
+    } finally {
+      await rm(tmpDir, { recursive: true, force: true }).catch(() => {});
     }
-
-    onProgress?.({ type: 'complete' });
-
-    return {
-      provider: 'codex',
-      model: 'codex-text',
-      promptRef: null,
-      value: json,
-    };
   }
 
   async describeImage({ imageBase64, contentType = 'image/png', prompt, onProgress }) {
@@ -78,12 +88,13 @@ export class CodexTextModelAdapter {
     try {
       const visionPrompt = prompt
         ?? 'Describe this character for a 2D fighting game sprite sheet in 2-3 sentences. Cover: appearance, build, weapon/prop, and art style. Be specific but brief.';
+      const finalMessagePath = path.join(tmpDir, 'final.txt');
 
       onProgress?.({ type: 'prompt', task: 'vision-describe', prompt: visionPrompt });
 
-      const output = await spawnWithStdin(
+      await spawnWithStdin(
         this.codexBin,
-        ['exec', '--sandbox', 'read-only', '-i', imgPath],
+        ['exec', '--sandbox', 'read-only', '-i', imgPath, '--output-last-message', finalMessagePath],
         visionPrompt,
         {
           timeout: this.timeoutMs,
@@ -91,7 +102,8 @@ export class CodexTextModelAdapter {
         },
       );
 
-      const description = extractContent(output);
+      const description = (await readFile(finalMessagePath, 'utf8')).trim();
+      if (!description) throw new Error('Codex returned an empty image description.');
       return {
         provider: 'codex',
         model: 'codex-vision',
@@ -194,6 +206,8 @@ function spawnWithStdin(command, args, stdinText, options = {}) {
   return new Promise((resolve, reject) => {
     const { onData, timeout, ...spawnOptions } = options;
     const proc = spawn(command, args, { ...spawnOptions, stdio: ['pipe', 'pipe', 'pipe'] });
+    let timedOut = false;
+    const timer = timeout ? setTimeout(() => { timedOut = true; try { proc.kill(); } catch {} }, timeout) : null;
     const chunks = [];
     const errChunks = [];
     proc.stdout.on('data', (d) => {
@@ -210,8 +224,10 @@ function spawnWithStdin(command, args, stdinText, options = {}) {
     });
     proc.on('error', reject);
     proc.on('close', (code) => {
+      if (timer) clearTimeout(timer);
       const stdout = Buffer.concat(chunks).toString('utf8');
       const stderr = Buffer.concat(errChunks).toString('utf8');
+      if (timedOut) { reject(new Error(`Codex CLI timed out after ${timeout} ms.`)); return; }
       if (code !== 0 && code !== null) {
         reject(new Error([stderr.trim(), stdout.trim(), `exit code ${code}`].filter(Boolean).join('\n')));
       } else {
@@ -220,9 +236,5 @@ function spawnWithStdin(command, args, stdinText, options = {}) {
     });
     proc.stdin.write(stdinText);
     proc.stdin.end();
-
-    if (timeout) {
-      setTimeout(() => { try { proc.kill(); } catch {} }, timeout);
-    }
   });
 }

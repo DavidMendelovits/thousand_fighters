@@ -179,3 +179,19 @@ test('saved row corrections reach the image provider request without triggering 
   assert.ok(request.prompt.startsWith('Floating paint hands at rest.'));
   assert.ok(request.prompt.includes('Keep exactly two hands and keep the needle pinched.'));
 });
+
+test('independent actor reference image does not inherit a full fighter reference',async t=>{
+  const {repository,id}=await fixture(t);
+  const draft=await repository.getDraft(id);
+  await repository.saveDraft(id,{...draft,actors:[{id:'surveyor',idleAnimation:'surveyor_idle_orbit',description:'One detached lantern orb'}]});
+  let request;
+  const pipeline=new CharacterCreationPipeline({resolve(port){
+    if(port===PipelinePort.CHARACTER_REPOSITORY)return repository;
+    if(port===PipelinePort.ASSET_STORAGE)return repository.storage;
+    if(port===PipelinePort.IMAGE_GENERATOR)return {generateImage(input){request=input;throw new Error('captured actor request');}};
+    throw new Error(port);
+  }});
+  await assert.rejects(pipeline.generateSpriteSheet({characterId:id,prompt:'Isolated actor',moveId:'surveyor_idle_orbit'}),/captured actor request/);
+  assert.deepEqual(request.referenceAssetKeys,[]);
+  assert.deepEqual(request.context.actorReference,{id:'surveyor',description:'One detached lantern orb'});
+});

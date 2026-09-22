@@ -90,3 +90,48 @@ test('a lost submission response retains the nonce and reuses the paid job',asyn
     expect(jobs).toHaveLength(1);
   }finally{await fixture.close();}
 });
+
+test('one explicit Generate click starts a fresh job after a saved nonce was resolved',async({page})=>{
+  const fixture=await buildFixture({delayMs:10});
+  try{
+    const input={characterId:fixture.characterId,prompt:'Resolved identity retry fixture'};
+    const id=randomUUID();
+    const previous=new CharacterBuildJobs({storage:fixture.runtime.storage,repository:fixture.runtime.repository,invoke:()=>{throw Error('Resolved job must not execute');}});
+    previous.drain=async()=>{};
+    const {job}=await previous.submit(fixture.characterId,{idempotencyKey:id,tool:'generate_character_concept',input});
+    const entry=await previous.raw(fixture.characterId,job.id);
+    await previous.write(entry.request,{...entry.state,status:'resolved',phase:'Resolved by operator · no retry submitted'});
+    await previous.stop();
+    await page.goto(`${fixture.url}/roster/${fixture.characterId}?standalone=1`);
+    const result=await page.evaluate(async({input,id})=>{
+      const {sha256}=await import('/submissionKey.js');
+      const {runBuildJob}=await import('/buildJobs.js');
+      const canonical=JSON.stringify({tool:'generate_character_concept',input:Object.fromEntries(Object.entries(input).sort(([a],[b])=>a.localeCompare(b)))});
+      localStorage.setItem(`tf-build:${input.characterId}:${sha256(canonical)}`,id);
+      return runBuildJob({tool:'generate_character_concept',input});
+    },{input,id});
+    expect(result.asset.key).toBeTruthy();
+    expect(fixture.calls).toBe(1);
+    const {jobs}=await (await page.request.get(`${fixture.url}/api/characters/${fixture.characterId}/build-jobs`)).json();
+    expect(jobs).toHaveLength(2);
+    expect(jobs.find(entry=>entry.id!==id).status).toBe('completed');
+  }finally{await fixture.close();}
+});
+
+test('an error notice never intercepts the Generate control',async({page})=>{
+  const fixture=await buildFixture({delayMs:10});
+  try{
+    await page.goto(`${fixture.url}/roster/${fixture.characterId}?standalone=1`);
+    await page.locator('[data-studio-section="identity"]').click();
+    await page.evaluate(()=>{
+      const button=document.querySelector('[data-gen-concept]');
+      const box=button.getBoundingClientRect();
+      const notice=document.createElement('aside');notice.id='workbench-error-notice';notice.innerHTML='<span>Previous build failed. Inspect history.</span>';
+      notice.style.top=`${box.top}px`;notice.style.left=`${box.left+box.width/2}px`;
+      document.body.append(notice);
+    });
+    await expect(page.locator('#workbench-error-notice')).toBeVisible();
+    await page.locator('[data-gen-concept]').click();
+    await expect.poll(()=>fixture.calls).toBe(1);
+  }finally{await fixture.close();}
+});

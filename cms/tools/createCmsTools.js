@@ -310,6 +310,16 @@ export function createCmsTools({ pipeline, repository, registry, runtimePublicDi
       },
     },
     {
+      name: 'reprocess_projectile',
+      description: 'Re-key and normalize the retained projectile source locally. Creates before/after checkpoints and makes zero image API requests.',
+      inputSchema: objectSchema({
+        characterId: stringSchema('Character id.'),
+        projectileId: stringSchema('Existing projectile id with a saved source image.'),
+        sourceAssetKey: stringSchema('Optional exact retained raw sprite key. Required when normalization failed before an entity source was installed.'),
+      }, ['characterId', 'projectileId']),
+      execute: async ({ characterId, projectileId, sourceAssetKey }) => withAssetApiUrl(await pipeline.reprocessProjectile({ characterId, projectileId, sourceAssetKey })),
+    },
+    {
       name: 'define_projectile',
       description: 'Define (or replace) a projectile entity\'s numbers on the draft without generating a sprite — geometry, velocity, lifetime, and hitbox. Use to tune an existing projectile or author one whose sprite already exists. Validates ids and positive dimensions.',
       inputSchema: objectSchema({

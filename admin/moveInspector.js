@@ -95,6 +95,16 @@ export function patchMove(draft,moveId,patch) {
     if(result.motionRows?.[move.animation])Object.assign(result.motionRows[move.animation],{contactFrame,recoveryFrame,status:'needs-visual-review'});
   }
   if(patch.meter!==undefined){if(!Number.isFinite(patch.meter)||patch.meter<0||patch.meter>100)throw new Error('Meter cost must be 0–100.');move.cost={...move.cost,meter:patch.meter};}
+  if(patch.extension!==undefined){
+    if(patch.extension===null)delete move.extension;
+    else{
+      const {kind,color,accent,thickness}=patch.extension;
+      if(!['tentacle','elastic','ribbon','root','mic-cable','paint-ribbon'].includes(kind))throw new Error('Choose a supported extension material.');
+      if(![color,accent].every(v=>Number.isInteger(v)&&v>=0&&v<=0xffffff))throw new Error('Extension colors must be RGB hex values.');
+      if(!Number.isFinite(thickness)||thickness<1||thickness>48)throw new Error('Extension thickness must be 1–48 pixels.');
+      move.extension={kind,color,accent,thickness};
+    }
+  }
   if(patch.cancelInto){if(patch.cancelInto.some(id=>id===move.id||!result.moves.some(m=>m.id===id)))throw new Error('Cancel targets must be other existing moves.');if(!['hit','contact','always'].includes(patch.cancelOn??'hit'))throw new Error('Invalid cancel condition.');move.cancelInto=patch.cancelInto;move.cancelOn=patch.cancelOn??'hit';move.phases.forEach(p=>{if(p.name!=='startup')p.cancellable=Boolean(patch.cancelInto.length);});}
   if(patch.effect!==undefined){
     for(const p of move.phases)p.events=p.events.filter(e=>!(e.event.type==='spawn_effect'&&e.event.effect.id===`${moveId}_authored_fx`));

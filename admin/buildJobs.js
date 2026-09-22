@@ -22,8 +22,18 @@ export async function runBuildJob({tool,input,onProgress,signal}){
   let id=localStorage.getItem(key);
   if(!id){id=submissionNonce();localStorage.setItem(key,id);}
   onProgress?.({type:'status',message:'Submitting job… Your submission key is saved; please do not submit a duplicate.'});
-  let job;
-  try{({job}=await json(endpoint(input.characterId),{idempotencyKey:id,tool,input}));}
+  let job,reused;
+  try{
+    ({job,reused}=await json(endpoint(input.characterId),{idempotencyKey:id,tool,input}));
+    // A fresh click on Generate is permission for one new submission after an
+    // operator has explicitly resolved the old job. Keep uncertain and active
+    // jobs pinned to their original nonce; never pay twice to recover them.
+    if(reused&&job.status==='resolved'){
+      onProgress?.({type:'status',message:'Previous build was resolved. Starting one new build for this Generate click…'});
+      id=submissionNonce();localStorage.setItem(key,id);
+      ({job}=await json(endpoint(input.characterId),{idempotencyKey:id,tool,input}));
+    }
+  }
   catch(error){throw new Error(`${error.message} Check Build activity before submitting again; your submission key has been kept.`);}
   if(signal?.aborted)throw new Error('Stopped watching this build. Its saved job remains in Build activity.');
   window.dispatchEvent(new CustomEvent('build-job-submitted',{detail:{characterId:input.characterId}}));

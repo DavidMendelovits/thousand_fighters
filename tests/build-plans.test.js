@@ -30,6 +30,19 @@ test('saved itinerary survives restart, reserves before submission, and waits wi
   assert.equal((await restarted.advance('probe',plan.id,{confirmed:true})).status,'needs-recovery');assert.equal(f.calls.length,1);
 });
 
+test('local no-provider preflight rearms once and requires a second explicit click',async t=>{
+  const f=await fixture(t),plan=await f.manager.create('probe',settings);
+  await f.manager.advance('probe',plan.id,{confirmed:true});
+  const first=f.calls[0].idempotencyKey;
+  Object.assign(f.jobs.get(first),{status:'failed',phase:'Local preparation failed · no provider request',attempts:[]});
+  const rearmed=await f.manager.advance('probe',plan.id,{confirmed:true});
+  assert.equal(rearmed.status,'ready');assert.equal(f.calls.length,1);
+  assert.equal(rearmed.budget.reservedSubmissions,1);
+  await f.manager.advance('probe',plan.id,{confirmed:true});
+  assert.equal(f.calls.length,2);assert.notEqual(f.calls[1].idempotencyKey,first);
+  assert.equal((await f.manager.get('probe',plan.id)).budget.reservedSubmissions,1);
+});
+
 test('unknown cost requires opt-in, explicit confirmation, and estimated cap blocks before a request',async t=>{
   const f=await fixture(t),unknown=await f.manager.create('probe',{budgetUsd:2,maxSubmissions:2});
   await assert.rejects(f.manager.advance('probe',unknown.id),/Confirm/);

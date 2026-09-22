@@ -1,0 +1,272 @@
+{
+  "schemaVersion": 1,
+  "action": "idle",
+  "status": "needs-visual-review",
+  "source": "artifacts/workbench-video-jobs/6dcdb4c6-7629-4d7b-a38c-e0ad1bb642ed/source.mp4",
+  "sourceSha256": "72f9936b3ab22090d96f8b11d2a587a28e671db01b40dbf1ac1bb678f64b52f0",
+  "sourceFrameCount": 124,
+  "frameCount": 20,
+  "uniqueFrames": 20,
+  "scale": 2.0646766169154227,
+  "bodyMotion": 0.11815387160364484,
+  "legMotion": 0.11785998057738148,
+  "loop": true,
+  "loopSeamError": 0.008241661066110148,
+  "sourceRange": [
+    70,
+    103
+  ],
+  "rootTravelPixels": 1.0,
+  "suggestedContactFrame": 0,
+  "clippedFrames": [],
+  "frames": [
+    {
+      "file": "frames/idle_001.png",
+      "width": 386,
+      "height": 473,
+      "anchor": {
+        "x": 188,
+        "y": 438
+      },
+      "durationFrames": 3,
+      "sourceFrame": 70
+    },
+    {
+      "file": "frames/idle_002.png",
+      "width": 386,
+      "height": 473,
+      "anchor": {
+        "x": 188,
+        "y": 438
+      },
+      "durationFrames": 3,
+      "sourceFrame": 71
+    },
+    {
+      "file": "frames/idle_003.png",
+      "width": 386,
+      "height": 473,
+      "anchor": {
+        "x": 188,
+        "y": 438
+      },
+      "durationFrames": 3,
+      "sourceFrame": 73
+    },
+    {
+      "file": "frames/idle_004.png",
+      "width": 386,
+      "height": 473,
+      "anchor": {
+        "x": 188,
+        "y": 438
+      },
+      "durationFrames": 3,
+      "sourceFrame": 74
+    },
+    {
+      "file": "frames/idle_005.png",
+      "width": 386,
+      "height": 473,
+      "anchor": {
+        "x": 188,
+        "y": 438
+      },
+      "durationFrames": 3,
+      "sourceFrame": 76
+    },
+    {
+      "file": "frames/idle_006.png",
+      "width": 386,
+      "height": 473,
+      "anchor": {
+        "x": 188,
+        "y": 438
+      },
+      "durationFrames": 3,
+      "sourceFrame": 78
+    },
+    {
+      "file": "frames/idle_007.png",
+      "width": 386,
+      "height": 473,
+      "anchor": {
+        "x": 188,
+        "y": 438
+      },
+      "durationFrames": 3,
+      "sourceFrame": 79
+    },
+    {
+      "file": "frames/idle_008.png",
+      "width": 386,
+      "height": 473,
+      "anchor": {
+        "x": 188,
+        "y": 438
+      },
+      "durationFrames": 3,
+      "sourceFrame": 81
+    },
+    {
+      "file": "frames/idle_009.png",
+      "width": 386,
+      "height": 473,
+      "anchor": {
+        "x": 188,
+        "y": 438
+      },
+      "durationFrames": 3,
+      "sourceFrame": 83
+    },
+    {
+      "file": "frames/idle_010.png",
+      "width": 386,
+      "height": 473,
+      "anchor": {
+        "x": 188,
+        "y": 438
+      },
+      "durationFrames": 3,
+      "sourceFrame": 84
+    },
+    {
+      "file": "frames/idle_011.png",
+      "width": 386,
+      "height": 473,
+      "anchor": {
+        "x": 188,
+        "y": 438
+      },
+      "durationFrames": 3,
+      "sourceFrame": 86
+    },
+    {
+      "file": "frames/idle_012.png",
+      "width": 386,
+      "height": 473,
+      "anchor": {
+        "x": 188,
+        "y": 438
+      },
+      "durationFrames": 3,
+      "sourceFrame": 88
+    },
+    {
+      "file": "frames/idle_013.png",
+      "width": 386,
+      "height": 473,
+      "anchor": {
+        "x": 188,
+        "y": 438
+      },
+      "durationFrames": 3,
+      "sourceFrame": 89
+    },
+    {
+      "file": "frames/idle_014.png",
+      "width": 386,
+      "height": 473,
+      "anchor": {
+        "x": 188,
+        "y": 438
+      },
+      "durationFrames": 3,
+      "sourceFrame": 91
+    },
+    {
+      "file": "frames/idle_015.png",
+      "width": 386,
+      "height": 473,
+      "anchor": {
+        "x": 188,
+        "y": 438
+      },
+      "durationFrames": 3,
+      "sourceFrame": 93
+    },
+    {
+      "file": "frames/idle_016.png",
+      "width": 386,
+      "height": 473,
+      "anchor": {
+        "x": 188,
+        "y": 438
+      },
+      "durationFrames": 3,
+      "sourceFrame": 94
+    },
+    {
+      "file": "frames/idle_017.png",
+      "width": 386,
+      "height": 473,
+      "anchor": {
+        "x": 188,
+        "y": 438
+      },
+      "durationFrames": 3,
+      "sourceFrame": 96
+    },
+    {
+      "file": "frames/idle_018.png",
+      "width": 386,
+      "height": 473,
+      "anchor": {
+        "x": 188,
+        "y": 438
+      },
+      "durationFrames": 3,
+      "sourceFrame": 98
+    },
+    {
+      "file": "frames/idle_019.png",
+      "width": 386,
+      "height": 473,
+      "anchor": {
+        "x": 188,
+        "y": 438
+      },
+      "durationFrames": 3,
+      "sourceFrame": 99
+    },
+    {
+      "file": "frames/idle_020.png",
+      "width": 386,
+      "height": 473,
+      "anchor": {
+        "x": 188,
+        "y": 438
+      },
+      "durationFrames": 3,
+      "sourceFrame": 101
+    }
+  ],
+  "provenance": {
+    "compilerSha256": "2a9dc01b4dd0c977ed7f2bbfcd9bda75b755334e3a90a034a3ff980ea214d395",
+    "keyerSha256": "bfc4a4781c3587122862f6b146beb8e30952ad08ceff2cf7b16b02b786805ac9",
+    "referenceSha256": "40fd1fbedefb0c43e7fbb223485d17eacd7c330841f8e70ac3d22d54a2e52c37",
+    "options": {
+      "action": "idle",
+      "count": 20,
+      "loop": true,
+      "start": null,
+      "end": null,
+      "style": "pixel",
+      "componentMode": "all",
+      "pingPong": false,
+      "background": "auto-frame",
+      "rootMode": "pelvis",
+      "expandCanvas": true,
+      "matteCleanup": false,
+      "refineEdges": false,
+      "despillMagenta": true
+    },
+    "environment": {
+      "python": "3.11.10",
+      "numpy": "2.2.6",
+      "pillow": "12.0.0",
+      "scipy": "1.16.3",
+      "ffmpeg": "ffmpeg version 7.1.1 Copyright (c) 2000-2025 the FFmpeg developers"
+    }
+  }
+}

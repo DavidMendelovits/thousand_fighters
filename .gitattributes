@@ -1,0 +1,2 @@
+artifacts/eventide-workbench/**/*.webm filter=lfs diff=lfs merge=lfs -text
+artifacts/eventide-workbench/**/*.png filter=lfs diff=lfs merge=lfs -text

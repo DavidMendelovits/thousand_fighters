@@ -41,6 +41,7 @@ export class ParallelFrameSpriteGenerator {
     if (task !== 'fighter-1x6-row' && task !== 'fighter-2x3-grid') {
       return this.generateSingleImage(request);
     }
+    if(request.context?.actorReference)return this.generateActorReference(request);
 
     const startedAt = this.now();
     const prompts = Array.from({ length: FRAME_COUNT }, (_, index) => framePromptFor(request, index));
@@ -160,6 +161,21 @@ export class ParallelFrameSpriteGenerator {
     };
   }
 
+  async generateActorReference(request) {
+    const startedAt=this.now();
+    const prompt=framePromptFor(request,0);
+    const singleRequest={...request,prompt,frameIndex:0,frameNumber:1,frameCount:1,aspectRatio:'1:1',attemptNumber:1};
+    const generated=await runGenerationAttempt(singleRequest,{
+      kind:'image',provider:this.provider,model:this.model,operation:'isolated-actor-reference',frameNumber:1,attemptNumber:1,now:this.now,
+    },()=>this.generateFrame(singleRequest));
+    const bytes=bytesFromResult(generated);
+    const generationMs=this.now()-startedAt;
+    request.onProgress?.({type:'status',stage:'compose',message:'Tiling one isolated summon identity into a six-cell reference. Animate it separately with video.'});
+    const frame={...generated,bytes,contentType:generated.contentType??'image/png'};
+    const sheetBytes=await this.composeFrameSheet({frames:Array.from({length:FRAME_COUNT},()=>frame),task:request.task,artStyle:request.context.artStyle,requireMagentaBackground:this.requireMagentaBackground});
+    return {provider:this.provider,model:this.model,promptRef:generated.taskId??generated.promptRef??null,contentType:'image/png',bytes:sheetBytes,base64:sheetBytes.toString('base64'),generationMs,postprocessMs:this.now()-startedAt-generationMs,elapsedMs:this.now()-startedAt,stageTimings:{providerRequestMs:generationMs,totalAdapterMs:this.now()-startedAt},frameImages:[{frameNumber:1,bytes,contentType:frame.contentType,taskId:generated.taskId??null}],usage:generated.usage??null,estimatedCostUsd:generated.estimatedCostUsd??null};
+  }
+
   async generateSingleImage(request) {
     const startedAt = this.now();
     const singleRequest = {
@@ -206,8 +222,14 @@ export async function composeFrameSheetWithFfmpeg({ frames, task, artStyle='pixe
     for (const [index, frame] of frames.entries()) {
       const inputPath = path.join(temporaryDirectory, `frame-${index + 1}${extensionForContentType(frame.contentType)}`);
       await writeFile(inputPath, bytesFromResult(frame));
+      let composedPath=inputPath;
       if (requireMagentaBackground) {
-        const cornerMagentaRatio = await magentaCornerRatio(inputPath, ffmpegBin);
+        // Fast image models frequently render a pink field with slight tone
+        // variation. Normalize only edge-connected magenta before the strict
+        // check; never treat arbitrary scenery as chroma.
+        composedPath=path.join(temporaryDirectory,`frame-${index + 1}-normalized.png`);
+        await execFileAsync('python3', ['scripts/normalize_chroma_magenta.py', inputPath, composedPath], {timeout:15_000,maxBuffer:1024*1024});
+        const cornerMagentaRatio = await magentaCornerRatio(composedPath, ffmpegBin);
         if (cornerMagentaRatio < 0.75) {
           throw new Error(
             `Frame ${index + 1} rejected before tiling: only ${(cornerMagentaRatio * 100).toFixed(0)}% of corner pixels are chroma magenta. ` +
@@ -215,7 +237,7 @@ export async function composeFrameSheetWithFfmpeg({ frames, task, artStyle='pixe
           );
         }
       }
-      inputPaths.push(inputPath);
+      inputPaths.push(composedPath);
     }
 
     const wide = task === 'fighter-2x3-grid';
@@ -278,6 +300,14 @@ function framePromptFor(request, frameIndex) {
   const moveId = request.moveId ?? 'base';
   const profile = rowPromptProfile(moveId);
   const paint=request.context?.artStyle==='paint';
+  const actor=request.context?.actorReference;
+  if(actor)return [
+    characterArtDirection(request.context?.artStyle),
+    request.prompt?.trim(),
+    `ISOLATED SUMMON IDENTITY: ${actor.description??actor.id}.`,
+    'Exactly ONE small independent summon entity in ONE still image. NO parent fighter body, torso, skirt, humanoid, opponent, duplicate, contact sheet, pose sequence, or scenery. The summon is the entire subject, centered with generous empty margins. Its later motion will be made from video.',
+    'Background: a plain chroma-magenta #FF00FF field, no lighting, shadows or gradient. No text, border or UI.',
+  ].filter(Boolean).join('\n\n');
   return [
     characterArtDirection(request.context?.artStyle),
     request.prompt?.trim(),

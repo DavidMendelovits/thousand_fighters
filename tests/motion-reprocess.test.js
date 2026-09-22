@@ -3,16 +3,34 @@ import assert from 'node:assert/strict';
 import { readFile, rm } from 'node:fs/promises';
 import { historyFixture } from './helpers/historyFixture.js';
 import { reprocessArchivedVideo, validateReprocess, resolveMotionVideo } from '../cms/pipeline/reprocessArchivedVideo.js';
-import { motionActorReference, motionCompilerSettings } from '../cms/pipeline/motionReference.js';
+import { motionActorReference, motionCompilerSettings, motionReferenceOccupancy, motionReferenceCanvasSize } from '../cms/pipeline/motionReference.js';
 import { motionMarkers } from '../admin/motionTiming.js';
+import { renderMotionReprocess } from '../admin/motionReprocess.js';
 
 test('offline options reject invalid ranges, poses and coercion', () => {
-  for (const opts of [{frames:7},{frames:'20'},{start:2.1},{start:30,end:10},{end:5},{loop:'false'},{matteCleanup:1},{refineEdges:'true'},{contactFrame:0},{contactFrame:19},{contactFrame:6,recoveryFrame:5}]) assert.throws(()=>validateReprocess(opts));
+  for (const opts of [{frames:7},{frames:'20'},{start:2.1},{start:30,end:10},{end:5},{loop:'false'},{expandCanvas:'true'},{matteCleanup:1},{refineEdges:'true'},{despillMagenta:'true'},{contactFrame:0},{contactFrame:19},{contactFrame:6,recoveryFrame:5}]) assert.throws(()=>validateReprocess(opts));
   validateReprocess({frames:20,start:0,end:64,contactFrame:7,recoveryFrame:12,matteCleanup:true});
   assert.throws(()=>validateReprocess({frames:20,start:0,end:19,loop:true}),/loops omit/);
-  assert.deepEqual(motionCompilerSettings('paint'),{style:'watercolor',background:'paint-auto',rootMode:'fixed',expandCanvas:true});
+  assert.throws(()=>validateReprocess({background:'arbitrary'}),/background key/);
+  validateReprocess({background:'pruna-frame'});
+  assert.deepEqual(motionCompilerSettings('paint'),{style:'watercolor',background:'paint-auto',rootMode:'fixed',expandCanvas:true,despillMagenta:false});
   assert.equal(motionCompilerSettings('watercolor').style,'watercolor');
+  assert.deepEqual(motionCompilerSettings('pixel','pruna'),{style:'pixel',background:'pruna-frame',rootMode:'pelvis',expandCanvas:true,despillMagenta:true});
+  assert.deepEqual(motionCompilerSettings('pixel','fal'),{style:'pixel',background:'pruna-frame',rootMode:'pelvis',expandCanvas:true,despillMagenta:true});
+  assert.equal(motionReferenceOccupancy('pixel','pruna'),0.5);
+  assert.equal(motionReferenceOccupancy('pixel','pruna','ribbon_lasso_throw'),0.35);
+  assert.equal(motionReferenceOccupancy('pixel','fal'),0.65);
+  assert.equal(motionReferenceCanvasSize('pixel','pruna'),1024);
+  assert.equal(motionReferenceCanvasSize('pixel','pruna','surveyor'),1536);
+  assert.equal(motionReferenceCanvasSize('pixel','pruna',null,'ribbon_lasso_throw'),1536);
+  assert.equal(motionReferenceCanvasSize('paint','pruna'),768);
   assert.throws(()=>motionActorReference({motionActors:{pinch:'hands'},actors:[]},'pinch',{}),/Unknown motion actor/);
+  const pixelPanel=renderMotionReprocess({artStyle:'pixel',motionRows:{idle:{sourceSha256:'a'.repeat(64),provenance:{options:{background:'auto-frame'}}}}},'idle');
+  assert.match(pixelPanel,/data-reprocess-background/);
+  assert.match(pixelPanel,/data-reprocess-expand/);
+  assert.match(pixelPanel,/data-reprocess-despill/);
+  assert.match(pixelPanel,/value="pruna-frame"/);
+  assert.match(pixelPanel,/value="auto-frame" selected/);
 });
 
 test('real saved video reprocess uses summon art, branches assets, records lineage and leaves publication alone',async t=>{

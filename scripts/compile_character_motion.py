@@ -53,11 +53,42 @@ def key_uniform_background(im):
     return Image.fromarray(pixels)
 
 
+def key_pruna_background(im):
+    """Key a uniform per-frame backdrop, including large enclosed gaps.
+
+    Pruna sometimes switches its nominal magenta key to white mid-video.
+    Exterior-only flood fill leaves background trapped inside orbiting ribbons;
+    key large same-color islands too, retaining tiny enclosed highlights.
+    """
+    color=uniform_corner_key(im)
+    pixels=np.asarray(im.convert('RGBA')).copy()
+    rgb=np.array([int(color[i:i+2],16) for i in (1,3,5)])
+    candidates=np.max(np.abs(pixels[:,:,:3].astype(int)-rgb),axis=2)<=64
+    border=np.zeros(candidates.shape,dtype=bool)
+    border[0,:]=border[-1,:]=True; border[:,0]=border[:,-1]=True
+    exterior=ndimage.binary_propagation(border & candidates,mask=candidates)
+    labels,_=ndimage.label(candidates)
+    sizes=np.bincount(labels.ravel())
+    enclosed_large=candidates & (sizes[labels]>=80)
+    pixels[exterior | enclosed_large,3]=0
+    return Image.fromarray(pixels)
+
+
 def key_magenta_distance(im):
     """Remove the actual key, not every purple pigment in the character."""
     pixels=np.asarray(im.convert('RGBA')).copy()
     rgb=pixels[:,:,:3].astype(float)
     pixels[np.linalg.norm(rgb-np.array([255,0,255]),axis=2)<115,3]=0
+    return Image.fromarray(pixels)
+
+def despill_magenta_edges(im):
+    """Remove residual pink compression fringe only at exposed silhouette edges."""
+    pixels=np.asarray(im.convert('RGBA')).copy()
+    opaque=pixels[:,:,3]>0
+    edge=opaque&(ndimage.distance_transform_edt(opaque)<=3)
+    rgb=pixels[:,:,:3].astype(float)
+    fringe=edge&(rgb[:,:,0]>70)&(rgb[:,:,2]>70)&(rgb[:,:,0]>rgb[:,:,1]*1.5)&(rgb[:,:,2]>rgb[:,:,1]*1.5)
+    pixels[fringe,3]=0
     return Image.fromarray(pixels)
 
 def refine_paint_alpha(rgb, key, alpha):
@@ -101,7 +132,7 @@ def key_paint_background(im, matte_cleanup=False, refine_edges=False):
     return Image.fromarray(pixels)
 
 
-def compile_motion(video, reference, output, action, count=20, loop=False, start=None, end=None, style='pixel', component_mode='all', ping_pong=False, background='magenta', root_mode='pelvis', expand_canvas=False, matte_cleanup=False, refine_edges=False):
+def compile_motion(video, reference, output, action, count=20, loop=False, start=None, end=None, style='pixel', component_mode='all', ping_pong=False, background='magenta', root_mode='pelvis', expand_canvas=False, matte_cleanup=False, refine_edges=False, despill_magenta=False):
     if ping_pong and not loop:
         raise ValueError('Ping-pong playback requires an explicit loop')
     if (matte_cleanup or refine_edges) and background!='paint-auto':
@@ -123,12 +154,14 @@ def compile_motion(video, reference, output, action, count=20, loop=False, start
         images=[]
         for path in paths:
             source=Image.open(path)
-            im=key_paint_background(source,matte_cleanup,refine_edges) if background=='paint-auto' else key_uniform_background(source) if background=='auto-frame' else key_magenta_distance(source) if background=='magenta-distance' else key_background(source,'#ff00ff',mode='chroma')
+            im=key_paint_background(source,matte_cleanup,refine_edges) if background=='paint-auto' else key_pruna_background(source) if background=='pruna-frame' else key_uniform_background(source) if background=='auto-frame' else key_magenta_distance(source) if background=='magenta-distance' else key_background(source,'#ff00ff',mode='chroma')
             alpha=np.array(im.getchannel('A'))
             # Explicit body-only cleanup: detached sparks are separate VFX, never
             # silently discard disconnected props in the default import path.
             alpha = clean_components(alpha, component_mode)
-            im.putalpha(Image.fromarray(alpha));images.append(im)
+            im.putalpha(Image.fromarray(alpha))
+            if despill_magenta: im=despill_magenta_edges(im)
+            images.append(im)
     ref=Image.open(reference).convert('RGBA')
     ref_box=ref.getbbox()
     first=images[0].getbbox()
@@ -182,8 +215,8 @@ def compile_motion(video, reference, output, action, count=20, loop=False, start
     if loop and start is None and end is None:
         # Find one complete moving cycle, not a short near-static tail.
         candidates=[]
-        for a in range(5,max(6,len(images)-19)):
-            for b in range(a+18,min(len(images),a+49)):
+        for a in range(5,max(6,len(images)-count)):
+            for b in range(a+count,min(len(images),a+max(49,count+1))):
                 motion=float(np.mean(np.any(region[a:b],axis=0)!=np.all(region[a:b],axis=0)))
                 if motion < (.025 if action=='idle' else .08): continue
                 union=np.logical_or(region[a],region[b]).sum()
@@ -230,6 +263,7 @@ def compile_motion(video, reference, output, action, count=20, loop=False, start
     report['provenance']['options']['expandCanvas'] = expand_canvas
     report['provenance']['options']['matteCleanup'] = matte_cleanup
     report['provenance']['options']['refineEdges'] = refine_edges
+    report['provenance']['options']['despillMagenta'] = despill_magenta
     (output/'motion.json').write_text(json.dumps(report,indent=2)+'\n')
     print(json.dumps({k:v for k,v in report.items() if k!='frames'}))
     return report
@@ -241,9 +275,10 @@ if __name__=='__main__':
     p.add_argument('--style',choices=['pixel','watercolor'],default='pixel')
     p.add_argument('--component-mode',choices=['all','largest'],default='all',help='Use largest only for reviewed body-only sources without detached props')
     p.add_argument('--ping-pong',action='store_true',help='Explicit reversible breathing/sway loop; recorded in provenance, not for directional actions')
-    p.add_argument('--background',choices=['magenta','auto-frame','magenta-distance','paint-auto'],default='magenta',help='Auto-frame requires reviewed solid backgrounds and matching corner colors')
+    p.add_argument('--background',choices=['magenta','auto-frame','pruna-frame','magenta-distance','paint-auto'],default='magenta',help='Per-frame keys require reviewed solid backgrounds and matching corner colors')
     p.add_argument('--root-mode',choices=['pelvis','fixed'],default='pelvis',help='Fixed preserves fluid deformation around a nonhuman actor origin')
     p.add_argument('--expand-canvas',action='store_true',help='Grow the canvas and offset its pivot rather than clipping legitimate expansions')
     p.add_argument('--matte-cleanup',action='store_true',help='Remove background color from partial-alpha paint edges without eroding props')
     p.add_argument('--refine-edges',action='store_true',help='Use nearby foreground colors to refine compatible pale boundary pixels; inspect thin props')
-    a=p.parse_args();compile_motion(a.video,a.reference,a.output,a.action,a.frames,a.loop,a.start,a.end,a.style,a.component_mode,a.ping_pong,a.background,a.root_mode,a.expand_canvas,a.matte_cleanup,a.refine_edges)
+    p.add_argument('--despill-magenta-edges',action='store_true',help='Remove residual magenta fringe on exposed pixel-art silhouettes')
+    a=p.parse_args();compile_motion(a.video,a.reference,a.output,a.action,a.frames,a.loop,a.start,a.end,a.style,a.component_mode,a.ping_pong,a.background,a.root_mode,a.expand_canvas,a.matte_cleanup,a.refine_edges,a.despill_magenta_edges)

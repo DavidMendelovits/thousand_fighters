@@ -355,6 +355,8 @@ function handleWorkbenchClick(event) {
   if (projDelete) { deleteProjectile(projDelete.dataset.projectileDelete); return; }
   const projRegen = event.target.closest('[data-projectile-regenerate]');
   if (projRegen) { void runSectionAction(projRegen,()=>regenerateProjectile(projRegen.dataset.projectileRegenerate)); return; }
+  const projReprocess = event.target.closest('[data-projectile-reprocess]');
+  if (projReprocess) { void runSectionAction(projReprocess,()=>reprocessProjectile(projReprocess.dataset.projectileReprocess,projReprocess.dataset.sourceAssetKey)); return; }
 
   const tabButton = event.target.closest('[data-move-tab]');
   if (tabButton) {
@@ -693,6 +695,7 @@ function buildRowPrompt(moveId) {
     actor?`ISOLATED SUMMON: ${actor.description??actor.id}. Show only this entity, not the fighter or an opponent. Preserve its reference silhouette and props.`:spriteBrief(),
     moveDescription ? `Move: ${moveDescription}.` : '',
     ...authoredMoves.map((move) => `Character-specific action: ${move.displayName ?? move.id}. ${move.description ?? ''}`),
+    authoredMoves.some(move=>move.extension)?'ENGINE-RENDERED REACH: animate body anticipation, a short connection nub, contact pose and recovery. Do not draw the long extension or opponent wrap into this body video.':'',
     comboOnly?'COMBO-ONLY MORPH: make the hit silhouette dramatically distinct and readable, keep it as one coherent material transformation, return cleanly to the base silhouette, and do not invent detached hands, props, or human limbs unless the move description explicitly requests them.': '',
     `Side-view fighting game action. ${state.currentDraftData?.artStyle==='paint'?'Uniform white':'Magenta'} background, full subject visible, generous margins, no cropping.`,
   ].filter(Boolean).join(' ');
@@ -1109,6 +1112,13 @@ async function regenerateProjectile(projectileId) {
   } catch(error) { throw error; }
 }
 
+async function reprocessProjectile(projectileId, sourceAssetKey) {
+  const characterId = currentCharacterId();
+  if (!characterId) return;
+  await invokeTool('reprocess_projectile', { characterId, projectileId, ...(sourceAssetKey ? { sourceAssetKey } : {}) });
+  await selectCharacter(characterId, { silent: true });
+}
+
 async function saveProjectileNumbers(projectileId) {
   const characterId = currentCharacterId();
   if (!characterId) return;
@@ -1136,6 +1146,10 @@ async function saveProjectileNumbers(projectileId) {
     lifetime: pick(val('lifetime'), existing.lifetime),
     hitbox: {
       ...(existing.hitbox ?? {}),
+      x: pick(val('hitx'), existing.hitbox?.x),
+      y: pick(val('hity'), existing.hitbox?.y),
+      width: pick(val('hitwidth'), existing.hitbox?.width),
+      height: pick(val('hitheight'), existing.hitbox?.height),
       damage: pick(val('damage'), existing.hitbox?.damage),
       hitstun: pick(val('hitstun'), existing.hitbox?.hitstun),
       knockback: {
@@ -1832,6 +1846,8 @@ function renderProjectileEntity(entity) {
   const field = (label, key, value) =>
     `<label class="kit-field"><span>${label}</span><input type="number" data-pf="${key}" value="${num(value)}" /></label>`;
   const repromptValue = escapeHtml(entity.prompt ?? '');
+  const rawSources=state.currentAssets.filter(asset=>asset.key?.includes(`/source/${state.currentCharacterId}_${entity.id}_projectile_raw_`));
+  const pendingRaw=!entity.sourceKey ? rawSources : [];
   return `
     <li class="kit-row kit-projectile" data-projectile-id="${escapeHtml(entity.id)}">
       <div class="kit-row-main">
@@ -1839,9 +1855,14 @@ function renderProjectileEntity(entity) {
         <span class="kit-sub">${escapeHtml(entity.animation ?? '')}</span>
         <button type="button" class="kit-del" data-projectile-delete="${escapeHtml(entity.id)}" title="Delete projectile">✕</button>
       </div>
+      ${entity.sourceKey ? `<div class="kit-projectile-preview"><img loading="lazy" alt="${escapeHtml(entity.id)} sprite candidate" src="/api/assets/${encodeURIComponent(entity.sourceKey)}"><span>Saved sprite candidate · inspect its background and edges before publishing</span></div>` : pendingRaw.length ? `<p class="kit-sub">The paid image was saved, but normalization needs recovery. Choose the exact source below.</p>${pendingRaw.map(asset=>`<div class="kit-projectile-preview"><img loading="lazy" alt="${escapeHtml(entity.id)} retained raw source" src="${escapeHtml(asset.apiUrl)}"><button type="button" class="kit-reprompt-btn" data-projectile-reprocess="${escapeHtml(entity.id)}" data-source-asset-key="${escapeHtml(asset.key)}">Reprocess this saved source · no API cost</button></div>`).join('')}` : '<p class="kit-sub">Sprite not generated yet.</p>'}
       <div class="kit-fields">
         ${field('W', 'width', entity.width)}
         ${field('H', 'height', entity.height)}
+        ${field('Hit X', 'hitx', hb.x)}
+        ${field('Hit Y', 'hity', hb.y)}
+        ${field('Hit W', 'hitwidth', hb.width)}
+        ${field('Hit H', 'hitheight', hb.height)}
         ${field('Speed', 'speed', entity.speed)}
         ${field('Vx', 'vx', v.x)}
         ${field('Vy', 'vy', v.y)}
@@ -1855,6 +1876,7 @@ function renderProjectileEntity(entity) {
       <div class="kit-reprompt">
         <input type="text" class="kit-reprompt-input" data-projectile-reprompt="${escapeHtml(entity.id)}" value="${repromptValue}" placeholder="Sprite prompt for regeneration…" />
         <button type="button" class="kit-reprompt-btn" data-projectile-regenerate="${escapeHtml(entity.id)}">Regenerate sprite</button>
+        ${entity.sourceKey ? `<button type="button" class="kit-reprompt-btn" data-projectile-reprocess="${escapeHtml(entity.id)}">Reprocess saved sprite · no API cost</button>` : ''}
       </div>
     </li>
   `;
@@ -2153,6 +2175,7 @@ function renderMoveInspector(move) {
     <label>Cancel into (move ids, comma-separated)<input data-tune="cancelInto" value="${escapeHtml((move.cancelInto??[]).join(', '))}"></label>
     <label>Cancel condition<select data-tune="cancelOn">${['hit','contact','always'].map(v=>`<option ${v===(move.cancelOn??'hit')?'selected':''}>${v}</option>`).join('')}</select></label>
     <p>Kit combo routes also add cancel links. Remove a route in the kit editor to remove its links.</p>
+    <fieldset><legend>Attached reach · separate from body frames</legend><label><input type="checkbox" data-extension="enabled" ${move.extension?'checked':''}> Draw a connected extension during active hit or grab</label><div class="tune-grid"><label>Material<select data-extension="kind">${['ribbon','tentacle','elastic','root','mic-cable','paint-ribbon'].map(k=>`<option value="${k}" ${k===(move.extension?.kind??'ribbon')?'selected':''}>${k}</option>`).join('')}</select></label><label>Thickness<input type="number" data-extension="thickness" min="1" max="48" value="${move.extension?.thickness??8}"></label><label>Color<input type="color" data-extension="color" value="#${(move.extension?.color??0x537b93).toString(16).padStart(6,'0')}"></label><label>Accent<input type="color" data-extension="accent" value="#${(move.extension?.accent??0xb7e8df).toString(16).padStart(6,'0')}"></label></div><p>The reach follows the authored hit/grab box; captured opponents get a visible wrap. Keep the body video inside its frame.</p></fieldset>
     <fieldset><legend>Independent effect layer · no body collision</legend><label><input type="checkbox" data-fx="enabled" ${fx?'checked':''}> Spawn on active phase</label>
     <div class="tune-grid"><label>Effect<select data-fx="kind">${['spark','ink','thread','electric','shards','spores','pressure','bind'].map(k=>`<option ${k===(fx?.effect.kind??'spark')?'selected':''}>${k}</option>`).join('')}</select></label>${[['Socket X','x',fx?.offsetX??45],['Socket Y','y',fx?.offsetY??-70],['Radius','radius',fx?.effect.radius??30],['Lifetime frames','durationTicks',fx?.effect.durationTicks??12]].map(([l,k,v])=>`<label>${l}<input type="number" data-fx="${k}" value="${v}"></label>`).join('')}
     <label>Color<input type="color" data-fx="color" value="#${(fx?.effect.color??0xffbd66).toString(16).padStart(6,'0')}"></label><label>Accent<input type="color" data-fx="accent" value="#${(fx?.effect.accent??0xffffff).toString(16).padStart(6,'0')}"></label></div>
@@ -2171,7 +2194,9 @@ async function saveMoveInspector(id){
   saveButton.disabled=true;status.textContent='Saving draft and version checkpoints…';
   try{
     const move=state.currentDraftData.moves.find(m=>m.id===id),read=k=>root.querySelector(`[data-tune="${k}"]`).value;
-    let next=patchMove(state.currentDraftData,id,{phases:move.phases.map((_,i)=>Number(read(`phase-${i}`))),meter:Number(read('meter')),cancelInto:read('cancelInto').split(',').map(v=>v.trim()).filter(Boolean),cancelOn:read('cancelOn'),effect:root.querySelector('[data-fx="enabled"]').checked?readEffectEditor(root):null});
+    const extensionField=k=>root.querySelector(`[data-extension="${k}"]`);
+    const extension=extensionField('enabled').checked?{kind:extensionField('kind').value,thickness:Number(extensionField('thickness').value),color:parseInt(extensionField('color').value.slice(1),16),accent:parseInt(extensionField('accent').value.slice(1),16)}:null;
+    let next=patchMove(state.currentDraftData,id,{phases:move.phases.map((_,i)=>Number(read(`phase-${i}`))),meter:Number(read('meter')),cancelInto:read('cancelInto').split(',').map(v=>v.trim()).filter(Boolean),cancelOn:read('cancelOn'),extension,effect:root.querySelector('[data-fx="enabled"]').checked?readEffectEditor(root):null});
     for(const contact of root.querySelectorAll('[data-contact]')){
       const patch={index:Number(contact.dataset.contact)};
       for(const input of contact.querySelectorAll('[data-tune]')){const key=input.dataset.tune;if(input.value===''){if(['stun','hitstop','blockstun'].includes(key))patch[key]=null;else throw new Error(`${key} is required.`);}else patch[key]=Number(input.value);}

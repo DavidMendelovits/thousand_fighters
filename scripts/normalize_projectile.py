@@ -16,6 +16,8 @@ import argparse
 import sys
 from pathlib import Path
 
+import numpy as np
+from scipy import ndimage
 from PIL import Image
 
 MAX_LONG_SIDE = 256   # longest side target (px)
@@ -35,27 +37,31 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def is_magenta(pixel: tuple[int, ...]) -> bool:
-    """Threshold-based magenta detection, tolerant of AI JPEG/compression artifacts."""
-    r, g, b = pixel[0], pixel[1], pixel[2]
-    return r >= 200 and b >= 180 and g <= 80
-
-
 def chroma_key(image: Image.Image) -> Image.Image:
-    """Convert solid magenta pixels to transparent.
+    """Remove a verified uniform magenta field, including enclosed gaps.
 
-    Works on RGB input by first converting to RGBA, then zeroing the alpha
-    channel for every pixel that reads as magenta.
+    Image models may tint #ff00ff (BFL was observed near #b71de9). The key is
+    measured from all four corners, never inferred from a projectile pigment.
     """
-    rgba = image.convert("RGBA")
-    pixels = rgba.load()
-    width, height = rgba.size
-    for y in range(height):
-        for x in range(width):
-            r, g, b, _a = pixels[x, y]
-            if is_magenta((r, g, b)):
-                pixels[x, y] = (r, g, b, 0)
-    return rgba
+    pixels = np.asarray(image.convert("RGBA")).copy()
+    height, width = pixels.shape[:2]
+    patch = max(1, min(8, width // 8, height // 8))
+    corners = np.concatenate([pixels[:patch, :patch].reshape(-1, 4), pixels[:patch, -patch:].reshape(-1, 4), pixels[-patch:, :patch].reshape(-1, 4), pixels[-patch:, -patch:].reshape(-1, 4)])
+    if np.all(corners[:, 3] == 0):
+        return Image.fromarray(pixels).copy()
+    color = np.median(corners[:, :3], axis=0)
+    if np.max(np.abs(corners[:, :3].astype(float) - color)) > 45 or not (color[0] > 120 and color[2] > 100 and color[0] - color[1] > 65 and color[2] - color[1] > 65):
+        raise ValueError("Projectile background is not a uniform magenta chroma field; preserve the source for review")
+    candidate = np.max(np.abs(pixels[:, :, :3].astype(float) - color), axis=2) <= 58
+    border = np.zeros((height, width), dtype=bool)
+    border[0, :] = border[-1, :] = True
+    border[:, 0] = border[:, -1] = True
+    exterior = ndimage.binary_propagation(border & candidate, mask=candidate)
+    labels, _ = ndimage.label(candidate)
+    sizes = np.bincount(labels.ravel())
+    enclosed_large = candidate & (sizes[labels] >= 32)
+    pixels[exterior | enclosed_large, 3] = 0
+    return Image.fromarray(pixels).copy()
 
 
 def despill_edges(rgba: Image.Image) -> Image.Image:
@@ -67,21 +73,27 @@ def despill_edges(rgba: Image.Image) -> Image.Image:
     """
     pixels = rgba.load()
     width, height = rgba.size
+    transparent = np.asarray(rgba.getchannel("A")) == 0
     for y in range(height):
         for x in range(width):
             r, g, b, a = pixels[x, y]
-            if a == 0 or (min(r, b) - g) <= DESPILL_CAP:
+            if a == 0:
                 continue
             near_edge = False
             for dy in (-2, -1, 0, 1, 2):
                 for dx in (-2, -1, 0, 1, 2):
                     nx, ny = x + dx, y + dy
-                    if 0 <= nx < width and 0 <= ny < height and pixels[nx, ny][3] == 0:
+                    if 0 <= nx < width and 0 <= ny < height and transparent[ny, nx]:
                         near_edge = True
                         break
                 if near_edge:
                     break
             if near_edge:
+                if r > 100 and b > 100 and r - g > 65 and b - g > 65:
+                    pixels[x, y] = (r, g, b, 0)
+                    continue
+                if (min(r, b) - g) <= DESPILL_CAP:
+                    continue
                 cap = g + DESPILL_CAP
                 pixels[x, y] = (min(r, cap), g, min(b, cap), a)
     return rgba
@@ -132,7 +144,9 @@ def normalize_projectile(input_path: Path, output_path: Path, max_size: int = MA
     final.save(output_path, format="PNG")
 
     bbox = alpha_bbox(final)
-    has_alpha = bbox is not None  # at least some opaque pixels
+    has_alpha = bbox is not None and final.getchannel("A").getextrema()[0] == 0
+    if not has_alpha:
+        raise ValueError("Projectile key produced no usable transparent sprite")
 
     return {
         "inputSize": list(input_size),

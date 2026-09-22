@@ -24,6 +24,21 @@ test('frame generation forwards painted material into local sheet composition',a
   assert.equal(composition.artStyle,'paint');assert.equal(composition.frames.length,6);
 });
 
+test('independent summon reference frames never ask for the full fighter',async()=>{
+  const prompts=[];
+  const generator=new ParallelFrameSpriteGenerator({composeFrameSheet:async()=>Buffer.from('sheet'),frameRetries:0});
+  generator.provider='test';generator.model='test';
+  generator.generateFrame=async request=>{prompts.push(request.prompt);return {bytes:Buffer.from('frame')};};
+  await generator.generateImage({task:'fighter-1x6-row',moveId:'surveyor_idle_orbit',prompt:'Hover gently',context:{artStyle:'pixel',actorReference:{id:'surveyor',description:'A single detached lantern orb'}}});
+  assert.equal(prompts.length,1);
+  for(const prompt of prompts){
+    assert.match(prompt,/Exactly ONE small independent summon entity/);
+    assert.match(prompt,/NO parent fighter body/);
+    assert.doesNotMatch(prompt,/uncropped full-body fighter/);
+    assert.doesNotMatch(prompt,/frame 1 of 6/i);
+  }
+});
+
 test('concept generation uses persisted material direction, not pixel defaults',async()=>{
   let request;
   const pipeline=new CharacterCreationPipeline({resolve(port){

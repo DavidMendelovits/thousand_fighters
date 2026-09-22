@@ -4,11 +4,22 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
-from compile_character_motion import clean_components, compile_motion, uniform_corner_key, key_uniform_background, key_paint_background, refine_paint_alpha
+from compile_character_motion import clean_components, compile_motion, uniform_corner_key, key_uniform_background, key_pruna_background, key_paint_background, refine_paint_alpha, despill_magenta_edges
 from PIL import Image
 
 
 class MotionComponentsTest(unittest.TestCase):
+    def test_pruna_pixel_despill_removes_exposed_pink_fringe_only(self):
+        pixels=np.zeros((16,16,4),dtype=np.uint8)
+        pixels[3:13,3:13]=[20,40,70,255]
+        pixels[3,4:12]=[110,17,94,255]
+        pixels[7,7]=[110,17,94,255]
+        pixels[8,8]=[240,140,35,255]
+        result=np.asarray(despill_magenta_edges(Image.fromarray(pixels)))
+        self.assertEqual(result[3,7,3],0)
+        self.assertEqual(result[7,7,3],255)
+        self.assertEqual(result[8,8,3],255)
+
     def test_local_refinement_preserves_needle_lavender_and_pale_interior(self):
         pixels=np.full((70,70,3),255,dtype=np.uint8)
         pixels[15:25,15:25]=[155,112,180]
@@ -59,6 +70,25 @@ class MotionComponentsTest(unittest.TestCase):
         self.assertEqual(keyed.getpixel((16,16))[3],255)
         pixels[0:8,0:8]=[0,255,0]
         with self.assertRaises(ValueError):uniform_corner_key(Image.fromarray(pixels))
+    def test_per_frame_key_handles_pruna_magenta_white_flicker_without_erasing_actor(self):
+        for background in [(255, 0, 255), (255, 255, 255)]:
+            image=Image.new('RGB',(64,64),background)
+            pixels=np.asarray(image).copy()
+            pixels[18:48,20:44]=[15,35,60]
+            keyed=key_uniform_background(Image.fromarray(pixels))
+            self.assertEqual(keyed.getpixel((0,0))[3],0)
+            self.assertEqual(keyed.getpixel((30,30))[3],255)
+    def test_pruna_key_removes_large_enclosed_background_but_keeps_small_highlight(self):
+        for background in [(255, 0, 255), (255, 255, 255)]:
+            pixels=np.full((64,64,3),background,dtype=np.uint8)
+            pixels[12:52,12:52]=[15,35,60]
+            pixels[20:35,20:35]=background  # trapped gap between dark ribbons
+            pixels[40:43,40:43]=background  # small intentional highlight
+            keyed=key_pruna_background(Image.fromarray(pixels))
+            self.assertEqual(keyed.getpixel((0,0))[3],0)
+            self.assertEqual(keyed.getpixel((25,25))[3],0)
+            self.assertEqual(keyed.getpixel((41,41))[3],255)
+            self.assertEqual(keyed.getpixel((15,15))[3],255)
     def test_default_keeps_detached_props(self):
         alpha = np.zeros((50, 50), dtype=np.uint8)
         alpha[10:40, 10:30] = 255

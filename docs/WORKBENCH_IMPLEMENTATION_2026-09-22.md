@@ -17,7 +17,7 @@ This is a local implementation checkpoint, **not a production/mobile release**.
 | T8 Indexed heads and status delivery | Implemented | Indexed heads/attempts, replayable revisioned SSE, shared UI subscription per job, polling fallback, terminal/reordered-event tests. |
 | T9 Phaser core / budgets | Implemented, release gate open | No Matter/Arcade; automated 250 KB gzip budget. Desktop/mobile-emulation renderer smoke passes. See performance report; physical-phone measurements are still required. |
 | T10 Local verification complete; release gates open | Local checkpoint verified | Focused suites and paired desktop performance gates pass. Broad-suite limitations, physical-phone measurement and artwork review remain open below. No deployment or EAS build performed. |
-| T11 Final new-character browser acceptance | Pending, explicitly required September 22 | Create an ambitious original fighter from scratch entirely through the workbench; record the complete workflow and real gameplay. See CREATE-07's expanded acceptance checklist in [the product roadmap](PRODUCT_AUDIT_AND_ROADMAP.md). Existing Palimpsest walkthrough does not satisfy this gate. |
+| T11 Final new-character browser acceptance | In progress; publication blocked | Eventide was started from a blank browser-CMS draft. The recording, three generated projectile sprites, saved-source recovery, selected video rows, and real-engine draft playtest are indexed in [the Eventide evidence](../artifacts/eventide-workbench/index.html). Only 3/26 required rows have been visually approved; Totality and the rest of the playable pack remain unfinished. See CREATE-07's checklist in [the product roadmap](PRODUCT_AUDIT_AND_ROADMAP.md). |
 
 ## Operating contracts
 

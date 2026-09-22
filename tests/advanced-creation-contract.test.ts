@@ -119,6 +119,7 @@ test('summon export derives isolated actor pack and body without corrupting lega
   const result=convertDraftToCharacterConfig({draft,frameData:{frames}});
   assert.equal(result.actors[0].id,'lead');assert.deepEqual(result.actors[0].sprite,result.sprite);
   const hands=result.actors[1];assert.equal(hands.defaultVisible,false);
+  assert.equal(hands.sprite.scale,result.sprite.scale*0.4);
   assert.equal(hands.sprite.frames.base[0].file,'sprites/hands_idle/1.png');
   assert.equal(hands.sprite.frames.ribbon_jab,undefined);
   assert.equal(result.moves.find((m:any)=>m.id==='hands_pinch').phases[1].events[0].event.grab.actorGrip.actor,'hands');

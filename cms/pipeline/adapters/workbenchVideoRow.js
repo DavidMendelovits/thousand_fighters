@@ -6,7 +6,7 @@ import {promisify} from 'node:util';
 import {runVideoJob} from '../../../scripts/generate_animation_video.mjs';
 import {installMotionRow} from '../motionRowArtifacts.js';
 import {workbenchMotionPrompt} from './workbenchMotionPrompt.js';
-import {motionActorReference, motionCompilerSettings, motionCompilerArgs} from '../motionReference.js';
+import {motionActorReference, motionCompilerSettings, motionCompilerArgs, motionReferenceOccupancy, motionReferenceCanvasSize} from '../motionReference.js';
 import {restoreBuildVideoCheckpoint} from '../restoreBuildVideoCheckpoint.js';
 export {motionActorReference} from '../motionReference.js';
 const exec=promisify(execFile);
@@ -41,7 +41,9 @@ async function generateExclusive({characterId,moveId,prompt,task,storage,reposit
   const bytes=await storage.getBytes(referenceKey);
   stageTimings.referenceLoadMs=Date.now()-referenceLoadStartedAt;
   const {profile,motionPrompt}=workbenchMotionPrompt({draft,row:moveId,prompt,actorId});
-  const fingerprint=createHash('sha256').update(bytes).update(motionPrompt).update(task).update(provider).update(artStyle==='paint'?'paint-wide-0.35-v2':'ref-occupancy-0.65-quality-loop-endlock-v1').digest('hex');
+  const occupancy=motionReferenceOccupancy(artStyle,provider,moveId);
+  const canvasSize=motionReferenceCanvasSize(artStyle,provider,actorId,moveId);
+  const fingerprint=createHash('sha256').update(bytes).update(motionPrompt).update(task).update(provider).update(`ref-canvas-${canvasSize}-occupancy-${occupancy}-quality-loop-endlock-v3`).digest('hex');
   const pointerKey=`${draft.history?.workingRoot ?? `characters/${characterId}/assets`}/jobs/${moveId}_${provider}_video.json`;
   const previous = await storage.exists(pointerKey) ? await storage.getJson(pointerKey) : null;
   const jobsRoot=path.resolve('artifacts/workbench-video-jobs');
@@ -61,7 +63,12 @@ async function generateExclusive({characterId,moveId,prompt,task,storage,reposit
     const jobId=randomUUID();directory=path.join(jobsRoot,jobId);await mkdir(directory,{recursive:true});
     await writeFile(path.join(directory,'sprite.png'),bytes);
     // Preserve the approved native sprite with integer enlargement and margins.
-    await exec('python3',['scripts/prepare_animation_reference.py',path.join(directory,'sprite.png'),'--output',path.join(directory,'reference.png'),'--size','768','--occupancy',artStyle==='paint'?'0.35':'0.65',...(artStyle==='paint'?['--background','#ffffff']:[])]);
+    try {
+      await exec('python3',['scripts/prepare_animation_reference.py',path.join(directory,'sprite.png'),'--output',path.join(directory,'reference.png'),'--size',String(canvasSize),'--occupancy',String(occupancy),...(artStyle==='paint'?['--background','#ffffff']:[])]);
+    } catch (error) {
+      error.preflight = true;
+      throw error;
+    }
     stageTimings.referencePreparationMs=Date.now()-referencePreparationStartedAt;
     const checkpointStartedAt=Date.now();
     await repository.writeAsset(characterId,`jobs/${moveId}_${provider}_video.json`,Buffer.from(JSON.stringify({jobId,fingerprint,provider,model:provider==='pruna'?'p-video-2-pro':'kling-v3-standard',moveId})),{contentType:'application/json',provider});
@@ -86,9 +93,10 @@ async function generateExclusive({characterId,moveId,prompt,task,storage,reposit
   const videoBytes=await readFile(path.join(directory,'source.mp4'));
   stageTimings.videoReadMs=Date.now()-videoReadStartedAt;
   const compositionStartedAt=Date.now();
-  const compiled=path.join(directory,'motion-v2');
+  const settings=motionCompilerSettings(artStyle,provider);
+  const compiled=path.join(directory,settings.background==='pruna-frame'?'motion-v4-pruna-frame':settings.background==='auto-frame'?'motion-v3-autoframe':'motion-v2');
   let exists=false;try{await readFile(path.join(compiled,'motion.json'));exists=true;}catch{}
-  if(!exists)await storage.lineage.run({characterId,stage:'compile-motion',moveId,inputs:{video:job.archivedOutput,reference:await storage.lineage.artifact(bytes,{contentType:'image/png'}),style:artStyle,frames:profile.frames,loop:profile.loop,compiler:await storage.lineage.artifact(await readFile('scripts/compile_character_motion.py'),{contentType:'text/x-python'})}},()=>exec('python3',['scripts/compile_character_motion.py',path.join(directory,'source.mp4'),'--reference',path.join(directory,'sprite.png'),'--output',compiled,'--action',moveId,...motionCompilerArgs(motionCompilerSettings(artStyle)),'--frames',String(profile.frames),...(profile.loop?['--loop']:[])],{timeout:120000,maxBuffer:2*1024*1024}));
+  if(!exists)await storage.lineage.run({characterId,stage:'compile-motion',moveId,inputs:{video:job.archivedOutput,reference:await storage.lineage.artifact(bytes,{contentType:'image/png'}),style:artStyle,background:settings.background,frames:profile.frames,loop:profile.loop,compiler:await storage.lineage.artifact(await readFile('scripts/compile_character_motion.py'),{contentType:'text/x-python'})}},()=>exec('python3',['scripts/compile_character_motion.py',path.join(directory,'source.mp4'),'--reference',path.join(directory,'sprite.png'),'--output',compiled,'--action',moveId,...motionCompilerArgs(settings),'--frames',String(profile.frames),...(profile.loop?['--loop']:[])],{timeout:120000,maxBuffer:2*1024*1024}));
   const motionRow=await installMotionRow({characterId,directory:compiled,storage,repository});
   const sheet=await readFile(path.join(compiled,'sheet.png'));
   stageTimings.spriteCompositionMs=Date.now()-compositionStartedAt;

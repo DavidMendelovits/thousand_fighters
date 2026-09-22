@@ -47,8 +47,11 @@ test('workbench saves contact poses and keeps the selected provider and current 
     await card.getByRole('button',{name:'Data',exact:true}).click();
     await card.locator('.move-inspector summary').click();
     await card.getByRole('spinbutton',{name:'Test pinch Meter cost'}).fill('1');
+    await card.locator('[data-extension="enabled"]').check();
+    await card.locator('[data-extension="thickness"]').fill('11');
     await card.getByRole('button',{name:'Save move & effect'}).click();
     await expect(card.locator('.move-save-status')).toContainText('Saved to draft');
+    expect((await runtime.repository.getDraft(characterId)).moves[0].extension).toMatchObject({kind:'ribbon',thickness:11});
     expect((await runtime.repository.getDraft(characterId)).moves[0].visualTimeline).toEqual(move.visualTimeline);
     await card.getByRole('spinbutton',{name:'Test pinch Contact pose (1-based)'}).fill('5');
     await card.getByRole('spinbutton',{name:'Test pinch Recovery pose (1-based)'}).fill('8');

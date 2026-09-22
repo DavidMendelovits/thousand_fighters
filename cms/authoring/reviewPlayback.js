@@ -38,7 +38,7 @@ export function reviewPlayback(draft, row, frames, {mode='game',moveId}={}) {
     }
     description=`Game timing · ${move.displayName??move.id} · no-contact playback. Hitstop, cancels, grabs and interruptions require a playtest.`;
     if(moves.length>1)warnings.push(`This row is used by ${moves.length} moves. Inspect each move variant before approval.`);
-    if(move.phases.some(p=>p.events?.some(e=>e.event?.type==='grab_check')))warnings.push('This is the unconnected grab. Holding an opponent uses interactive grip timing; verify it in Play current draft.');
+    if(move.phases.some(p=>p.events?.some(e=>e.event?.type==='grab_check')))warnings.push(move.extension?'The attached reach and opponent wrap are rendered by the game engine, not this isolated body clip. Verify capture and release in Play current draft.':'This is the unconnected grab. Holding an opponent uses interactive grip timing; verify it in Play current draft.');
   }else if(row==='base'){
     return {...reviewPlayback(draft,row,frames,{mode:'source'}),description:'Base reference poses. Runtime states choose their own base frame; not a standalone combat animation.'};
   }else{

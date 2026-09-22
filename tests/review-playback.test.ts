@@ -33,6 +33,12 @@ test('fallback move cadence, variants and invalid rows are explicit',()=>{
   assert.throws(()=>reviewPlayback({moves:[{...moves[0],visualTimeline:[{frame:24,duration:1}]}]},'ribbon',frames),/visual timeline/);
   assert.throws(()=>reviewPlayback({moves:[{...moves[0],phases:[{frames:216001}]}]},'ribbon',frames),/phase timing/);
 });
+test('attached grab preview explains its engine-rendered reach instead of calling it unconnected',()=>{
+  const move={id:'lasso',animation:'lasso',extension:{kind:'ribbon',color:1,accent:2,thickness:8},phases:[{name:'active',frames:8,events:[{onFrame:1,event:{type:'grab_check',grab:{hitbox:{x:1,y:-10,width:20,height:20},holdDuration:8}}}]}]};
+  const preview=reviewPlayback({moves:[move]},'lasso',frames);
+  assert.ok(preview.warnings.some(w=>w.includes('attached reach')));
+  assert.ok(!preview.warnings.some(w=>w.includes('unconnected')));
+});
 test('state duration wins over extraction holds; contextual reactions stay labeled',()=>{
   assert.equal(sequenceTicks(reviewPlayback({sprite:{rowPlayback:{crouch:{durationTicks:8}}}},'crouch',frames)).length,8);
   assert.equal(sequenceTicks(reviewPlayback({},'landing',frames)).length,4);

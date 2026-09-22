@@ -125,7 +125,17 @@ export class CharacterBuildPlans {
     if(running){
       let job;try{job=await this.buildJobs.get(running.characterId,running.jobId);}catch(error){if(error.statusCode!==404)throw error;}
       if(job){
-        if(job.status!=='completed'){plan.status=['queued','running','preparing','submitting','provider-active','extracting'].includes(job.status)?'running':'needs-recovery';plan.message=`${running.row}: ${job.phase??job.status}. Reservation retained.`;return this.save(plan);}
+        if(job.status!=='completed'){
+          if(job.status==='failed'&&job.phase==='Local preparation failed · no provider request'&&!(job.attempts??[]).length){
+            // A deterministic local preflight did not reach a provider. Keep
+            // the existing budget reservation, but require another explicit
+            // click before admitting a new immutable job ID.
+            running.status='reserved';running.jobId=randomUUID();
+            plan.status='ready';plan.message=`${running.row}: local preparation failed with no provider request. Verify the fix, then continue explicitly using the existing reservation.`;
+            return this.save(plan);
+          }
+          plan.status=['queued','running','preparing','submitting','provider-active','extracting'].includes(job.status)?'running':'needs-recovery';plan.message=`${running.row}: ${job.phase??job.status}. Reservation retained.`;return this.save(plan);
+        }
         running.status='review';running.result=job.result;running.completedAt=job.completedAt;
         const snapshot=snapshots[running.characterId],pin=plan.pins[running.characterId];
         // Only the reference produced by this exact completed step can advance

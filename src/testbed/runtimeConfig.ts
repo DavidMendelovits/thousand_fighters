@@ -41,19 +41,22 @@ export async function loadTestbedConfig(characterId: string): Promise<TestbedCon
   const warnings: string[] = [];
   const id = encodeURIComponent(characterId);
 
-  const [{ config, assetRoot }, { assets }] = await Promise.all([
-    getJson<{ config: CharacterConfig; assetRoot?: string }>(`/api/characters/${id}/runtime-config`),
+  const [{ config, assetRoot, previewFallbacks, projectileSourceKeys }, { assets }] = await Promise.all([
+    getJson<{ config: CharacterConfig; assetRoot?: string; previewFallbacks?: {row:string;source:string}[]; projectileSourceKeys?:Record<string,string> }>(`/api/characters/${id}/runtime-config?preview=1`),
     getJson<{ assets: AssetRecord[] }>(`/api/characters/${id}/assets`),
   ]);
 
   if (!config?.sprite) throw new Error(`runtime-config for "${characterId}" has no sprite`);
+  if(previewFallbacks?.length)warnings.push(`DRAFT PROXY: ${previewFallbacks.length} unbuilt animation rows temporarily show ${previewFallbacks.map(item=>`${item.row}←${item.source}`).join(', ')}. This cannot publish; generate and review each real row.`);
 
   const byRelativePath = new Map<string, AssetRecord>();
+  const byKey = new Map<string, AssetRecord>();
   for (const asset of assets ?? []) {
     // Archived art revisions can have identical frame suffixes. Never let the
     // first archived match replace the active outfit in a live preview.
     if(assetRoot && /\/(sprites|sheets)\//.test(asset.key) && !asset.key.startsWith(`${assetRoot}/`))continue;
     byRelativePath.set(asset.relativePath, asset);
+    byKey.set(asset.key, asset);
   }
 
   // Projectile sprites: convert inlines `projectile.animation` into spawn events.
@@ -63,7 +66,10 @@ export async function loadTestbedConfig(characterId: string): Promise<TestbedCon
   // so it survives the no-frames early-return below.
   const projectileUrls: Record<string, string> = {};
   for (const animation of collectProjectileAnimations(config)) {
-    const asset = findProjectileAsset(byRelativePath, animation);
+    // Exact draft sourceKey wins. A historical filename match can point at a
+    // stale opaque attempt after the sprite has been reprocessed/versioned.
+    const pinned = projectileSourceKeys?.[animation];
+    const asset = pinned ? byKey.get(pinned) : findProjectileAsset(byRelativePath, animation);
     if (asset) projectileUrls[animation] = asset.apiUrl;
     else if (!config.moves.some(move => move.phases.some(phase => phase.events.some(({event}) => 'projectile' in event && event.projectile.animation === animation && event.projectile.visual)))) warnings.push(`projectile "${animation}": sprite not found in assets (renders as a box until generated).`);
   }
