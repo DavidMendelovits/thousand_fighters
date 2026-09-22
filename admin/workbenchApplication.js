@@ -110,7 +110,9 @@ const state = session.state = {
   currentCharacterId: '',
   openActivityMove: null,
   characters: [],
-  rosterFilter: 'animated',
+  // The library is an authoring inventory, not the playable roster. Show the
+  // complete inventory on entry so archived work remains discoverable.
+  rosterFilter: 'all',
   rosterQuery: '',
   sourceAssetKey: '',
   normalizedKey: '',
@@ -484,11 +486,11 @@ async function loadCharacters() {
 }
 
 function renderLibrary() {
-  const groups = [['animated','Animated'],['drafts','Drafts'],['archived','Archived']];
-  document.getElementById('roster-filters').innerHTML = groups.map(([id,label]) => `<button type="button" data-collection="${id}" aria-pressed="${state.rosterFilter === id}">${label} <span>${state.characters.filter(c => c.group === id).length}</span></button>`).join('');
-  document.getElementById('roster-description').textContent = ({animated:'Has extracted sprites. Review coverage before publishing.',drafts:'Unfinished concepts and test drafts. No implied readiness.',archived:'Hidden from active work. Assets and history are preserved.'})[state.rosterFilter];
+  const groups = [['all','All'],['animated','Animated'],['drafts','Drafts'],['archived','Archived']];
+  document.getElementById('roster-filters').innerHTML = groups.map(([id,label]) => `<button type="button" data-collection="${id}" aria-pressed="${state.rosterFilter === id}">${label} <span>${id === 'all' ? state.characters.length : state.characters.filter(c => c.group === id).length}</span></button>`).join('');
+  document.getElementById('roster-description').textContent = ({all:'Complete authoring inventory. Archived fighters remain preserved and clearly labeled.',animated:'Has extracted sprites. Review coverage before publishing.',drafts:'Unfinished concepts and test drafts. No implied readiness.',archived:'Hidden from active play. Assets and history are preserved.'})[state.rosterFilter];
   const query = state.rosterQuery.trim().toLowerCase();
-  const visible = state.characters.filter(c => (c.group ?? 'drafts') === state.rosterFilter && `${c.displayName} ${c.id}`.toLowerCase().includes(query));
+  const visible = state.characters.filter(c => (state.rosterFilter === 'all' || (c.group ?? 'drafts') === state.rosterFilter) && `${c.displayName} ${c.id}`.toLowerCase().includes(query));
   elements.characterList.replaceChildren(...visible.map(renderCharacter));
   if (!visible.length) { const empty = document.createElement('p'); empty.className='empty-inline'; empty.textContent = query ? 'No matching characters.' : 'No characters in this collection.'; elements.characterList.append(empty); }
   setActiveCharacterRow(state.currentCharacterId);
@@ -503,7 +505,7 @@ async function selectCharacter(characterId, options = {}) {
   if (state.currentCharacterId !== characterId) { state.artBriefSaveError = null; }
   state.currentCharacterId = characterId;
   const entry = state.characters.find(c => c.id === characterId);
-  if (entry && entry.group !== state.rosterFilter) { state.rosterFilter = entry.group; renderLibrary(); }
+  if (entry && state.rosterFilter !== 'all' && entry.group !== state.rosterFilter) { state.rosterFilter = entry.group; renderLibrary(); }
   setActiveCharacterRow(characterId);
 
   // Push URL unless caller opted out (e.g. popstate handler, initial load)
@@ -544,7 +546,7 @@ async function selectCharacter(characterId, options = {}) {
   state.currentDraftData = draft;
   state.workbenchDetail = workbenchDetail;
   state.characters = state.characters.map(character => character.id === characterId ? {...character,...workbenchDetail} : character);
-  state.rosterFilter = workbenchDetail.group;
+  if (state.rosterFilter !== 'all') state.rosterFilter = workbenchDetail.group;
   renderLibrary();
   if(EMBEDDED)window.parent.postMessage({type:'studio-character',characterId},location.origin);
   state.currentAssets = assets;
@@ -1278,7 +1280,8 @@ function renderCharacter(character) {
   button.type = 'button';
   button.className = 'character-row';
   button.dataset.characterId = character.id;
-  button.innerHTML = `<strong>${escapeHtml(character.displayName ?? character.id)}</strong><span>${character.frameCount ?? 0} frames · ${character.fixture ? 'Test draft' : character.published ? 'Published copy exists' : character.group === 'animated' ? 'In progress' : 'Unfinished'}</span>`;
+  const lifecycle = character.group === 'archived' ? 'Archived' : character.group === 'animated' ? 'Animated' : 'Draft';
+  button.innerHTML = `<strong>${escapeHtml(character.displayName ?? character.id)}</strong><span>${lifecycle} · ${character.frameCount ?? 0} frames · ${character.fixture ? 'Test draft' : character.published ? 'Published copy exists' : character.group === 'animated' ? 'In progress' : 'Unfinished'}</span>`;
   return button;
 }
 

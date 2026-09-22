@@ -9,6 +9,8 @@ test('empty drafts, uncropped reference review and reversible archive survive re
   const reference=await request.post('/api/tools/generate_character_concept',{data:{characterId:id,prompt:'One isolated paint creature'}});
   expect(reference.ok()).toBeTruthy();
   await page.goto(`/roster/${id}?standalone=1`);
+  await expect(page.locator('[data-collection="all"]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator(`[data-character-id="${id}"]`)).toContainText('Draft');
   await expect(page.locator('[data-preview-status]')).toContainText('no complete motion clip');
   await expect(page.locator('[data-playtest]')).toBeDisabled();
   await page.locator('[data-studio-section="identity"]').click();
@@ -21,11 +23,15 @@ test('empty drafts, uncropped reference review and reversible archive survive re
   await page.reload();
   await expect(page.locator('[data-reference-status="rejected"]')).toBeVisible();
   await page.locator('[data-archive-character="true"]').click();
-  await expect(page.locator('[data-collection="archived"]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('[data-collection="all"]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator(`[data-character-id="${id}"]`)).toContainText('Archived ·');
   await page.reload();
+  await expect(page.locator('[data-collection="all"]')).toHaveAttribute('aria-pressed','true');
   await expect(page.locator('[data-archive-character="false"]')).toBeVisible();
   await page.locator('[data-archive-character="false"]').click();
-  await expect(page.locator('[data-collection="drafts"]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('[data-collection="all"]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('[data-archive-character="true"]')).toBeVisible();
+  await expect(page.locator(`[data-character-id="${id}"]`)).not.toContainText('Archived ·');
   const detail=await (await request.get(`/api/characters/${id}/workbench`)).json();
   expect(detail.reference.status).toBe('rejected');expect(detail.archived).toBe(false);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
