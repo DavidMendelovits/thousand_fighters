@@ -91,6 +91,18 @@ def despill_magenta_edges(im):
     pixels[fringe,3]=0
     return Image.fromarray(pixels)
 
+def key_magenta_islands(im):
+    """Opt-in removal of saturated chroma islands on white-key frames.
+
+    Only use when the character palette excludes magenta; this would erase
+    deliberately pink costume or VFX pixels. Other key modes remain unchanged.
+    """
+    pixels=np.asarray(im.convert('RGBA')).copy()
+    rgb=pixels[:,:,:3].astype(int)
+    chroma=(rgb[:,:,0]>=60)&(rgb[:,:,2]>=60)&(rgb[:,:,1]<=100)&((rgb[:,:,0]-rgb[:,:,1])>=35)&((rgb[:,:,2]-rgb[:,:,1])>=35)
+    pixels[chroma,3]=0
+    return Image.fromarray(pixels)
+
 def refine_paint_alpha(rgb, key, alpha):
     """Conservative local color-line matte; preserve opaque cores and thin dark props.
 
@@ -132,7 +144,7 @@ def key_paint_background(im, matte_cleanup=False, refine_edges=False):
     return Image.fromarray(pixels)
 
 
-def compile_motion(video, reference, output, action, count=20, loop=False, start=None, end=None, style='pixel', component_mode='all', ping_pong=False, background='magenta', root_mode='pelvis', expand_canvas=False, matte_cleanup=False, refine_edges=False, despill_magenta=False):
+def compile_motion(video, reference, output, action, count=20, loop=False, start=None, end=None, style='pixel', component_mode='all', ping_pong=False, background='magenta', root_mode='pelvis', expand_canvas=False, matte_cleanup=False, refine_edges=False, despill_magenta=False, key_magenta_gaps=False):
     if ping_pong and not loop:
         raise ValueError('Ping-pong playback requires an explicit loop')
     if (matte_cleanup or refine_edges) and background!='paint-auto':
@@ -155,6 +167,7 @@ def compile_motion(video, reference, output, action, count=20, loop=False, start
         for path in paths:
             source=Image.open(path)
             im=key_paint_background(source,matte_cleanup,refine_edges) if background=='paint-auto' else key_pruna_background(source) if background=='pruna-frame' else key_uniform_background(source) if background=='auto-frame' else key_magenta_distance(source) if background=='magenta-distance' else key_background(source,'#ff00ff',mode='chroma')
+            if key_magenta_gaps: im=key_magenta_islands(im)
             alpha=np.array(im.getchannel('A'))
             # Explicit body-only cleanup: detached sparks are separate VFX, never
             # silently discard disconnected props in the default import path.
@@ -239,6 +252,7 @@ def compile_motion(video, reference, output, action, count=20, loop=False, start
         palette,_=shared_palette([ref],count=48)
         for i,im in enumerate(selected):
             alpha=im.getchannel('A');im=im.convert('RGB').quantize(palette=palette,dither=Image.Dither.NONE).convert('RGBA');im.putalpha(alpha);selected[i]=im
+            if key_magenta_gaps: selected[i]=key_magenta_islands(selected[i])
     unique=len({hashlib.sha256(im.tobytes()).hexdigest() for im in selected})
     if unique<min(8,len(selected)):raise ValueError('Too few distinct motion frames')
     output.mkdir(parents=True)
@@ -264,6 +278,7 @@ def compile_motion(video, reference, output, action, count=20, loop=False, start
     report['provenance']['options']['matteCleanup'] = matte_cleanup
     report['provenance']['options']['refineEdges'] = refine_edges
     report['provenance']['options']['despillMagenta'] = despill_magenta
+    report['provenance']['options']['keyMagentaGaps'] = key_magenta_gaps
     (output/'motion.json').write_text(json.dumps(report,indent=2)+'\n')
     print(json.dumps({k:v for k,v in report.items() if k!='frames'}))
     return report
@@ -281,4 +296,5 @@ if __name__=='__main__':
     p.add_argument('--matte-cleanup',action='store_true',help='Remove background color from partial-alpha paint edges without eroding props')
     p.add_argument('--refine-edges',action='store_true',help='Use nearby foreground colors to refine compatible pale boundary pixels; inspect thin props')
     p.add_argument('--despill-magenta-edges',action='store_true',help='Remove residual magenta fringe on exposed pixel-art silhouettes')
-    a=p.parse_args();compile_motion(a.video,a.reference,a.output,a.action,a.frames,a.loop,a.start,a.end,a.style,a.component_mode,a.ping_pong,a.background,a.root_mode,a.expand_canvas,a.matte_cleanup,a.refine_edges,a.despill_magenta_edges)
+    p.add_argument('--key-magenta-gaps',action='store_true',help='Opt-in: remove saturated magenta islands when the actor palette excludes pink')
+    a=p.parse_args();compile_motion(a.video,a.reference,a.output,a.action,a.frames,a.loop,a.start,a.end,a.style,a.component_mode,a.ping_pong,a.background,a.root_mode,a.expand_canvas,a.matte_cleanup,a.refine_edges,a.despill_magenta_edges,a.key_magenta_gaps)

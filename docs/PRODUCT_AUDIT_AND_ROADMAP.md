@@ -66,19 +66,24 @@ not make a second paid request. Browser creation and recovery footage is
 indexed in [the Eventide recording](../artifacts/eventide-workbench/index.html).
 
 **CREATE-07 is not complete:** 23 of 26 required animation rows still need
-generation or review, Totality needs independent art and full interaction
+generation or a current review, Totality needs independent art and full interaction
 coverage, and the fighter has not passed pack validation or publication. The
 recording has disclosed gaps from recorder interruptions, so it is not a
 continuous full-process record. No generated video alone is evidence of a
 playable, finished fighter.
 
-A new browser-created continuation plan has a two-submission limit and a $1
-estimated-spend ceiling (not a provider billing cap). It has made zero provider
-calls. Its first base-reference review remains open: inspection found visible
-magenta edge specks on the existing base frames. Clean and re-review that
-saved reference before using it to purchase the remaining motion; do not
-silently approve a contaminated reference or restart any older
-`needs-recovery` plan.
+A browser-created continuation plan had a two-submission limit and a $1
+estimated-spend ceiling (not a provider billing cap); it made zero provider
+calls. Its base review exposed magenta contamination. We repaired the saved
+versioned base sheet through the workbench's no-provider re-extraction path,
+then approved the corrected base in a new bounded plan. A subsequent
+no-provider Surveyor video reprocess removed the late magenta gap and was
+visually approved. That reprocess changed the working revision, so the second
+plan is now stale and must be replaced before any paid submission. Earlier
+idle and lash approvals became stale against the new base fingerprint; both
+were re-inspected and explicitly approved through the live browser CMS. The
+recorded repair/review chapters are appended to
+[the Eventide recording](../artifacts/eventide-workbench/index.html).
 
 ### September 20 execution update — unified draft editor audit
 

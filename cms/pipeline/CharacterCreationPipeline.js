@@ -755,7 +755,7 @@ export class CharacterCreationPipeline {
     finally { if (this.extractionQueues.get(key) === pending) this.extractionQueues.delete(key); }
   }
 
-  async extractRowFramesExclusive({ characterId, sourceAssetKey, moveId, spriteProfile, targetHeight, videoSampleTimes, context = {} }) {
+  async extractRowFramesExclusive({ characterId, sourceAssetKey, moveId, spriteProfile, targetHeight, videoSampleTimes, strictChromaEdges = false, context = {} }) {
     const benchmarkStartedAt = Date.now();
     const storage = this.registry.resolve(PipelinePort.ASSET_STORAGE);
     const repository = this.registry.resolve(PipelinePort.CHARACTER_REPOSITORY);
@@ -823,6 +823,7 @@ export class CharacterCreationPipeline {
       // equalization so the squat/rise animation reads correctly.
       const profile = rowPromptProfile(moveId);
       if (isVideo) args.push('--video-source');
+      if (strictChromaEdges) args.push('--strict-chroma-edges');
       if (profile.heightDynamic || isVideo) {
         args.push('--no-equalize-frames');
       } else {

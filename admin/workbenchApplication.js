@@ -274,6 +274,8 @@ function handleWorkbenchClick(event) {
   if(previewFx){previewMoveEffect(previewFx.closest('[data-move-inspector]'));return;}
   const reextract = event.target.closest('[data-reextract]');
   if (reextract) { void reextractRow(reextract.dataset.reextract); return; }
+  const cleanReextract = event.target.closest('[data-reextract-clean]');
+  if (cleanReextract) { void reextractRow(cleanReextract.dataset.reextractClean, undefined, true); return; }
   const reprocess = event.target.closest('[data-reprocess-video]');
   if (reprocess) { void reprocessMotion(reprocess); return; }
   const resample=event.target.closest('[data-resample]');
@@ -624,6 +626,7 @@ function setMoveCardLoading(moveId, loading) {
     btn.disabled = loading;
     btn.textContent = loading ? 'Generating…' : (card.dataset.hasFrames === 'true' ? 'Regen' : 'Generate');
   }
+  for (const reextract of card.querySelectorAll('[data-reextract], [data-reextract-clean]')) reextract.disabled = loading;
 
   // Spinner veil over the card body — the at-a-glance signal the row is working.
   // Injected here (not just on the next full re-render) so it appears the instant
@@ -973,16 +976,17 @@ async function loadPublishReadiness(){
 }
 
 async function beginMotionReview(action){
-  state.studio?.choose('motion',{open:false});
   const report=state.publishReadiness??await loadPublishReadiness();
   const row=report?.rows.find(row=>row.row===action);
   if(!row)throw new Error('Refresh the release check before reviewing.');
+  state.studio?.selectRow(action);
   const select=elements.characterWorkbench.querySelector('[data-preview-row]');
   if(!select?.querySelector(`option[value="${CSS.escape(action)}"]`)){
     elements.characterWorkbench.querySelector(`[data-move-card="${CSS.escape(action)}"]`)?.scrollIntoView({block:'start'});
     return;
   }
-  select.value=action;elements.characterWorkbench.querySelector('[data-preview-timing]').value='game';select.dispatchEvent(new Event('change',{bubbles:true}));
+  const timing=elements.characterWorkbench.querySelector('[data-preview-timing]');
+  if(timing?.value!=='game'){timing.value='game';timing.dispatchEvent(new Event('change',{bubbles:true}));}
   const panel=document.getElementById('motion-review');
   panel.hidden=false;panel.innerHTML=renderMotionReview(row);
   document.getElementById('workbench-preview').scrollIntoView({block:'start'});
@@ -1689,15 +1693,20 @@ async function saveAuthoring() {
   } catch (error) { status.textContent = error.message; }
 }
 
-async function reextractRow(moveId,videoSampleTimes) {
+async function reextractRow(moveId,videoSampleTimes,strictChromaEdges=false) {
   const characterId = state.currentCharacterId;
-  const source = state.currentAssets.find(asset => asset.relativePath === `source/${characterId}_${moveId}_sheet.png`);
-  if (!source || state.generatingMoves.has(moveId)) return;
+  const sourceName = `source/${characterId}_${moveId}_sheet.png`;
+  const workingRoot = state.currentDraftData?.history?.workingRoot ?? `characters/${characterId}/assets`;
+  const source = state.currentAssets.find(asset => asset.key === `${workingRoot}/${sourceName}`);
+  if (!source) { showError(new Error(`Saved source sheet for ${moveId} is missing from the current draft revision. Open asset history before re-extracting.`)); return; }
+  if (state.generatingMoves.has(moveId)) return;
   state.generatingMoves.add(moveId);
   setMoveCardLoading(moveId, true);
   try {
-    await invokeTool('extract_row_frames', {characterId, moveId, sourceAssetKey:source.key, spriteProfile:moveSpriteProfile(moveId),...(videoSampleTimes?{videoSampleTimes}:{})});
+    await invokeTool('extract_row_frames', {characterId, moveId, sourceAssetKey:source.key, spriteProfile:moveSpriteProfile(moveId), strictChromaEdges, ...(videoSampleTimes?{videoSampleTimes}:{})});
     await selectCharacter(characterId, {silent:true});
+    const status = elements.characterWorkbench.querySelector(`[data-generation-status="${moveId}"]`);
+    if (status) status.textContent = `${strictChromaEdges?'Chroma edges cleaned':'Frames re-extracted'} from the saved source · no provider call. Inspect before approving.`;
   } catch (error) { showError(error); }
   finally { state.generatingMoves.delete(moveId); setMoveCardLoading(moveId, false); }
 }
@@ -1922,6 +1931,7 @@ function renderMoveGroup(group) {
           ${generateButton}
           ${state.currentDraftData?.motionRows?.[group.id] ? `<span data-motion-review-state="${escapeHtml(group.id)}">Checking review version…</span><button type="button" data-approve-motion="${escapeHtml(group.id)}">Review motion</button>` : ''}
           ${hasFrames && canGenerate && !state.currentDraftData?.motionRows?.[group.id]?.sourceSha256 ? `<button type="button" data-reextract="${escapeHtml(group.id)}" title="Rebuild transparent frames from the existing source, without a paid generation" ${isLoading?'disabled':''}>Re-extract</button>` : ''}
+          ${hasFrames && canGenerate && !state.currentDraftData?.motionRows?.[group.id]?.sourceSha256 ? `<button type="button" data-reextract-clean="${escapeHtml(group.id)}" title="Rebuild this row with stronger edge-only magenta despill from its saved sheet; no provider request" ${isLoading?'disabled':''}>Clean chroma edge · no generation</button>` : ''}
           <span class="frame-count">${escapeHtml(groupAssetCount(group))} assets</span>
         </div>
       </header>

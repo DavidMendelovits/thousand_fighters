@@ -8,7 +8,7 @@ import { motionMarkers } from '../admin/motionTiming.js';
 import { renderMotionReprocess } from '../admin/motionReprocess.js';
 
 test('offline options reject invalid ranges, poses and coercion', () => {
-  for (const opts of [{frames:7},{frames:'20'},{start:2.1},{start:30,end:10},{end:5},{loop:'false'},{expandCanvas:'true'},{matteCleanup:1},{refineEdges:'true'},{despillMagenta:'true'},{contactFrame:0},{contactFrame:19},{contactFrame:6,recoveryFrame:5}]) assert.throws(()=>validateReprocess(opts));
+  for (const opts of [{frames:7},{frames:'20'},{start:2.1},{start:30,end:10},{end:5},{loop:'false'},{expandCanvas:'true'},{matteCleanup:1},{refineEdges:'true'},{despillMagenta:'true'},{keyMagentaGaps:'true'},{contactFrame:0},{contactFrame:19},{contactFrame:6,recoveryFrame:5}]) assert.throws(()=>validateReprocess(opts));
   validateReprocess({frames:20,start:0,end:64,contactFrame:7,recoveryFrame:12,matteCleanup:true});
   assert.throws(()=>validateReprocess({frames:20,start:0,end:19,loop:true}),/loops omit/);
   assert.throws(()=>validateReprocess({background:'arbitrary'}),/background key/);
@@ -27,6 +27,7 @@ test('offline options reject invalid ranges, poses and coercion', () => {
   assert.throws(()=>motionActorReference({motionActors:{pinch:'hands'},actors:[]},'pinch',{}),/Unknown motion actor/);
   const pixelPanel=renderMotionReprocess({artStyle:'pixel',motionRows:{idle:{sourceSha256:'a'.repeat(64),provenance:{options:{background:'auto-frame'}}}}},'idle');
   assert.match(pixelPanel,/data-reprocess-background/);
+  assert.match(pixelPanel,/data-reprocess-magenta-gaps/);
   assert.match(pixelPanel,/data-reprocess-expand/);
   assert.match(pixelPanel,/data-reprocess-despill/);
   assert.match(pixelPanel,/value="pruna-frame"/);

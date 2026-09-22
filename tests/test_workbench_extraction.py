@@ -50,6 +50,15 @@ class VideoRowExtractionTests(unittest.TestCase):
         pixels = [(255, 0, 255, 255), (120, 12, 124, 255), (100, 55, 175, 255), (0, 0, 0, 0)]
         self.assertEqual(extract.foreground_mask(pixels, 4, 1, True), [False, False, True, False])
 
+    def test_strict_saved_sheet_despill_changes_only_chroma_edge(self):
+        image = Image.new('RGBA', (11, 11), (0, 0, 0, 0))
+        ImageDraw.Draw(image).rectangle((3, 3, 7, 7), fill=(120, 10, 125, 255))
+        ordinary = extract.despill_edges(image.copy())
+        strict = extract.despill_edges(image.copy(), strict_chroma_edges=True)
+        self.assertEqual(ordinary.getpixel((3, 5)), (100, 10, 100, 255))
+        self.assertEqual(strict.getpixel((3, 5)), (40, 10, 40, 255))
+        self.assertEqual(strict.getpixel((5, 5)), (120, 10, 125, 255))
+
     def test_video_uses_reference_pivot_and_global_scale_for_extension(self):
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / 'source.png'

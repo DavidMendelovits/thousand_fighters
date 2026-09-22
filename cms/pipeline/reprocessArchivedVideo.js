@@ -21,11 +21,12 @@ export async function resolveMotionVideo({ storage, characterId, sourceSha256 })
   throw new Error('No video with this hash is archived for this character. Import its source into history first.');
 }
 
-export function validateReprocess({ frames = 20, loop = false, start, end, expandCanvas, matteCleanup = false, refineEdges = false, despillMagenta = false, background, contactFrame, recoveryFrame }) {
+export function validateReprocess({ frames = 20, loop = false, start, end, expandCanvas, matteCleanup = false, refineEdges = false, despillMagenta = false, keyMagentaGaps = false, background, contactFrame, recoveryFrame }) {
   if (!Number.isInteger(frames) || frames < 8 || frames > 48 || typeof loop !== 'boolean' || typeof matteCleanup !== 'boolean') throw new Error('Choose 8–48 frames, a loop setting, and a paint cleanup setting.');
   if (typeof refineEdges !== 'boolean') throw new Error('Choose a valid paint edge refinement setting.');
   if (expandCanvas !== undefined && typeof expandCanvas !== 'boolean') throw new Error('Choose a valid canvas expansion setting.');
   if (typeof despillMagenta !== 'boolean') throw new Error('Choose a valid magenta edge cleanup setting.');
+  if (typeof keyMagentaGaps !== 'boolean') throw new Error('Choose a valid magenta island cleanup setting.');
   if(background!==undefined&&!['pruna-frame','auto-frame','magenta-distance','magenta'].includes(background))throw new Error('Choose a supported video background key.');
   for (const value of [start, end]) if (value != null && (!Number.isInteger(value) || value < 0 || value > 359)) throw new Error('Source frame indices must be whole numbers from 0 to 359.');
   if (end != null && end - (start ?? 0) + (loop ? 0 : 1) < frames) throw new Error('The source range must contain at least the requested number of output frames; loops omit the endpoint.');
@@ -34,10 +35,10 @@ export function validateReprocess({ frames = 20, loop = false, start, end, expan
   if (recoveryFrame != null && (contactFrame == null || recoveryFrame <= contactFrame)) throw new Error('Recovery must follow contact.');
 }
 
-export async function reprocessArchivedVideo({ repository, storage, characterId, eventId, action, frames = 20, loop = false, start, end, expandCanvas, matteCleanup = false, refineEdges = false, despillMagenta = false, background, contactFrame, recoveryFrame, expectedSourceSha256, expectedUpdatedAt }) {
+export async function reprocessArchivedVideo({ repository, storage, characterId, eventId, action, frames = 20, loop = false, start, end, expandCanvas, matteCleanup = false, refineEdges = false, despillMagenta = false, keyMagentaGaps = false, background, contactFrame, recoveryFrame, expectedSourceSha256, expectedUpdatedAt }) {
   segment(characterId);
   if (!/^[a-z][a-z0-9_-]*$/.test(action ?? '') || !Number.isInteger(frames) || frames < 8 || frames > 48 || typeof loop !== 'boolean') throw new Error('Choose a valid action, 8–48 frames, and a loop setting.');
-  validateReprocess({ frames, loop, start, end, expandCanvas, matteCleanup, refineEdges, despillMagenta, background, contactFrame, recoveryFrame });
+  validateReprocess({ frames, loop, start, end, expandCanvas, matteCleanup, refineEdges, despillMagenta, keyMagentaGaps, background, contactFrame, recoveryFrame });
   const draft = await repository.getDraft(characterId);
   if (expectedUpdatedAt && expectedUpdatedAt !== draft.updatedAt) throw Object.assign(new Error('The draft changed. Refresh before reprocessing.'), { statusCode: 409 });
   if (!draft.sprite?.frames?.[action] && !draft.moves?.some(m => m.animation === action)) throw new Error('Select an existing animation row.');
@@ -55,13 +56,14 @@ export async function reprocessArchivedVideo({ repository, storage, characterId,
   const reference = await storage.lineage.artifact(referenceBytes, { contentType: 'image/png' });
   const savedSettings=draft.motionRows?.[action]?.provenance?.options;
   const settings = savedSettings?.background
-    ? {style:savedSettings.style,background:background??savedSettings.background,rootMode:savedSettings.rootMode,expandCanvas:expandCanvas??Boolean(savedSettings.expandCanvas),despillMagenta}
-    : {...motionCompilerSettings(draft.artStyle),...(expandCanvas===undefined?{}:{expandCanvas}),despillMagenta};
+    ? {style:savedSettings.style,background:background??savedSettings.background,rootMode:savedSettings.rootMode,expandCanvas:expandCanvas??Boolean(savedSettings.expandCanvas),despillMagenta,keyMagentaGaps}
+    : {...motionCompilerSettings(draft.artStyle),...(expandCanvas===undefined?{}:{expandCanvas}),despillMagenta,keyMagentaGaps};
   if(background&&!['paint','watercolor'].includes(draft.artStyle))settings.background=background;
   if(background&&['paint','watercolor'].includes(draft.artStyle))throw new Error('Paint sources use their own matte key.');
   if ((matteCleanup || refineEdges) && settings.background !== 'paint-auto') throw new Error('Paint edge cleanup is only available for paint sources with a flat background.');
   if(despillMagenta&&!['magenta-distance','auto-frame','pruna-frame','magenta'].includes(settings.background))throw new Error('Magenta cleanup requires a magenta or per-frame-key video row.');
-  return storage.lineage.run({ characterId, stage: 'reprocess-motion', moveId: action, parentEventId: eventId, inputs: { video, reference, referenceKey, actorId, action, frames, loop, start, end, expandCanvas, matteCleanup, refineEdges, despillMagenta, contactFrame, recoveryFrame, ...settings, compiler: await storage.lineage.artifact(await readFile('scripts/compile_character_motion.py'), { contentType: 'text/x-python' }) } }, async () => {
+  if(keyMagentaGaps&&(settings.background!=='pruna-frame'||['paint','watercolor'].includes(draft.artStyle)))throw new Error('Magenta island cleanup requires a pixel-art per-frame-key source. It would erase intentional pink details.');
+  return storage.lineage.run({ characterId, stage: 'reprocess-motion', moveId: action, parentEventId: eventId, inputs: { video, reference, referenceKey, actorId, action, frames, loop, start, end, expandCanvas, matteCleanup, refineEdges, despillMagenta, keyMagentaGaps, contactFrame, recoveryFrame, ...settings, compiler: await storage.lineage.artifact(await readFile('scripts/compile_character_motion.py'), { contentType: 'text/x-python' }) } }, async () => {
     await mkdir(path.resolve('artifacts/workbench-video-jobs'), { recursive: true });
     const directory = await mkdtemp(path.resolve('artifacts/workbench-video-jobs/reprocess-'));
     await writeFile(path.join(directory, 'source.mp4'), await storage.lineage.readArtifact(video));

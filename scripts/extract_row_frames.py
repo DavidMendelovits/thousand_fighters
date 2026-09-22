@@ -51,6 +51,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("input", type=Path, help="Source row sheet PNG.")
     parser.add_argument("output_dir", type=Path, help="Output directory for frames.")
     parser.add_argument("--video-source", action="store_true", help="Remove connected compressed chroma spill and preserve one scale across the motion.")
+    parser.add_argument("--strict-chroma-edges", action="store_true", help="Use stronger near-edge magenta despill on a saved image row without changing its interior palette.")
     parser.add_argument(
         "--move-id", required=True, help="Move id used as filename prefix."
     )
@@ -263,7 +264,7 @@ def silhouette_from_pixels(
     return out, bbox
 
 
-def despill_edges(rgba: Image.Image) -> Image.Image:
+def despill_edges(rgba: Image.Image, strict_chroma_edges: bool = False) -> Image.Image:
     """Decontaminate magenta spill on the silhouette edge.
 
     Anti-aliased edge pixels are blends of character color and #ff00ff.
@@ -276,7 +277,8 @@ def despill_edges(rgba: Image.Image) -> Image.Image:
     for y in range(height):
         for x in range(width):
             r, g, b, a = pixels[x, y]
-            if a == 0 or (min(r, b) - g) <= DESPILL_CAP:
+            cap_delta = 30 if strict_chroma_edges else DESPILL_CAP
+            if a == 0 or (min(r, b) - g) <= cap_delta:
                 continue
             near_edge = False
             for dy in (-2, -1, 0, 1, 2):
@@ -288,7 +290,7 @@ def despill_edges(rgba: Image.Image) -> Image.Image:
                 if near_edge:
                     break
             if near_edge:
-                cap = g + DESPILL_CAP
+                cap = g + cap_delta
                 pixels[x, y] = (min(r, cap), g, min(b, cap), a)
 
     return rgba
@@ -499,6 +501,7 @@ def extract_frames(
     body_half_width: int | None = None,
     equalize_frames: bool = True,
     video_source: bool = False,
+    strict_chroma_edges: bool = False,
 ) -> dict[str, object]:
     """Extract, key, despill, anchor, and (optionally) rescale frames from a sheet."""
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -555,7 +558,7 @@ def extract_frames(
             warnings.append(
                 f"frame {i + 1}: silhouette touches the source {'video frame' if video_source else 'sheet'} border — content may be truncated; regenerate with more motion margin or separate VFX"
             )
-        silhouettes.append(despill_edges(keyed))
+        silhouettes.append(despill_edges(keyed, strict_chroma_edges))
 
     # Pass 2: equalize every frame's silhouette to a common height so the
     # character doesn't grow/shrink frame-to-frame ("jitter").
@@ -654,6 +657,8 @@ def extract_frames(
             if video_source and video_origin is not None and not locomotion:
                 pivot = tuple((video_origin[axis] - source_bounds[i][axis]) * scale_applied for axis in (0, 1))
             frame, meta = normalize_frame(silhouette, pivot)
+            if strict_chroma_edges:
+                frame = despill_edges(frame, True)
             residue = magenta_residue_ratio(frame)
             if residue > 0.005:
                 warnings.append(
@@ -714,6 +719,7 @@ def main() -> int:
         body_half_width=args.body_half_width,
         equalize_frames=args.equalize_frames,
         video_source=args.video_source,
+        strict_chroma_edges=args.strict_chroma_edges,
     )
     print(json.dumps({
         "output": str(args.output_dir),

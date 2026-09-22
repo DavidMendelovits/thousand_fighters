@@ -67,3 +67,45 @@ test('workbench saves contact poses and keeps the selected provider and current 
     await expect(card.locator('.frame-strip img')).toHaveCount(20);
   }finally{await fixture.close();}
 });
+
+test('versioned saved image sheet can be re-extracted with explicit chroma cleanup',async({page})=>{
+  const fixture=await historyFixture();
+  try{
+    const {runtime,characterId}=fixture;
+    const draft=await runtime.repository.getDraft(characterId);
+    const workingRoot=`characters/${characterId}/assets/revisions/current`;
+    const versionedPack=`${workingRoot}/fighter-pack`;
+    const sourceKey=`${workingRoot}/source/${characterId}_base_sheet.png`;
+    await runtime.storage.putBytes(sourceKey,await readFile('public/fighters/palimpsest/sprites/walk_forward/walk_forward_001.png'),{contentType:'image/png'});
+    for(const key of await runtime.storage.list(fixture.pack))await runtime.storage.putBytes(versionedPack+key.slice(fixture.pack.length),await runtime.storage.getBytes(key),await runtime.storage.getMetadata(key));
+    await runtime.repository.saveDraft(characterId,{...draft,assets:{rootKey:versionedPack,frameDataKey:`${versionedPack}/frameData.json`,manifestKey:`${versionedPack}/manifest.json`},history:{workingRoot},moves:[{id:'stance',displayName:'Stance',animation:'base',trigger:{sequence:['lk']},phases:[{name:'startup',frames:2,events:[]},{name:'active',frames:1,events:[]},{name:'recovery',frames:3,events:[]}]}]});
+    let submitted;
+    await page.route('**/api/tools/extract_row_frames',async route=>{
+      submitted=route.request().postDataJSON();
+      await route.fulfill({json:{result:{characterId,moveId:'base',warnings:[]}}});
+    });
+    await page.goto(`${fixture.url}/roster/${characterId}?standalone=1&move=base`);
+    const clean=page.locator('[data-move-card="base"] [data-reextract-clean]');
+    await expect(clean).toBeVisible();
+    await clean.click();
+    await expect.poll(()=>submitted).toMatchObject({characterId,moveId:'base',sourceAssetKey:sourceKey,strictChromaEdges:true});
+  }finally{await fixture.close();}
+});
+
+test('release queue opens a visible focused review for its selected motion row',async({page})=>{
+  const fixture=await historyFixture();
+  try{
+    const {runtime,characterId}=fixture;
+    const draft=await runtime.repository.getDraft(characterId);
+    await runtime.repository.saveDraft(characterId,{...draft,moves:[{id:'stance',displayName:'Stance',animation:'base',trigger:{sequence:['lk']},phases:[]}]});
+    await page.route(`**/api/characters/${characterId}/readiness`,route=>route.fulfill({json:{characterId,canPublish:false,checks:[],counts:{approved:0,required:1},rows:[{row:'base',fingerprint:'a'.repeat(64),missing:[],status:'needs-visual-review',frameCount:1,canReview:true,canRequestChanges:true,notes:''}]}}));
+    await page.goto(`${fixture.url}/roster/${characterId}?standalone=1`);
+    await page.locator('[data-studio-section="build"]').click();
+    await page.locator('.release-rows summary').click();
+    await page.locator('[data-review-row="base"]').click();
+    await expect(page.locator('#motion-review')).toBeVisible();
+    await expect(page.locator('[data-studio-section="motion"]')).toHaveAttribute('aria-selected','true');
+    await expect(page.locator('button[data-animation-view="focus"]')).toHaveAttribute('aria-pressed','true');
+    await expect(page.locator('[data-preview-row]')).toHaveValue('base');
+  }finally{await fixture.close();}
+});

@@ -27,7 +27,8 @@ export function motionCompilerSettings(artStyle, provider = 'fal') {
 export function motionCompilerArgs(settings) {
   return ['--style', settings.style, '--background', settings.background, '--root-mode', settings.rootMode,
     ...(settings.expandCanvas ? ['--expand-canvas'] : []),
-    ...(settings.despillMagenta ? ['--despill-magenta-edges'] : [])];
+    ...(settings.despillMagenta ? ['--despill-magenta-edges'] : []),
+    ...(settings.keyMagentaGaps ? ['--key-magenta-gaps'] : [])];
 }
 
 export function motionReferenceOccupancy(artStyle, provider = 'fal', row = '') {

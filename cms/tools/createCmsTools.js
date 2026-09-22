@@ -365,17 +365,18 @@ export function createCmsTools({ pipeline, repository, registry, runtimePublicDi
         characterId: stringSchema('Character id.'),
         sourceAssetKey: stringSchema('CMS key of the source row sheet to extract from.'),
         videoSampleTimes:{type:'array',items:{type:'number'},minItems:6,maxItems:6,description:'Optional six increasing seconds in the saved five-second video; first must be 0. Reuses saved video, no provider request.'},
+        strictChromaEdges:{type:'boolean',description:'Optional stronger near-edge magenta despill when re-extracting a saved image sheet; no provider request.'},
         moveId: stringSchema(`Row id (one of: ${ROW_ID_LIST}).`),
         spriteProfile: stringSchema('Sprite profile used at generation time: standard (1x6 row) or wide (2x3 grid). Defaults to standard.'),
       }, ['characterId', 'sourceAssetKey', 'moveId']),
-      execute: async ({ characterId, sourceAssetKey, moveId, spriteProfile, videoSampleTimes }) => {
+      execute: async ({ characterId, sourceAssetKey, moveId, spriteProfile, videoSampleTimes, strictChromaEdges }) => {
         if (moveId && !ROW_ID_SET.has(moveId)) {
           let draft;
           try { draft = await repository.getDraft(characterId); }
           catch (error) { if (error.code !== 'ENOENT') throw error; }
           if (!isAuthoredRow(draft,moveId)) assertRowId(moveId);
         }
-        return pipeline.extractRowFrames({ characterId, sourceAssetKey, moveId, videoSampleTimes, spriteProfile: spriteProfile || undefined });
+        return pipeline.extractRowFrames({ characterId, sourceAssetKey, moveId, videoSampleTimes, strictChromaEdges:strictChromaEdges===true, spriteProfile: spriteProfile || undefined });
       },
     },
     {

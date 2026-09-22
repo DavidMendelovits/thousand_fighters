@@ -4,11 +4,24 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
-from compile_character_motion import clean_components, compile_motion, uniform_corner_key, key_uniform_background, key_pruna_background, key_paint_background, refine_paint_alpha, despill_magenta_edges
+from compile_character_motion import clean_components, compile_motion, uniform_corner_key, key_uniform_background, key_pruna_background, key_paint_background, refine_paint_alpha, despill_magenta_edges, key_magenta_islands
 from PIL import Image
 
 
 class MotionComponentsTest(unittest.TestCase):
+    def test_opt_in_magenta_island_key_preserves_teal_and_amber(self):
+        pixels=np.zeros((20,20,4),dtype=np.uint8)
+        pixels[2:18,2:18]=[20,40,70,255]
+        pixels[5:11,5:11]=[205,20,208,255]
+        pixels[11,5]=[70,19,71,255]
+        pixels[12,8]=[10,180,175,255]
+        pixels[12,9]=[220,165,35,255]
+        keyed=key_magenta_islands(Image.fromarray(pixels))
+        self.assertEqual(keyed.getpixel((7,7))[3],0)
+        self.assertEqual(keyed.getpixel((5,11))[3],0)
+        self.assertEqual(keyed.getpixel((8,12))[3],255)
+        self.assertEqual(keyed.getpixel((9,12))[3],255)
+
     def test_pruna_pixel_despill_removes_exposed_pink_fringe_only(self):
         pixels=np.zeros((16,16,4),dtype=np.uint8)
         pixels[3:13,3:13]=[20,40,70,255]
