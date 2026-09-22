@@ -69,13 +69,13 @@ test('URL loader rejects unsafe/broken clips and keeps the current clip usable',
   await page.getByRole('button', { name: 'Open clip', exact: true }).click();
   await page.getByLabel('CLIP URL', { exact: true }).fill('javascript:alert(1)');
   await page.getByRole('button', { name: 'Load clip', exact: false }).click();
-  await expect(page.getByRole('status')).toContainText('HTTP or HTTPS');
+  await expect(page.locator('#load-status')).toContainText('HTTP or HTTPS');
   await expect(page.locator('#clip-title')).toHaveText('Orbit vault');
   await page.route('**/bad-clip.json', route => route.fulfill({ json: { schemaVersion: 99 } }));
   await page.getByRole('button', { name: 'Open clip', exact: true }).click();
   await page.getByLabel('CLIP URL', { exact: true }).fill('/bad-clip.json');
   await page.getByRole('button', { name: 'Load clip', exact: false }).click();
-  await expect(page.getByRole('status')).toContainText('schemaVersion');
+  await expect(page.locator('#load-status')).toContainText('schemaVersion');
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
 });

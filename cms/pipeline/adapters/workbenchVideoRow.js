@@ -7,6 +7,7 @@ import {runVideoJob} from '../../../scripts/generate_animation_video.mjs';
 import {installMotionRow} from '../motionRowArtifacts.js';
 import {workbenchMotionPrompt} from './workbenchMotionPrompt.js';
 import {motionActorReference, motionCompilerSettings, motionCompilerArgs} from '../motionReference.js';
+import {restoreBuildVideoCheckpoint} from '../restoreBuildVideoCheckpoint.js';
 export {motionActorReference} from '../motionReference.js';
 const exec=promisify(execFile);
 const inFlight = new Map();
@@ -24,7 +25,7 @@ export async function generateWorkbenchVideoRow(request) {
   finally { inFlight.delete(key); }
 }
 
-async function generateExclusive({characterId,moveId,prompt,task,storage,repository,onProgress,onGenerationAttempt,buildJobId,referenceAssetKey,provider='fal'}) {
+async function generateExclusive({characterId,moveId,prompt,task,storage,repository,onProgress,onGenerationAttempt,buildJobId,referenceAssetKey,recoveryOnly=false,provider='fal'}) {
   const started=Date.now();
   const stageTimings={};
   const keyName=provider==='pruna'?'PRUNA_API_KEY':'FAL_KEY';
@@ -45,13 +46,17 @@ async function generateExclusive({characterId,moveId,prompt,task,storage,reposit
   const previous = await storage.exists(pointerKey) ? await storage.getJson(pointerKey) : null;
   const jobsRoot=path.resolve('artifacts/workbench-video-jobs');
   let directory, resume=false;
-  if(previous?.fingerprint===fingerprint&&/^[a-f0-9-]{36}$/.test(previous.jobId)){
+  if(recoveryOnly){
+    if(previous?.fingerprint!==fingerprint)throw new Error('Video inputs changed. Restore the pinned reference and authored motion before recovery; no generation submitted.');
+    directory=await restoreBuildVideoCheckpoint({storage,characterId,buildJobId,referenceBytes:bytes,rootDir:jobsRoot});resume=true;
+  }else if(previous?.fingerprint===fingerprint&&/^[a-f0-9-]{36}$/.test(previous.jobId)){
     const candidate=path.join(jobsRoot,previous.jobId);
     // A missing/corrupt checkpoint is not permission to submit another paid job.
     const job=JSON.parse(await readFile(path.join(candidate,'job.json'),'utf8'));
     if(!isRejectedSubmission(job)){directory=candidate;resume=true;}
   }
   if(!directory){
+    if(recoveryOnly)throw new Error('No matching accepted video checkpoint exists. Restore the original references and checkpoint from History; no generation submitted.');
     const referencePreparationStartedAt=Date.now();
     const jobId=randomUUID();directory=path.join(jobsRoot,jobId);await mkdir(directory,{recursive:true});
     await writeFile(path.join(directory,'sprite.png'),bytes);

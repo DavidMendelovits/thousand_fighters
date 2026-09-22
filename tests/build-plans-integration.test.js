@@ -8,7 +8,7 @@ test('real pipeline: durable plan reaches identity, base checkpoint, and represe
   const fixture=await buildFixture({delayMs:1});t.after(()=>fixture.close());
   const {characterId:id,runtime}=fixture,base=`${fixture.url}/api/characters/${id}`;
   async function api(path,body){const response=await fetch(`${base}${path}`,body?{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}:undefined);const value=await response.json();assert.ok(response.ok,`${response.status}: ${JSON.stringify(value)}`);return value;}
-  async function done(jobId){for(let n=0;n<300;n++){const {job}=await api(`/build-jobs/${jobId}`);if(!['queued','running','extracting'].includes(job.status)){assert.equal(job.status,'completed',JSON.stringify(job));return job;}await new Promise(r=>setTimeout(r,20));}throw Error('Timed out');}
+  async function done(jobId){for(let n=0;n<300;n++){const {job}=await api(`/build-jobs/${jobId}`);if(!['queued','running','preparing','submitting','provider-active','extracting'].includes(job.status)){assert.equal(job.status,'completed',JSON.stringify(job));return job;}await new Promise(r=>setTimeout(r,20));}throw Error('Timed out');}
   let {plan}=await api('/build-plans',{budgetUsd:1,maxSubmissions:3,estimatedCostUsd:0,generator:'image'});
   assert.equal(fixture.calls,0);
   ({plan}=await api(`/build-plans/${plan.id}/advance`,{confirmed:true}));
@@ -32,7 +32,7 @@ test('actor reference uses real extraction, freezes identity, then submits a sep
   await repository.saveDraft(id,{...await repository.getDraft(id),actors:[{id:'hands',idleAnimation:'hands_idle'}]});
   const endpoint=`${fixture.url}/api/characters/${id}`;
   async function api(path,body){const response=await fetch(`${endpoint}${path}`,body?{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}:undefined);const data=await response.json();assert.ok(response.ok,JSON.stringify(data));return data;}
-  async function done(jobId){for(let i=0;i<300;i++){const {job}=await api(`/build-jobs/${jobId}`);if(!['queued','running','extracting'].includes(job.status)){assert.equal(job.status,'completed',JSON.stringify(job));return;}await new Promise(r=>setTimeout(r,20));}throw Error('timeout');}
+  async function done(jobId){for(let i=0;i<300;i++){const {job}=await api(`/build-jobs/${jobId}`);if(!['queued','running','preparing','submitting','provider-active','extracting'].includes(job.status)){assert.equal(job.status,'completed',JSON.stringify(job));return;}await new Promise(r=>setTimeout(r,20));}throw Error('timeout');}
   let {plan}=await api('/build-plans',{budgetUsd:5,maxSubmissions:8,estimatedCostUsd:0,generator:'video'});
   const advance=async()=>{({plan}=await api(`/build-plans/${plan.id}/advance`,{confirmed:true}));return plan.steps.find(s=>s.status==='submitted');};
   const approve=async step=>{({plan}=await api(`/build-plans/${plan.id}/review`,{stepId:step.id,expectedFingerprint:step.reviewFingerprint,notes:'Fixture identity silhouette inspected before animation.',confirmed:true}));};

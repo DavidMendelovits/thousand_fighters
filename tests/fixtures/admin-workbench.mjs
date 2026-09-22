@@ -15,7 +15,7 @@ process.env.JOB_QUEUE_PROVIDER='memory';
 const root=await mkdtemp(path.join(os.tmpdir(),'admin-browser-tests-'));
 const runtime=createLocalCmsRuntime({storage:new FileCmsStorage({rootDir:root}),textModel:createMockTextModel(),imageGeneratorOptions:{provider:'mock'}});
 const server=createCmsServer({runtime});
-server.listen(8798,'127.0.0.1',()=>console.log('Isolated browser-test CMS on 8798'));
+server.listen(Number(process.env.TEST_CMS_PORT??8798),'127.0.0.1',()=>console.log('Isolated browser-test CMS ready'));
 for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{
   server.closeAllConnections();server.close(async()=>{await rm(root,{recursive:true,force:true});process.exit();});
 });

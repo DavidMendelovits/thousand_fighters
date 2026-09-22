@@ -4,7 +4,7 @@
 //   1. Assert the registry's canonical-row invariants hold (ids, order, the
 //      MOVE_SHEETS subset, derived groups/labels) so a careless edit to
 //      shared/animationRows.js can't silently change the engine contract.
-//   2. Guard admin/app.js — the one consumer that can't import the registry
+//   2. Guard admin/workbenchApplication.js — the one consumer that can't import the registry
 //      (browser file behind a static server) and keeps its own literal
 //      ordering — by parsing its arrays and asserting they match the registry.
 //
@@ -89,14 +89,14 @@ assert.deepEqual(
   'every registry row needs a prompt profile in cms/pipeline/rowPromptProfiles.js',
 );
 
-// 2. admin/app.js literal guard. Parse the two ordering arrays and assert they
+// 2. admin/workbenchApplication.js literal guard. Parse the two ordering arrays and assert they
 //    track the registry. admin gets a registry endpoint in T21; until then this
 //    is the contract that keeps it from drifting.
-const adminSource = await readFile(path.join(REPO_ROOT, 'admin', 'app.js'), 'utf8');
+const adminSource = await readFile(path.join(REPO_ROOT, 'admin', 'workbenchApplication.js'), 'utf8');
 
 function parseArrayLiteral(source, name) {
   const match = source.match(new RegExp(`const\\s+${name}\\s*=\\s*\\[([^\\]]*)\\]`));
-  assert.ok(match, `admin/app.js: could not find "const ${name} = [...]"`);
+  assert.ok(match, `admin/workbenchApplication.js: could not find "const ${name} = [...]"`);
   return match[1]
     .split(',')
     .map((token) => token.trim().replace(/^['"]|['"]$/g, ''))
@@ -109,21 +109,21 @@ const adminMoveOrder = parseArrayLiteral(adminSource, 'MOVE_ORDER');
 assert.deepEqual(
   adminMoveIds,
   SHEET_IDS,
-  'admin/app.js MOVE_IDS drifted from the registry — update it or wire it to the registry endpoint',
+  'admin/workbenchApplication.js MOVE_IDS drifted from the registry — update it or wire it to the registry endpoint',
 );
 assert.deepEqual(
   adminMoveOrder,
   [...SHEET_IDS, 'projectiles'],
-  'admin/app.js MOVE_ORDER must be the registry rows followed by "projectiles"',
+  'admin/workbenchApplication.js MOVE_ORDER must be the registry rows followed by "projectiles"',
 );
 
-// 3. admin/app.js ROW_PROMPT_DESCRIPTIONS guard. The browser admin can't import
+// 3. admin/workbenchApplication.js ROW_PROMPT_DESCRIPTIONS guard. The browser admin can't import
 //    rowPromptProfiles.js, so it mirrors each row's `description` to seed a
 //    DISTINCT per-row default prompt (a grab prompt must not read like a kick
 //    prompt). Assert the literal copy is exact and covers every row.
 function parseObjectLiteralValues(source, name) {
   const block = source.match(new RegExp(`const\\s+${name}\\s*=\\s*\\{([\\s\\S]*?)\\n\\};`));
-  assert.ok(block, `admin/app.js: could not find "const ${name} = { ... }"`);
+  assert.ok(block, `admin/workbenchApplication.js: could not find "const ${name} = { ... }"`);
   const entries = {};
   const re = /(\w+)\s*:\s*'((?:[^'\\]|\\.)*)'/g;
   let match;
@@ -137,16 +137,16 @@ const adminRowDescriptions = parseObjectLiteralValues(adminSource, 'ROW_PROMPT_D
 assert.deepEqual(
   Object.keys(adminRowDescriptions).sort(),
   [...SHEET_IDS].sort(),
-  'admin/app.js ROW_PROMPT_DESCRIPTIONS must cover exactly the registry rows',
+  'admin/workbenchApplication.js ROW_PROMPT_DESCRIPTIONS must cover exactly the registry rows',
 );
 for (const id of SHEET_IDS) {
   assert.equal(
     adminRowDescriptions[id],
     ROW_PROMPT_PROFILES[id].description,
-    `admin/app.js ROW_PROMPT_DESCRIPTIONS["${id}"] drifted from rowPromptProfiles.js — update the literal copy`,
+    `admin/workbenchApplication.js ROW_PROMPT_DESCRIPTIONS["${id}"] drifted from rowPromptProfiles.js — update the literal copy`,
   );
 }
 
 console.log(`✓ animation-row registry contract OK (${SHEET_IDS.length} rows: ${SHEET_IDS.join(', ')})`);
-console.log(`✓ admin/app.js MOVE_IDS / MOVE_ORDER match the registry`);
-console.log(`✓ admin/app.js ROW_PROMPT_DESCRIPTIONS mirror rowPromptProfiles.js`);
+console.log(`✓ admin/workbenchApplication.js MOVE_IDS / MOVE_ORDER match the registry`);
+console.log(`✓ admin/workbenchApplication.js ROW_PROMPT_DESCRIPTIONS mirror rowPromptProfiles.js`);

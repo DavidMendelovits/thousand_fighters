@@ -8,6 +8,8 @@ server.listen(port, host, () => {
   console.log(`Thousand Fighters CMS admin: http://${host}:${port}`);
 });
 
-process.on('SIGINT', () => {
-  server.close(() => process.exit(0));
+let stopping=false;
+for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{
+  if(stopping)return;stopping=true;
+  server.close(()=>process.exit(0));
 });

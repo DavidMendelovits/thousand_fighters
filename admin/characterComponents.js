@@ -1,8 +1,9 @@
+import {ResourceScope} from './WorkbenchSession.js';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const field=(name,label,value='',type='text',extra='')=>`<label>${label}<input name="${name}" type="${type}" value="${esc(value)}" ${extra} required></label>`;
 const buttons=()=>`<label>Button<select name="button"><option value="hp">Heavy / special</option><option value="lp">Light</option><option value="lk">Medium</option><option value="grab">Grab</option></select></label><label>Direction<select name="direction"><option value="down">Down</option><option value="neutral">Neutral</option><option value="forward">Forward</option><option value="back">Back</option><option value="up">Up</option></select></label>`;
 
-export function mountCharacterComponents({host,draft,invoke,onSaved,onOpen,onRow}) {
+export function mountCharacterComponents({host,draft,invoke,onSaved,onOpen,onRow,scope=new ResourceScope()}) {
   const summons=(draft.actors??[]).filter(a=>a.summon),forms=draft.formDrafts??[];
   host.innerHTML=`
     <header class="component-heading"><div><span class="eyebrow">Character system</span><h3>Summons, forms & animation plan</h3><p>Design here, generate deliberately, review before publishing. These editors do not spend credits.</p></div></header>
@@ -31,25 +32,25 @@ export function mountCharacterComponents({host,draft,invoke,onSaved,onOpen,onRow
   const controlled=host.querySelector('[data-component-form="summon-move"]');
   if(controlled){controlled.elements.button.value='lp';controlled.elements.direction.value='neutral';}
   const updateExpiry=()=>{const form=host.querySelector('[data-component-form="form"]');if(form)form.elements.seconds.disabled=form.elements.expiry.value==='ko';};
-  host.addEventListener('change',event=>{if(event.target.name==='expiry')updateExpiry();});
+  scope.listen(host,'change',event=>{if(event.target.name==='expiry')updateExpiry();});
   let plan=null,busy=false;
   const tell=message=>{status.textContent=message;if(message!=='Saving…')status.scrollIntoView({block:'nearest'});};
   async function mutate(name,input){
     if(busy)return;
     busy=true;host.querySelectorAll('button').forEach(b=>b.disabled=true);tell('Saving…');
-    try{await invoke(name,{characterId:draft.id,...input});await onSaved();}
+    try{await invoke(name,{characterId:draft.id,...input});if(!scope.disposed)await onSaved();}
     catch(error){tell(error.message);}
     finally{busy=false;host.querySelectorAll('button').forEach(b=>b.disabled=false);}
   }
   const set=(form,values)=>{for(const [key,value] of Object.entries(values))if(form.elements.namedItem(key))form.elements.namedItem(key).value=value;updateExpiry();form.closest('details').open=true;form.scrollIntoView({block:'nearest'});};
-  host.addEventListener('submit',event=>{
+  scope.listen(host,'submit',event=>{
     const form=event.target.closest('[data-component-form]');if(!form)return;event.preventDefault();
     const data=Object.fromEntries(new FormData(form));
     if(form.dataset.componentForm==='summon')void mutate('define_summon',{...data,durationTicks:Math.round(Number(data.seconds)*60),speed:Number(data.speed),offsetX:Number(data.offsetX),offsetY:Number(data.offsetY)});
     if(form.dataset.componentForm==='summon-move')void mutate('add_summon_move',data);
     if(form.dataset.componentForm==='form')void mutate('define_form',{formId:data.formId,name:data.name,description:data.description,cost:Number(data.cost),durationTicks:data.expiry==='ko'?null:Math.round(Number(data.seconds)*60)});
   });
-  host.addEventListener('click',event=>{
+  scope.listen(host,'click',event=>{
     const button=event.target.closest('button');if(!button)return;
     if(button.dataset.openComponent)void onOpen(button.dataset.openComponent);
     if(button.dataset.installForm)void mutate('install_reviewed_form',{formId:button.dataset.installForm});
@@ -62,13 +63,13 @@ export function mountCharacterComponents({host,draft,invoke,onSaved,onOpen,onRow
     if(button.hasAttribute('data-refresh-plan'))void refresh();
     if(button.dataset.planRow){const job=plan.scopes.flatMap(s=>s.jobs).find(j=>j.id===button.dataset.planRow);if(job.characterId===draft.id)onRow(job.row);else void onOpen(job.characterId);}
   });
-  host.querySelector('[data-plan-filter]').addEventListener('change',renderPlan);
+  scope.listen(host.querySelector('[data-plan-filter]'),'change',renderPlan);
   function renderPlan(){
     const target=host.querySelector('[data-animation-plan]'),filter=host.querySelector('[data-plan-filter]').value;
     const jobs=plan.scopes.flatMap(scope=>scope.jobs),remaining=jobs.filter(job=>!['approved','reference-ready'].includes(job.status)).length;
     host.querySelector('[data-plan-count]').textContent=`· ${remaining} of ${jobs.length} rows need work`;
     target.innerHTML=plan.scopes.map(scope=>`<section class="plan-scope"><h4>${esc(scope.displayName??scope.characterId)} ${scope.formId?'<span class="eyebrow">Hidden form</span>':''}</h4>${scope.error?`<p>${esc(scope.error)}</p>`:''}${scope.installedVersionId?`<p class="move-note">Installed snapshot ${esc(scope.installedVersionId)}${scope.hasUninstalledEdits?' · Newer draft edits are not installed.':''}</p>`:''}<div class="plan-rows">${scope.jobs.filter(j=>filter==='all'||(filter==='approved'?j.status==='approved':!['approved','reference-ready'].includes(j.status))).map(j=>`<div class="plan-row"><span><strong>${esc(j.row)}</strong><small>${esc(j.actorId??'Body')} · ${esc(j.nextAction)}</small></span><span class="plan-state" data-state="${esc(j.status)}">${esc(j.status.replaceAll('-',' '))}</span><button type="button" data-plan-row="${esc(j.id)}">${j.characterId===draft.id?'Open row':'Open form'}</button></div>`).join('')||'<p>No rows match this filter.</p>'}</div></section>`).join('');
   }
-  async function refresh(){try{plan=await invoke('get_animation_plan',{characterId:draft.id});if(host.isConnected)renderPlan();}catch(error){host.querySelector('[data-animation-plan]').textContent=`Could not load plan: ${error.message}`;}}
+  async function refresh(){try{plan=await invoke('get_animation_plan',{characterId:draft.id});if(!scope.disposed&&host.isConnected)renderPlan();}catch(error){host.querySelector('[data-animation-plan]').textContent=`Could not load plan: ${error.message}`;}}
   void refresh();
 }

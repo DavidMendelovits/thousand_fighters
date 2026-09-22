@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import { cleanRoutes } from './vite.cleanRoutes';
+import { phaserAlias, phaserFeatures, phaserBudget } from './vite.phaser';
 
 // The CMS admin server (npm run cms:admin) owns character drafts + assets.
 // Proxy /api to it so the testbed page can read a character same-origin
@@ -7,7 +8,9 @@ import { cleanRoutes } from './vite.cleanRoutes';
 const CMS_ADMIN_TARGET = process.env.CMS_ADMIN_URL ?? 'http://127.0.0.1:8787';
 
 export default defineConfig({
-  plugins: [cleanRoutes()],
+  plugins: [cleanRoutes(), phaserFeatures(), phaserBudget()],
+  resolve: { alias: [phaserAlias] },
+  optimizeDeps: { rolldownOptions: { plugins: [phaserFeatures()] } },
   server: {
     host: '127.0.0.1',
     port: 5173,

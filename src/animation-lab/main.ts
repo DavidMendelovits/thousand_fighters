@@ -1,6 +1,8 @@
 import { evaluateAnimationClip, parseAnimationClip, type AnimationClip } from '../../shared/animationClip';
 import './style.css';
 import {mountWorkspace} from './workspace';
+import {createPreviewChannel} from '../studio/previewChannel';
+const previewChannel=createPreviewChannel();
 
 type GalleryEntry = { id: string; name: string; description: string; url: string; tags: string[] };
 type ClipBounds = { minX: number; minY: number; maxX: number; maxY: number };
@@ -180,7 +182,7 @@ async function openClip(path: string): Promise<void> {
     address.searchParams.set('clip', new URL(url).origin === location.origin ? new URL(url).pathname + new URL(url).search : url);
     history.replaceState(null, '', address);
     setStatus('');
-    window.parent.postMessage({type:'studio-preview-ready'},location.origin);
+    previewChannel.ready();
     setPlaying(!document.querySelector('main')?.hidden && !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     draw();
   } catch (error) {
@@ -433,9 +435,9 @@ void start();
 if (new URLSearchParams(location.search).get('embed') === '1') document.body.classList.add('motion-embedded');
 else mountWorkspace(()=>setPlaying(false));
 let pausedByWorkbench=false, resumeWorkbenchMotion=false;
-window.addEventListener('message',event=>{
-  if(event.origin!==location.origin||event.source!==window.parent||event.data?.type!=='studio-preview-visibility')return;
-  if(!event.data.visible){
+previewChannel.onCommand(data=>{
+  if(data.type!=='studio-preview-visibility'||typeof data.visible!=='boolean')return;
+  if(!data.visible){
     if(!pausedByWorkbench)resumeWorkbenchMotion=playing;
     pausedByWorkbench=true;setPlaying(false);
   }else if(pausedByWorkbench){pausedByWorkbench=false;setPlaying(resumeWorkbenchMotion);}

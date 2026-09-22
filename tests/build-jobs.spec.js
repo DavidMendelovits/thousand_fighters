@@ -11,11 +11,12 @@ test('real workbench submission survives reload and extracts on the server',asyn
     await page.locator('[data-studio-section="build"]').click();
     await expect(page.locator('#character-build-jobs')).toContainText('No tracked builds yet');
     await page.locator('[data-studio-section="motion"]').click();
+    await page.locator('[data-animation-view="all"]').click();
     const row=page.locator('[data-gen-move="base"]');await row.click();
     await page.locator('[data-studio-section="build"]').click();
-    await expect(page.locator('[data-build-status="running"]')).toBeVisible();
+    await expect(page.locator('[data-build-status="submitting"], [data-build-status="provider-active"]')).toBeVisible();
     await page.reload();
-    await expect(page.locator('[data-build-status="running"]')).toBeVisible();
+    await expect(page.locator('[data-build-status="submitting"], [data-build-status="provider-active"]')).toBeVisible();
     await expect(page.locator('[data-build-status="completed"]')).toBeVisible({timeout:45000});
     expect(fixture.calls).toBe(1);
     const {jobs}=await (await page.request.get(`${fixture.url}/api/characters/${fixture.characterId}/build-jobs`)).json();
@@ -49,11 +50,14 @@ test('an interrupted build requires an explicit checked resolution, with no paid
   try{
     const previous=new CharacterBuildJobs({storage:fixture.runtime.storage,repository:fixture.runtime.repository,invoke:()=>{throw Error('Never execute');}});
     previous.drain=async()=>{};
-    await previous.submit(fixture.characterId,{idempotencyKey:randomUUID(),tool:'generate_character_concept',input:{characterId:fixture.characterId,prompt:'Interrupted fixture'}});
+    const {job}=await previous.submit(fixture.characterId,{idempotencyKey:randomUUID(),tool:'generate_character_concept',input:{characterId:fixture.characterId,prompt:'Interrupted fixture'}});
+    const entry=await previous.raw(fixture.characterId,job.id);
+    await previous.write(entry.request,{...entry.state,status:'submitting'});
+    await previous.stop();
     await page.goto(`${fixture.url}/roster/${fixture.characterId}?standalone=1`);
     await page.locator('[data-studio-section="build"]').click();
-    const card=page.locator('[data-build-status="needs-recovery"]');await expect(card).toBeVisible();
-    await card.locator('.build-recovery summary').click();
+    const card=page.locator('[data-build-status="submission-uncertain"]');await expect(card).toBeVisible();
+    await card.locator('summary').filter({hasText:'Resolve interrupted build'}).click();
     const note='Checked fixture worker stopped; no external request was ever submitted.';
     await card.locator('[data-build-note]').fill(note);
     await page.locator('[data-build-refresh]').click();

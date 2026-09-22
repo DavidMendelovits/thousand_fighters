@@ -1,3 +1,4 @@
+import {ResourceScope} from './WorkbenchSession.js';
 const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const assetUrl = artifact => `/api/assets/${encodeURIComponent(artifact.key)}`;
 
@@ -8,7 +9,7 @@ const progressiveList = ({ items, initialCount, render, olderLabel }) => {
   return `${visible}<details class="history-more"><summary>Show ${older.length} older ${olderLabel}</summary><div>${older.map(render).join('')}</div></details>`;
 };
 
-export function mountCharacterHistory({ host, characterId, getJson, postJson, onRestore }) {
+export function mountCharacterHistory({ host, characterId, getJson, postJson, onRestore, scope=new ResourceScope() }) {
   host.innerHTML = `<summary>History & versions <span>Checkpoints · source videos · generation lineage</span></summary>
     <div class="history-content"><p class="history-storage">Loading storage status…</p>
     <div class="history-actions"><input aria-label="Checkpoint name" placeholder="Name this checkpoint" maxlength="160"><button type="button" data-history="checkpoint">Save checkpoint</button><button type="button" data-history="refresh">Refresh history</button></div>
@@ -24,7 +25,7 @@ export function mountCharacterHistory({ host, characterId, getJson, postJson, on
     if (older && cursor) params.set('before', cursor);
     if (host.querySelector('[data-history-unassigned]').checked) params.set('scope', 'unassigned');
     const data = await getJson(`${base}?${params}`);
-    if (!host.isConnected) return;
+    if (scope.disposed || !host.isConnected) return;
     loaded = true; cursor = data.nextCursor;
     host.querySelector('.history-storage').textContent = data.storage.remote
       ? `Archive backend: ${data.storage.provider}. No automatic deletion. Provider backups must be configured separately.`
@@ -49,9 +50,9 @@ export function mountCharacterHistory({ host, characterId, getJson, postJson, on
     else container.innerHTML = html || '<p>No recorded events yet. Older files can be imported with the archive migration script.</p>';
     host.querySelector('[data-history=older]').hidden = !cursor;
   }
-  host.addEventListener('toggle', () => { if (host.open && !loaded) load().catch(error => status.textContent = error.message); });
-  host.querySelector('[data-history-unassigned]').addEventListener('change', () => load().catch(error => status.textContent = error.message));
-  host.addEventListener('click', async event => {
+  scope.listen(host,'toggle', () => { if (host.open && !loaded) load().catch(error => status.textContent = error.message); });
+  scope.listen(host.querySelector('[data-history-unassigned]'),'change', () => load().catch(error => status.textContent = error.message));
+  scope.listen(host,'click', async event => {
     const button = event.target.closest('button[data-history]');
     if (!button || busy) return;
     const action = button.dataset.history;
@@ -70,7 +71,7 @@ export function mountCharacterHistory({ host, characterId, getJson, postJson, on
       if (action === 'checkpoint') await postJson(`${base}/checkpoint`, { label: host.querySelector('[aria-label="Checkpoint name"]').value || 'Manual checkpoint' });
       if (action === 'restore') {
         await postJson(`${base}/restore`, { versionId: button.dataset.version });
-        await onRestore(); return;
+        if(!scope.disposed)await onRestore(); return;
       }
       if (action === 'branch') {
         const { result } = await postJson(`${base}/branch`, { eventId: button.dataset.event });
@@ -80,7 +81,7 @@ export function mountCharacterHistory({ host, characterId, getJson, postJson, on
       if (action === 'reprocess') {
         const controls = button.closest('details');
         await postJson(`${base}/reprocess`, { eventId: button.dataset.event, action: controls.querySelector('[data-action]').value, frames: Number(controls.querySelector('[data-frames]').value), loop: controls.querySelector('[data-loop]').checked });
-        await onRestore(); return;
+        if(!scope.disposed)await onRestore(); return;
       }
       await load(action === 'older'); status.textContent = action === 'checkpoint' ? 'Checkpoint saved with frozen assets.' : 'History refreshed.';
     } catch (error) { status.textContent = error.message; }

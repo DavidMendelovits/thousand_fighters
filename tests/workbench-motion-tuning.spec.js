@@ -18,6 +18,7 @@ test('workbench saves contact poses and keeps the selected provider and current 
     move.visualTimeline=[{frame:0,duration:3},{frame:2,duration:3},{frame:1,duration:5},{frame:18,duration:5},{frame:19,duration:30}];
     await runtime.repository.saveDraft(characterId,{...draft,artStyle:'paint',moves:[move],sprite:{...draft.sprite,frames:frameData.frames},motionRows:{hands_pinch:{sourceSha256:'a'.repeat(64),sourceRange:[0,123],sourceFrameCount:124,frameCount:20,uniqueFrames:20,clippedFrames:[],status:'needs-visual-review'}}});
     await page.goto(`${fixture.url}/roster/${characterId}?standalone=1`);
+    await page.locator('[data-preview-row]').selectOption('hands_pinch');
     const card=page.locator('[data-move-card="hands_pinch"]');
     await expect(card.getByRole('button',{name:'Frames 20',exact:true})).toBeVisible();
     await expect(card.locator('.frame-strip img')).toHaveCount(20);

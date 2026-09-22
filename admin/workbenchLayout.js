@@ -1,8 +1,18 @@
 // Reparent the existing editors rather than rebuilding them on tab changes:
 // unsaved move text and the embedded Gym remain alive in one draft workspace.
 const saved = new Map();
+import {ResourceScope} from './WorkbenchSession.js';
+
+export function initialMove(groups, requested, remembered){
+  const valid=id=>groups.some(group=>group.id===id&&id!=='projectiles');
+  return [requested,remembered].find(valid)
+    ?? groups.find(group=>group.id!=='idle'&&group.id!=='projectiles'&&group.moves?.length)?.id
+    ?? groups.find(group=>group.id!=='idle'&&group.id!=='projectiles'&&group.variants?.some(v=>v.frames?.length))?.id
+    ?? groups.find(group=>group.id==='idle')?.id ?? groups.find(group=>group.id!=='projectiles')?.id;
+}
 
 export function mountWorkbenchLayout({host,characterId,groups,preview}){
+  const scope=new ResourceScope();
   // v2 makes focus and all-moves truly exclusive workspaces instead of a card
   // filter sitting beneath an always-on preview.
   const storageKey=`tf-studio-view:v2:${characterId}`;
@@ -13,8 +23,10 @@ export function mountWorkbenchLayout({host,characterId,groups,preview}){
     }catch{/* Storage may be disabled. Editing still works. */}
   }
   const preference=saved.get(characterId)??{
-    section:'motion',view:'focus',row:groups.find(group=>group.id==='idle')?.id??groups[0]?.id,
+    section:'motion',view:'focus',
   };
+  const requested=new URLSearchParams(location.search).get('move');
+  preference.row=initialMove(groups,requested,preference.row);
   saved.set(characterId,preference);
   const persist=()=>{try{sessionStorage.setItem(storageKey,JSON.stringify(preference));}catch{/* In-memory preferences remain available. */}};
 
@@ -23,8 +35,8 @@ export function mountWorkbenchLayout({host,characterId,groups,preview}){
   if(roster&&!roster.querySelector('[data-roster-toggle]')){
     const toggle=document.createElement('button');
     toggle.type='button';toggle.dataset.rosterToggle='';toggle.textContent='Show roster';toggle.setAttribute('aria-expanded','false');
-    roster.querySelector('.panel-heading').append(toggle);
-    toggle.addEventListener('click',()=>{
+    roster.querySelector('.panel-heading').append(toggle);scope.own(()=>toggle.remove());
+    scope.listen(toggle,'click',()=>{
       const collapsed=roster.classList.toggle('roster-collapsed');
       toggle.textContent=collapsed?'Show roster':'Hide roster';toggle.setAttribute('aria-expanded',String(!collapsed));
     });
@@ -121,22 +133,22 @@ export function mountWorkbenchLayout({host,characterId,groups,preview}){
     persist();
   }
 
-  nav.addEventListener('click',event=>{const button=event.target.closest('[data-studio-section]');if(button)choose(button.dataset.studioSection);});
-  nav.addEventListener('keydown',event=>{
+  scope.listen(nav,'click',event=>{const button=event.target.closest('[data-studio-section]');if(button)choose(button.dataset.studioSection);});
+  scope.listen(nav,'keydown',event=>{
     if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
     const buttons=[...nav.querySelectorAll('[role="tab"]')];
     const current=Math.max(0,buttons.indexOf(event.target.closest('[role="tab"]')));
     const next=event.key==='Home'?0:event.key==='End'?buttons.length-1:(current+(event.key==='ArrowRight'?1:-1)+buttons.length)%buttons.length;
     event.preventDefault();buttons[next].focus();choose(buttons[next].dataset.studioSection);
   });
-  toolbar.addEventListener('click',event=>{const button=event.target.closest('[data-animation-view]');if(button)view(button.dataset.animationView);});
-  host.addEventListener('preview-row-change',event=>{row(event.detail.row,false);if(preference.section==='combos')choose('motion',{open:false});});
-  previewHost.querySelector('[data-preview-motion]')?.addEventListener('click',()=>choose('motion',{open:false}));
-  board.addEventListener('click',event=>{
+  scope.listen(toolbar,'click',event=>{const button=event.target.closest('[data-animation-view]');if(button)view(button.dataset.animationView);});
+  scope.listen(host,'preview-row-change',event=>{row(event.detail.row,false);if(preference.section==='combos')choose('motion',{open:false});});
+  scope.listen(previewHost.querySelector('[data-preview-motion]'),'click',()=>choose('motion',{open:false}));
+  scope.listen(board,'click',event=>{
     const button=event.target.closest('[data-inspect-row]');if(!button)return;
     row(button.dataset.inspectRow);view('focus');previewHost.scrollIntoView({block:'start',behavior:'smooth'});
   });
 
   row(preference.row);view(preference.view);choose(preference.section);
-  return {choose,selectRow(id){choose('motion',{open:false});row(id);view('focus');previewHost.scrollIntoView({block:'start'});}};
+  return {choose,dispose:()=>scope.dispose(),selectRow(id){choose('motion',{open:false});row(id);view('focus');previewHost.scrollIntoView({block:'start'});}};
 }

@@ -1,0 +1,408 @@
+{
+  "measurementVersion": 2,
+  "host": {
+    "platform": "darwin",
+    "release": "25.3.0",
+    "logicalCpus": 14
+  },
+  "measuredAt": "2026-09-22T05:27:27.800Z",
+  "origin": "http://127.0.0.1:5186",
+  "browser": "148.0.7778.96",
+  "device": "desktop Chromium (headless unless HEADED=1)",
+  "physicalPhoneVerified": false,
+  "runs": [
+    {
+      "startupMs": 1298.300000011921,
+      "inputMs": 14.5,
+      "input": {
+        "latencyMs": 14.5,
+        "simulationTicks": 1,
+        "observedFrames": 2,
+        "immediateKeyDown": true,
+        "accumulatorBeforeInput": 0.033333333333377624
+      },
+      "p95FrameMs": 9,
+      "host": {
+        "loadBefore": [
+          10.22607421875,
+          16.0205078125,
+          19.52978515625
+        ],
+        "loadAfter": [
+          10.68798828125,
+          16.02001953125,
+          19.5087890625
+        ],
+        "systemCpuBusyFraction": 0.5874248496993988
+      },
+      "medianFrameMs": 8.300000000000182,
+      "errors": []
+    },
+    {
+      "startupMs": 1278.4000000357628,
+      "inputMs": 13.900000035762787,
+      "input": {
+        "latencyMs": 13.900000035762787,
+        "simulationTicks": 1,
+        "observedFrames": 2,
+        "immediateKeyDown": true,
+        "accumulatorBeforeInput": 0.03333333333315025
+      },
+      "p95FrameMs": 9,
+      "host": {
+        "loadBefore": [
+          10.68798828125,
+          16.02001953125,
+          19.5087890625
+        ],
+        "loadAfter": [
+          11.353515625,
+          16.0693359375,
+          19.50537109375
+        ],
+        "systemCpuBusyFraction": 0.5515243134290753
+      },
+      "medianFrameMs": 8.300000000000182,
+      "errors": []
+    },
+    {
+      "startupMs": 1294.1000000238419,
+      "inputMs": 13.599999964237213,
+      "input": {
+        "latencyMs": 13.599999964237213,
+        "simulationTicks": 1,
+        "observedFrames": 2,
+        "immediateKeyDown": true,
+        "accumulatorBeforeInput": 8.233333333333423
+      },
+      "p95FrameMs": 9,
+      "host": {
+        "loadBefore": [
+          11.353515625,
+          16.0693359375,
+          19.50537109375
+        ],
+        "loadAfter": [
+          10.9248046875,
+          15.90185546875,
+          19.42578125
+        ],
+        "systemCpuBusyFraction": 0.576711644177911
+      },
+      "medianFrameMs": 8.300000000000182,
+      "errors": []
+    },
+    {
+      "startupMs": 1278.8999999761581,
+      "inputMs": 15.199999988079071,
+      "input": {
+        "latencyMs": 15.199999988079071,
+        "simulationTicks": 1,
+        "observedFrames": 2,
+        "immediateKeyDown": true,
+        "accumulatorBeforeInput": 0.033333333333377624
+      },
+      "p95FrameMs": 9.099999999999909,
+      "host": {
+        "loadBefore": [
+          10.4501953125,
+          15.720703125,
+          19.3408203125
+        ],
+        "loadAfter": [
+          10.4501953125,
+          15.720703125,
+          19.3408203125
+        ],
+        "systemCpuBusyFraction": 0.5637735849056604
+      },
+      "medianFrameMs": 8.300000000000182,
+      "errors": []
+    },
+    {
+      "startupMs": 1289.1000000238419,
+      "inputMs": 14,
+      "input": {
+        "latencyMs": 14,
+        "simulationTicks": 1,
+        "observedFrames": 2,
+        "immediateKeyDown": true,
+        "accumulatorBeforeInput": 8.333333333333332
+      },
+      "p95FrameMs": 9,
+      "host": {
+        "loadBefore": [
+          9.93359375,
+          15.52587890625,
+          19.25048828125
+        ],
+        "loadAfter": [
+          9.93359375,
+          15.52587890625,
+          19.25048828125
+        ],
+        "systemCpuBusyFraction": 0.5433149724586881
+      },
+      "medianFrameMs": 8.300000000000182,
+      "errors": []
+    },
+    {
+      "startupMs": 1282.9000000357628,
+      "inputMs": 7.400000035762787,
+      "input": {
+        "latencyMs": 7.400000035762787,
+        "simulationTicks": 1,
+        "observedFrames": 1,
+        "immediateKeyDown": true,
+        "accumulatorBeforeInput": 8.933333333333241
+      },
+      "p95FrameMs": 9.099999999999909,
+      "host": {
+        "loadBefore": [
+          10.3388671875,
+          15.51708984375,
+          19.22509765625
+        ],
+        "loadAfter": [
+          10.7119140625,
+          15.50830078125,
+          19.2001953125
+        ],
+        "systemCpuBusyFraction": 0.621332670313277
+      },
+      "medianFrameMs": 8.300000000000182,
+      "errors": []
+    },
+    {
+      "startupMs": 1284.1000000238419,
+      "inputMs": 13.899999976158142,
+      "input": {
+        "latencyMs": 13.899999976158142,
+        "simulationTicks": 1,
+        "observedFrames": 2,
+        "immediateKeyDown": true,
+        "accumulatorBeforeInput": 0.033333333333377624
+      },
+      "p95FrameMs": 9,
+      "host": {
+        "loadBefore": [
+          10.7119140625,
+          15.50830078125,
+          19.2001953125
+        ],
+        "loadAfter": [
+          11.05517578125,
+          15.49951171875,
+          19.17529296875
+        ],
+        "systemCpuBusyFraction": 0.5538268506900879
+      },
+      "medianFrameMs": 8.300000000000182,
+      "errors": []
+    }
+  ],
+  "medianStartupMs": 1284.1000000238419,
+  "medianInputMs": 13.900000035762787,
+  "p95FrameMs": 9.099999999999909,
+  "baseline": {
+    "origin": "http://127.0.0.1:5187",
+    "runs": [
+      {
+        "startupMs": 1558.199999988079,
+        "inputMs": 14.199999988079071,
+        "input": {
+          "latencyMs": 14.199999988079071,
+          "simulationTicks": 1,
+          "observedFrames": 2,
+          "immediateKeyDown": true,
+          "accumulatorBeforeInput": 0.03333333333315025
+        },
+        "p95FrameMs": 9.099999999999909,
+        "host": {
+          "loadBefore": [
+            9.28857421875,
+            15.9365234375,
+            19.521484375
+          ],
+          "loadAfter": [
+            10.22607421875,
+            16.0205078125,
+            19.52978515625
+          ],
+          "systemCpuBusyFraction": 0.6110221815687171
+        },
+        "medianFrameMs": 8.300000000000182,
+        "errors": []
+      },
+      {
+        "startupMs": 1337.5,
+        "inputMs": 24.399999976158142,
+        "input": {
+          "latencyMs": 24.399999976158142,
+          "simulationTicks": 1,
+          "observedFrames": 3,
+          "immediateKeyDown": true,
+          "accumulatorBeforeInput": 0.03333333333315025
+        },
+        "p95FrameMs": 9.099999999999909,
+        "host": {
+          "loadBefore": [
+            10.68798828125,
+            16.02001953125,
+            19.5087890625
+          ],
+          "loadAfter": [
+            10.68798828125,
+            16.02001953125,
+            19.5087890625
+          ],
+          "systemCpuBusyFraction": 0.5795174790743476
+        },
+        "medianFrameMs": 8.300000000000182,
+        "errors": []
+      },
+      {
+        "startupMs": 1330.1000000238419,
+        "inputMs": 14.100000023841858,
+        "input": {
+          "latencyMs": 14.100000023841858,
+          "simulationTicks": 1,
+          "observedFrames": 2,
+          "immediateKeyDown": true,
+          "accumulatorBeforeInput": 8.333333333333332
+        },
+        "p95FrameMs": 9.099999999999909,
+        "host": {
+          "loadBefore": [
+            11.353515625,
+            16.0693359375,
+            19.50537109375
+          ],
+          "loadAfter": [
+            11.353515625,
+            16.0693359375,
+            19.50537109375
+          ],
+          "systemCpuBusyFraction": 0.6123691258826394
+        },
+        "medianFrameMs": 8.300000000000182,
+        "errors": []
+      },
+      {
+        "startupMs": 1352.4000000357628,
+        "inputMs": 16.899999976158142,
+        "input": {
+          "latencyMs": 16.899999976158142,
+          "simulationTicks": 1,
+          "observedFrames": 2,
+          "immediateKeyDown": true,
+          "accumulatorBeforeInput": 8.333333333333332
+        },
+        "p95FrameMs": 9,
+        "host": {
+          "loadBefore": [
+            10.9248046875,
+            15.90185546875,
+            19.42578125
+          ],
+          "loadAfter": [
+            10.4501953125,
+            15.720703125,
+            19.3408203125
+          ],
+          "systemCpuBusyFraction": 0.5505013450721448
+        },
+        "medianFrameMs": 8.300000000000182,
+        "errors": []
+      },
+      {
+        "startupMs": 1330.5,
+        "inputMs": 7.400000035762787,
+        "input": {
+          "latencyMs": 7.400000035762787,
+          "simulationTicks": 1,
+          "observedFrames": 1,
+          "immediateKeyDown": true,
+          "accumulatorBeforeInput": 8.433333333333469
+        },
+        "p95FrameMs": 9,
+        "host": {
+          "loadBefore": [
+            10.4501953125,
+            15.720703125,
+            19.3408203125
+          ],
+          "loadAfter": [
+            9.93359375,
+            15.52587890625,
+            19.25048828125
+          ],
+          "systemCpuBusyFraction": 0.5854806739345887
+        },
+        "medianFrameMs": 8.300000000000182,
+        "errors": []
+      },
+      {
+        "startupMs": 1337.199999988079,
+        "inputMs": 14.899999976158142,
+        "input": {
+          "latencyMs": 14.899999976158142,
+          "simulationTicks": 1,
+          "observedFrames": 2,
+          "immediateKeyDown": true,
+          "accumulatorBeforeInput": 8.033333333333378
+        },
+        "p95FrameMs": 8.900000000000091,
+        "host": {
+          "loadBefore": [
+            9.93359375,
+            15.52587890625,
+            19.25048828125
+          ],
+          "loadAfter": [
+            10.3388671875,
+            15.51708984375,
+            19.22509765625
+          ],
+          "systemCpuBusyFraction": 0.5795174790743476
+        },
+        "medianFrameMs": 8.300000000000182,
+        "errors": []
+      },
+      {
+        "startupMs": 1334.199999988079,
+        "inputMs": 23.399999976158142,
+        "input": {
+          "latencyMs": 23.399999976158142,
+          "simulationTicks": 1,
+          "observedFrames": 3,
+          "immediateKeyDown": true,
+          "accumulatorBeforeInput": 0.033333333333377624
+        },
+        "p95FrameMs": 9.099999999999909,
+        "host": {
+          "loadBefore": [
+            10.7119140625,
+            15.50830078125,
+            19.2001953125
+          ],
+          "loadAfter": [
+            10.7119140625,
+            15.50830078125,
+            19.2001953125
+          ],
+          "systemCpuBusyFraction": 0.5782095425479588
+        },
+        "medianFrameMs": 8.300000000000182,
+        "errors": []
+      }
+    ],
+    "medianStartupMs": 1337.199999988079,
+    "medianInputMs": 14.899999976158142,
+    "p95FrameMs": 9.099999999999909
+  },
+  "regressions": {
+    "startup": -0.03970984143337619,
+    "input": -0.06711409006681068
+  }
+}

@@ -8,6 +8,7 @@ test('saved plan, one admitted attempt and benchmark survive browser reload',asy
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
   try{
     await page.goto(`${fixture.url}/roster/${fixture.characterId}?standalone=1`);
+    await page.getByRole('tab',{name:'Build & publish',exact:true}).click();
     const panel=page.locator('#character-build-plans');
     await panel.getByText('New saved plan',{exact:true}).click();
     await panel.locator('[name="estimatedCostUsd"]').fill('0');
@@ -73,6 +74,7 @@ test('unknown-price plan blocks submission and trial definitions never generate'
   const fixture=await buildFixture({delayMs:10});
   try{
     await page.goto(`${fixture.url}/roster/${fixture.characterId}?standalone=1`);
+    await page.getByRole('tab',{name:'Build & publish',exact:true}).click();
     const panel=page.locator('#character-build-plans');
     await panel.getByText('New saved plan',{exact:true}).click();
     await panel.getByRole('button',{name:'Save plan · no generation'}).click();

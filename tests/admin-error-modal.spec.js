@@ -21,7 +21,7 @@ test.describe('Error detail modal', () => {
   });
 
   test('error modal DOM structure exists and is initially hidden', async ({ page }) => {
-    await page.goto(`/roster/${characterId}`);
+    await page.goto(`/roster/${characterId}?standalone=1`);
     const modal = page.locator('#error-modal');
     await expect(modal).toBeHidden();
     await expect(modal).toHaveAttribute('role', 'dialog');
@@ -29,7 +29,7 @@ test.describe('Error detail modal', () => {
   });
 
   test('triggering an error opens the modal from the run log', async ({ page }) => {
-    await page.goto(`/roster/${characterId}`);
+    await page.goto(`/roster/${characterId}?standalone=1`);
 
     // Wait for workbench to load
     const workbench = page.locator('#character-workbench');
@@ -67,7 +67,7 @@ test.describe('Error detail modal', () => {
   });
 
   test('close button dismisses the modal', async ({ page }) => {
-    await page.goto(`/roster/${characterId}`);
+    await page.goto(`/roster/${characterId}?standalone=1`);
 
     const workbench = page.locator('#character-workbench');
     await expect(workbench.locator('.character-summary')).toBeVisible();
@@ -90,7 +90,7 @@ test.describe('Error detail modal', () => {
   });
 
   test('Escape key dismisses the modal', async ({ page }) => {
-    await page.goto(`/roster/${characterId}`);
+    await page.goto(`/roster/${characterId}?standalone=1`);
 
     const workbench = page.locator('#character-workbench');
     await expect(workbench.locator('.character-summary')).toBeVisible();
@@ -113,7 +113,7 @@ test.describe('Error detail modal', () => {
   });
 
   test('clicking the backdrop dismisses the modal', async ({ page }) => {
-    await page.goto(`/roster/${characterId}`);
+    await page.goto(`/roster/${characterId}?standalone=1`);
 
     const workbench = page.locator('#character-workbench');
     await expect(workbench.locator('.character-summary')).toBeVisible();
@@ -141,7 +141,7 @@ test.describe('Error detail modal', () => {
   });
 
   test('error modal shows tool name from run-log error', async ({ page }) => {
-    await page.goto(`/roster/${characterId}`);
+    await page.goto(`/roster/${characterId}?standalone=1`);
 
     const workbench = page.locator('#character-workbench');
     await expect(workbench.locator('.character-summary')).toBeVisible();

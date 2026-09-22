@@ -6,7 +6,7 @@ test('checkpoint, compare and restore frozen assets from the real history interf
   const errors = []; page.on('pageerror', error => errors.push(error.message));
   try {
     await page.goto(`${fixture.url}/roster/${fixture.characterId}?standalone=1`);
-    await page.locator('#character-history > summary').click();
+    await page.getByRole('tab', { name: 'History', exact: true }).click();
     await expect(page.locator('.history-storage')).toContainText('Local archive only');
     await page.getByRole('textbox', { name: 'Checkpoint name' }).fill('QA original');
     await page.getByRole('button', { name: 'Save checkpoint', exact: true }).click();

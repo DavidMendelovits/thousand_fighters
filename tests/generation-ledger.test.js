@@ -8,6 +8,7 @@ import {runGenerationAttempt} from '../cms/pipeline/generationAttemptTelemetry.j
 import {GenerationAttemptLedger} from '../cms/pipeline/GenerationAttemptLedger.js';
 import {recoverGenerationAttempt} from '../cms/pipeline/recoverGenerationAttempt.js';
 import {runVideoJob} from '../scripts/generate_animation_video.mjs';
+import {restoreBuildVideoCheckpoint} from '../cms/pipeline/restoreBuildVideoCheckpoint.js';
 
 async function fixture(t){
   const root=await mkdtemp(path.join(os.tmpdir(),'tf-ledger-'));
@@ -67,8 +68,21 @@ test('video interruption resumes persisted provider task with one paid submissio
   const options={provider:'pruna',mode:'image-to-video',image:'https://example.com/ref.png',prompt:'Flow',duration:5,output:path.join(f.root,'video')};
   const dependencies={adapter,storage:f.storage,characterId:'probe',buildJobId:'fixture-job',log:()=>{}};
   await assert.rejects(runVideoJob(options,dependencies),/Interrupted/);
-  const job=await runVideoJob({resume:options.output},dependencies);
+  await rm(options.output,{recursive:true});
+  const restored=await restoreBuildVideoCheckpoint({storage:f.storage,characterId:'probe',buildJobId:'fixture-job',referenceBytes:Buffer.from('reference'),rootDir:path.join(f.root,'restored')});
+  const job=await runVideoJob({resume:restored},dependencies);
   assert.equal(job.transportStatus,'downloaded');assert.equal(posts,1);assert.equal(polls,2);
   const {intent,events}=await new GenerationAttemptLedger(f.storage.lineage).read(job.generationAttempt.attemptId);
   assert.equal(intent.buildJobId,'fixture-job');assert.equal(events.some(e=>e.providerTaskId==='video-paid'),true);
+});
+
+test('MiniMax recovery composes its accepted video into the original sprite profile without submission',async t=>{
+  const f=await fixture(t);let id,compositions=0;
+  f.request.task='fighter-2x3-grid';
+  await assert.rejects(runGenerationAttempt(f.request,{provider:'minimax-h3',kind:'video',model:'fixture'},async()=>{
+    await f.request.generationCheckpoint({status:'accepted',providerTaskId:'known-task'});throw Error('stopped');
+  }),error=>{id=error.attemptId;return true;});
+  const adapter={waitForTask:async taskId=>{assert.equal(taskId,'known-task');return {content:{url:'https://fixture.invalid/video'},duration:5};},fetch:async()=>new Response('video'),composeSpriteSheet:async({videoBytes,task})=>{compositions++;assert.equal(task,'fighter-2x3-grid');assert.equal(videoBytes.toString(),'video');return Buffer.from('sheet');}};
+  const recovered=await recoverGenerationAttempt({storage:f.storage,characterId:'probe',attemptId:id,confirmed:true,adapters:{minimax:adapter}});
+  assert.equal(compositions,1);assert.equal(recovered.outputArtifact.contentType,'image/png');assert.equal((await f.storage.lineage.readArtifact(recovered.outputArtifact)).toString(),'sheet');
 });

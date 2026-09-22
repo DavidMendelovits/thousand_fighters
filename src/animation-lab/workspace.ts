@@ -18,6 +18,8 @@ export function mountWorkspace(pauseMotion:()=>void):void {
     const selected=new URLSearchParams(location.search).get('character');
     const safe=selected&&/^[a-z][a-z0-9_-]{2,}$/.test(selected)?selected:null;
     frame.src=`/cms-admin${safe?`/roster/${safe}`:active==='pipeline'?'/pipeline':'/roster'}`;
+    const move=new URLSearchParams(location.search).get('move');
+    if(move)frame.src+=`?move=${encodeURIComponent(move)}`;
   }
   async function health(){
     connection.textContent='CMS · CONNECTING';

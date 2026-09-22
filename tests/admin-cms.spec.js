@@ -43,6 +43,8 @@ test.describe('CMS admin platform', () => {
     await page.locator('[data-collection="drafts"]').click();
     await page.locator(`[data-character-id="${characterId}"]`).click();
     const workbench = page.locator('#character-workbench');
+    await page.locator('[data-studio-section="motion"]').click();
+    await page.locator('[data-animation-view="all"]').click();
     await expect(workbench).toContainText('Base / States');
     await expect(workbench).toContainText('Punch Moves');
     await expect(workbench).toContainText('Roundhouse');

@@ -178,7 +178,6 @@ export class TestbedScene extends Phaser.Scene {
 
     this.ready = true;
     this.reset();
-    window.parent.postMessage({type:'studio-preview-ready'},location.origin);
   }
 
   update(time: number): void {
@@ -357,6 +356,7 @@ export class TestbedScene extends Phaser.Scene {
   getSnapshot(): TestbedSnapshot {
     return this.snapshot;
   }
+  get isReady():boolean {return this.ready;}
 
   triggerMove(moveId: string): void {
     if (!this.ready) return;
@@ -393,7 +393,7 @@ export class TestbedScene extends Phaser.Scene {
       }
       return;
     }
-    if(route.index>=0&&(route.strict||next.trigger.cancelOnly)){
+    if(route.index>=0&&route.strict){
       this.previewStatus=`Route stopped before ${next.displayName}: no legal cancel in these conditions. Adjust distance or use Sequence to inspect every move.`;this.previewRoute=null;return;
     }
     if(this.player.meter<(next.cost?.meter??0)){this.previewStatus=`Stopped before ${next.displayName}: insufficient meter.`;this.previewRoute=null;return;}

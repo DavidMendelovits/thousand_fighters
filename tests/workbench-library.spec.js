@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test';
+test.skip(Boolean(process.env.ADMIN_BASE_URL),'This mutation test must run against the keyless isolated CMS, never the live authoring server.');
 
 test('empty drafts, uncropped reference review and reversible archive survive reload',async({page,request},testInfo)=>{
   // Default Playwright config starts the isolated, keyless CMS fixture.

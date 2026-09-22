@@ -125,7 +125,7 @@ export class CharacterBuildPlans {
     if(running){
       let job;try{job=await this.buildJobs.get(running.characterId,running.jobId);}catch(error){if(error.statusCode!==404)throw error;}
       if(job){
-        if(job.status!=='completed'){plan.status=['queued','running','extracting'].includes(job.status)?'running':'needs-recovery';plan.message=`${running.row}: ${job.phase??job.status}. Reservation retained.`;return this.save(plan);}
+        if(job.status!=='completed'){plan.status=['queued','running','preparing','submitting','provider-active','extracting'].includes(job.status)?'running':'needs-recovery';plan.message=`${running.row}: ${job.phase??job.status}. Reservation retained.`;return this.save(plan);}
         running.status='review';running.result=job.result;running.completedAt=job.completedAt;
         const snapshot=snapshots[running.characterId],pin=plan.pins[running.characterId];
         // Only the reference produced by this exact completed step can advance

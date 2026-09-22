@@ -1,3 +1,4 @@
+import {ResourceScope} from './WorkbenchSession.js';
 if (!document.querySelector('link[data-benchmark-styles]')) {
   const link=document.createElement('link');link.rel='stylesheet';link.href=new URL('./benchmarks.css',import.meta.url).href;link.dataset.benchmarkStyles='';document.head.append(link);
 }
@@ -13,6 +14,7 @@ async function json(url,body) {
 }
 
 export function mountBenchmarks({host,characterId}) {
+  const scope=new ResourceScope();
   host.className = 'pipeline-benchmarks';
   host.innerHTML = `<header><span class="eyebrow">Measured generation</span><h2>Benchmarks & model trials</h2><p>Compare observed attempts, not promises. Missing prices stay unknown; fixtures never become provider evidence.</p></header>
     <form data-benchmark-filters><div class="benchmark-filters">${['characterId','provider','model','kind','moveId','style','resolution','measurementKind'].map(key => `<label>${escape({characterId:'Character',moveId:'Action',measurementKind:'Measurement source'}[key]??key)}<select name="${key}"><option value="">All</option></select></label>`).join('')}</div><button type="submit">Refresh measurements</button></form>
@@ -68,8 +70,8 @@ export function mountBenchmarks({host,characterId}) {
       }).join('')).join(''):''}<pre>${escape(JSON.stringify({references:trial.references,actions:trial.actions,candidates:trial.candidates,settings:trial.settings},null,2))}</pre><p data-trial-run-status role="status"></p></details>`).join('') : '<p>No saved model trials yet.</p>';
     } catch(error) { if(!disposed) host.querySelector('[data-trial-list]').textContent = error.message; }
   }
-  filterForm.addEventListener('submit',event => {event.preventDefault();void refresh();});
-  host.querySelector('[data-trial-form]').addEventListener('submit',async event => {
+  scope.listen(filterForm,'submit',event => {event.preventDefault();void refresh();});
+  scope.listen(host.querySelector('[data-trial-form]'),'submit',async event => {
     event.preventDefault(); const form = event.currentTarget,button = form.querySelector('button'),message = form.querySelector('[data-trial-status]');
     button.disabled = true;
     try {
@@ -79,7 +81,7 @@ export function mountBenchmarks({host,characterId}) {
     } catch(error) { message.textContent = error.message; }
     finally {button.disabled=false;}
   });
-  host.addEventListener('click',async event=>{
+  scope.listen(host,'click',async event=>{
     const button=event.target.closest('[data-trial-run]');if(!button)return;
     const resume=button.dataset.resume==='true';
     if(!confirm(resume?'Resume only the saved provider request? No replacement will be submitted.':'Submit this one paid candidate/action? Price is unknown. Its equal-share reservation is an estimate, not an invoice cap.'))return;
@@ -89,5 +91,5 @@ export function mountBenchmarks({host,characterId}) {
   });
   const trialTimer=setInterval(()=>{if(!host.isConnected||disposed){clearInterval(trialTimer);return;}void refreshTrials();},3000);
   void refresh();void refreshTrials();
-  return () => {disposed=true;clearInterval(trialTimer);};
+  return () => {disposed=true;clearInterval(trialTimer);scope.dispose();};
 }

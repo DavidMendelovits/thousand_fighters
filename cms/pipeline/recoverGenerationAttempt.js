@@ -41,11 +41,15 @@ export async function recoverGenerationAttempt({storage,characterId,attemptId,co
       const completed=await adapter.waitForTask(providerTaskId);
       const response=await adapter.fetch(completed.content?.url);
       if(!response.ok)throw new Error(`Video download failed: ${response.status}`);
-      result={bytes:Buffer.from(await response.arrayBuffer()),contentType:'video/mp4'};
+      const videoBytes=Buffer.from(await response.arrayBuffer());
+      const task=intent.inputs?.task??intent.operation;
+      if(!['fighter-1x6-row','fighter-2x3-grid'].includes(task))throw new Error('MiniMax recovery needs the original sprite composition profile.');
+      result={bytes:await adapter.composeSpriteSheet({videoBytes,task,duration:completed.duration??adapter.duration}),contentType:'image/png',videoBytes};
     }else throw Object.assign(new Error('This provider requires its archived video checkpoint or manual account recovery. No new generation was submitted.'),{statusCode:409});
     if(!result.bytes?.length)throw new Error('Provider returned an empty asset.');
     const outputArtifact=await storage.lineage.artifact(result.bytes,{contentType:result.contentType});
-    await ledger.event({...intent,status:'succeeded',recovered:true,completedAt:new Date().toISOString(),providerTaskId,outputArtifact,durationMs:null,estimatedCostUsd:null});
+    const videoArtifact=result.videoBytes?await storage.lineage.artifact(result.videoBytes,{contentType:'video/mp4'}):null;
+    await ledger.event({...intent,status:'succeeded',recovered:true,completedAt:new Date().toISOString(),providerTaskId,outputArtifact,videoArtifact,durationMs:null,estimatedCostUsd:null});
     return {attemptId,providerTaskId,outputArtifact,reused:false,reviewRequired:true};
   }finally{active.delete(attemptId);}
 }

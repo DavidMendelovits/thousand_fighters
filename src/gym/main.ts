@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import {createPreviewChannel} from '../studio/previewChannel';
+const previewChannel=createPreviewChannel();
 import { SHEET_LABELS, sheetGroups } from '../../shared/animationRows.js';
 import type { SpriteSheetId } from '../schema/types';
 import {
@@ -166,11 +168,10 @@ async function main(): Promise<void> {
   const requested=params.get('row');
   selectSheet(requested&&available.includes(requested)?requested:available.includes('idle')?'idle':available[0]??'base');
   startHud();
-  window.parent.postMessage({type:'studio-preview-ready'},location.origin);
-  window.addEventListener('message',event=>{
-    if(event.origin!==location.origin||event.source!==window.parent)return;
-    if(event.data?.type==='studio-select-row'&&available.includes(event.data.row))selectSheet(event.data.row);
-    if(event.data?.type==='studio-preview-visibility'&&!event.data.visible){scene.setPlaying(false);setPlayButton(false);}
+  previewChannel.ready();
+  previewChannel.onCommand(data=>{
+    if(data.type==='studio-select-row'&&typeof data.row==='string'&&available.includes(data.row))selectSheet(data.row);
+    if(data.type==='studio-preview-visibility'&&data.visible===false){scene.setPlaying(false);setPlayButton(false);}
   });
 }
 
@@ -516,7 +517,7 @@ function markDraftDirty(): void {
 }
 function refreshDirty(): void {
   const d = anyDirty();
-  window.parent.postMessage({type:'studio-gym-dirty',dirty:d},location.origin);
+  previewChannel.post({type:'studio-gym-dirty',dirty:d});
   $('dirty').classList.toggle('on', d);
   ($('save-btn') as HTMLButtonElement).disabled = !d;
   if (d) window.addEventListener('beforeunload', beforeUnload);
@@ -701,7 +702,7 @@ async function save(): Promise<void> {
     }
 
     if (frameOk && draftOk) {
-      window.parent.postMessage({type:'studio-gym-saved'},location.origin);
+      previewChannel.post({type:'studio-gym-saved'});
       btn.textContent = 'Saved';
       window.setTimeout(() => { if (!anyDirty()) btn.textContent = 'Save'; }, 1200);
     } else {

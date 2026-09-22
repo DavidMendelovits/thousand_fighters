@@ -1,9 +1,12 @@
 import { defineConfig } from 'vite';
 import { cleanRoutes } from './vite.cleanRoutes';
+import { phaserAlias, phaserFeatures, phaserBudget } from './vite.phaser';
 
 // Independently deployable fight client. No CMS routes, proxy or workbench.
 export default defineConfig({
-  plugins: [cleanRoutes()],
+  plugins: [cleanRoutes(), phaserFeatures(), phaserBudget()],
+  resolve: { alias: [phaserAlias] },
+  optimizeDeps: { rolldownOptions: { plugins: [phaserFeatures()] } },
   publicDir: false,
   server: {
     host: '0.0.0.0',

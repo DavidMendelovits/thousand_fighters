@@ -28,12 +28,18 @@ export function createCmsServer(options = {}) {
   const buildPlans=new CharacterBuildPlans({storage:runtime.storage,repository:runtime.repository,buildJobs});
   const benchmarks=new BenchmarkService({storage:runtime.storage,repository:runtime.repository,...options.benchmarkOptions});
 
-  return http.createServer(async (request, response) => {
+  let ready,draining=false;const mutations=new Set();
+  const server=http.createServer(async (request, response) => {
     try {
+      if(draining&&!['GET','HEAD','OPTIONS'].includes(request.method))throw Object.assign(new Error('CMS is draining. Retry the mutation after restart.'),{statusCode:503});
+      if(runtime.storage)await (ready??=buildJobs.start().catch(error=>{ready=null;throw error;}));
+      if(draining&&!['GET','HEAD','OPTIONS'].includes(request.method))throw Object.assign(new Error('CMS is draining. Retry the mutation after restart.'),{statusCode:503});
       const url = new URL(request.url ?? '/', `http://${request.headers.host ?? '127.0.0.1'}`);
 
       if (url.pathname.startsWith('/api/')) {
-        await handleApiRequest({ request, response, url, runtime, buildJobs, buildPlans, benchmarks });
+        const pending=handleApiRequest({ request, response, url, runtime, buildJobs, buildPlans, benchmarks });
+        if(!['GET','HEAD','OPTIONS'].includes(request.method))mutations.add(pending);
+        try{await pending;}finally{mutations.delete(pending);}
         return;
       }
 
@@ -42,9 +48,42 @@ export function createCmsServer(options = {}) {
       sendError(response, error);
     }
   });
+  const close=server.close.bind(server);
+  server.buildJobs=buildJobs;
+  server.close=(callback)=>{
+    // Stop admission and finish the current provider call before relinquishing
+    // ownership. Queued work remains durably queued for the next process.
+    draining=true;
+    buildJobs.stopping=true;
+    void Promise.allSettled([...mutations]).then(()=>buildJobs.stop()).then(()=>close(callback),error=>callback?.(error));
+    return server;
+  };
+  return server;
 }
 
 async function handleApiRequest({ request, response, url, runtime, buildJobs, buildPlans, benchmarks }) {
+  const streamMatch=url.pathname.match(/^\/api\/characters\/([^/]+)\/build-jobs\/([^/]+)\/events$/);
+  if(streamMatch&&request.method==='GET'){
+    const characterId=segment(decodeURIComponent(streamMatch[1])),id=streamMatch[2];
+    const after=Number(request.headers['last-event-id']??url.searchParams.get('after')??-1);
+    if(!Number.isSafeInteger(after)||after< -1)throw Object.assign(new Error('Invalid event cursor'),{statusCode:400});
+    await buildJobs.get(characterId,id);
+    response.writeHead(200,{'content-type':'text/event-stream','cache-control':'no-cache, no-transform','connection':'keep-alive','x-accel-buffering':'no'});
+    response.write('retry: 1500\n\n');
+    let dispose,closed=false;
+    const cleanup=()=>{closed=true;clearInterval(heartbeat);dispose?.();};
+    const heartbeat=setInterval(()=>{if(!closed&&!response.write(': heartbeat\n\n')){closed=true;response.end();}},15000);heartbeat.unref();
+    response.on('close',cleanup);
+    try{
+      dispose=await buildJobs.stream(characterId,id,{after,onJob:({job})=>{
+        // A slow client reconnects using Last-Event-ID. Never retain unbounded
+        // snapshots in its socket buffer while providers continue generating.
+        if(!closed&&!response.write(`id: ${job.revision}\nevent: job\ndata: ${JSON.stringify({job})}\n\n`)){closed=true;response.end();}
+      },onClose:()=>response.end()});
+      if(closed)dispose();
+    }catch{cleanup();response.end();}
+    return;
+  }
   const recoveryMatch=url.pathname.match(/^\/api\/characters\/([^/]+)\/generation-attempts\/([^/]+)\/recover$/);
   if(recoveryMatch&&request.method==='POST'){
     const body=await readJsonBody(request);
@@ -69,12 +108,12 @@ async function handleApiRequest({ request, response, url, runtime, buildJobs, bu
     if(request.method==='POST'&&planMatch[3]){sendJson(response,{plan:await buildPlans[planMatch[3].slice(1)](characterId,id,await readJsonBody(request))},202);return;}
     throw Object.assign(new Error('Unsupported build plan operation'),{statusCode:405});
   }
-  const buildMatch=url.pathname.match(/^\/api\/characters\/([^/]+)\/build-jobs(?:\/([^/]+)(\/(?:resolve|resume))?)?$/);
+  const buildMatch=url.pathname.match(/^\/api\/characters\/([^/]+)\/build-jobs(?:\/([^/]+)(\/(?:resolve|resume|attach-task))?)?$/);
   if(buildMatch){
     const characterId=segment(decodeURIComponent(buildMatch[1])),id=buildMatch[2];
     if(request.method==='GET'&&!buildMatch[3]){sendJson(response,id?{job:await buildJobs.get(characterId,id)}:{jobs:await buildJobs.list(characterId)});return;}
     if(request.method==='POST'&&!id){sendJson(response,await buildJobs.submit(characterId,await readJsonBody(request)),202);return;}
-    if(request.method==='POST'&&buildMatch[3]){sendJson(response,{job:await buildJobs[buildMatch[3].slice(1)](characterId,id,await readJsonBody(request))});return;}
+    if(request.method==='POST'&&buildMatch[3]){sendJson(response,{job:await buildJobs[buildMatch[3]==='/attach-task'?'attachTask':buildMatch[3].slice(1)](characterId,id,await readJsonBody(request))});return;}
     throw Object.assign(new Error('Unsupported build job operation'),{statusCode:405});
   }
   if (request.method === 'GET' && url.pathname === '/api/status') {

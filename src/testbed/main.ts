@@ -3,6 +3,8 @@ import { loadTestbedConfig } from './runtimeConfig';
 import { TestbedScene, type PlaybackMode, type DummyMode } from './TestbedScene';
 import type {CharacterConfig} from '../schema/types';
 import type {ScenarioLayout} from './scenarioLayout';
+import {createPreviewChannel} from '../studio/previewChannel';
+const previewChannel=createPreviewChannel();
 
 const $ = <T extends HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
@@ -69,13 +71,12 @@ async function main(): Promise<void> {
   wireDummy(scene);
   renderWarnings(warnings);
   startHudLoop(scene);
-  window.addEventListener('message',event=>{
-    if(event.origin!==location.origin||event.source!==window.parent)return;
-    if(event.data?.type==='studio-preview-combo'&&Array.isArray(event.data.moves)&&event.data.moves.every((id:unknown)=>typeof id==='string')){
-      scene.previewCombo(event.data.moves);syncComboControls();
+  previewChannel.onCommand(data=>{
+    if(data.type==='studio-preview-combo'&&Array.isArray(data.moves)&&data.moves.every((id:unknown)=>typeof id==='string')){
+      scene.previewCombo(data.moves,data.strict===true);syncComboControls();
     }
-    if(event.data?.type==='studio-preview-visibility'){
-      const mode=event.data.visible?'play':'pause';scene.setMode(mode);
+    if(data.type==='studio-preview-visibility'&&typeof data.visible==='boolean'){
+      const mode=data.visible?'play':'pause';scene.setMode(mode);
       document.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
     }
   });
@@ -123,6 +124,7 @@ function buildMoveButtons(scene: TestbedScene, config: CharacterConfig): void {
     }
   }
   const status=document.createElement('p');status.id='combo-preview-status';status.setAttribute('role','status');status.className='help';container.prepend(status);
+  container.querySelectorAll('button').forEach(button=>button.disabled=!scene.isReady);
 }
 
 function formatMoveCommand(move:CharacterConfig['moves'][number]):string{
@@ -186,8 +188,14 @@ function setActiveMode(buttons: NodeListOf<HTMLButtonElement>, mode: PlaybackMod
 function startHudLoop(scene: TestbedScene): void {
   const hud = $('hud');
   const hitboxList = $('hud-hitboxes');
+  let announced=false;
 
   const tick = () => {
+    if(scene.isReady&&!announced){
+      announced=true;
+      document.querySelectorAll<HTMLButtonElement>('#moves button').forEach(button=>button.disabled=false);
+      previewChannel.ready();
+    }
     const s = scene.getSnapshot();
     if (s.ready) {
       hud.innerHTML = rows([

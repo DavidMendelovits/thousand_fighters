@@ -21,7 +21,8 @@ test.describe('Per-move sprite generation', () => {
   });
 
   test('each move card shows a Generate button with data-gen-move attribute', async ({ page }) => {
-    await page.goto(`/roster/${characterId}`);
+    await page.goto(`/roster/${characterId}?standalone=1`);
+    await page.locator('[data-animation-view="all"]').click();
 
     // Wait for the workbench to render move cards
     const workbench = page.locator('#character-workbench');
@@ -48,7 +49,8 @@ test.describe('Per-move sprite generation', () => {
   });
 
   test('clicking Generate transitions to loading state', async ({ page }) => {
-    await page.goto(`/roster/${characterId}`);
+    await page.goto(`/roster/${characterId}?standalone=1`);
+    await page.locator('[data-animation-view="all"]').click();
 
     const workbench = page.locator('#character-workbench');
     await expect(workbench.locator('[data-move-card]').first()).toBeVisible();
@@ -59,23 +61,30 @@ test.describe('Per-move sprite generation', () => {
     const moveId = await genButton.getAttribute('data-gen-move');
 
     // Delay the API response so we can observe the loading state
-    await page.route('**/api/tools/generate_sprite_sheet', async (route) => {
-      // Hold the request so the UI stays in loading state
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      await route.continue();
+    let release;
+    const gate=new Promise(resolve=>{release=resolve;});
+    await page.route(`**/api/characters/${characterId}/build-jobs`, async (route) => {
+      if(route.request().method()!=='POST')return route.continue();
+      await gate;
+      await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Controlled generation rejection'})});
     });
 
-    await genButton.click();
-
-    // The button should now show loading state
     const card = workbench.locator(`[data-move-card="${moveId}"]`);
-    await expect(card).toHaveClass(/move-card-loading/);
-    await expect(genButton).toBeDisabled();
-    await expect(genButton).toContainText('Generating');
+    try{
+      await genButton.click();
+      // The button should now show loading state before the request completes.
+      await expect(card).toHaveClass(/move-card-loading/);
+      await expect(genButton).toBeDisabled();
+      await expect(genButton).toContainText('Generating');
+    }finally{release();}
+    await expect(genButton).toBeEnabled();
+    await expect(card).not.toHaveClass(/move-card-loading/);
+    await expect(card.locator('[data-generation-status]')).toContainText('Controlled generation rejection');
   });
 
   test('move activity modal can be opened', async ({ page }) => {
-    await page.goto(`/roster/${characterId}`);
+    await page.goto(`/roster/${characterId}?standalone=1`);
+    await page.locator('[data-animation-view="all"]').click();
 
     const workbench = page.locator('#character-workbench');
     await expect(workbench.locator('[data-move-card]').first()).toBeVisible();
@@ -84,7 +93,8 @@ test.describe('Per-move sprite generation', () => {
     const moveId = await workbench.locator('[data-gen-move]').first().getAttribute('data-gen-move');
 
     // Stub the generate endpoint to fail quickly, which logs activity
-    await page.route('**/api/tools/generate_sprite_sheet', (route) => {
+    await page.route(`**/api/characters/${characterId}/build-jobs`, (route) => {
+      if(route.request().method()!=='POST')return route.continue();
       route.fulfill({
         status: 500,
         contentType: 'application/json',

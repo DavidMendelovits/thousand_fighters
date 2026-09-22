@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 test.use({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true });
-const origin = 'http://127.0.0.1:5174';
+const origin = process.env.MOBILE_BASE_URL ?? process.env.STUDIO_BASE_URL ?? 'http://127.0.0.1:5173';
 async function openArena(page, training = true) {
-  await page.goto(`${origin}/fight.html?p1=brine&p2=meridian&cpu=off&touch=1${training ? '&training=1' : ''}`);
+  await page.goto(`${origin}/fight?p1=brine&p2=meridian&cpu=off&touch=1${training ? '&training=1' : ''}`);
   await page.waitForFunction(() => window.__stamptownDebug?.snapshot);
   if (training) await page.evaluate(() => window.__stamptownDebug.training.reset(300, 355));
 }
@@ -89,7 +89,10 @@ test('phone-sized pause menu can restart and resume without keyboard input', asy
   await openArena(page, false);
   await page.getByRole('button', { name: 'Pause', exact: true }).tap();
   await expect(page.getByRole('button', { name: 'RESTART ROUND' })).toBeVisible();
+  const previousSceneApi=await page.evaluateHandle(()=>window.__stamptownDebug);
   await page.getByRole('button', { name: 'RESTART ROUND' }).tap();
+  await page.waitForFunction(previous=>window.__stamptownDebug!==previous,previousSceneApi);
+  await previousSceneApi.dispose();
   await expect.poll(() => page.evaluate(() => window.__stamptownDebug.snapshot().paused)).toBe(false);
   await page.getByRole('button', { name: 'Pause', exact: true }).tap();
   const resume = page.getByRole('button', { name: 'RESUME', exact: true });

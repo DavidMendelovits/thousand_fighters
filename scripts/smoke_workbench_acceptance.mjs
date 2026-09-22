@@ -21,7 +21,7 @@ if(previous===undefined)delete process.env.FAL_KEY;else process.env.FAL_KEY=prev
 const config=convertDraftToCharacterConfig({draft:{id:'test',stats:{jumpVelocity:-13,jumpBackVelocity:-3.4},moves:[]}});
 assert.equal(config.jumpVelocity,13);
 assert.equal(config.jumpBackVelocity,3.4);
-const app=await readFile('admin/app.js','utf8');
+const app=await readFile('admin/workbenchApplication.js','utf8');
 assert.match(app,/data-row-generator/);
 assert.match(app,/data-reextract/);
 assert.match(app,/data-save-authoring/);

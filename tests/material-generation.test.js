@@ -5,6 +5,16 @@ import {CharacterCreationPipeline} from '../cms/pipeline/CharacterCreationPipeli
 import {PipelinePort} from '../cms/pipeline/ports.js';
 import {runGenerationAttempt} from '../cms/pipeline/generationAttemptTelemetry.js';
 import {BflFluxKleinGeneratorAdapter} from '../cms/pipeline/adapters/bflFluxKleinGeneratorAdapter.js';
+import {mkdtemp,rm} from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import {createCmsStorage} from '../cms/storage/createCmsStorage.js';
+
+async function fixtureLineage(t){
+  const root=await mkdtemp(path.join(os.tmpdir(),'tf-material-ledger-'));
+  t.after(()=>rm(root,{recursive:true,force:true}));
+  return createCmsStorage({provider:'file',rootDir:root}).lineage;
+}
 
 test('frame generation forwards painted material into local sheet composition',async()=>{
   let composition;
@@ -26,10 +36,10 @@ test('concept generation uses persisted material direction, not pixel defaults',
   assert.equal(request.context.artStyle,'paint');
 });
 
-test('unknown generation cost is not recorded as a free request',async()=>{
+test('unknown generation cost is not recorded as a free request',async t=>{
   let event;
   const recorder=async value=>{event=value;};
-  recorder.lineage={artifact:async()=>({}),run:async(_context,operation)=>operation(),event:async()=>{}};
+  recorder.lineage=await fixtureLineage(t);
   await runGenerationAttempt({onGenerationAttempt:recorder},{kind:'image',provider:'test'},async()=>({estimatedCostUsd:null}));
   assert.equal(event.estimatedCostUsd,null);
 });
@@ -48,13 +58,13 @@ test('BFL journals accepted job before polling and retains ID on timeout',async(
   assert.equal(submitted,1);
 });
 
-test('accepted or uncertain paid frame requests are never automatically resubmitted',async()=>{
+test('accepted or uncertain paid frame requests are never automatically resubmitted',async t=>{
   let attempts=0;
   const generator=new ParallelFrameSpriteGenerator({frameConcurrency:1,frameRetries:2});
   generator.provider='test';generator.model='test';
   generator.generateFrame=async()=>{attempts++;throw Object.assign(new Error('Accepted job timed out'),{noRetry:true,taskId:'known-job'});};
   const recorder=async()=>{};
-  recorder.lineage={artifact:async()=>({}),run:async(_context,operation)=>operation(),event:async()=>{}};
+  recorder.lineage=await fixtureLineage(t);
   await assert.rejects(generator.generateImage({task:'fighter-1x6-row',prompt:'fixture',onGenerationAttempt:recorder}));
   assert.equal(attempts,1);
 });

@@ -24,7 +24,11 @@ export function renderPreview(detail) {
   </section>`;
 }
 
+import {ResourceScope} from './WorkbenchSession.js';
+import {submissionNonce} from './submissionKey.js';
+
 export function mountPreview({ host, detail, gameBase }) {
+  const scope=new ResourceScope();
   const status = host.querySelector('[data-preview-status]');
   const close = host.querySelector('[data-preview-close]');
   const moveSelect=host.querySelector('[data-preview-move]');
@@ -32,12 +36,17 @@ export function mountPreview({ host, detail, gameBase }) {
   const timers=new Map();
   const origin=new URL(gameBase).origin;
   const frames=[...host.querySelectorAll('[data-preview-kind]')];
+  const tokens=new Map(),ready=new Set();
+  const send=(frame,data)=>{if(ready.has(frame))frame.contentWindow?.postMessage({...data,studioSession:tokens.get(frame)},origin);};
+  for(const frame of frames)scope.listen(frame,'load',()=>{
+    if(tokens.has(frame))frame.contentWindow?.postMessage({type:'studio-preview-hello',studioSession:tokens.get(frame)},origin);
+  });
   function open(kind, options={}) {
     const frame=frames.find(f=>f.dataset.previewKind===kind);
     if(!frame)return;
     activeKind=kind;
     host.dataset.mode=kind;
-    frames.forEach(f=>{f.hidden=f!==frame;f.contentWindow?.postMessage({type:'studio-preview-visibility',visible:f===frame},origin);});
+    frames.forEach(f=>{f.hidden=f!==frame;send(f,{type:'studio-preview-visibility',visible:f===frame});});
     if (close) close.hidden=false;
     const row = host.querySelector('[data-preview-row]')?.value;
     const entry = detail.rows?.find(item => item.row === row);
@@ -60,44 +69,51 @@ export function mountPreview({ host, detail, gameBase }) {
     if(kind==='testbed')pendingCombo=options.combo??null;
     // Preserve the live Gym document across row/tab switches: it may have unsaved anchors.
     if(kind==='gym'&&frame.hasAttribute('src')) {
-      frame.contentWindow?.postMessage({type:'studio-select-row',row},origin);
+      send(frame,{type:'studio-select-row',row});
       status.textContent='Anchor edits are unsaved until you click Save.';return;
     }
-    if(frame.getAttribute('src')===url.href) {
+    if(frame.dataset.previewUrl===url.href) {
       status.textContent=kind==='motion'?`Reviewing ${row.replaceAll('_',' ')} · current draft.`:'Live engine preview · current draft.';
-      if(pendingCombo)frame.contentWindow?.postMessage({type:'studio-preview-combo',moves:pendingCombo},origin);
+      if(pendingCombo)send(frame,{type:'studio-preview-combo',moves:pendingCombo});
       return;
     }
     status.textContent=`Loading ${kind==='gym'?'anchor editor':kind==='motion'?'motion':'game engine'}…`;
     clearTimeout(timers.get(kind));
     timers.set(kind,setTimeout(()=>{if(!disposed&&activeKind===kind)status.textContent='Preview is taking longer than expected. Check the embedded error message or try reopening the preview.';},20000));
+    frame.dataset.previewUrl=url.href;
+    tokens.set(frame,submissionNonce());ready.delete(frame);
+    url.searchParams.set('studioParent',location.origin);url.searchParams.set('studioSession',tokens.get(frame));
     frame.src=url.href;
   }
-  host.querySelector('[data-preview-motion]')?.addEventListener('click', () => open('motion'));
-  host.querySelector('[data-preview-row]')?.addEventListener('change', () => {
+  scope.listen(host.querySelector('[data-preview-motion]'),'click', () => open('motion'));
+  scope.listen(host.querySelector('[data-preview-row]'),'change', () => {
     host.dispatchEvent(new CustomEvent('preview-row-change',{bubbles:true,detail:{row:host.querySelector('[data-preview-row]').value}}));open(activeKind==='gym'?'gym':'motion');
   });
-  for(const selector of ['[data-preview-timing]','[data-preview-move]'])host.querySelector(selector)?.addEventListener('change',()=>open('motion'));
-  host.querySelector('[data-preview-testbed]')?.addEventListener('click', () => open('testbed'));
-  close?.addEventListener('click', () => {frames.forEach(f=>{f.hidden=true;f.contentWindow?.postMessage({type:'studio-preview-visibility',visible:false},origin);});close.hidden=true;status.textContent='Preview hidden. Anchor edits are kept until you save or leave this character.';});
+  for(const selector of ['[data-preview-timing]','[data-preview-move]'])scope.listen(host.querySelector(selector),'change',()=>open('motion'));
+  scope.listen(host.querySelector('[data-preview-testbed]'),'click', () => open('testbed'));
+  scope.listen(close,'click', () => {frames.forEach(f=>{f.hidden=true;send(f,{type:'studio-preview-visibility',visible:false});});close.hidden=true;status.textContent='Preview hidden. Anchor edits are kept until you save or leave this character.';});
   function message(event) {
     if(event.origin!==origin)return;
     const frame=frames.find(f=>f.contentWindow===event.source);if(!frame)return;
+    if(event.data?.studioSession!==tokens.get(frame)||!tokens.has(frame))return;
     const kind=frame.dataset.previewKind;
     if(event.data?.type==='studio-preview-ready') {
+      ready.add(frame);
       clearTimeout(timers.get(kind));
       if(activeKind===kind)status.textContent=kind==='gym'?'Drag anchors and collision bounds. Save writes to this same draft.':'Ready · current draft · real game timing.';
-      if(kind==='testbed'&&pendingCombo)frame.contentWindow.postMessage({type:'studio-preview-combo',moves:pendingCombo},origin);
-      if(host.hidden||frame.hidden)frame.contentWindow.postMessage({type:'studio-preview-visibility',visible:false},origin);
+      if(kind==='testbed'&&pendingCombo)send(frame,{type:'studio-preview-combo',moves:pendingCombo});
+      if(kind==='gym')send(frame,{type:'studio-select-row',row:host.querySelector('[data-preview-row]')?.value});
+      send(frame,{type:'studio-preview-visibility',visible:!host.hidden&&!frame.hidden});
     }
+    if(event.data?.type==='studio-preview-error')status.textContent=`Preview error: ${String(event.data.message??'Unknown error')}`;
     if(event.data?.type==='studio-gym-dirty')dirty=event.data.dirty===true;
     if(event.data?.type==='studio-gym-saved') {
       host.querySelector('[data-preview-save-status]').textContent='Anchors / bounds saved to draft. Reopen motion or playtest to load the saved revision.';
-      for(const other of frames.filter(f=>f!==frame))other.removeAttribute('src');
+      for(const other of frames.filter(f=>f!==frame)){other.removeAttribute('src');delete other.dataset.previewUrl;ready.delete(other);tokens.delete(other);}
     }
   }
-  window.addEventListener('message',message);
-  return {open, suspend(){frames.forEach(frame=>frame.contentWindow?.postMessage({type:'studio-preview-visibility',visible:false},origin));},selectRow(row){const select=host.querySelector('[data-preview-row]');if(select&&[...select.options].some(o=>o.value===row))select.value=row;else if(select){select.add(new Option(row.replaceAll('_',' '),row));select.value=row;}open('motion');},
+  scope.listen(window,'message',message);
+  return {open, suspend(){frames.forEach(frame=>send(frame,{type:'studio-preview-visibility',visible:false}));},selectRow(row){if(!row)return;const select=host.querySelector('[data-preview-row]');if(select&&[...select.options].some(o=>o.value===row))select.value=row;else if(select){select.add(new Option(row.replaceAll('_',' '),row));select.value=row;}open('motion');},
     canLeave(){return !dirty||confirm('There are unsaved anchor or bounds edits. Discard them and reload the editor?');},
-    dispose(){disposed=true;timers.forEach(clearTimeout);window.removeEventListener('message',message);}};
+    dispose(){disposed=true;timers.forEach(clearTimeout);frames.forEach(frame=>send(frame,{type:'studio-preview-visibility',visible:false}));scope.dispose();tokens.clear();ready.clear();}};
 }
