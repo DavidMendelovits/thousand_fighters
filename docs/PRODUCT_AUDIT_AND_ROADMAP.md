@@ -72,6 +72,14 @@ recording has disclosed gaps from recorder interruptions, so it is not a
 continuous full-process record. No generated video alone is evidence of a
 playable, finished fighter.
 
+A new browser-created continuation plan has a two-submission limit and a $1
+estimated-spend ceiling (not a provider billing cap). It has made zero provider
+calls. Its first base-reference review remains open: inspection found visible
+magenta edge specks on the existing base frames. Clean and re-review that
+saved reference before using it to purchase the remaining motion; do not
+silently approve a contaminated reference or restart any older
+`needs-recovery` plan.
+
 ### September 20 execution update — unified draft editor audit
 
 The workbench now groups motion/move specs, combo previews, anchors/bounds, identity/forms, build/publish and history around one selected draft at `/workbench`. It replaces the published-only combat panel, removes phantom generic rows, and offers two mutually exclusive motion workspaces: **Focus one move** pairs one live preview with one move editor, while **All moves** removes the duplicate preview and exposes the complete scrollable sheet library. The responsive Gym remains embedded with custom-row navigation and active-revision metadata. Generation reports immediate admission/progress/errors, including on HTTP tailnet URLs. Combo previews distinguish complete move sequences from real engine hit-confirm cancels and report failures instead of forcing them through. Authored combos can now own dedicated cancel-only moves and animation rows, so a route can reveal attacks that are impossible to perform from neutral instead of merely replaying ordinary moves.

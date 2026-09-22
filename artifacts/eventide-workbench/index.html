@@ -26,13 +26,13 @@
 <body>
   <span class="tag">Recorded browser workflow · draft</span>
   <h1>Building Eventide</h1>
-  <p>The actual CMS workbench session, including generation attempts, review decisions, failures, recovery, and draft playtest. This is not a polished simulation. The latest segment repairs and validates three generated projectiles in the game engine.</p>
+  <p>The actual CMS workbench session, including generation attempts, review decisions, failures, recovery, and draft playtest. This is not a polished simulation. The latest segment creates a spend-bounded plan and inspects its first reference gate without buying another generation.</p>
   <div class="layout">
     <main>
-      <video id="player" controls preload="metadata" playsinline src="creation-15-projectile-recovery-validation.webm"></video>
-      <h2 id="clip-title">15 · Projectile recovery and playtest</h2>
-      <p id="clip-note">Saved-source reprocessing, three projectile previews, hitbox alignment, and pack validation.</p>
-      <p><a id="download" href="creation-15-projectile-recovery-validation.webm">Open this clip directly</a> · <a href="/cms-admin/roster/eventide">Open Eventide in CMS</a> · <a href="/testbed?id=eventide">Open draft playtest</a></p>
+      <video id="player" controls preload="metadata" playsinline src="creation-16-build-plan.webm"></video>
+      <h2 id="clip-title">16 · Bounded plan and reference gate</h2>
+      <p id="clip-note">Two-submission, $1 estimated-spend plan saved with zero new provider calls; base reference inspection remains open.</p>
+      <p><a id="download" href="creation-16-build-plan.webm">Open this clip directly</a> · <a href="/cms-admin/roster/eventide">Open Eventide in CMS</a> · <a href="/testbed?id=eventide">Open draft playtest</a></p>
     </main>
     <nav aria-label="Recording chapters" id="chapters"></nav>
   </div>
@@ -40,7 +40,7 @@
   <ul class="facts">
     <li>16 authored moves</li><li>3 combo routes</li><li>3 generated projectile sprites</li><li>Controlled Surveyor summon</li><li>Hidden Totality form draft</li><li>110 Eventide frames in 6 rows</li>
   </ul>
-  <p>Ribbon Lash, Surveyor idle, and the fal/Kling idle are reviewed. Walk changes were requested because its eyes disappear during the morph; lasso changes were requested because its video arc doubles the engine-rendered reach. The latest pack validation reports 23 of 26 required rows still needing generation or review and missing Totality form assets. All three authored projectile sprites are present. Publishing remains blocked. The testbed explicitly uses visual stand-ins for missing rows; they are not shipped assets.</p>
+  <p>Ribbon Lash, Surveyor idle, and the fal/Kling idle are reviewed. Walk changes were requested because its eyes disappear during the morph; lasso changes were requested because its video arc doubles the engine-rendered reach. The latest pack validation reports 23 of 26 required rows still needing generation or review and missing Totality form assets. All three authored projectile sprites are present. A new bounded plan pauses at the base-reference review; visible magenta edge specks still need correction before that reference is approved. Publishing remains blocked. The testbed explicitly uses visual stand-ins for missing rows; they are not shipped assets.</p>
   <p>Recording coverage: the first six clips capture creation through Surveyor review, and clip seven captures a CMS walkthrough. A recorder interruption left a gap between them; the draft playtest, Ribbon Lash approval, and two rejected lasso attempts in that interval remain documented in CMS history but were not captured live. Clip 14 is a watchable repair of a recorder-interrupted segment; clip 15 resumes live capture for projectile recovery and validation. The full creation is therefore not continuously recorded.</p>
   <script>
     const clips = [
@@ -59,6 +59,7 @@
       ['13 · Idle in the game engine', 'creation-13-combat-validation.webm', '02:49 · Real testbed playback, walk-row review and publish validation.'],
       ['14 · Projectile generation', 'creation-14-projectiles-watchable.webm', '09:32 · Browser-CMS projectile generation and review. Recorder-interrupted segment repaired for playback.'],
       ['15 · Projectile recovery and playtest', 'creation-15-projectile-recovery-validation.webm', '08:55 · Saved-source reprocessing, three projectile previews, hitbox alignment, and pack validation.'],
+      ['16 · Bounded plan and reference gate', 'creation-16-build-plan.webm', '01:56 · Two-submission, $1 estimated-spend plan saved with zero new provider calls; base reference review remains open.'],
     ];
     const player = document.getElementById('player');
     const nav = document.getElementById('chapters');
@@ -76,7 +77,7 @@
       button.type = 'button'; button.innerHTML = `${title}<small>${note}</small>`;
       button.addEventListener('click', () => choose(i)); nav.append(button);
     });
-    const requestedPart = /^#part-(?:[1-9]|1[0-5])$/.test(location.hash) ? Number(location.hash.slice(6)) : 15;
+    const requestedPart = /^#part-(?:[1-9]|1[0-6])$/.test(location.hash) ? Number(location.hash.slice(6)) : 16;
     choose(requestedPart - 1);
     player.addEventListener('ended', () => {
       const index = [...nav.children].findIndex(button => button.getAttribute('aria-current') === 'true');
