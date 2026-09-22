@@ -7,6 +7,7 @@ import {createCmsStorage} from '../cms/storage/createCmsStorage.js';
 import {CharacterContentRepository} from '../cms/repositories/CharacterContentRepository.js';
 import {CharacterBuildPlans} from '../cms/plans/CharacterBuildPlans.js';
 import {digest} from '../cms/storage/LineageStore.js';
+import {loadReviewContext,motionFingerprint} from '../cms/pipeline/reviewFingerprint.js';
 
 async function fixture(t){
   const root=await mkdtemp(path.join(os.tmpdir(),'tf-plans-'));
@@ -89,6 +90,43 @@ test('completed identity waits for version-bound review and base requires its ow
   await assert.rejects(f.manager.review('probe',plan.id,{stepId:base.id,expectedFingerprint:'wrong',notes:'Checked silhouette and edges.',confirmed:true}),/Reference changed/);
   await f.manager.review('probe',plan.id,{stepId:base.id,expectedFingerprint:base.reviewFingerprint,notes:'Checked silhouette and edges.',confirmed:true});
   await f.manager.advance('probe',plan.id,{confirmed:true});assert.equal(f.calls[2].input.moveId,'walk_forward');
+});
+
+test('current change request unlocks one bounded retry but stale feedback cannot spend',async t=>{
+  const f=await fixture(t),pack='characters/probe/assets/fighter-pack',concept=Buffer.from('approved concept');
+  await f.storage.putBytes('characters/probe/assets/concept/concept_art.png',concept);
+  const frames={base:[{file:'sprites/base/base_001.png'}],walk_forward:Array.from({length:8},(_,i)=>({file:`sprites/walk_forward/walk_${i}.png`}))};
+  for(const row of Object.values(frames))for(const frame of row)await f.storage.putBytes(`${pack}/${frame.file}`,Buffer.from(frame.file));
+  await f.storage.putBytes(`${pack}/sheets/walk_forward.png`,Buffer.from('walk sheet'));
+  await f.storage.putJson(`${pack}/frameData.json`,{frames});
+  const draft=await f.repository.getDraft('probe');
+  await f.repository.saveDraft('probe',{...draft,assets:{rootKey:pack},referenceReview:{sha256:digest(concept),status:'approved'},sprite:{frames}});
+  const plan=await f.manager.create('probe',{budgetUsd:0.5,maxSubmissions:1,estimatedCostUsd:0.5});
+  const base=plan.steps.find(s=>s.row==='base'&&s.kind==='reference');
+  await f.manager.review('probe',plan.id,{stepId:base.id,expectedFingerprint:base.reviewFingerprint,notes:'Inspected reference scale and edges.',confirmed:true});
+  const context=await loadReviewContext(f.repository,'probe');
+  const {fingerprint}=await motionFingerprint(context,'walk_forward');
+  const saved=await f.repository.getDraft('probe');
+  await f.repository.saveDraft('probe',{...saved,motionRows:{walk_forward:{status:'changes-requested',uniqueFrames:8,review:{decision:'changes-requested',fingerprint,notes:'Keep all three eyes visible during the glide.'}}}});
+  const submitted=await f.manager.advance('probe',plan.id,{confirmed:true});
+  assert.equal(submitted.status,'running');assert.equal(submitted.budget.reservedSubmissions,1);
+  assert.equal(f.calls.length,1);assert.equal(f.calls[0].input.moveId,'walk_forward');
+  await f.manager.advance('probe',plan.id,{confirmed:true});assert.equal(f.calls.length,1);
+  f.jobs.get(f.calls[0].idempotencyKey).status='completed';
+  const approvedDraft=await f.repository.getDraft('probe');
+  approvedDraft.motionRows.walk_forward={...approvedDraft.motionRows.walk_forward,status:'approved',review:{decision:'approved',fingerprint,notes:'Current walk reviewed.'}};
+  await f.repository.saveDraft('probe',approvedDraft);
+  const exhausted=await f.manager.advance('probe',plan.id,{confirmed:true});
+  assert.equal(exhausted.status,'blocked');assert.match(exhausted.message,/budget exhausted/);
+  assert.equal(exhausted.steps.find(s=>s.row==='walk_forward'&&s.kind==='motion').status,'kept');assert.equal(f.calls.length,1);
+  const staleDraft=await f.repository.getDraft('probe');
+  staleDraft.motionRows.walk_forward.review.fingerprint='0'.repeat(64);
+  await f.repository.saveDraft('probe',staleDraft);
+  const stalePlan=await f.manager.create('probe',{budgetUsd:0.5,maxSubmissions:1,estimatedCostUsd:0.5});
+  const staleBase=stalePlan.steps.find(s=>s.row==='base'&&s.kind==='reference');
+  await f.manager.review('probe',stalePlan.id,{stepId:staleBase.id,expectedFingerprint:staleBase.reviewFingerprint,notes:'Inspected reference scale and edges.',confirmed:true});
+  const blocked=await f.manager.advance('probe',stalePlan.id,{confirmed:true});
+  assert.equal(blocked.status,'review');assert.equal(blocked.budget.reservedSubmissions,0);assert.equal(f.calls.length,1);
 });
 
 test('summons, form drafts, and separate effects remain visible requirements',async t=>{

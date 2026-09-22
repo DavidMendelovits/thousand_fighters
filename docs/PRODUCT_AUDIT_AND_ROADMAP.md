@@ -56,16 +56,16 @@ Acceptance checklist:
 The browser CMS now contains an Eventide draft with 16 authored moves, three
 combos, three generated BFL projectile sprites, a controllable Surveyor summon,
 and a hidden Totality form draft. The source-preserving video pipeline has
-produced 110 frames across six rows. Ribbon Lash, Surveyor idle, and the
-fal/Kling idle passed visual review; the walk and lasso candidates were
-explicitly rejected for continuity/duplicated-reach defects. A real-engine
+produced 110 frames across six rows. Ribbon Lash, Surveyor idle, the
+fal/Kling idle, and a regenerated walk now have current visual approvals;
+the lasso candidate remains rejected for a duplicated-reach defect. A real-engine
 draft testbed can exercise the authored mechanics, but uses labeled stand-ins
 for missing animation rows. The three projectile sprites and their centered
 collision boxes were saved through the workbench; saved-source recovery did
 not make a second paid request. Browser creation and recovery footage is
 indexed in [the Eventide recording](../artifacts/eventide-workbench/index.html).
 
-**CREATE-07 is not complete:** 23 of 26 required animation rows still need
+**CREATE-07 is not complete:** 22 of 26 required animation rows still need
 generation or a current review, Totality needs independent art and full interaction
 coverage, and the fighter has not passed pack validation or publication. The
 recording has disclosed gaps from recorder interruptions, so it is not a
@@ -84,6 +84,18 @@ idle and lash approvals became stale against the new base fingerprint; both
 were re-inspected and explicitly approved through the live browser CMS. The
 recorded repair/review chapters are appended to
 [the Eventide recording](../artifacts/eventide-workbench/index.html).
+
+A subsequent browser-saved, one-submission plan ($1 estimated ceiling, $0.50
+unit estimate—not actual billed cost) exposed a dead-end where current
+change-request feedback could not trigger a retry. The planner now allows an
+explicit version-bound rejection to move to one confirmed, budget-reserved
+retry; stale feedback cannot do so. The CMS submitted one FAL video request
+for `walk_forward`. Generation and save took **165.6 seconds**, yielding 24
+unique, non-clipped poses. After inspecting first/middle/final frames and
+game-timed playback, the new walk was approved. The plan reconciled that
+approval, recorded **6/49 steps kept**, and closed as budget-exhausted without
+another submission. A fresh bounded plan, further art review, independent
+Totality motion/install, runtime QA and publication remain open.
 
 ### September 20 execution update — unified draft editor audit
 

@@ -26,13 +26,13 @@
 <body>
   <span class="tag">Recorded browser workflow · draft</span>
   <h1>Building Eventide</h1>
-  <p>The actual CMS workbench session, including generation attempts, review decisions, failures, recovery, and draft playtest. This is not a polished simulation. The latest chapters repair the saved base and Surveyor assets without a new provider request, then record their review.</p>
+  <p>The actual CMS workbench session, including generation attempts, review decisions, failures, recovery, and draft playtest. This is not a polished simulation. The latest chapters show a one-request walk retry, its review, and a budget-safe plan closeout.</p>
   <div class="layout">
     <main>
-      <video id="player" controls preload="metadata" playsinline src="creation-21-body-rereview.webm"></video>
-      <h2 id="clip-title">21 · Current body-row review</h2>
-      <p id="clip-note">Inspect idle and Ribbon Lash against the corrected base, test release-queue navigation, and approve both exact current versions.</p>
-      <p><a id="download" href="creation-16-build-plan.webm">Open this clip directly</a> · <a href="/cms-admin/roster/eventide">Open Eventide in CMS</a> · <a href="/testbed?id=eventide">Open draft playtest</a></p>
+      <video id="player" controls preload="metadata" playsinline src="creation-24-plan-closeout.webm"></video>
+      <h2 id="clip-title">24 · Plan closeout</h2>
+      <p id="clip-note">Reconcile the approved walk; the plan records its kept step and blocks a second submission at its cap.</p>
+      <p><a id="download" href="creation-24-plan-closeout.webm">Open this clip directly</a> · <a href="/cms-admin/roster/eventide">Open Eventide in CMS</a> · <a href="/testbed?id=eventide">Open draft playtest</a></p>
     </main>
     <nav aria-label="Recording chapters" id="chapters"></nav>
   </div>
@@ -40,7 +40,7 @@
   <ul class="facts">
     <li>16 authored moves</li><li>3 combo routes</li><li>3 generated projectile sprites</li><li>Controlled Surveyor summon</li><li>Hidden Totality form draft</li><li>110 Eventide frames in 6 rows</li>
   </ul>
-  <p>Surveyor idle, Ribbon Lash, and the fal/Kling idle are the three currently approved animation rows. The two body rows were explicitly re-reviewed against the corrected base; walk and lasso still have change requests for visual defects. The latest readiness check reports 23 of 26 required rows needing generation or current review, plus missing Totality form assets. All three authored projectile sprites are present. The base reference is cleaned and approved, but the bounded build plan became stale after Surveyor reprocessing and must be renewed before a paid submission. Publishing remains blocked. The testbed explicitly uses visual stand-ins for missing rows; they are not shipped assets.</p>
+  <p>Surveyor idle, Ribbon Lash, the fal/Kling idle, and the regenerated walk are the four currently approved animation rows. The old walk was rejected for collapsing its eyes and body; the new bounded FAL video retry took 165.6 seconds to generate and save, produced 24 distinct non-clipped poses, and was approved after first/middle/final-frame and game-timing review. The lasso still has a change request. The latest readiness check reports 22 of 26 required rows needing generation or current review, plus missing Totality form assets. All three authored projectile sprites are present. The one-submission plan reserved $0.50 estimated against a $1 ceiling, then closed at its limit; that estimate is not an invoice or billing cap. Publishing remains blocked. The testbed explicitly uses visual stand-ins for missing rows; they are not shipped assets.</p>
   <p>Recording coverage: the first six clips capture creation through Surveyor review, and clip seven captures a CMS walkthrough. A recorder interruption left a gap between them; the draft playtest, Ribbon Lash approval, and two rejected lasso attempts in that interval remain documented in CMS history but were not captured live. Clip 14 is a watchable repair of a recorder-interrupted segment; clip 15 resumes live capture for projectile recovery and validation. The full creation is therefore not continuously recorded.</p>
   <script>
     const clips = [
@@ -65,6 +65,9 @@
       ['19 · Surveyor video reprocess', 'creation-19-surveyor-reprocess.webm', '04:05 · Opt-in magenta-island cleanup from the archived video; zero provider calls.'],
       ['20 · Surveyor visual review', 'creation-20-surveyor-review.webm', '07:44 · Inspect first, middle, and late cleaned poses, approve the current actor row, and check release readiness.'],
       ['21 · Current body-row review', 'creation-21-body-rereview.webm', '02:48 · Inspect idle and Ribbon Lash against the corrected base, test release-queue navigation, and approve both exact current versions.'],
+      ['22 · Rejection to bounded plan', 'creation-22-next-plan.webm', '08:03 · Save a one-submission plan, pin base and actor references, and reject the old walk on its current fingerprint. No provider request in this chapter.'],
+      ['23 · Walk retry and review', 'creation-23-bounded-walk-retry.webm', '10:07 · Explicit FAL submission, server progress, new 24-pose walk inspection, and current-version approval.'],
+      ['24 · Plan closeout', 'creation-24-plan-closeout.webm', '00:35 · Reconcile the approved walk; the plan records its kept step and blocks a second submission at its cap.'],
     ];
     const player = document.getElementById('player');
     const nav = document.getElementById('chapters');
@@ -82,7 +85,7 @@
       button.type = 'button'; button.innerHTML = `${title}<small>${note}</small>`;
       button.addEventListener('click', () => choose(i)); nav.append(button);
     });
-    const requestedPart = /^#part-(?:[1-9]|1[0-9]|2[01])$/.test(location.hash) ? Number(location.hash.slice(6)) : 21;
+    const requestedPart = /^#part-(?:[1-9]|1[0-9]|2[0-4])$/.test(location.hash) ? Number(location.hash.slice(6)) : 24;
     choose(requestedPart - 1);
     player.addEventListener('ended', () => {
       const index = [...nav.children].findIndex(button => button.getAttribute('aria-current') === 'true');

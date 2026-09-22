@@ -163,7 +163,12 @@ export class CharacterBuildPlans {
       }
       if(step.kind==='motion'){
         const current=await motionFingerprint(context,step.row);
-        if(motionReviewStatus(context.draft.motionRows?.[step.row],current.fingerprint,current.missing)==='approved')step.status='kept';
+        const reviewStatus=motionReviewStatus(context.draft.motionRows?.[step.row],current.fingerprint,current.missing);
+        if(reviewStatus==='approved')step.status='kept';
+        // An explicit, version-bound change request is permission to offer a
+        // retry on the next confirmed advance, not an approval. Do not reuse a
+        // completed plan job's idempotency key: that requires a new plan.
+        else if(reviewStatus==='changes-requested'&&step.status==='review'&&!step.completedAt&&!step.result)step.status='pending';
         else if(step.status==='kept'){plan.status='review';plan.message=`Previously approved ${step.row} changed; review or create a new plan.`;return this.save(plan);}
       }
     }
@@ -174,7 +179,10 @@ export class CharacterBuildPlans {
     if(next.kind!=='identity'&&(!context.conceptHash||context.draft.referenceReview?.sha256!==context.conceptHash||context.draft.referenceReview.status!=='approved')){plan.status='review';plan.message='Approve the current identity reference before motion generation.';return this.save(plan);}
     if(next.status!=='reserved'){
       const budget=plan.budget,price=budget.estimatedCostUsd;
-      if(budget.reservedSubmissions>=budget.maxSubmissions)throw fail('Submission budget exhausted. Create a new explicit plan.');
+      if(budget.reservedSubmissions>=budget.maxSubmissions){
+        plan.status='blocked';plan.message='Submission budget exhausted. Reviewed steps are saved; create a new explicit plan for remaining rows. No generation submitted.';
+        return this.save(plan);
+      }
       if(price===null&&!budget.allowUnknownCosts)throw fail('Price is unknown. Create a plan explicitly allowing unknown prices or supply a unit estimate.');
       if(price!==null&&budget.reservedUsd+price>budget.budgetUsd+1e-9)throw fail('Estimated-spend ceiling would be exceeded. No generation submitted.');
       next.status='reserved';next.reservedAt=new Date().toISOString();budget.reservedSubmissions++;if(price===null)budget.unknownReservations++;else budget.reservedUsd+=price;
