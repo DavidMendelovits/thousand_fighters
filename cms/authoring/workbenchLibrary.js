@@ -71,11 +71,20 @@ export async function workbenchDetail(repository, characterId) {
   return { ...data.summary, reference };
 }
 
-export async function updateWorkbench(repository, characterId, input) {
+export async function updateWorkbench(repository, characterId, input, options = {}) {
   return repository.withMutation(characterId, async () => {
     const draft = await repository.getDraft(characterId);
     if (typeof input.archived === 'boolean') {
       await repository.saveDraft(characterId, { ...draft, workbench: { ...draft.workbench, archived: input.archived } });
+      try {
+        await options.syncRuntimeRoster?.();
+      } catch (error) {
+        // Archive/restore is a roster mutation. Roll it back if the public
+        // manifest cannot be updated so CMS and game never disagree silently.
+        await repository.saveDraft(characterId, draft);
+        await options.syncRuntimeRoster?.().catch(() => {});
+        throw error;
+      }
       await repository.storage.lineage.event(characterId, { type: input.archived ? 'workbench-archived' : 'workbench-restored' });
     } else if (['approved', 'rejected'].includes(input.referenceStatus)) {
       const detail = await workbenchDetail(repository, characterId);

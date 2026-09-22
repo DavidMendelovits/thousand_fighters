@@ -3,7 +3,7 @@ import { cp, mkdir, writeFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 await build({ configFile: 'vite.fight.config.ts' });
 // Only published runtime assets, never generation sources, replays or CMS data.
-for (const name of ['assets-index.json', 'fighters', 'forms']) {
+for (const name of ['runtime-roster.json', 'fighters', 'forms']) {
   await cp(`public/${name}`, `dist-fight/${name}`, {
     recursive: true,
     filter: source => !/(?:^|\/)(?:source|sources)(?:\/|$)/.test(source)

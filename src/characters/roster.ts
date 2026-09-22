@@ -8,9 +8,25 @@ import type { CharacterConfig } from '../schema/types';
  */
 export const roster: CharacterConfig[] = [];
 
-type AssetsIndex = {
-  fighters?: Record<string, { config?: string | boolean } | undefined>;
+type RuntimeRosterManifest = {
+  schemaVersion: 1;
+  version: string;
+  fighters: Array<{ id: string; configVersion: string }>;
 };
+
+const versionPattern = /^[a-f0-9]{64}$/;
+const idPattern = /^[a-z0-9_-]+$/i;
+
+function looksLikeRuntimeRoster(value: unknown): value is RuntimeRosterManifest {
+  if (!value || typeof value !== 'object') return false;
+  const manifest = value as Record<string, unknown>;
+  return manifest.schemaVersion === 1 && typeof manifest.version === 'string'
+    && versionPattern.test(manifest.version)
+    && Array.isArray(manifest.fighters)
+    && manifest.fighters.every((fighter) => Boolean(fighter) && typeof fighter === 'object'
+      && idPattern.test(String((fighter as Record<string, unknown>).id ?? ''))
+      && versionPattern.test(String((fighter as Record<string, unknown>).configVersion ?? '')));
+}
 
 function looksLikeCharacterConfig(value: unknown): value is CharacterConfig {
   if (!value || typeof value !== 'object') return false;
@@ -23,25 +39,24 @@ function looksLikeCharacterConfig(value: unknown): value is CharacterConfig {
 }
 
 /**
- * Discover CMS-exported fighters via assets-index.json and merge them
- * into the roster. Resolves quietly on any failure — the game always
- * starts with at least the built-in roster.
+ * Load only the CMS-authoritative playable manifest. `cache: no-cache` asks
+ * the browser to revalidate the tiny file (normally a 304); versioned config
+ * URLs remain reusable until their exact bytes change.
  */
 export async function loadCmsRoster(): Promise<CharacterConfig[]> {
   try {
-    const indexResponse = await fetch('/assets-index.json');
-    if (!indexResponse.ok) return roster;
-    const index = (await indexResponse.json()) as AssetsIndex;
-    const fighterEntries = Object.entries(index.fighters ?? {});
-    const cmsFighterIds = fighterEntries
-      .filter(([, entry]) => Boolean(entry?.config))
-      .map(([id]) => id);
-    if (!cmsFighterIds.length) return roster;
+    const manifestResponse = await fetch('/runtime-roster.json', { cache: 'no-cache' });
+    if (!manifestResponse.ok) return roster;
+    const manifest: unknown = await manifestResponse.json();
+    if (!looksLikeRuntimeRoster(manifest)) {
+      console.warn('[roster] runtime-roster.json is invalid');
+      return roster;
+    }
 
     const configs = await Promise.all(
-      cmsFighterIds.map(async (id) => {
+      manifest.fighters.map(async ({ id, configVersion }) => {
         try {
-          const response = await fetch(`/fighters/${id}/config.json`);
+          const response = await fetch(`/fighters/${id}/config.json?v=${configVersion}`);
           if (!response.ok) return null;
           const config: unknown = await response.json();
           if (!looksLikeCharacterConfig(config)) {
@@ -57,15 +72,12 @@ export async function loadCmsRoster(): Promise<CharacterConfig[]> {
 
     // Only CMS-discovered fighters enter the roster — no built-in merge. (Use
     // mergeRoster from stamptownFighters if you ever want the built-ins back.)
-    for (const config of configs) {
-      if (config && config.selectable !== false && !config.parentId && !roster.some((existing) => existing.id === config.id)) {
-        roster.push(config);
-      }
-    }
+    const nextRoster = configs.filter((config): config is CharacterConfig => Boolean(config && config.selectable !== false && !config.parentId));
     // Feature the new collection without deleting or hiding existing fighters.
-    roster.sort((a, b) => Number(b.rosterGroup === 'oddities') - Number(a.rosterGroup === 'oddities'));
+    nextRoster.sort((a, b) => Number(b.rosterGroup === 'oddities') - Number(a.rosterGroup === 'oddities'));
+    roster.splice(0, roster.length, ...nextRoster);
   } catch {
-    // No assets index (dev without build step) — built-ins only.
+    // Keep the last verified in-memory roster during a transient revalidation failure.
   }
   return roster;
 }

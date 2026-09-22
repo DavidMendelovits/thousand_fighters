@@ -190,39 +190,10 @@ export class FightScene extends Phaser.Scene {
       for (const entry of spritePreloadPlan(character)) preloadSpriteConfig(entry.sprite, entry.keyPrefix);
     }
 
-    this.load.json('assets-index', '/assets-index.json');
-    this.load.once('filecomplete-json-assets-index', (_key: string, _type: string, data: unknown) => {
-      if (!data || typeof data !== 'object') return;
-      const index = data as Record<string, unknown>;
-      const sounds = index['sounds'];
-      if (!Array.isArray(sounds)) return;
-
-      let count = 0;
-      for (const sound of sounds) {
-        if (!sound || typeof sound !== 'object') continue;
-        const s = sound as Record<string, unknown>;
-        const name = typeof s['name'] === 'string' ? s['name'] : null;
-        const file = typeof s['file'] === 'string' ? s['file'] : null;
-        const fighterId = typeof s['fighterId'] === 'string' ? s['fighterId'] : null;
-        if (!name || !file) continue;
-
-        const key = fighterId ? `${fighterId}:${name}` : name;
-        const url = fighterId
-          ? `/audio/sfx/fighters/${fighterId}/${file}`
-          : `/audio/sfx/${file}`;
-        this.load.audio(key, url);
-        count += 1;
-      }
-
-      if (count > 50) {
-        console.warn(`[FightScene] preloading ${count} sounds — consider pruning the assets index`);
-      }
-
-      if (count > 0) this.load.start();
-    });
-    this.load.on('loaderror', (file: { key: string; type: string }) => {
-      if (file.key === 'assets-index') return; // missing index is expected until sounds are generated
-    });
+    // Do not fetch the authoring inventory here. It is hundreds of KB, has a
+    // different sound shape, and used to hold every mobile fight at preload.
+    // Fighter-owned audio will be loaded from the selected config when the
+    // runtime sound system is enabled.
   }
 
   create(): void {

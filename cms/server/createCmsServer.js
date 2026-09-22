@@ -16,28 +16,35 @@ import {CharacterBuildJobs} from '../jobs/CharacterBuildJobs.js';
 import {CharacterBuildPlans} from '../plans/CharacterBuildPlans.js';
 import {BenchmarkService} from '../benchmarks/BenchmarkService.js';
 import {recoverGenerationAttempt} from '../pipeline/recoverGenerationAttempt.js';
+import {syncRuntimeRoster} from '../export/syncRuntimeRoster.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const DEFAULT_ADMIN_ROOT = path.join(REPO_ROOT, 'admin');
 
 export function createCmsServer(options = {}) {
-  const runtime = options.runtime ?? createLocalCmsRuntime(options.runtimeOptions ?? {});
+  // Externally supplied runtimes are normally isolated tests. Only the real
+  // server (or an explicit option) is allowed to mutate the repo's public tree.
+  const runtimePublicDir = options.runtimePublicDir ?? (options.runtime ? null : process.env.CMS_RUNTIME_PUBLIC_DIR ?? path.join(REPO_ROOT, 'public'));
+  const runtime = options.runtime ?? createLocalCmsRuntime({ ...(options.runtimeOptions ?? {}), runtimePublicDir });
   const adminRoot = path.resolve(options.adminRoot ?? DEFAULT_ADMIN_ROOT);
   const buildJobs=new CharacterBuildJobs({storage:runtime.storage,repository:runtime.repository,invoke:(name,input)=>invokeTrackedTool(runtime,name,input)});
   const buildPlans=new CharacterBuildPlans({storage:runtime.storage,repository:runtime.repository,buildJobs});
   const benchmarks=new BenchmarkService({storage:runtime.storage,repository:runtime.repository,...options.benchmarkOptions});
+  const publishRoster = runtimePublicDir && runtime.repository
+    ? () => syncRuntimeRoster({ repository: runtime.repository, publicDir: runtimePublicDir })
+    : null;
 
   let ready,draining=false;const mutations=new Set();
   const server=http.createServer(async (request, response) => {
     try {
       if(draining&&!['GET','HEAD','OPTIONS'].includes(request.method))throw Object.assign(new Error('CMS is draining. Retry the mutation after restart.'),{statusCode:503});
-      if(runtime.storage)await (ready??=buildJobs.start().catch(error=>{ready=null;throw error;}));
+      if(runtime.storage)await (ready??=Promise.all([buildJobs.start(), publishRoster?.()]).catch(error=>{ready=null;throw error;}));
       if(draining&&!['GET','HEAD','OPTIONS'].includes(request.method))throw Object.assign(new Error('CMS is draining. Retry the mutation after restart.'),{statusCode:503});
       const url = new URL(request.url ?? '/', `http://${request.headers.host ?? '127.0.0.1'}`);
 
       if (url.pathname.startsWith('/api/')) {
-        const pending=handleApiRequest({ request, response, url, runtime, buildJobs, buildPlans, benchmarks });
+        const pending=handleApiRequest({ request, response, url, runtime, buildJobs, buildPlans, benchmarks, publishRoster });
         if(!['GET','HEAD','OPTIONS'].includes(request.method))mutations.add(pending);
         try{await pending;}finally{mutations.delete(pending);}
         return;
@@ -61,7 +68,7 @@ export function createCmsServer(options = {}) {
   return server;
 }
 
-async function handleApiRequest({ request, response, url, runtime, buildJobs, buildPlans, benchmarks }) {
+async function handleApiRequest({ request, response, url, runtime, buildJobs, buildPlans, benchmarks, publishRoster }) {
   const streamMatch=url.pathname.match(/^\/api\/characters\/([^/]+)\/build-jobs\/([^/]+)\/events$/);
   if(streamMatch&&request.method==='GET'){
     const characterId=segment(decodeURIComponent(streamMatch[1])),id=streamMatch[2];
@@ -223,7 +230,7 @@ async function handleApiRequest({ request, response, url, runtime, buildJobs, bu
   const workbenchMatch = url.pathname.match(/^\/api\/characters\/([^/]+)\/workbench$/);
   if (workbenchMatch && ['GET', 'POST'].includes(request.method)) {
     const characterId = segment(decodeURIComponent(workbenchMatch[1]));
-    sendJson(response, request.method === 'GET' ? await workbenchDetail(runtime.repository, characterId) : await updateWorkbench(runtime.repository, characterId, await readJsonBody(request)));
+    sendJson(response, request.method === 'GET' ? await workbenchDetail(runtime.repository, characterId) : await updateWorkbench(runtime.repository, characterId, await readJsonBody(request), { syncRuntimeRoster: publishRoster }));
     return;
   }
   const reviewClipMatch = url.pathname.match(/^\/api\/characters\/([^/]+)\/review-clip\/([^/]+)$/);

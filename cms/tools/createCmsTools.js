@@ -1,6 +1,8 @@
+import { fileURLToPath } from 'node:url';
 import { assetApiUrl, writeCharacterAssetUpload } from '../assets/uploadCharacterAsset.js';
 import { exportCharacterToRuntime } from '../export/exportCharacterToRuntime.js';
 import { build as buildAssetsIndex } from '../../scripts/build_assets_index.mjs';
+import { syncRuntimeRoster } from '../export/syncRuntimeRoster.js';
 import { SHEET_IDS } from '../../shared/animationRows.js';
 import {validateCombatRules} from '../export/validateCombatRules.js';
 import {importPublishedCharacter} from '../import/importPublishedCharacter.js';
@@ -30,7 +32,7 @@ export function isAuthoredRow(draft = {}, row) {
     Boolean(draft.motionRows?.[row]));
 }
 
-export function createCmsTools({ pipeline, repository, registry }) {
+export function createCmsTools({ pipeline, repository, registry, runtimePublicDir }) {
   const tools = [
     {
       name:'get_animation_plan',description:'Read required body, summon and form animation jobs and dependencies. Never generates or spends credits.',
@@ -544,7 +546,7 @@ export function createCmsTools({ pipeline, repository, registry }) {
         try {
           // CMS_RUNTIME_PUBLIC_DIR redirects the write (smoke tests point it at a
           // temp tree); unset means the repo's real public/ in dev.
-          const publicDir = process.env.CMS_RUNTIME_PUBLIC_DIR;
+          const publicDir = runtimePublicDir ?? process.env.CMS_RUNTIME_PUBLIC_DIR;
           // Export from the release bundle, not the live draft, so the game
           // plays exactly what was published (release = source of truth) and the
           // releases/ store gains a real consumer.
@@ -559,6 +561,10 @@ export function createCmsTools({ pipeline, repository, registry }) {
             content,
           });
           await buildAssetsIndex(publicDir);
+          await syncRuntimeRoster({
+            repository,
+            publicDir: publicDir ?? fileURLToPath(new URL('../../public/', import.meta.url)),
+          });
           exported = { configPath: result.configPath, filesCopied: result.filesCopied.length };
         } catch (err) {
           exported = { error: err instanceof Error ? err.message : String(err) };

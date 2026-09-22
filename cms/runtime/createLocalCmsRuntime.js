@@ -31,7 +31,7 @@ export function createLocalCmsRuntime(options = {}) {
     [PipelinePort.JOB_QUEUE]: options.jobQueue ?? createJobQueueAdapter(options.jobQueueOptions ?? {}),
   });
   const pipeline = new CharacterCreationPipeline(registry);
-  const tools = createCmsTools({ pipeline, repository, registry });
+  const tools = createCmsTools({ pipeline, repository, registry, runtimePublicDir: options.runtimePublicDir });
   const gaps = currentArchitectureGaps();
   const chatAgent = options.chatAgent ?? createCmsChatAgent({ tools, registry, gaps });
 

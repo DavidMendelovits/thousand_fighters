@@ -7,10 +7,11 @@ import { WebView } from 'react-native-webview';
 import { PostHogProvider } from 'posthog-react-native';
 import { allowGameNavigation, fightUrl, gameOrigin } from './gameUrl';
 import { analytics, captureEvent } from './analytics';
+import { loadRosterCache, rosterSelectionKey, syncRoster, type Fighter } from './rosterSync';
 
-type Fighter = { id: string; name: string; portrait?: string };
 const origin = gameOrigin(process.env.EXPO_PUBLIC_GAME_URL, __DEV__, Constants.expoConfig?.hostUri);
-const activeFighterIds = new Set((process.env.EXPO_PUBLIC_ACTIVE_FIGHTER_IDS ?? '').split(',').map((id: string) => id.trim()).filter(Boolean));
+const activeFighterIds = new Set<string>((process.env.EXPO_PUBLIC_ACTIVE_FIGHTER_IDS ?? '').split(',').map((id: string) => id.trim()).filter(Boolean));
+const selectionKey = rosterSelectionKey(activeFighterIds);
 const suspendScript = `window.dispatchEvent(new Event('tf:suspend')); true;`;
 
 function Button({ label, onPress, disabled = false }: { label: string; onPress: () => void; disabled?: boolean }) {
@@ -21,51 +22,68 @@ function Button({ label, onPress, disabled = false }: { label: string; onPress: 
 function FightApp() {
   useKeepAwake();
   const [fighters, setFighters] = useState<Fighter[]>([]);
-  const [player, setPlayer] = useState('brine');
-  const [opponent, setOpponent] = useState('meridian');
+  const [player, setPlayer] = useState('');
+  const [opponent, setOpponent] = useState('');
   const [selecting, setSelecting] = useState<'player' | 'opponent'>('player');
   const [inFight, setInFight] = useState(false);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reload, setReload] = useState(0);
+  const [rosterRefresh, setRosterRefresh] = useState(0);
   const web = useRef<WebView>(null);
   const processRecoveryAttempts = useRef(0);
+  const inFightRef = useRef(false);
+  const fightersRef = useRef<Fighter[]>([]);
+  const pendingRoster = useRef<Fighter[] | null>(null);
+
+  const applyRoster = (next: Fighter[]) => {
+    fightersRef.current = next;
+    setFighters(next);
+    setPlayer(current => next.some(f => f.id === current) ? current : next[0].id);
+    setOpponent(current => next.some(f => f.id === current) ? current : next[Math.min(1, next.length - 1)].id);
+  };
 
   useEffect(() => {
     if (!origin) return;
     const abort = new AbortController();
-    const timeout = setTimeout(() => abort.abort(), 20000);
-    setError(null);
+    let mounted = true;
+    let timedOut = false;
+    let hasFallback = fightersRef.current.length > 0;
+    const timeout = setTimeout(() => { timedOut = true; abort.abort(); }, 20000);
     captureEvent('fighter_roster_loading');
     (async () => {
-      const index = await fetch(`${origin}/assets-index.json`, { signal: abort.signal });
-      if (!index.ok) throw new Error('Published roster is unavailable.');
-      const entries = Object.entries((await index.json()).fighters ?? {}).filter(([, item]) => (item as { config?: unknown })?.config);
-      const configs = await Promise.all(entries.map(async ([id]) => {
-        if (!/^[a-z0-9_-]+$/i.test(id)) return null;
-        const response = await fetch(`${origin}/fighters/${id}/config.json`, { signal: abort.signal });
-        if (!response.ok) throw new Error(`Could not load fighter ${id}.`);
-        return response.json();
-      }));
-      const roster: Fighter[] = configs.filter(c => c && c.rosterGroup === 'oddities' && c.selectable !== false && !c.parentId && (!activeFighterIds.size || activeFighterIds.has(c.id))).map(c => {
-        const file = c.sprite?.frames?.base?.[0]?.file;
-        const portrait = file ? new URL(`${c.sprite.basePath}/${file}`, origin).href : undefined;
-        return { id: c.id, name: c.displayName, portrait: portrait && new URL(portrait).origin === origin ? portrait : undefined };
-      });
-      if (!roster.length) throw new Error('No published fighters are available.');
-      if (abort.signal.aborted) return;
-      setFighters(roster);
-      captureEvent('fighter_roster_loaded', { fighter_count: roster.length, fighter_ids: roster.map(f => f.id) });
-      setPlayer(current => roster.some(f => f.id === current) ? current : roster[0].id);
-      setOpponent(current => roster.some(f => f.id === current) ? current : roster[Math.min(1, roster.length - 1)].id);
-    })().catch(e => { if (!abort.signal.aborted) { setError(e.message); captureEvent('fighter_roster_failed'); } else if (abort.signal.reason?.name === 'AbortError') setError('Loading timed out. Check the game server and retry.'); })
+      const cached = await loadRosterCache(origin, selectionKey);
+      if (cached && !abort.signal.aborted) {
+        hasFallback = true;
+        applyRoster(cached.fighters);
+        if (!inFightRef.current) setError(null);
+        captureEvent('fighter_roster_loaded', { source: 'device_cache', fighter_count: cached.fighters.length, fighter_ids: cached.fighters.map(f => f.id) });
+      }
+      try {
+        const result = await syncRoster({ origin, selectionKey, activeFighterIds, cached, signal: abort.signal });
+        if (abort.signal.aborted) return;
+        if (inFightRef.current) pendingRoster.current = result.cache.fighters;
+        else applyRoster(result.cache.fighters);
+        if (!inFightRef.current) setError(null);
+        captureEvent('fighter_roster_synced', { status: result.status, fighter_count: result.cache.fighters.length });
+      } catch (syncError) {
+        if (abort.signal.aborted) throw syncError;
+        captureEvent('fighter_roster_sync_failed', { using_cache: Boolean(cached) });
+        if (!hasFallback) throw syncError;
+      }
+    })().catch(e => { if (!abort.signal.aborted) { setError(e.message); captureEvent('fighter_roster_failed'); } else if (mounted && timedOut && !hasFallback) setError('Loading timed out. Check the game server and retry.'); })
       .finally(() => clearTimeout(timeout));
-    return () => { clearTimeout(timeout); abort.abort('unmounted'); };
-  }, [reload]);
+    return () => { mounted = false; clearTimeout(timeout); abort.abort('unmounted'); };
+  }, [rosterRefresh]);
+
+  useEffect(() => { inFightRef.current = inFight; }, [inFight]);
 
   useEffect(() => {
+    let previous = AppState.currentState;
     const subscription = AppState.addEventListener('change', state => {
       if (state !== 'active') web.current?.injectJavaScript(suspendScript);
+      if (state === 'active' && previous !== 'active') setRosterRefresh(value => value + 1);
+      previous = state;
       captureEvent('mobile_app_state_changed', { state });
     });
     return () => subscription.remove();
@@ -75,7 +93,7 @@ function FightApp() {
     web.current?.injectJavaScript(suspendScript);
     Alert.alert('Leave this fight?', 'The current match will end.', [
       { text: 'Stay', style: 'cancel' },
-      { text: 'Leave', style: 'destructive', onPress: () => { captureEvent('fight_left', { player_fighter_id: player, opponent_fighter_id: opponent }); setInFight(false); setReady(false); setError(null); } },
+      { text: 'Leave', style: 'destructive', onPress: () => { captureEvent('fight_left', { player_fighter_id: player, opponent_fighter_id: opponent }); setInFight(false); inFightRef.current = false; setReady(false); setError(null); if (pendingRoster.current) { applyRoster(pendingRoster.current); pendingRoster.current = null; } } },
     ]);
   };
   useEffect(() => {
@@ -100,7 +118,7 @@ function FightApp() {
       onMessage={event => { try {
         const message = JSON.parse(event.nativeEvent.data);
         if (message.type === 'fight-ready') { processRecoveryAttempts.current = 0; captureEvent('fight_ready', { player_fighter_id: player, opponent_fighter_id: opponent }); setReady(true); setError(null); }
-        if (message.type === 'select-fighter') { setInFight(false); setReady(false); setError(null); }
+        if (message.type === 'select-fighter') { setInFight(false); inFightRef.current = false; setReady(false); setError(null); if (pendingRoster.current) { applyRoster(pendingRoster.current); pendingRoster.current = null; } }
       } catch { /* unknown message */ } }}
       onError={() => { captureEvent('fight_webview_failed', { player_fighter_id: player, opponent_fighter_id: opponent }); setError('Could not reach the arena. Check your connection.'); }}
       onHttpError={event => { if (new URL(event.nativeEvent.url).pathname.replace(/\.html$/, '') === '/fight') { captureEvent('fight_http_failed', { player_fighter_id: player, opponent_fighter_id: opponent, status_code: event.nativeEvent.statusCode }); setError(`Arena returned HTTP ${event.nativeEvent.statusCode}.`); } }}
@@ -122,14 +140,14 @@ function FightApp() {
 
   return <View style={styles.root}>
     <View style={styles.heading}><View><Text style={styles.kicker}>POCKET ARENA / LOCAL VS CPU</Text><Text style={styles.title}>CHOOSE YOUR ODDITY</Text></View>
-      <Button label="FIGHT" disabled={!fighters.length || Boolean(error)} onPress={() => { processRecoveryAttempts.current = 0; captureEvent('fight_started', { player_fighter_id: player, opponent_fighter_id: opponent }); setReady(false); setError(null); setInFight(true); }} /></View>
+      <Button label="FIGHT" disabled={!fighters.length || Boolean(error)} onPress={() => { processRecoveryAttempts.current = 0; captureEvent('fight_started', { player_fighter_id: player, opponent_fighter_id: opponent }); setReady(false); setError(null); inFightRef.current = true; setInFight(true); }} /></View>
     <View style={styles.selectors}>
       <Button label={`YOU: ${fighters.find(f => f.id === player)?.name ?? '…'}`} onPress={() => setSelecting('player')} />
       <Text style={styles.vs}>VS</Text>
       <Button label={`CPU: ${fighters.find(f => f.id === opponent)?.name ?? '…'}`} onPress={() => setSelecting('opponent')} />
       <Text style={styles.copy}>Selecting {selecting === 'player' ? 'your fighter' : 'opponent'}</Text>
     </View>
-    {error ? <View style={styles.center}><Text style={styles.copy}>{error}</Text><Button label="RETRY ROSTER" onPress={() => { captureEvent('fighter_roster_retried'); setReload(v => v + 1); }} /></View> :
+    {error ? <View style={styles.center}><Text style={styles.copy}>{error}</Text><Button label="RETRY ROSTER" onPress={() => { captureEvent('fighter_roster_retried'); setRosterRefresh(v => v + 1); }} /></View> :
       !fighters.length ? <View style={styles.center}><ActivityIndicator color="#d2e8a7" /><Text style={styles.copy}>Loading published roster…</Text></View> :
       <ScrollView horizontal contentContainerStyle={styles.cards} showsHorizontalScrollIndicator>
         {fighters.map(f => <Pressable key={f.id} accessibilityRole="button" accessibilityLabel={`Select ${f.name}`} accessibilityState={{ selected: f.id === (selecting === 'player' ? player : opponent) }}
