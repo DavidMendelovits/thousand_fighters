@@ -40,6 +40,9 @@
   <ul class="facts">
     <li>16 authored moves</li><li>3 combo routes</li><li>3 generated projectile sprites</li><li>Controlled Surveyor summon</li><li>Hidden Totality form draft</li><li>110 Eventide frames in 6 rows</li>
   </ul>
+  <h2>New walk in the real engine</h2>
+  <p>This 42-second excerpt is cut from chapter 26's unedited browser recording. It shows the current-draft Phaser testbed moving Eventide toward a reactive dummy with the regenerated walk row. This is a locomotion drill, not a completed match; missing attacks still use the labeled draft stand-ins described below.</p>
+  <video controls preload="metadata" playsinline src="eventide-walk-gameplay-short.webm"></video>
   <p>Surveyor idle, Ribbon Lash, the fal/Kling idle, and the regenerated walk are the four currently approved animation rows. The old walk was rejected for collapsing its eyes and body; the new bounded FAL video retry took 165.6 seconds to generate and save, produced 24 distinct non-clipped poses, and was approved after first/middle/final-frame and game-timing review. The lasso still has a change request. The latest readiness check reports 22 of 26 required rows needing generation or current review, plus missing Totality form assets. All three authored projectile sprites are present. The one-submission plan reserved $0.50 estimated against a $1 ceiling, then closed at its limit; that estimate is not an invoice or billing cap. Publishing remains blocked. The testbed explicitly uses visual stand-ins for missing rows; they are not shipped assets.</p>
   <p>Recording coverage: the first six clips capture creation through Surveyor review, and clip seven captures a CMS walkthrough. A recorder interruption left a gap between them; the draft playtest, Ribbon Lash approval, and two rejected lasso attempts in that interval remain documented in CMS history but were not captured live. Clip 14 is a watchable repair of a recorder-interrupted segment; clip 15 resumes live capture for projectile recovery and validation. The full creation is therefore not continuously recorded.</p>
   <script>
@@ -68,6 +71,8 @@
       ['22 · Rejection to bounded plan', 'creation-22-next-plan.webm', '08:03 · Save a one-submission plan, pin base and actor references, and reject the old walk on its current fingerprint. No provider request in this chapter.'],
       ['23 · Walk retry and review', 'creation-23-bounded-walk-retry.webm', '10:07 · Explicit FAL submission, server progress, new 24-pose walk inspection, and current-version approval.'],
       ['24 · Plan closeout', 'creation-24-plan-closeout.webm', '00:35 · Reconcile the approved walk; the plan records its kept step and blocks a second submission at its cap.'],
+      ['25 · Raw engine control check', 'creation-25-walk-gameplay.webm', '08:27 · Unedited browser testbed debugging, including real movement and input focus checks. Long stretches are exploratory, not a fight.'],
+      ['26 · Engine walk excerpt source', 'creation-26-gameplay-highlight.webm', '02:52 · Browser-driven movement and attack-control exploration. The 42-second walk excerpt above is cut from this raw recording.'],
     ];
     const player = document.getElementById('player');
     const nav = document.getElementById('chapters');
@@ -85,7 +90,7 @@
       button.type = 'button'; button.innerHTML = `${title}<small>${note}</small>`;
       button.addEventListener('click', () => choose(i)); nav.append(button);
     });
-    const requestedPart = /^#part-(?:[1-9]|1[0-9]|2[0-4])$/.test(location.hash) ? Number(location.hash.slice(6)) : 24;
+    const requestedPart = /^#part-(?:[1-9]|1[0-9]|2[0-6])$/.test(location.hash) ? Number(location.hash.slice(6)) : 24;
     choose(requestedPart - 1);
     player.addEventListener('ended', () => {
       const index = [...nav.children].findIndex(button => button.getAttribute('aria-current') === 'true');

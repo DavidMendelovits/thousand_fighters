@@ -96,6 +96,10 @@ game-timed playback, the new walk was approved. The plan reconciled that
 approval, recorded **6/49 steps kept**, and closed as budget-exhausted without
 another submission. A fresh bounded plan, further art review, independent
 Totality motion/install, runtime QA and publication remain open.
+The approved walk was also exercised in the actual draft Phaser testbed
+against a reactive dummy. A [42-second gameplay drill](../artifacts/eventide-workbench/eventide-walk-gameplay-short.webm)
+is excerpted from an unedited browser recording; it demonstrates locomotion,
+not a complete fight or publication-ready pack.
 
 ### September 20 execution update — unified draft editor audit
 
