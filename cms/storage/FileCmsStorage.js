@@ -1,7 +1,11 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { mkdir, readFile, readdir, rename, rm, stat, writeFile, link, unlink, open } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+
+const execFileAsync = promisify(execFile);
 
 export function normalizeStorageKey(key) {
   if (typeof key !== 'string') {
@@ -57,7 +61,7 @@ export class FileCmsStorage {
   }
 
   async putBytes(key, bytes, metadata = {}) {
-    await this.writeObject(key, bytes);
+    await this.writeObject(key, bytes, { cloneFromLineage: true });
     await this.writeMetadata(key, metadata);
   }
 
@@ -66,8 +70,11 @@ export class FileCmsStorage {
     await mkdir(path.dirname(destination), { recursive: true });
     const temporary = `${destination}.${randomUUID()}.pending`;
     try {
-      const file = await open(temporary, 'wx');
-      try { await file.writeFile(bytes); await file.sync(); } finally { await file.close(); }
+      // Version snapshots land here (via withLineage); blobs themselves can't clone from themselves.
+      if (key.startsWith('lineage/') || !(await this.cloneLineageBlob(bytes, temporary))) {
+        const file = await open(temporary, 'wx');
+        try { await file.writeFile(bytes); await file.sync(); } finally { await file.close(); }
+      }
       await link(temporary, destination); // atomic publication; fails if destination exists
       await this.writeMetadata(key, metadata);
     } finally { await unlink(temporary).catch(error => { if (error.code !== 'ENOENT') throw error; }); }
@@ -144,13 +151,28 @@ export class FileCmsStorage {
     return `${this.absolutePath(key)}.metadata.json`;
   }
 
-  async writeObject(key, value) {
+  async writeObject(key, value, { cloneFromLineage = false } = {}) {
     const absolutePath = this.absolutePath(key);
     await mkdir(path.dirname(absolutePath), { recursive: true });
 
     const tempPath = path.join(path.dirname(absolutePath), `.${path.basename(absolutePath)}.${randomUUID()}.tmp`);
-    await writeFile(tempPath, value);
+    if (!(cloneFromLineage && await this.cloneLineageBlob(value, tempPath))) await writeFile(tempPath, value);
     await rename(tempPath, absolutePath);
+  }
+
+  // Version snapshots re-write bytes already archived in lineage/blobs. On APFS,
+  // clone the blob (copy-on-write) instead so each snapshot costs ~no disk.
+  // ponytail: macOS only — Node's COPYFILE_FICLONE silently full-copies there; add Linux reflink if we ever run file storage on one.
+  async cloneLineageBlob(bytes, tempPath) {
+    if (process.platform !== 'darwin' || bytes.length < 4096) return false;
+    const sha256 = createHash('sha256').update(bytes).digest('hex');
+    const blobPath = this.absolutePath(`lineage/blobs/sha256/${sha256.slice(0, 2)}/${sha256}`);
+    try {
+      await execFileAsync('cp', ['-c', blobPath, tempPath]);
+      if (createHash('sha256').update(await readFile(tempPath)).digest('hex') === sha256) return true;
+    } catch {}
+    await unlink(tempPath).catch(() => {});
+    return false;
   }
 
   async writeMetadata(key, metadata) {
