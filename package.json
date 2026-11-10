@@ -4,6 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "v2": "vite v2",
+    "v2:check": "tsc --noEmit -p v2 && tsx v2/cli.ts && tsx v2/cli.ts fuzz 1000",
     "mobile:game": "vite --host 0.0.0.0 --port 5174",
     "mobile:start": "npm --prefix mobile start",
     "build:fight": "node scripts/build_fight_client.mjs",
