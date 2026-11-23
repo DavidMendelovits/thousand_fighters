@@ -171,6 +171,7 @@ function drawFighter(c: CanvasRenderingContext2D, f: Fighter, shown: Pose, sheet
   c.save()
   if (f.st === 'atk' && m?.teleport) c.globalAlpha = f.t < m.teleport.at ? 1 - f.t / m.teleport.at : Math.min(1, (f.t - m.teleport.at) / 6)
   if (f.buff) { c.shadowColor = f.buff.color; c.shadowBlur = 14 + Math.sin(tick / 4) * 6 }
+  if (f.st === 'atk' && f.charge && m?.charge) { const k = f.charge / m.charge.max; c.shadowColor = k >= 1 ? '#ffffff' : '#ffd23f'; c.shadowBlur = 6 + 26 * k + (k >= 1 ? Math.sin(tick) * 6 : 0) } // charging glows, full charge flickers
   if (sheet) {
     const lk = spriteLook(f), keys = compileKeys(f.def), mid = 100 * f.def.look.height, a0 = c.globalAlpha
     c.translate(f.x + lk.dx, gy + lk.dy); c.scale(f.face, 1)

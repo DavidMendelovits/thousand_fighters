@@ -44,6 +44,11 @@ and in the air any air move not used yet this jump cancels on contact (jump punc
 Anti-air grabs catch launched opponents too. Hitstun shrinks from the 4th hit of a combo on, so plain links
 (jab, jab, jab...) run dry while strings and cancels still connect.
 
+Toward the standard layout (doc: "Standard moveset layout"), still on the 4 buttons: up + button from the ground is
+an up attack (pressed with up or during the 3-tick jump squat; `dir: 'u'`), air moves take directions (Air Spike d+HP,
+Air Launcher u+HP), heavy kicks charge Smash-style while held (`charge` on a Move), and throwing while holding up
+tosses straight up into a free juggle.
+
 ## Sprites
 
 The rig is placeholder art and also the pose guide. Studio → Sprites → "Download pose sheet" gives a

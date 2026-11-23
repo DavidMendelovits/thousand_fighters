@@ -112,7 +112,7 @@ export function fk(p: Pose, k: Look) {
 // One shape for every move in the game: universal normals, specials, follow-ups, supers.
 // Everything past the frame data is optional and composable.
 export type Level = 'mid' | 'low' | 'oh' // low must be crouch-blocked, oh (overhead) must be stand-blocked
-export type Dir = 'd' | 'f' | 'b'
+export type Dir = 'd' | 'f' | 'b' | 'u'
 export type Limb = 'armF' | 'armB' | 'legF' | 'legB'
 export type ProjSpec = {
   at: number // tick it spawns on
@@ -161,6 +161,9 @@ export type Move = {
   meter?: number // super meter gained at end of startup
   cancel?: boolean // may cancel into specials/strings on contact (default: plain grounded normals only)
   jc?: boolean // hold up on contact to jump after the opponent (default: grounded moves that launch straight up)
+  // hold the button through the windup to charge (Smash-style): the windup freezes up to `max` ticks, damage grows to
+  // `dmg` times, and a full charge uses `launch` if given
+  charge?: { max: number; dmg: number; launch?: [number, number] }
   // --- presentation
   pose: string; base: string; crouch?: boolean
 }
@@ -171,13 +174,20 @@ export const MOVES: Record<string, Move> = Object.fromEntries([
   M({ id: 'lp', name: 'Jab', btn: 'lp', su: 4, ac: 3, rc: 7, dmg: 30, hs: 16, bs: 10, limb: 'armF', r: 10, kb: 4, stop: 5 }),
   M({ id: 'hp', name: 'Cross', btn: 'hp', su: 8, ac: 3, rc: 14, dmg: 60, hs: 20, bs: 13, limb: 'armB', r: 12, kb: 6, stop: 7 }),
   M({ id: 'lk', name: 'Front Kick', btn: 'lk', su: 6, ac: 3, rc: 11, dmg: 45, hs: 18, bs: 11, limb: 'legF', kb: 5 }),
-  M({ id: 'hk', name: 'High Kick', btn: 'hk', su: 10, ac: 4, rc: 17, dmg: 75, hs: 22, bs: 14, limb: 'legF', r: 13, kb: 7, stop: 8 }),
+  M({ id: 'hk', name: 'High Kick', btn: 'hk', su: 10, ac: 4, rc: 17, dmg: 75, hs: 22, bs: 14, limb: 'legF', r: 13, kb: 7, stop: 8, charge: { max: 40, dmg: 1.8, launch: [8, 7] } }),
   M({ id: 'clp', name: 'Low Jab', btn: 'lp', dir: 'd', su: 5, ac: 3, rc: 8, dmg: 25, hs: 15, bs: 9, limb: 'armF', r: 10, kb: 4, stop: 5, base: 'crouch', crouch: true }),
   M({ id: 'clk', name: 'Shin Kick', btn: 'lk', dir: 'd', su: 6, ac: 3, rc: 10, dmg: 35, hs: 15, bs: 9, lvl: 'low', limb: 'legF', kb: 4, stop: 5, base: 'crouch', crouch: true }),
   M({ id: 'upper', name: 'Uppercut', btn: 'hp', dir: 'd', su: 7, ac: 5, rc: 20, dmg: 110, bs: 14, limb: 'armF', r: 26, stop: 11, launch: [0.6, 14], base: 'crouch' }),
-  M({ id: 'sweep', name: 'Sweep', btn: 'hk', dir: 'd', su: 10, ac: 4, rc: 22, dmg: 60, bs: 12, lvl: 'low', limb: 'legF', r: 13, stop: 8, launch: [2.5, 5.5], base: 'crouch', crouch: true }),
+  M({ id: 'sweep', name: 'Sweep', btn: 'hk', dir: 'd', su: 10, ac: 4, rc: 22, dmg: 60, bs: 12, lvl: 'low', limb: 'legF', r: 13, stop: 8, launch: [2.5, 5.5], base: 'crouch', crouch: true, charge: { max: 40, dmg: 1.7, launch: [4, 8] } }),
   M({ id: 'round', name: 'Roundhouse', btn: 'hk', dir: 'b', su: 12, ac: 4, rc: 20, dmg: 100, bs: 15, limb: 'legF', r: 14, stop: 10, launch: [8, 7] }),
   M({ id: 'over', name: 'Hammer', btn: 'hp', dir: 'f', su: 20, ac: 3, rc: 16, dmg: 70, hs: 22, bs: 12, lvl: 'oh', limb: 'armB', r: 14, stop: 8 }),
+  // up direction: u + button from the ground (pressed with up, or during the jump squat)
+  M({ id: 'ulp', name: 'Rising Jab', btn: 'lp', dir: 'u', su: 5, ac: 3, rc: 9, dmg: 35, hs: 16, bs: 10, limb: 'armF', r: 22, kb: 3, stop: 5, pose: 'upper' }),
+  M({ id: 'uhp', name: 'Sky Palm', btn: 'hp', dir: 'u', su: 11, ac: 4, rc: 22, dmg: 85, bs: 13, limb: 'armF', r: 22, stop: 10, launch: [1, 12], pose: 'upper' }),
+  M({ id: 'uhk', name: 'Up Smash', btn: 'hk', dir: 'u', su: 12, ac: 4, rc: 24, dmg: 70, bs: 14, limb: 'legF', r: 16, stop: 9, launch: [1.5, 10], pose: 'hk', charge: { max: 40, dmg: 1.8, launch: [1, 15] } }),
+  // air directions
+  M({ id: 'jdp', name: 'Air Spike', btn: 'hp', dir: 'd', air: true, su: 7, ac: 99, rc: 0, land: 8, dmg: 65, hs: 20, bs: 13, lvl: 'oh', limb: 'armB', r: 16, stop: 8, launch: [1.5, -6], pose: 'over', base: 'air' }),
+  M({ id: 'jup', name: 'Air Launcher', btn: 'hp', dir: 'u', air: true, su: 6, ac: 99, rc: 0, dmg: 55, hs: 20, bs: 12, limb: 'armF', r: 18, stop: 8, launch: [1, 9], pose: 'upper', base: 'air' }),
   M({ id: 'jp', name: 'Jump Punch', btn: 'lp', or: 'hp', air: true, su: 5, ac: 99, rc: 0, dmg: 50, hs: 18, bs: 12, lvl: 'oh', limb: 'armF', r: 14, base: 'air' }),
   M({ id: 'jk', name: 'Jump Kick', btn: 'lk', or: 'hk', air: true, su: 6, ac: 99, rc: 0, dmg: 60, hs: 20, bs: 13, lvl: 'oh', limb: 'legF', r: 14, stop: 7, base: 'air' }),
   M({ id: 'throw', name: 'Throw', btn: 'lp', chord: 'lk', su: 3, ac: 14, rc: 16, dmg: 120, grab: { range: 16 }, stop: 9 }),
@@ -197,7 +207,7 @@ export const isSpecial = (m: Move) => !!m.motion || !!m.special
 /** Launchers that send the opponent straight up can be jump-cancelled on contact to chase them into the air. */
 export const jumpCancels = (m: Move) => m.jc ?? (!m.air && !m.grab && !!m.launch && m.launch[1] >= 10 && m.launch[0] <= 3)
 
-const ARROW: Record<string, string> = { d: '↓', f: '→', b: '←' }
+const ARROW: Record<string, string> = { d: '↓', f: '→', b: '←', u: '↑' }
 /** Human-readable input, e.g. "↓ → LP", "air LK", "after Jab: HP". */
 export function cmdOf(m: Move, all: Record<string, Move>): string {
   if (!m.btn) return '—'

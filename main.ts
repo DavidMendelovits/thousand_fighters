@@ -82,7 +82,7 @@ function tick() {
   if (demo && demoT > 230) restart()
   if (mode === 'train') {
     w.time = 99 * 60
-    calm = w.f.some(f => f.combo || !['idle', 'walk', 'crouch', 'block', 'air', 'atk', 'dash'].includes(f.st)) ? 0 : calm + 1
+    calm = w.f.some(f => f.combo || !['idle', 'walk', 'crouch', 'squat', 'block', 'air', 'atk', 'dash'].includes(f.st)) ? 0 : calm + 1
     if (calm > 50) for (const f of w.f) { f.hp = f.def.stats.hp; f.meter = 100 }
     if (w.over && ++overT > 150) restart()
   }
