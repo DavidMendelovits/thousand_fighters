@@ -34,7 +34,7 @@ Core ideas to keep:
 
 - A fighter is a JSON file. It never authors hitboxes: the hitbox is the striking limb in the move's strike pose.
 - Every move is the same `Move` shape. Fighters add `moves`, custom `poses`, and `tweaks` to universal moves.
-- Validation is simulation. `npm run v2:check` must stay green (49 saved fighters and 1,000 fuzzed ones pass today).
+- Validation is simulation. `npm run v2:check` must stay green (Faro, the one saved fighter, and 1,000 fuzzed ones pass today).
 
 Mechanics a move can combine: motion/direction/chord inputs, air, follow-ups (`from`), string-only steps,
 meter `cost`, `drive`, projectiles (straight, arcing, stationary, aimed at the opponent, multi-hit, tethered),

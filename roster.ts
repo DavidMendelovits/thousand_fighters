@@ -1,7 +1,7 @@
 // The roster page: every fighter at a glance, phone first. Tap one for its stats, moves and combos,
-// each playable in a small arena against the validator's sparring dummy. Read-only.
+// each playable in a small arena against the validator's sparring dummy, or with no one to hit. Read-only.
 import { POSES, compile, fk, type FighterDef } from './kit'
-import { newWorld, step, type World } from './sim'
+import { newWorld, step, STAGE, type World } from './sim'
 import { draw, drawRig, newFx, fxTick, CELL, AX, AY, type Fx } from './render'
 import { validate, at, REF, type Demo } from './validate'
 import { loadFighters, sheetUrl } from './data'
@@ -65,7 +65,8 @@ function renderGrid() {
   const q = $<HTMLInputElement>('#search').value.trim().toLowerCase()
   const shown = roster.filter(d => !q || (d.name + ' ' + d.bio).toLowerCase().includes(q))
   $('#grid').replaceChildren(...shown.map(card))
-  $('#count').textContent = q ? `${shown.length} of ${roster.length} fighters` : `${roster.length} fighters`
+  const n = `${roster.length} fighter${roster.length === 1 ? '' : 's'}`
+  $('#count').textContent = q ? `${shown.length} of ${n}` : n
   $('#empty').hidden = shown.length > 0
   $('#empty').textContent = `No fighter matches “${q}”.`
 }
@@ -75,21 +76,35 @@ type Clip = { label: string; cmd: string; demo: Demo }
 let cur: FighterDef | null = null, w: World, fx: Fx, clips: Clip[] = [], clip = -1, demoT = 0, raf = 0, auto = true
 const ctx = $<HTMLCanvasElement>('#arena').getContext('2d')!
 
+// Solo: no opponent. The dummy is moved to the far edge, made untouchable and not drawn, so a move plays out
+// in full: a projectile flies its whole path, a lunge or grab whiffs instead of stopping on contact.
+const SOLO_KEY = 'roster.solo', NOBODY: FighterDef = { ...REF, name: '' }
+let solo = false
+try { solo = localStorage.getItem(SOLO_KEY) === '1' } catch {}
+function setSolo(on: boolean) {
+  solo = on
+  try { localStorage.setItem(SOLO_KEY, on ? '1' : '0') } catch {}
+  $('#solo').setAttribute('aria-pressed', String(on)); $('#solo').textContent = on ? 'Show opponent' : 'Hide opponent'
+}
+setSolo(solo)
+$('#solo').onclick = () => { setSolo(!solo); if (cur) playClip(clip) }
+
 function playClip(i: number, user = false) {
   if (!cur) return
   if (user) auto = false
   clip = i; demoT = 0
   const c = clips[i]
-  w = newWorld(cur, REF, 1, c ? c.demo.dist : 260); fx = newFx(w)
+  w = solo ? newWorld(cur, NOBODY, 1, STAGE.max - STAGE.min - 120) : newWorld(cur, REF, 1, c ? c.demo.dist : 260); fx = newFx(w)
   if (c) { w.f[0].meter = 100; if (c.demo.powered) w.f[0].buff = { t: 9999, power: 1, speed: 1, defense: 1, color: '#ffffff' } }
-  $('#now').innerHTML = c ? `<b>${esc(c.label)}</b> <span class="dim">${esc(c.cmd)}</span>` : (clips.length ? 'Tap a move or combo to watch it' : '')
+  $('#now').innerHTML = c ? `<b>${esc(c.label)}</b> <span class="dim">${esc(c.cmd)}</span>` : (clips.length ? 'Tap a move to watch it' : '')
   for (const el of document.querySelectorAll('.mv')) el.classList.toggle('on', +(el as HTMLElement).dataset.clip! === i)
 }
 
 function tick() {
   if (fx.slow > 0 && fx.slow-- % 2) return
   const c = clips[clip]
-  step(w, c ? at(c.demo.script, w, demoT) : 0, c?.demo.foe ? at(c.demo.foe, w, demoT) : 0); fxTick(fx, w)
+  if (solo) w.f[1].inv = 999 // nothing can hit or grab it; refreshed because returning to idle clears it
+  step(w, c ? at(c.demo.script, w, demoT) : 0, c?.demo.foe && !solo ? at(c.demo.foe, w, demoT) : 0); fxTick(fx, w)
   w.time = 99 * 60; demoT++
   // a clip runs about 4s, then the next one starts (or the same one again once the viewer picked it)
   if (demoT > 230) playClip(auto && clips.length ? (clip + 1) % clips.length : clip)
@@ -98,7 +113,10 @@ let acc = 0, last = 0
 function frame(now: number) {
   acc += Math.min(100, now - (last || now)); last = now
   for (; acc >= 1000 / 60; acc -= 1000 / 60) tick()
+  const x = w.f[1].x
+  if (solo) w.f[1].x = 1e4 // off canvas for this draw only
   draw(ctx, w, fx, { boxes: false, sheets })
+  w.f[1].x = x
   raf = requestAnimationFrame(frame)
 }
 
@@ -108,7 +126,7 @@ function moveRow(i: number, name: string, cmd: string, sub: string) {
 
 function open(d: FighterDef) {
   cur = d; auto = true; clips = []
-  document.body.classList.add('lock'); $('#detail').hidden = false; $('#detail').scrollTop = 0
+  document.body.classList.add('lock'); $('#detail').hidden = false; $('#scroll').scrollTop = 0
   $('#dname').textContent = d.name; $('#dbadge').innerHTML = '<span class="dim">checking…</span>'; document.title = `${d.name} · Thousand Fighters`
   const st = d.stats
   $('#stats').innerHTML = [['Health', st.hp], ['Speed', st.speed], ['Power', st.power], ['Jump', st.jump]]
@@ -152,7 +170,7 @@ function close() {
 
 $('#body').addEventListener('click', e => {
   const b = (e.target as HTMLElement).closest<HTMLElement>('.mv')
-  if (b && +b.dataset.clip! >= 0) { playClip(+b.dataset.clip!, true); $('#arena').scrollIntoView({ behavior: 'smooth', block: 'center' }) }
+  if (b && +b.dataset.clip! >= 0) playClip(+b.dataset.clip!, true)
 })
 $('#back').onclick = () => { if (history.state?.fromGrid) history.back(); else location.hash = '' }
 addEventListener('keydown', e => { if (e.key === 'Escape' && cur) $('#back').click() })

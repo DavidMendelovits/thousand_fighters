@@ -20,6 +20,8 @@ npx tsx cli.ts roster 1000   # write 1000 fighters to fighters
 - `design.ts` — description → fighter, instantly. Swap in a text model by returning a `FighterDef`.
 - `render.ts` / `main.ts` — canvas renderer and the studio page.
 - `vite.config.ts` — dev server plus the save API. Storage is `fighters/<id>.json` (+ `<id>.png`).
+  Only Faro is on the roster for now. `fighters/benched/` holds fighters kept out of the roster, game and
+  checks (Palimpsest). Move a file up into `fighters/` to bring it back.
 
 ## The move schema
 
