@@ -34,14 +34,20 @@
   #empty { padding: 32px var(--pad); text-align: center; }
 
   /* ---- detail ---- */
-  #detail { position: fixed; inset: 0; z-index: 5; background: var(--bg); overflow-y: auto; overscroll-behavior: contain; }
-  #detail header { display: flex; align-items: center; gap: 4px; padding-left: 4px; }
+  /* the game window stays put; only the move list under it scrolls */
+  #detail { position: fixed; inset: 0; z-index: 5; background: var(--bg); display: flex; flex-direction: column; overflow: hidden; }
+  #detail header { position: static; flex: none; display: flex; align-items: center; gap: 4px; padding-left: 4px; }
   #back { width: 44px; height: 44px; display: grid; place-items: center; font-size: 22px; border-radius: 10px; flex: none; }
   #dname { font-size: 18px; font-weight: 800; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #dbadge { margin-left: auto; font-size: 12px; font-weight: 700; white-space: nowrap; padding-right: 8px; }
+  .stage { flex: none; width: 100%; max-width: 720px; margin: 0 auto; padding: 0 var(--pad) 8px; }
+  #arena { display: block; width: min(100%, calc(42vh * 16 / 9)); width: min(100%, calc(42dvh * 16 / 9)); aspect-ratio: 16 / 9; margin: 12px auto 0; border-radius: 10px; border: 1px solid var(--line); background: #000; }
+  .under { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  #now { flex: 1; min-width: 0; min-height: 22px; margin: 0; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #solo { flex: none; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); font-size: 13px; font-weight: 700; white-space: nowrap; }
+  #solo[aria-pressed="true"] { border-color: var(--gold); color: var(--gold); }
+  .scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; border-top: 1px solid var(--line); }
   .wrap { max-width: 720px; margin: 0 auto; padding: 0 var(--pad) calc(32px + env(safe-area-inset-bottom)); }
-  #arena { display: block; width: 100%; aspect-ratio: 16 / 9; margin-top: 12px; border-radius: 10px; border: 1px solid var(--line); background: #000; }
-  #now { min-height: 22px; margin: 6px 0 0; font-size: 13px; text-align: center; }
   .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 14px 0 4px; }
   .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 6px; text-align: center; }
   .stat b { display: block; font-size: 17px; font-variant-numeric: tabular-nums; }
@@ -78,11 +84,18 @@
     <button id="back" aria-label="Back to roster">‹</button>
     <span id="dname"></span><span id="dbadge"></span>
   </header>
-  <div class="wrap">
+  <div class="stage">
     <canvas id="arena" width="960" height="540"></canvas>
-    <p id="now" class="dim"></p>
-    <div class="stats" id="stats"></div>
-    <div id="body"></div>
+    <div class="under">
+      <p id="now" class="dim"></p>
+      <button id="solo" aria-pressed="false">Hide opponent</button>
+    </div>
+  </div>
+  <div class="scroll" id="scroll">
+    <div class="wrap">
+      <div class="stats" id="stats"></div>
+      <div id="body"></div>
+    </div>
   </div>
 </section>
 <script type="module" src="./roster.ts"></script>
