@@ -7,14 +7,18 @@ export const BIT: Record<Btn, number> = { lp: LP, hp: HP, lk: LK, hk: HK }
 export const STAGE = { w: 960, min: 40, max: 920 }
 /** Hitstun shrinks with each hit in a combo, so links (jab, jab, jab...) run dry while cancels and strings still connect. */
 export const HS_DECAY = 0.08
+/** Ticks on the ground between pressing up and leaving it: up + button in this window is an up attack, not a jump. */
+export const JSQ = 3
+/** Up + throw: straight up, juggleable, for less damage. */
+const UP_THROW: [number, number] = [0.3, 13]
 const G = 0.62, BUF = 10, DASH = 16, DOWN = 28, GETUP = 18
 
-export type St = 'idle' | 'walk' | 'crouch' | 'air' | 'dash' | 'atk' | 'block' | 'hit' | 'bstun' | 'launch' | 'down' | 'getup' | 'thrown' | 'pulled' | 'rec' | 'ko' | 'win'
+export type St = 'idle' | 'walk' | 'crouch' | 'squat' | 'air' | 'dash' | 'atk' | 'block' | 'hit' | 'bstun' | 'launch' | 'down' | 'getup' | 'thrown' | 'pulled' | 'rec' | 'ko' | 'win'
 export type Fighter = {
   def: FighterDef; moves: Record<string, Move>; order: Move[]; poses: Record<string, Pose>
   x: number; y: number; vx: number; vy: number; face: 1 | -1
   st: St; t: number; cr: boolean; dd: number
-  mv: Move | null; hitDone: boolean; hitT: number; contact: boolean; ender: boolean; str: string[]; airAtk: boolean; airUsed: string[]; tdir: number; driving: boolean; armor: number
+  mv: Move | null; hitDone: boolean; hitT: number; contact: boolean; ender: boolean; str: string[]; airAtk: boolean; airUsed: string[]; tdir: number; tup: boolean; charge: number; jumpIn: number; driving: boolean; armor: number
   hp: number; meter: number; stun: number; inv: number
   buff: null | { t: number; power: number; speed: number; defense: number; color: string }
   combo: number; comboDmg: number; juggle: number // hits / damage taken in the current combo
@@ -22,14 +26,14 @@ export type Fighter = {
   hist: number[]; buf: number; bufAge: number
 }
 export type Proj = { id: string; s: ProjSpec; x: number; y: number; vx: number; vy: number; owner: number; t: number; hits: number; cool: number }
-export type Ev = { type: 'hit' | 'block' | 'swing' | 'land' | 'thud' | 'ko' | 'throw' | 'fire' | 'jump' | 'tele'; x: number; y: number; power: number; who: number }
+export type Ev = { type: 'hit' | 'block' | 'swing' | 'land' | 'thud' | 'ko' | 'throw' | 'fire' | 'jump' | 'tele' | 'charged'; x: number; y: number; power: number; who: number }
 export type World = { f: [Fighter, Fighter]; proj: Proj[]; tick: number; stop: number; time: number; over: null | { winner: number }; ev: Ev[]; seed: number; plan: [number[], number[]] }
 
 const newFighter = (def: FighterDef, x: number, face: 1 | -1): Fighter => {
   const c = compile(def)
   return {
     def, moves: c.moves, order: c.order, poses: c.poses, x, y: 0, vx: 0, vy: 0, face, st: 'idle', t: 0, cr: false, dd: 1,
-    mv: null, hitDone: false, hitT: 0, contact: false, ender: false, str: [], airAtk: false, airUsed: [], tdir: 1, driving: false, armor: 0,
+    mv: null, hitDone: false, hitT: 0, contact: false, ender: false, str: [], airAtk: false, airUsed: [], tdir: 1, tup: false, charge: 0, jumpIn: 0, driving: false, armor: 0,
     hp: def.stats.hp, meter: 0, stun: 0, inv: 0, buff: null, pulled: false, combo: 0, comboDmg: 0, juggle: 0, hist: new Array(40).fill(0), buf: 0, bufAge: 99,
   }
 }
@@ -56,7 +60,7 @@ export function poseKeys(f: Fighter): [string, string, number] {
   switch (f.st) {
     case 'idle': return ['idle0', 'idle1', 0.5 - 0.5 * Math.cos(f.t / 25 * Math.PI)]
     case 'walk': { const ph = (f.dd > 0 ? f.t : 4000 - f.t) / 8, i = Math.floor(ph) % 4; return ['walk' + i, 'walk' + (i + 1) % 4, ph % 1] }
-    case 'crouch': case 'rec': return ['crouch', 'crouch', 0]
+    case 'crouch': case 'rec': case 'squat': return ['crouch', 'crouch', 0]
     case 'block': case 'bstun': return f.cr ? ['cblock', 'cblock', 0] : ['block', 'block', 0]
     case 'air': return ['air', 'air', 0]
     case 'dash': return f.dd > 0 ? ['dashF', 'dashF', 0] : ['dashB', 'dashB', 0]
@@ -106,7 +110,7 @@ const dtap = (h: number[], bit: number) => { // tap, release, tap
   for (let k = 2; k <= 10; k++) { if (h[k] & (L | R | U | D) & ~bit) return false; if (h[k] & bit) return true }
   return false
 }
-const dirBit = (f: Fighter, d: string) => d === 'd' ? D : (d === 'f') === (f.face > 0) ? R : L
+const dirBit = (f: Fighter, d: string) => d === 'd' ? D : d === 'u' ? U : (d === 'f') === (f.face > 0) ? R : L
 /** A motion's first direction, when it is forward or back, must be a tap: held longer than this, it was a walk. */
 export const MOTION_TAP = 10
 function motion(f: Fighter, dirs: string[]) { // each direction held in order, the last within 12 ticks of the button
@@ -134,7 +138,7 @@ function inputOk(w: World, i: number, m: Move): boolean {
 }
 /** The exact inputs that perform a move from neutral, one entry per tick. Used by the CPU, the validator and demos. */
 export function scriptFor(m: Move, right = true): number[] {
-  const bit = (d: string) => d === 'd' ? D : (d === 'f') === right ? R : L
+  const bit = (d: string) => d === 'd' ? D : d === 'u' ? U : (d === 'f') === right ? R : L
   const b = (m.btn ? BIT[m.btn] : 0) | (m.chord ? BIT[m.chord] : 0)
   if (m.motion) return [...m.motion.flatMap(d => [bit(d), bit(d)]), bit(m.motion[m.motion.length - 1]) | b]
   return [(m.dir ? bit(m.dir) : 0) | b]
@@ -142,7 +146,7 @@ export function scriptFor(m: Move, right = true): number[] {
 
 function start(w: World, f: Fighter, m: Move) {
   f.st = 'atk'; f.t = 0; f.mv = m; f.hitDone = f.contact = f.ender = f.driving = false; f.hitT = 0; f.buf = 0; f.cr = !!m.crouch
-  f.armor = m.armor ?? 0; f.meter -= m.cost ?? 0
+  f.armor = m.armor ?? 0; f.meter -= m.cost ?? 0; f.charge = 0
   if (airborne(f)) { f.airAtk = true; f.airUsed.push(m.id) } else f.vx = 0
   f.str = [m.id]
   w.ev.push({ type: 'swing', x: f.x, y: f.y + 100, power: m.stop, who: w.f.indexOf(f) })
@@ -187,14 +191,18 @@ function think(w: World, i: number, inp: number) {
       f.vx = 0; f.cr = false
       if (inp & BL) { setSt(f, 'block'); f.cr = !!(inp & D) }
       else if (inp & D) { setSt(f, 'crouch'); f.cr = true }
-      else if (inp & U) {
-        jump(w, i, inp, 1)
-      }
+      else if (inp & U) { f.st = 'squat'; f.t = 0; f.vx = 0; f.jumpIn = inp } // jump squat: the arc is chosen on this tick
       else if (dtap(f.hist, fwd)) { f.st = 'dash'; f.t = 0; f.dd = 1 }
       else if (dtap(f.hist, back)) { f.st = 'dash'; f.t = 0; f.dd = -1 }
       else if (inp & fwd && !(inp & back)) { setSt(f, 'walk'); f.dd = 1; f.vx = f.face * 3.2 * sp }
       else if (inp & back && !(inp & fwd)) { setSt(f, 'walk'); f.dd = -1; f.vx = -f.face * 2.6 * sp }
       else setSt(f, 'idle')
+      return
+    }
+    case 'squat': {
+      if (tryAttack(w, i)) return // up + button during the squat is an up attack
+      if (f.t < JSQ) return
+      jump(w, i, f.jumpIn | inp, 1)
       return
     }
     case 'dash':
@@ -218,21 +226,23 @@ function think(w: World, i: number, inp: number) {
 
 function attackTick(w: World, i: number, inp: number) {
   const f = w.f[i], o = w.f[1 - i], m = f.mv!, t = f.t, back = f.face > 0 ? L : R, air = airborne(f)
+  // charging: holding the button at the end of the windup freezes it there, up to charge.max ticks
+  if (m.charge && m.btn && t === m.su - 1 && f.charge < m.charge.max && f.hist[0] & BIT[m.btn]) { f.charge++; f.t--; if (f.charge === m.charge.max) w.ev.push({ type: 'charged', x: f.x, y: f.y + 100, power: 2, who: i }); return }
   // LP and LK rarely land on the same tick: a fresh jab/kick becomes a throw if the other button follows
   if (t <= 2 && (m.id === 'lp' || m.id === 'lk') && inp & LP && inp & LK) return start(w, f, f.moves.throw)
   if (m.grab) {
     const reach = Math.abs(o.x - f.x) <= pushW(f) + pushW(o) + m.grab.range && o.inv <= 0
-    const prey = m.grab.air ? airborne(o) && o.y < 170 && ['air', 'atk', 'launch'].includes(o.st) : !airborne(o) && ['idle', 'walk', 'crouch', 'block', 'dash'].includes(o.st)
+    const prey = m.grab.air ? airborne(o) && o.y < 170 && ['air', 'atk', 'launch'].includes(o.st) : !airborne(o) && ['idle', 'walk', 'crouch', 'squat', 'block', 'dash'].includes(o.st)
     if (t === m.su && reach && prey) {
-      o.st = 'thrown'; o.t = 0; o.mv = null; f.contact = true; f.tdir = inp & back ? -1 : 1
+      o.st = 'thrown'; o.t = 0; o.mv = null; f.contact = true; f.tdir = inp & back ? -1 : 1; f.tup = !m.grab.air && !!(f.hist.slice(0, m.su + 1).some(h => h & U))
       w.ev.push({ type: 'throw', x: o.x, y: 100, power: 4, who: i })
     }
     if (f.contact && t < m.su + m.ac) { o.x = f.x + f.face * 38; o.y = 30; o.vx = o.vy = 0 }
     if (f.contact && t === m.su + m.ac) {
-      const l = m.launch ?? [6.5, 8]
+      const l = f.tup ? UP_THROW : m.launch ?? [6.5, 8]
       o.x = f.x + f.face * f.tdir * 38; o.st = 'launch'; o.vx = f.face * f.tdir * l[0]; o.vy = l[1]
-      if (m.grab.juggle) o.juggle = Math.max(o.juggle, 1); else { o.juggle = 9; o.inv = 999 }
-      const dmg = Math.round(m.dmg * f.def.stats.power * (f.buff?.power ?? 1)); o.hp = Math.max(0, o.hp - dmg); o.combo++; o.comboDmg += dmg; gain(f, 12)
+      if (m.grab.juggle || f.tup) o.juggle = Math.max(o.juggle, 1); else { o.juggle = 9; o.inv = 999 } // up throw: tossed straight up, free to juggle
+      const dmg = Math.round(m.dmg * (f.tup ? 0.6 : 1) * f.def.stats.power * (f.buff?.power ?? 1)); o.hp = Math.max(0, o.hp - dmg); o.combo++; o.comboDmg += dmg; gain(f, 12)
       w.stop = m.stop; w.ev.push({ type: 'hit', x: o.x, y: 60, power: m.stop, who: i })
     }
   }
@@ -303,7 +313,7 @@ function applyHit(w: World, ai: number, h: Hit, fromX: number, x: number, y: num
     else {
       d.combo++; d.comboDmg += dmg; d.mv = null; d.driving = false
       if (h.pull && !ko && !d.pulled) { d.pulled = true; d.st = 'pulled'; d.t = 0; d.stun = h.pull; d.vx = d.vy = 0; d.y = 0; d.cr = false }
-      else if (ko || airborne(d) || d.st === 'launch' || h.launch) {
+      else if (ko || airborne(d) || d.st === 'launch' || (h.launch && h.launch[1] > 0)) { // a downward launch (spike) only slams airborne targets
         const l = ko ? [6, 9] : h.launch ?? [3, 6.5]
         d.juggle++; d.st = 'launch'; d.t = 0; d.vx = dir * l[0]; d.vy = l[1] * 0.88 ** (d.juggle - 1); d.y = Math.max(d.y, 0.01)
         if (d.juggle >= 5) d.inv = 999 // juggle cap: no infinites
@@ -323,8 +333,10 @@ function strike(w: World, i: number): (() => void) | null {
   const ender = f.ender
   return () => {
     f.hitDone = f.contact = true; f.hitT = f.t
-    const launch = m.launch ?? (ender ? (m.id === 'hp' ? [1, 12] : [7, 6.5]) as [number, number] : undefined)
-    applyHit(w, i, { ...m, launch }, f.x, (Math.max(hb.x0, ob.x0) + Math.min(hb.x1, ob.x1)) / 2, (Math.max(hb.y0, ob.y0) + Math.min(hb.y1, ob.y1)) / 2, true)
+    const c = m.charge ? f.charge / m.charge.max : 0, full = c >= 1 && m.charge?.launch
+    const launch = full ? m.charge!.launch : m.launch ?? (ender ? (m.id === 'hp' ? [1, 12] : [7, 6.5]) as [number, number] : undefined)
+    const dmg = m.charge ? Math.round(m.dmg * (1 + (m.charge.dmg - 1) * c)) : m.dmg
+    applyHit(w, i, { ...m, dmg, launch, stop: m.stop + Math.round(6 * c) }, f.x, (Math.max(hb.x0, ob.x0) + Math.min(hb.x1, ob.x1)) / 2, (Math.max(hb.y0, ob.y0) + Math.min(hb.y1, ob.y1)) / 2, true)
   }
 }
 
@@ -407,7 +419,7 @@ export function cpu(w: World, i: number, skill = 0.6): number {
   if (!['idle', 'walk', 'crouch', 'block'].includes(f.st)) return 0
   const threat = (o.st === 'atk' && dist < 170) || w.proj.some(p => p.owner !== i && Math.abs(p.x - f.x) < 150)
   if (threat && r() < skill) { const g = BL | (o.mv?.lvl === 'low' ? D : 0); return go(...new Array(8).fill(g)) }
-  if (airborne(o) && dist < 130 && o.vy < 0 && r() < skill) return D | HP
+  if (airborne(o) && dist < 130 && o.vy < 0 && r() < skill) return r() < 0.3 ? U | LP : D | HP
   if (dist > 280) {
     const c = r(), zone = usable(m => m.proj)
     if (zone.length && c < 0.04) return use(zone)
@@ -428,5 +440,7 @@ export function cpu(w: World, i: number, skill = 0.6): number {
   }
   const near = usable(m => (m.limb || m.grab || m.buff) && !m.drive)
   if (near.length && c < 0.5) return use(near)
+  if (c < 0.54) return go(...new Array(10 + Math.floor(r() * 40)).fill(r() < 0.5 ? HK : U | HK)) // a charged smash
+  if (c < 0.57) return go(U | LP | LK, U, U, U) // up throw
   return c < 0.6 ? LP | LK : c < 0.7 ? D | HK : c < 0.77 ? fwd | HP : c < 0.84 ? D | HP : c < 0.92 ? D | LK : go(back, back, back, back)
 }

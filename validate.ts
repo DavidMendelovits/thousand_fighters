@@ -157,6 +157,55 @@ export function validate(def: FighterDef, ref: FighterDef = REF): { ok: boolean;
   const mash = run(def, ref, touch, (_w, tk) => tk % 2 ? LP : 0, [], 240)
   add('Jab mash runs dry', mash.maxCombo <= 6 ? [] : [`${mash.maxCombo} jabs in a row`], `${mash.maxCombo} hits`)
 
+  // 5b. the up direction: up + button from the ground is an up attack (pressed together or during the jump squat), up alone jumps
+  const upBad: string[] = []
+  for (const m of Object.values(C.moves).filter(m => m.dir === 'u' && !m.air && m.btn && !m.from && !m.stringOnly)) {
+    const b = BIT[m.btn!]
+    for (const [label, script] of [['together', [U | b, U, U]], ['during the squat', [U, U | b, U]]] as const) {
+      const r = run(def, ref, touch, [...script], [], 120)
+      if (!r.seen.has(m.id)) upBad.push(`${m.name} doesn't come out (${label})`)
+      else if (r.w.f[1].hp >= full) upBad.push(`${m.name} whiffs point-blank (${label})`)
+    }
+  }
+  const hop = run(def, ref, touch, [U], [], 40)
+  if (!hop.w.f[0].y && hop.w.f[0].st !== 'air') upBad.push('tapping up does not jump')
+  add('Up attacks come out of the jump squat', upBad)
+
+  // 5c. charged heavies: holding the button through the windup hits harder than a tap
+  const chg: string[] = []
+  for (const m of Object.values(C.moves).filter(m => m.charge && m.btn && !m.air && !m.from && !m.stringOnly)) {
+    const tap = scriptFor(m), held = [...tap, ...new Array(m.su + m.charge!.max).fill(tap.at(-1)!)]
+    const a = run(def, ref, touch, tap, [], 200), z = run(def, ref, touch, held, [], 260)
+    const dA = full - a.w.f[1].hp, dZ = full - z.w.f[1].hp
+    if (!dA || !dZ) chg.push(`${m.name} whiffs ${dA ? 'charged' : 'tapped'}`)
+    else if (dZ < dA * 1.3) chg.push(`${m.name} charged does ${dZ}, tapped ${dA}`)
+  }
+  add('Charged heavies hit harder', chg)
+
+  // 5d. up throw tosses straight up into a free juggle hit
+  const toss = run(def, ref, touch, (w, tk) => {
+    const f = w.f[0], o = w.f[1]
+    if (tk < 4) return U | (tk === 0 ? LP | LK : 0)
+    return o.st === 'launch' && FREE.includes(f.st) && o.y < 130 && tk % 2 ? LP : 0
+  }, () => BL, 200)
+  add('Up throw leads to a juggle', toss.maxCombo >= 2 ? [] : [`${toss.maxCombo} hit after the up throw`], `${toss.maxCombo} hits, ${toss.comboDmg} dmg`)
+
+  // 5e. air directions: the spike lands on a jump-in, the air launcher catches a jumping opponent
+  const airDir: string[] = []
+  for (const id of ['jdp', 'jup']) {
+    const m = C.moves[id]; if (!m) continue
+    const foe: Script = id === 'jup' ? (_w, tk) => tk === 10 ? U : 0 : []
+    let demo: Demo | undefined
+    for (const dist of [120, 160, 200]) for (let k = 4; k <= 34 && !demo; k += 2) {
+      const s = t(k, U | R, scriptFor(m)[0]); s.push(...new Array(6).fill(scriptFor(m)[0] & (U | D)))
+      const r = run(def, ref, dist, s, foe, 90)
+      if (r.seen.has(m.id) && r.w.f[1].hp < full) demo = { script: s, dist, foe }
+    }
+    if (!demo) airDir.push(`${m.name} never lands`)
+    row(m, '', '', demo)
+  }
+  add('Air directional attacks land', airDir)
+
   // 6. knockdowns and throws resolve: nobody is left stuck
   const flow: string[] = []
   const sweep = run(def, ref, touch, [D | HK], [], 220)
