@@ -43,7 +43,7 @@
   <span class="row" style="margin:0"><button id="train" class="on">Training</button><button id="fight">Fight</button></span>
   <label class="free">vs&nbsp;<select id="opp"></select></label>
   <label class="free" id="dummyWrap">Dummy&nbsp;<select id="dummy"><option value="stand">stands</option><option value="crouch">crouches</option><option value="block">blocks high</option><option value="lowblock">blocks low</option><option value="jump">jumps</option><option value="cpu">fights back</option></select></label>
-  <label class="free" id="skillWrap" hidden>CPU&nbsp;<select id="skill"><option value="0.3">easy</option><option value="0.6" selected>normal</option><option value="0.9">hard</option></select></label>
+  <label class="free" id="skillWrap" hidden>Player 2&nbsp;<select id="skill"><option value="0.3">CPU easy</option><option value="0.6" selected>CPU normal</option><option value="0.9">CPU hard</option><option value="2p">2nd player</option></select></label>
   <label class="free"><input type="checkbox" id="boxes">&nbsp;Hitboxes</label>
 </header>
 <main>
@@ -54,7 +54,7 @@
   </aside>
   <section id="stage">
     <canvas id="arena" width="960" height="540"></canvas>
-    <div><kbd>A</kbd><kbd>D</kbd> move · <kbd>W</kbd> jump · <kbd>S</kbd> crouch · tap <kbd>D</kbd><kbd>D</kbd> dash · <kbd>U</kbd> LP · <kbd>I</kbd> HP · <kbd>J</kbd> LK · <kbd>K</kbd> HK · <kbd>Space</kbd> block · <kbd>U</kbd>+<kbd>J</kbd> throw · <kbd>Enter</kbd> reset · gamepad works</div>
+    <div><kbd>A</kbd><kbd>D</kbd> move · <kbd>W</kbd> jump · <kbd>S</kbd> crouch · tap <kbd>D</kbd><kbd>D</kbd> dash · <kbd>U</kbd> LP · <kbd>I</kbd> HP · <kbd>J</kbd> LK · <kbd>K</kbd> HK · <kbd>Space</kbd> block · <kbd>U</kbd>+<kbd>J</kbd> throw · <kbd>Enter</kbd> reset · gamepad works · 2nd player: arrows + numpad <kbd>4</kbd><kbd>5</kbd><kbd>1</kbd><kbd>2</kbd> (<kbd>0</kbd> block) or <kbd>;</kbd><kbd>'</kbd><kbd>.</kbd><kbd>/</kbd> (right <kbd>Shift</kbd> block), or a 2nd gamepad</div>
   </section>
   <aside id="panel"></aside>
 </main>

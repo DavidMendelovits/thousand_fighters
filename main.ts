@@ -2,6 +2,7 @@
 import { POSES, TEMPLATES, type FighterDef, type SpecialType } from './kit'
 import { newWorld, step, cpu, L, R, U, D, LP, HP, LK, HK, BL, type World } from './sim'
 import { draw, drawRig, newFx, fxTick, enableAudio, bakeSheet, type Fx } from './render'
+import { newMatch, matchStep, matchBanner, FIRST_TO, type Match } from './match'
 import { validate, at, type Script, type Demo } from './validate'
 import { design } from './design'
 import { loadFighters, sheetUrl } from './data'
@@ -15,7 +16,7 @@ if (!roster.length) roster = [design('Rookie'), design('Sparring Partner')]
 roster.sort((a, b) => a.name.localeCompare(b.name))
 let cur = structuredClone(roster[0]), opp = roster[1] ?? roster[0]
 let mode: 'train' | 'fight' = 'train', dirty = false
-let w: World, fx: Fx, demo: Script | null = null, demoFoe: Script | undefined, demoT = 0, calm = 0, overT = 0, demos: (Demo | undefined)[] = []
+let w: World, match: Match | null = null, fx: Fx, demo: Script | null = null, demoFoe: Script | undefined, demoT = 0, calm = 0, overT = 0, demos: (Demo | undefined)[] = []
 const sheets = new Map<string, HTMLImageElement>(), cards = new Map<string, HTMLButtonElement>()
 const ctx = $<HTMLCanvasElement>('#arena').getContext('2d')!
 
@@ -23,21 +24,35 @@ function loadSheet(d: FighterDef, force = false) {
   if (!d.atlas || (sheets.has(d.id) && !force)) return
   const img = new Image(); img.onload = () => sheets.set(d.id, img); img.src = `${sheetUrl(d.id)}?${Date.now()}`
 }
-function restart(dist = 300) { w = newWorld(cur, opp, (Math.random() * 2 ** 31) | 0, dist); fx = newFx(w); demo = null; overT = 0 }
+/** Fight mode plays a best-of-3 match; training (and demos, with `plain`) is one endless round. */
+function restart(dist = 300, plain = false) {
+  const seed = (Math.random() * 2 ** 31) | 0
+  match = mode === 'fight' && !plain ? newMatch(cur, opp, seed) : null
+  w = match?.w ?? newWorld(cur, opp, seed, dist); fx = newFx(w); demo = null; overT = 0
+}
 
 // ---- input ------------------------------------------------------------------
-const KEYS: Record<string, number> = { KeyA: L, KeyD: R, KeyW: U, KeyS: D, ArrowLeft: L, ArrowRight: R, ArrowUp: U, ArrowDown: D, KeyU: LP, KeyI: HP, KeyJ: LK, KeyK: HK, Space: BL, KeyL: BL }
-let held = 0
+// Player 1 always has WASD + U I J K. The arrows are player 1's too, unless a second player is in.
+const KEYS: Record<string, number> = { KeyA: L, KeyD: R, KeyW: U, KeyS: D, KeyU: LP, KeyI: HP, KeyJ: LK, KeyK: HK, Space: BL, KeyL: BL }
+const ARROWS: Record<string, number> = { ArrowLeft: L, ArrowRight: R, ArrowUp: U, ArrowDown: D }
+// Player 2: arrows + numpad 4 5 / 1 2 (0 blocks), or ; ' / . slash (right Shift blocks) on keyboards without a numpad
+const KEYS2: Record<string, number> = { ...ARROWS, Numpad4: LP, Numpad5: HP, Numpad1: LK, Numpad2: HK, Numpad0: BL, Semicolon: LP, Quote: HP, Period: LK, Slash: HK, ShiftRight: BL }
+const down = new Set<string>() // key codes held right now
+const bits = (map: Record<string, number>) => { let b = 0; for (const k of down) b |= map[k] ?? 0; return b }
+const twoP = () => mode === 'fight' && $<HTMLSelectElement>('#skill').value === '2p'
+const p1Keys = () => twoP() ? KEYS : { ...KEYS, ...ARROWS }
 const typing = (e: Event) => { const el = e.target as HTMLInputElement; return el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || (el.tagName === 'INPUT' && !['range', 'checkbox', 'color'].includes(el.type)) || !!document.querySelector('dialog[open]') }
 addEventListener('keydown', e => {
   if (typing(e)) return
   enableAudio()
-  if (e.code in KEYS) { held |= KEYS[e.code]; e.preventDefault() } else if (e.code === 'Enter') restart()
+  if (e.code in p1Keys() || (twoP() && e.code in KEYS2)) { down.add(e.code); e.preventDefault() }
+  else if (e.code === 'Enter') restart()
 })
-addEventListener('keyup', e => { held &= ~(KEYS[e.code] ?? 0) })
-addEventListener('blur', () => { held = 0 })
-function pad(): number {
-  const g = navigator.getGamepads?.()[0]
+addEventListener('keyup', e => { down.delete(e.code) })
+addEventListener('blur', () => { down.clear() })
+const p1Input = () => bits(p1Keys()) | pad(0)
+function pad(n = 0): number {
+  const g = navigator.getGamepads?.()[n]
   if (!g) return 0
   const b = (i: number) => g.buttons[i]?.pressed, ax = g.axes
   return (b(14) || ax[0] < -0.5 ? L : 0) | (b(15) || ax[0] > 0.5 ? R : 0) | (b(12) || ax[1] < -0.5 ? U : 0) | (b(13) || ax[1] > 0.5 ? D : 0)
@@ -45,7 +60,7 @@ function pad(): number {
 }
 function p2(): number {
   if (demo) return demoFoe ? at(demoFoe, w, demoT) : 0
-  if (mode === 'fight') return cpu(w, 1, +$<HTMLSelectElement>('#skill').value)
+  if (mode === 'fight') return twoP() ? bits(KEYS2) | pad(1) : cpu(w, 1, +$<HTMLSelectElement>('#skill').value)
   switch ($<HTMLSelectElement>('#dummy').value) {
     case 'crouch': return D
     case 'block': return BL
@@ -59,7 +74,11 @@ function p2(): number {
 // ---- loop -------------------------------------------------------------------
 function tick() {
   if (fx.slow > 0 && fx.slow-- % 2) return // KO slow motion
-  step(w, demo ? at(demo, w, demoT++) : held | pad(), p2()); fxTick(fx, w)
+  if (match && !demo) {
+    matchStep(match, p1Input(), p2())
+    if (match.w !== w) { w = match.w; fx = newFx(w) } // next round
+  } else step(w, demo ? at(demo, w, demoT++) : p1Input(), p2())
+  fxTick(fx, w)
   if (demo && demoT > 230) restart()
   if (mode === 'train') {
     w.time = 99 * 60
@@ -72,11 +91,9 @@ let acc = 0, last = performance.now()
 function frame(now: number) {
   acc += Math.min(100, now - last); last = now
   for (; acc >= 1000 / 60; acc -= 1000 / 60) tick()
-  const over = mode === 'fight' && w.over
   draw(ctx, w, fx, {
     boxes: $<HTMLInputElement>('#boxes').checked, sheets,
-    banner: over ? (over.winner < 0 ? 'DRAW' : `${w.f[over.winner].def.name.toUpperCase()} WINS`) : mode === 'fight' && w.tick < 50 ? 'FIGHT!' : undefined,
-    sub: over ? 'Enter for a rematch' : undefined,
+    ...(match && !demo ? { ...matchBanner(match), rounds: { wins: match.wins, of: FIRST_TO } } : {}),
   })
   requestAnimationFrame(frame)
 }
@@ -161,7 +178,7 @@ function revalidate() {
 }
 
 function play(d: Demo) {
-  restart(d.dist); w.f[0].meter = 100; demo = d.script; demoFoe = d.foe; demoT = 0
+  restart(d.dist, true); w.f[0].meter = 100; demo = d.script; demoFoe = d.foe; demoT = 0
   if (d.powered) w.f[0].buff = { t: 9999, power: 1, speed: 1, defense: 1, color: '#ffffff' }
 }
 
@@ -234,6 +251,7 @@ function setMode(m: 'train' | 'fight') {
   $('#dummyWrap').hidden = m === 'fight'; $('#skillWrap').hidden = m === 'train'; restart()
 }
 $('#train').onclick = () => setMode('train'); $('#fight').onclick = () => setMode('fight')
+$('#skill').onchange = e => { down.clear(); restart(); (e.target as HTMLElement).blur() }
 $('#opp').onchange = e => { opp = roster.find(d => d.id === (e.target as HTMLSelectElement).value)!; loadSheet(opp); restart(); (e.target as HTMLElement).blur() }
 $('#dummy').onchange = $('#skill').onchange = e => (e.target as HTMLElement).blur()
 $('#search').oninput = renderRoster

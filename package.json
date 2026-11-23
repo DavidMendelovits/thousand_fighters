@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview --port 5181",
-    "check": "tsc --noEmit && tsx cli.ts && tsx cli.ts fuzz 1000"
+    "check": "tsc --noEmit && tsx cli.ts && tsx cli.ts fuzz 1000 && tsx cli.ts match 6"
   },
   "devDependencies": {
     "tsx": "^4.22.4",
