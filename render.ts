@@ -184,7 +184,7 @@ function drawFighter(c: CanvasRenderingContext2D, f: Fighter, shown: Pose, sheet
   c.restore()
 }
 
-export function draw(c: CanvasRenderingContext2D, w: World, fx: Fx, o: { boxes: boolean; sheets: Map<string, HTMLImageElement>; banner?: string; sub?: string }) {
+export function draw(c: CanvasRenderingContext2D, w: World, fx: Fx, o: { boxes: boolean; sheets: Map<string, HTMLImageElement>; banner?: string; sub?: string; rounds?: { wins: number[]; of: number } }) {
   c.save()
   c.translate((Math.random() - 0.5) * fx.shake * 1.6, (Math.random() - 0.5) * fx.shake * 1.6)
   c.drawImage(stage(), 0, 0)
@@ -210,6 +210,10 @@ export function draw(c: CanvasRenderingContext2D, w: World, fx: Fx, o: { boxes: 
     c.fillStyle = INK; c.fillRect(i ? x + wd - 163 : x - 3, 498, 166, 14); c.fillStyle = f.meter >= 100 ? '#7df9ff' : '#3aa0ff'; c.fillRect(i ? x + wd : x, 501, (i ? -1 : 1) * 160 * f.meter / 100, 8)
     if (f.buff) { c.fillStyle = f.buff.color; c.fillRect(i ? x + wd : x, 516, (i ? -1 : 1) * 160 * Math.min(1, f.buff.t / 600), 4) }
     c.fillStyle = '#fff'; c.textAlign = i ? 'right' : 'left'; c.fillText(f.def.name.toUpperCase(), i ? x + wd : x, 64)
+    if (o.rounds) for (let k = 0; k < o.rounds.of; k++) { // round wins, next to the clock
+      const cx = i ? x + 14 + k * 20 : x + wd - 14 - k * 20
+      c.beginPath(); c.arc(cx, 64, 6, 0, 7); c.fillStyle = o.rounds.wins[i] > k ? '#ffd23f' : INK; c.fill(); c.strokeStyle = '#ffd23f'; c.lineWidth = 2; c.stroke()
+    }
     const cb = fx.combo[i]
     if (cb.t > 0) { c.globalAlpha = Math.min(1, cb.t / 15); c.font = '900 30px system-ui'; c.fillStyle = '#ffd23f'; c.strokeStyle = INK; c.lineWidth = 5; c.strokeText(`${cb.n} HITS`, i ? x + wd : x, 110); c.fillText(`${cb.n} HITS`, i ? x + wd : x, 110); c.font = '700 14px system-ui'; c.fillStyle = '#fff'; c.fillText(`${cb.dmg} damage`, i ? x + wd : x, 136); c.globalAlpha = 1; c.font = '700 15px system-ui' }
   })
