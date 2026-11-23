@@ -160,6 +160,7 @@ export type Move = {
   buff?: { ticks: number; power?: number; speed?: number; defense?: number; color?: string } // power-up applied at end of startup
   meter?: number // super meter gained at end of startup
   cancel?: boolean // may cancel into specials/strings on contact (default: plain grounded normals only)
+  jc?: boolean // hold up on contact to jump after the opponent (default: grounded moves that launch straight up)
   // --- presentation
   pose: string; base: string; crouch?: boolean
 }
@@ -193,6 +194,8 @@ export const TEMPLATES: Record<SpecialType, (name: string, color: string) => Mov
 
 /** Specials are what normals cancel into on contact: anything with a motion input, or flagged special. */
 export const isSpecial = (m: Move) => !!m.motion || !!m.special
+/** Launchers that send the opponent straight up can be jump-cancelled on contact to chase them into the air. */
+export const jumpCancels = (m: Move) => m.jc ?? (!m.air && !m.grab && !!m.launch && m.launch[1] >= 10 && m.launch[0] <= 3)
 
 const ARROW: Record<string, string> = { d: '↓', f: '→', b: '←' }
 /** Human-readable input, e.g. "↓ → LP", "air LK", "after Jab: HP". */

@@ -35,6 +35,11 @@ A forward or back that starts a motion has to be a tap (10 ticks or less), so wa
 A string step with a `dir` only dials while that direction is held.
 A fighter adds `moves`, custom `poses`, and `tweaks` to universal moves. `fighters/faro.json` uses all of it.
 
+Combos: launchers that send the opponent straight up can be jump-cancelled (hold up on contact, or set `jc`),
+and in the air any air move not used yet this jump cancels on contact (jump punch › jump kick › air special).
+Anti-air grabs catch launched opponents too. Hitstun shrinks from the 4th hit of a combo on, so plain links
+(jab, jab, jab...) run dry while strings and cancels still connect.
+
 ## Sprites
 
 The rig is placeholder art and also the pose guide. Studio → Sprites → "Download pose sheet" gives a

@@ -1,10 +1,12 @@
 // Deterministic 60Hz fight simulation. No DOM, no rendering, no randomness outside w.seed.
 // Runs identically in the browser (the game) and in Node (the validator).
-import { compile, fk, lerpPose, isSpecial, type FighterDef, type Move, type Pose, type Btn, type Level, type ProjSpec } from './kit'
+import { compile, fk, lerpPose, isSpecial, jumpCancels, type FighterDef, type Move, type Pose, type Btn, type Level, type ProjSpec } from './kit'
 
 export const L = 1, R = 2, U = 4, D = 8, LP = 16, HP = 32, LK = 64, HK = 128, BL = 256
 export const BIT: Record<Btn, number> = { lp: LP, hp: HP, lk: LK, hk: HK }
 export const STAGE = { w: 960, min: 40, max: 920 }
+/** Hitstun shrinks with each hit in a combo, so links (jab, jab, jab...) run dry while cancels and strings still connect. */
+export const HS_DECAY = 0.08
 const G = 0.62, BUF = 10, DASH = 16, DOWN = 28, GETUP = 18
 
 export type St = 'idle' | 'walk' | 'crouch' | 'air' | 'dash' | 'atk' | 'block' | 'hit' | 'bstun' | 'launch' | 'down' | 'getup' | 'thrown' | 'pulled' | 'rec' | 'ko' | 'win'
@@ -12,7 +14,7 @@ export type Fighter = {
   def: FighterDef; moves: Record<string, Move>; order: Move[]; poses: Record<string, Pose>
   x: number; y: number; vx: number; vy: number; face: 1 | -1
   st: St; t: number; cr: boolean; dd: number
-  mv: Move | null; hitDone: boolean; hitT: number; contact: boolean; ender: boolean; str: string[]; airAtk: boolean; tdir: number; driving: boolean; armor: number
+  mv: Move | null; hitDone: boolean; hitT: number; contact: boolean; ender: boolean; str: string[]; airAtk: boolean; airUsed: string[]; tdir: number; driving: boolean; armor: number
   hp: number; meter: number; stun: number; inv: number
   buff: null | { t: number; power: number; speed: number; defense: number; color: string }
   combo: number; comboDmg: number; juggle: number // hits / damage taken in the current combo
@@ -27,7 +29,7 @@ const newFighter = (def: FighterDef, x: number, face: 1 | -1): Fighter => {
   const c = compile(def)
   return {
     def, moves: c.moves, order: c.order, poses: c.poses, x, y: 0, vx: 0, vy: 0, face, st: 'idle', t: 0, cr: false, dd: 1,
-    mv: null, hitDone: false, hitT: 0, contact: false, ender: false, str: [], airAtk: false, tdir: 1, driving: false, armor: 0,
+    mv: null, hitDone: false, hitT: 0, contact: false, ender: false, str: [], airAtk: false, airUsed: [], tdir: 1, driving: false, armor: 0,
     hp: def.stats.hp, meter: 0, stun: 0, inv: 0, buff: null, pulled: false, combo: 0, comboDmg: 0, juggle: 0, hist: new Array(40).fill(0), buf: 0, bufAge: 99,
   }
 }
@@ -141,9 +143,16 @@ export function scriptFor(m: Move, right = true): number[] {
 function start(w: World, f: Fighter, m: Move) {
   f.st = 'atk'; f.t = 0; f.mv = m; f.hitDone = f.contact = f.ender = f.driving = false; f.hitT = 0; f.buf = 0; f.cr = !!m.crouch
   f.armor = m.armor ?? 0; f.meter -= m.cost ?? 0
-  if (airborne(f)) f.airAtk = true; else f.vx = 0
+  if (airborne(f)) { f.airAtk = true; f.airUsed.push(m.id) } else f.vx = 0
   f.str = [m.id]
   w.ev.push({ type: 'swing', x: f.x, y: f.y + 100, power: m.stop, who: w.f.indexOf(f) })
+}
+/** Leave the ground. `lift` > 1 is the higher jump that chases a launched opponent. */
+function jump(w: World, i: number, inp: number, lift: number) {
+  const f = w.f[i], fwd = f.face > 0 ? R : L, back = f.face > 0 ? L : R, sp = f.def.stats.speed * (f.buff?.speed ?? 1)
+  f.st = 'air'; f.t = 0; f.mv = null; f.cr = false; f.str = []; f.driving = false; f.airAtk = false; f.airUsed = []; f.vy = 13.2 * f.def.stats.jump * lift
+  f.vx = f.face * sp * (inp & fwd ? 4.2 : inp & back ? -3.6 : 0)
+  w.ev.push({ type: 'jump', x: f.x, y: 0, power: 1, who: i })
 }
 function tryAttack(w: World, i: number): boolean {
   const f = w.f[i]
@@ -179,9 +188,7 @@ function think(w: World, i: number, inp: number) {
       if (inp & BL) { setSt(f, 'block'); f.cr = !!(inp & D) }
       else if (inp & D) { setSt(f, 'crouch'); f.cr = true }
       else if (inp & U) {
-        f.st = 'air'; f.t = 0; f.airAtk = false; f.vy = 13.2 * f.def.stats.jump
-        f.vx = f.face * sp * (inp & fwd ? 4.2 : inp & back ? -3.6 : 0)
-        w.ev.push({ type: 'jump', x: f.x, y: 0, power: 1, who: i })
+        jump(w, i, inp, 1)
       }
       else if (dtap(f.hist, fwd)) { f.st = 'dash'; f.t = 0; f.dd = 1 }
       else if (dtap(f.hist, back)) { f.st = 'dash'; f.t = 0; f.dd = -1 }
@@ -215,7 +222,7 @@ function attackTick(w: World, i: number, inp: number) {
   if (t <= 2 && (m.id === 'lp' || m.id === 'lk') && inp & LP && inp & LK) return start(w, f, f.moves.throw)
   if (m.grab) {
     const reach = Math.abs(o.x - f.x) <= pushW(f) + pushW(o) + m.grab.range && o.inv <= 0
-    const prey = m.grab.air ? airborne(o) && o.y < 170 && ['air', 'atk'].includes(o.st) : !airborne(o) && ['idle', 'walk', 'crouch', 'block', 'dash'].includes(o.st)
+    const prey = m.grab.air ? airborne(o) && o.y < 170 && ['air', 'atk', 'launch'].includes(o.st) : !airborne(o) && ['idle', 'walk', 'crouch', 'block', 'dash'].includes(o.st)
     if (t === m.su && reach && prey) {
       o.st = 'thrown'; o.t = 0; o.mv = null; f.contact = true; f.tdir = inp & back ? -1 : 1
       w.ev.push({ type: 'throw', x: o.x, y: 100, power: 4, who: i })
@@ -224,7 +231,7 @@ function attackTick(w: World, i: number, inp: number) {
     if (f.contact && t === m.su + m.ac) {
       const l = m.launch ?? [6.5, 8]
       o.x = f.x + f.face * f.tdir * 38; o.st = 'launch'; o.vx = f.face * f.tdir * l[0]; o.vy = l[1]
-      if (m.grab.juggle) o.juggle = 1; else { o.juggle = 9; o.inv = 999 }
+      if (m.grab.juggle) o.juggle = Math.max(o.juggle, 1); else { o.juggle = 9; o.inv = 999 }
       const dmg = Math.round(m.dmg * f.def.stats.power * (f.buff?.power ?? 1)); o.hp = Math.max(0, o.hp - dmg); o.combo++; o.comboDmg += dmg; gain(f, 12)
       w.stop = m.stop; w.ev.push({ type: 'hit', x: o.x, y: 60, power: m.stop, who: i })
     }
@@ -251,8 +258,12 @@ function attackTick(w: World, i: number, inp: number) {
     w.ev.push({ type: 'tele', x: f.x, y: 80, power: 2, who: i })
   }
   // cancels on contact: follow-ups first, then specials and the next string step
+  // launchers: hold up on contact to jump after the opponent
+  if (f.contact && !air && jumpCancels(m) && f.hist.slice(0, BUF).some(h => h & U)) return jump(w, i, inp | U, 1.15)
   if (f.contact && f.buf && f.bufAge <= BUF) {
     for (const n of f.order) if (n.from?.includes(m.id) && inputOk(w, i, n)) return start(w, f, n)
+    // air chains: on contact, any air move not used yet this jump (jump punch › jump kick › air special or air grab)
+    if (air) for (const n of f.order) if (n.air && !n.from && !n.stringOnly && !f.airUsed.includes(n.id) && inputOk(w, i, n)) return start(w, f, n)
     if (!air && (m.cancel ?? (!isSpecial(m) && !m.launch && !m.grab && !m.from))) {
       for (const n of f.order) if (isSpecial(n) && !n.air && !n.from && !n.stringOnly && inputOk(w, i, n)) return start(w, f, n)
       const next = f.str[f.str.length - 1] === m.id ? stringNext(w, i) : null
@@ -296,7 +307,7 @@ function applyHit(w: World, ai: number, h: Hit, fromX: number, x: number, y: num
         const l = ko ? [6, 9] : h.launch ?? [3, 6.5]
         d.juggle++; d.st = 'launch'; d.t = 0; d.vx = dir * l[0]; d.vy = l[1] * 0.88 ** (d.juggle - 1); d.y = Math.max(d.y, 0.01)
         if (d.juggle >= 5) d.inv = 999 // juggle cap: no infinites
-      } else { d.st = 'hit'; d.t = 0; d.stun = h.hs; d.vx = dir * h.kb; d.cr = false }
+      } else { d.st = 'hit'; d.t = 0; d.stun = Math.max(6, Math.round(h.hs * Math.min(1, Math.max(0.5, 1 - HS_DECAY * (d.combo - 3))))); d.vx = dir * h.kb; d.cr = false }
     }
     w.stop = ko ? 16 : h.stop; w.ev.push({ type: 'hit', x, y, power: h.stop, who: ai })
   }
@@ -389,7 +400,9 @@ export function cpu(w: World, i: number, skill = 0.6): number {
   if (f.st === 'atk' && f.contact && r() < skill) { // press a follow-up when one exists
     const fu = f.order.filter(m => m.from?.includes(f.mv!.id) && m.btn)
     if (fu.length) return go(...scriptFor(fu[Math.floor(r() * fu.length)], right), 0)
+    if (jumpCancels(f.mv!) && o.st === 'launch') return go(U | fwd, U | fwd, U | fwd, 0, 0, 0, LP) // chase the launch
   }
+  if (f.st === 'atk' && airborne(f) && f.contact && f.mv!.id === 'jp' && r() < skill) return LK // air chain
   if (f.st === 'air') return dist < 130 && f.vy < 0 && r() < 0.3 ? HK : 0
   if (!['idle', 'walk', 'crouch', 'block'].includes(f.st)) return 0
   const threat = (o.st === 'atk' && dist < 170) || w.proj.some(p => p.owner !== i && Math.abs(p.x - f.x) < 150)
