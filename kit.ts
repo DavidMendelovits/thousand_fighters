@@ -130,6 +130,7 @@ export type Move = {
   btn?: Btn; or?: Btn; chord?: Btn // or = alternate button, chord = second button pressed together
   dir?: Dir // direction held with the button (command normal)
   motion?: Dir[] // directions entered in order before the button (special)
+  special?: boolean // a special without a motion input: normals cancel into it like any motion special
   air?: boolean // performed while airborne
   from?: string[] // follow-up: only available by cancelling one of these moves on contact
   stringOnly?: boolean // only available as a step in a dial string (dialled with btn)
@@ -189,6 +190,9 @@ export const TEMPLATES: Record<SpecialType, (name: string, color: string) => Mov
   teleport: name => M({ id: 'teleport', name, motion: ['d', 'b'], btn: 'lk', su: 10, ac: 1, rc: 14, pose: 'clp', base: 'crouch', inv: [4, 15], teleport: { at: 10, to: 'behind', dx: 80 } }),
   slide: name => M({ id: 'slide', name, motion: ['b', 'f'], btn: 'lk', su: 8, ac: 14, rc: 18, dmg: 70, bs: 14, lvl: 'low', limb: 'legF', r: 13, stop: 8, launch: [2.5, 5.5], pose: 'sweep', base: 'crouch', crouch: true, drive: [{ from: 8, to: 22, vx: 9 }] }),
 }
+
+/** Specials are what normals cancel into on contact: anything with a motion input, or flagged special. */
+export const isSpecial = (m: Move) => !!m.motion || !!m.special
 
 const ARROW: Record<string, string> = { d: '↓', f: '→', b: '←' }
 /** Human-readable input, e.g. "↓ → LP", "air LK", "after Jab: HP". */

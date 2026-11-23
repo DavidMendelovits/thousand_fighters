@@ -30,6 +30,9 @@ combine: motion / direction / chord inputs, air versions, follow-ups (`from`), s
 self-movement (`drive`), projectiles (`proj`: straight, arcing, stationary traps, aimed at the opponent, multi-hit,
 tethered), `teleport`, invulnerability, `armor`, multi-hit (`rehit`), `grab` (close, anti-air, comboable),
 `pull` (drag in from any range), `unblockable`, `heal`, `counter`, `buff` (power-ups) and moves that need one.
+A move with a `motion`, or `special: true`, is a special: grounded normals cancel into it on contact.
+A forward or back that starts a motion has to be a tap (10 ticks or less), so walking never turns a command normal into a special.
+A string step with a `dir` only dials while that direction is held.
 A fighter adds `moves`, custom `poses`, and `tweaks` to universal moves. `fighters/faro.json` uses all of it.
 
 ## Sprites
