@@ -1,6 +1,7 @@
 // Canvas rendering: the rig, painted sprite sheets, stage, HUD, effects, sound. Reads the sim, never writes it.
 import { fk, POSES, compile, lerpPose, type FighterDef, type Look, type Pose, type Pt } from './kit'
-import { poseKeys, poseOf, hitbox, hurtbox, STAGE, type World, type Fighter, type Proj } from './sim'
+import { spriteLook } from './sprite'
+import { poseOf, hitbox, hurtbox, STAGE, type World, type Fighter, type Proj } from './sim'
 
 export const FLOOR = 452
 const INK = '#14121c'
@@ -171,8 +172,14 @@ function drawFighter(c: CanvasRenderingContext2D, f: Fighter, shown: Pose, sheet
   if (f.st === 'atk' && m?.teleport) c.globalAlpha = f.t < m.teleport.at ? 1 - f.t / m.teleport.at : Math.min(1, (f.t - m.teleport.at) / 6)
   if (f.buff) { c.shadowColor = f.buff.color; c.shadowBlur = 14 + Math.sin(tick / 4) * 6 }
   if (sheet) {
-    const [a, b, u] = poseKeys(f), i = Math.max(0, compileKeys(f.def).indexOf(u > 0.5 ? b : a))
-    c.translate(f.x, gy); c.scale(f.face, 1); c.drawImage(sheet, (i % COLS) * CELL, Math.floor(i / COLS) * CELL, CELL, CELL, -AX, -AY, CELL, CELL)
+    const lk = spriteLook(f), keys = compileKeys(f.def), mid = 100 * f.def.look.height, a0 = c.globalAlpha
+    c.translate(f.x + lk.dx, gy + lk.dy); c.scale(f.face, 1)
+    c.translate(0, -mid); c.rotate(lk.rot); c.translate(0, mid); c.scale(lk.sx, lk.sy) // tilt around the middle, squash from the feet
+    for (const l of lk.layers) {
+      let i = keys.indexOf(l.key); if (l.alpha <= 0 || (i < 0 && lk.layers.length > 1)) continue; i = Math.max(0, i)
+      c.globalAlpha = a0 * l.alpha; c.drawImage(sheet, (i % COLS) * CELL, Math.floor(i / COLS) * CELL, CELL, CELL, -AX, -AY, CELL, CELL)
+    }
+    c.globalAlpha = a0
   } else drawRig(c, shown, f.def.look, f.x, gy, f.face, Math.sin(tick / 9) * 4 + Math.abs(f.vx) * 2)
   c.restore()
 }

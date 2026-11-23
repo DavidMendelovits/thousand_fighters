@@ -19,6 +19,8 @@ npx tsx cli.ts roster 1000   # write 1000 fighters to fighters
   live in the studio on each edit and in `cli.ts` over the roster.
 - `design.ts` — description → fighter, instantly. Swap in a text model by returning a `FighterDef`.
 - `render.ts` / `main.ts` — canvas renderer and the studio page.
+- `sprite.ts` — how a painted sheet animates between its cells: dissolves for idle, walk and recovery, a smear
+  on the strike frame, squash and shake on hit, tilt while launched. Pure, so it can be previewed in Node.
 - `vite.config.ts` — dev server plus the save API. Storage is `fighters/<id>.json` (+ `<id>.png`).
   Only Faro is on the roster for now. `fighters/benched/` holds fighters kept out of the roster, game and
   checks (Palimpsest). Move a file up into `fighters/` to bring it back.
