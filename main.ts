@@ -4,12 +4,13 @@ import { newWorld, step, cpu, L, R, U, D, LP, HP, LK, HK, BL, type World } from 
 import { draw, drawRig, newFx, fxTick, enableAudio, bakeSheet, type Fx } from './render'
 import { validate, at, type Script, type Demo } from './validate'
 import { design } from './design'
+import { loadFighters, sheetUrl } from './data'
 
 const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector<T>(s)!
 const esc = (s: string) => s.replace(/[&<>"]/g, c => `&#${c.charCodeAt(0)};`)
 const api = (path: string, method = 'GET', body?: BodyInit) => fetch('/api/' + path, { method, body }).then(r => { if (!r.ok) throw new Error(`${method} ${path}: ${r.status}`); return r.json() })
 
-let roster: FighterDef[] = await api('fighters')
+let roster: FighterDef[] = await loadFighters()
 if (!roster.length) roster = [design('Rookie'), design('Sparring Partner')]
 roster.sort((a, b) => a.name.localeCompare(b.name))
 let cur = structuredClone(roster[0]), opp = roster[1] ?? roster[0]
@@ -20,7 +21,7 @@ const ctx = $<HTMLCanvasElement>('#arena').getContext('2d')!
 
 function loadSheet(d: FighterDef, force = false) {
   if (!d.atlas || (sheets.has(d.id) && !force)) return
-  const img = new Image(); img.onload = () => sheets.set(d.id, img); img.src = `/fighters/${d.id}.png?${Date.now()}`
+  const img = new Image(); img.onload = () => sheets.set(d.id, img); img.src = `${sheetUrl(d.id)}?${Date.now()}`
 }
 function restart(dist = 300) { w = newWorld(cur, opp, (Math.random() * 2 ** 31) | 0, dist); fx = newFx(w); demo = null; overT = 0 }
 

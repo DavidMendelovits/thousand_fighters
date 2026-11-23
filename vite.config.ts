@@ -1,4 +1,5 @@
 // Dev server + the whole "CMS": fighters are JSON files in ./fighters, sprite sheets are PNGs beside them.
+// A production build ships them read-only: every fighter in one fighters.json, sheets copied to fighters/<id>.png.
 import { defineConfig } from 'vite'
 import { readdirSync, readFileSync, writeFileSync, rmSync, mkdirSync } from 'node:fs'
 
@@ -6,9 +7,16 @@ const dir = new URL('./fighters/', import.meta.url).pathname
 mkdirSync(dir, { recursive: true })
 
 export default defineConfig({
+  build: { rollupOptions: { input: { studio: new URL('./index.html', import.meta.url).pathname, roster: new URL('./roster.html', import.meta.url).pathname } } },
   server: { port: 5180, allowedHosts: ['.ts.net'], watch: { ignored: ['**/fighters/**'] } },
   plugins: [{
     name: 'fighters-api',
+    generateBundle() {
+      const files = readdirSync(dir)
+      const all = files.filter(f => f.endsWith('.json')).map(f => JSON.parse(readFileSync(dir + f, 'utf8')))
+      this.emitFile({ type: 'asset', fileName: 'fighters.json', source: JSON.stringify(all) })
+      for (const f of files) if (f.endsWith('.png')) this.emitFile({ type: 'asset', fileName: 'fighters/' + f, source: readFileSync(dir + f) })
+    },
     configureServer(server) {
       server.middlewares.use('/api', (req, res) => {
         const [, kind, id] = (req.url ?? '').split('?')[0].split('/')
