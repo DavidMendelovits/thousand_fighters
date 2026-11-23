@@ -135,6 +135,28 @@ export function validate(def: FighterDef, ref: FighterDef = REF): { ok: boolean;
   }, [], 160)
   add('Uppercut launches into a juggle', jug.maxCombo >= 2 ? [] : ['no follow-up connects after the launch'], `${jug.maxCombo} hits, ${jug.comboDmg} dmg`)
 
+  // 5b. uppercut jump-cancels into an air combo: hold up on contact, then jump punch › jump kick
+  let air3: ReturnType<typeof run> | undefined, airDemo: Demo | undefined
+  for (const delay of [0, 2, 4, 6, 8, 10, 12]) {
+    let fired = -1
+    const script: Script = (w, tk) => {
+      const f = w.f[0]
+      if (tk === 0) { fired = -1; return D | HP }
+      if (f.st === 'atk' && f.mv?.id === 'upper') return f.contact ? U | R : D
+      if (f.st === 'air' && fired < 0) fired = tk + delay
+      if (f.st === 'air' && tk === fired) return LP
+      return f.st === 'atk' && f.mv?.id === 'jp' && f.contact && tk % 2 ? LK : 0
+    }
+    const r = run(def, ref, touch, script, [], 220)
+    if (!air3 || r.maxCombo > air3.maxCombo) { air3 = r; airDemo = { script, dist: touch } }
+    if (r.maxCombo >= 3) break
+  }
+  add('Uppercut jump-cancels into an air combo', air3!.maxCombo >= 3 ? [] : [`air combo stops at ${air3!.maxCombo} hits`], `${air3!.maxCombo} hits, ${air3!.comboDmg} dmg`, airDemo)
+
+  // 5c. links run dry: mashing jab point-blank can't loop forever (hitstun shrinks as the combo grows)
+  const mash = run(def, ref, touch, (_w, tk) => tk % 2 ? LP : 0, [], 240)
+  add('Jab mash runs dry', mash.maxCombo <= 6 ? [] : [`${mash.maxCombo} jabs in a row`], `${mash.maxCombo} hits`)
+
   // 6. knockdowns and throws resolve: nobody is left stuck
   const flow: string[] = []
   const sweep = run(def, ref, touch, [D | HK], [], 220)
