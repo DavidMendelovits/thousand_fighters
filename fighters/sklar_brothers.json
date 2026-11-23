@@ -1,0 +1,119 @@
+{
+  "id": "sklar_brothers",
+  "name": "Sklar Brothers",
+  "bio": "The Sklar Brothers are a linked two-actor comedy duo fighter: the red plaid lead brother drives the root position while the green plaid echo brother follows a short delayed pose trail, then steps forward for callback punches, sweeps, shoulder-stack launches, and brother-toss specials. Their temporary Sklar Fusion form combines the two into one larger split-plaid fighter.\nSilhouette: two average-height comedian fighters offset in depth, plus one broad fused form.\nClothing: red-and-blue plaid shirt with tie for lead, green plaid shirt with glasses for echo, split-plaid oversized fusion form.\nAttitude: synchronized deadpan comedy timing, setup-and-punchline attacks.\nDistinctive traits: delayed two-person movement, two hurtboxes, actor-specific hitboxes, brother toss, stacked uppercut, fusion mode.",
+  "look": {
+    "skin": "#c0392b",
+    "main": "#a92d2d",
+    "alt": "#745739",
+    "trim": "#3fd98c",
+    "height": 0.92,
+    "bulk": 0.8,
+    "arms": 1.1,
+    "legs": 1.06,
+    "head": "round",
+    "hair": "none",
+    "hat": "horns",
+    "cape": true
+  },
+  "stats": {
+    "hp": 906,
+    "speed": 1.11,
+    "power": 0.94,
+    "jump": 1.03
+  },
+  "strings": [
+    [
+      "lp",
+      "lp",
+      "lk",
+      "hp"
+    ],
+    [
+      "hk",
+      "lp",
+      "hp"
+    ],
+    [
+      "lp",
+      "hp",
+      "lp",
+      "hk"
+    ],
+    [
+      "lk",
+      "hp"
+    ]
+  ],
+  "moves": [
+    {
+      "hs": 18,
+      "bs": 11,
+      "lvl": "mid",
+      "r": 11,
+      "kb": 5,
+      "stop": 6,
+      "base": "crouch",
+      "ac": 1,
+      "rc": 14,
+      "dmg": 0,
+      "pose": "clp",
+      "id": "teleport",
+      "name": "Vanish",
+      "motion": [
+        "d",
+        "b"
+      ],
+      "btn": "lk",
+      "su": 10,
+      "inv": [
+        4,
+        15
+      ],
+      "teleport": {
+        "at": 10,
+        "to": "behind",
+        "dx": 80
+      }
+    },
+    {
+      "hs": 18,
+      "bs": 16,
+      "lvl": "mid",
+      "r": 26,
+      "kb": 5,
+      "stop": 11,
+      "base": "crouch",
+      "ac": 99,
+      "rc": 0,
+      "dmg": 100,
+      "pose": "upper",
+      "id": "rising",
+      "name": "Ascent",
+      "motion": [
+        "f",
+        "d"
+      ],
+      "btn": "hp",
+      "su": 5,
+      "land": 18,
+      "limb": "armF",
+      "launch": [
+        2,
+        12.5
+      ],
+      "inv": [
+        0,
+        8
+      ],
+      "drive": [
+        {
+          "from": 5,
+          "to": 6,
+          "vx": 2,
+          "vy": 12
+        }
+      ]
+    }
+  ]
+}

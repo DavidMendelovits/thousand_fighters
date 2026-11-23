@@ -1,0 +1,146 @@
+{
+  "id": "sun_king",
+  "name": "Sun King",
+  "bio": "Sun King",
+  "look": {
+    "skin": "#8d5524",
+    "main": "#b44913",
+    "alt": "#28315d",
+    "trim": "#eded1d",
+    "height": 0.93,
+    "bulk": 0.92,
+    "arms": 1.1,
+    "legs": 1.02,
+    "head": "square",
+    "hair": "mohawk",
+    "hat": "crown",
+    "cape": true
+  },
+  "stats": {
+    "hp": 951,
+    "speed": 1.06,
+    "power": 0.98,
+    "jump": 1.01
+  },
+  "strings": [
+    [
+      "lp",
+      "lk",
+      "hk"
+    ],
+    [
+      "hp",
+      "lk",
+      "hk"
+    ],
+    [
+      "lk",
+      "lk",
+      "hk"
+    ],
+    [
+      "hp",
+      "hp",
+      "lk"
+    ]
+  ],
+  "moves": [
+    {
+      "hs": 18,
+      "bs": 16,
+      "lvl": "mid",
+      "r": 16,
+      "kb": 5,
+      "stop": 10,
+      "base": "idle0",
+      "ac": 14,
+      "rc": 20,
+      "dmg": 90,
+      "pose": "rush",
+      "id": "rush",
+      "name": "Ram",
+      "motion": [
+        "b",
+        "f"
+      ],
+      "btn": "hk",
+      "su": 9,
+      "limb": "armF",
+      "launch": [
+        7,
+        7
+      ],
+      "drive": [
+        {
+          "from": 9,
+          "to": 23,
+          "vx": 10
+        }
+      ]
+    },
+    {
+      "hs": 18,
+      "bs": 11,
+      "lvl": "mid",
+      "r": 11,
+      "kb": 5,
+      "stop": 6,
+      "base": "crouch",
+      "ac": 1,
+      "rc": 14,
+      "dmg": 0,
+      "pose": "clp",
+      "id": "teleport",
+      "name": "Step",
+      "motion": [
+        "d",
+        "b"
+      ],
+      "btn": "lk",
+      "su": 10,
+      "inv": [
+        4,
+        15
+      ],
+      "teleport": {
+        "at": 10,
+        "to": "behind",
+        "dx": 80
+      }
+    },
+    {
+      "hs": 18,
+      "bs": 14,
+      "lvl": "low",
+      "r": 13,
+      "kb": 5,
+      "stop": 8,
+      "base": "crouch",
+      "ac": 14,
+      "rc": 18,
+      "dmg": 70,
+      "pose": "sweep",
+      "id": "slide",
+      "name": "Skid",
+      "motion": [
+        "b",
+        "f"
+      ],
+      "btn": "lk",
+      "su": 8,
+      "limb": "legF",
+      "launch": [
+        2.5,
+        5.5
+      ],
+      "crouch": true,
+      "drive": [
+        {
+          "from": 8,
+          "to": 22,
+          "vx": 9
+        }
+      ]
+    }
+  ]
+}

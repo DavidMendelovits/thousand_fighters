@@ -1,0 +1,142 @@
+{
+  "id": "cosmic_janitor",
+  "name": "Cosmic Janitor",
+  "bio": "Cosmic Janitor",
+  "look": {
+    "skin": "#e0a878",
+    "main": "#581b83",
+    "alt": "#49722c",
+    "trim": "#e255bf",
+    "height": 1,
+    "bulk": 1.1,
+    "arms": 1.08,
+    "legs": 1.01,
+    "head": "square",
+    "hair": "none",
+    "hat": "wizard",
+    "cape": false
+  },
+  "stats": {
+    "hp": 1035,
+    "speed": 0.95,
+    "power": 1.03,
+    "jump": 0.98
+  },
+  "strings": [
+    [
+      "lp",
+      "lp",
+      "lk",
+      "hp"
+    ],
+    [
+      "lk",
+      "lk",
+      "hk"
+    ],
+    [
+      "lp",
+      "hp",
+      "hk"
+    ]
+  ],
+  "moves": [
+    {
+      "hs": 18,
+      "bs": 14,
+      "lvl": "low",
+      "r": 13,
+      "kb": 5,
+      "stop": 8,
+      "base": "crouch",
+      "ac": 14,
+      "rc": 18,
+      "dmg": 70,
+      "pose": "sweep",
+      "id": "slide",
+      "name": "Skid",
+      "motion": [
+        "b",
+        "f"
+      ],
+      "btn": "lk",
+      "su": 8,
+      "limb": "legF",
+      "launch": [
+        2.5,
+        5.5
+      ],
+      "crouch": true,
+      "drive": [
+        {
+          "from": 8,
+          "to": 22,
+          "vx": 9
+        }
+      ]
+    },
+    {
+      "hs": 18,
+      "bs": 11,
+      "lvl": "mid",
+      "r": 11,
+      "kb": 5,
+      "stop": 6,
+      "base": "crouch",
+      "ac": 1,
+      "rc": 14,
+      "dmg": 0,
+      "pose": "clp",
+      "id": "teleport",
+      "name": "Vanish",
+      "motion": [
+        "d",
+        "b"
+      ],
+      "btn": "lk",
+      "su": 10,
+      "inv": [
+        4,
+        15
+      ],
+      "teleport": {
+        "at": 10,
+        "to": "behind",
+        "dx": 80
+      }
+    },
+    {
+      "hs": 18,
+      "bs": 16,
+      "lvl": "mid",
+      "r": 16,
+      "kb": 5,
+      "stop": 10,
+      "base": "idle0",
+      "ac": 14,
+      "rc": 20,
+      "dmg": 90,
+      "pose": "rush",
+      "id": "rush",
+      "name": "Drive",
+      "motion": [
+        "b",
+        "f"
+      ],
+      "btn": "hk",
+      "su": 9,
+      "limb": "armF",
+      "launch": [
+        7,
+        7
+      ],
+      "drive": [
+        {
+          "from": 9,
+          "to": 23,
+          "vx": 10
+        }
+      ]
+    }
+  ]
+}

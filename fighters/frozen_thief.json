@@ -1,0 +1,109 @@
+{
+  "id": "frozen_thief",
+  "name": "Frozen Thief",
+  "bio": "Frozen Thief",
+  "look": {
+    "skin": "#5c3a1e",
+    "main": "#a922ce",
+    "alt": "#3f802d",
+    "trim": "#ed359b",
+    "height": 1.01,
+    "bulk": 0.95,
+    "arms": 1.02,
+    "legs": 1.01,
+    "head": "tall",
+    "hair": "spikes",
+    "hat": "hood",
+    "cape": false
+  },
+  "stats": {
+    "hp": 986,
+    "speed": 1.02,
+    "power": 0.98,
+    "jump": 1.01
+  },
+  "strings": [
+    [
+      "lk",
+      "hk",
+      "hp"
+    ],
+    [
+      "lp",
+      "hp",
+      "hk"
+    ],
+    [
+      "lp",
+      "hp",
+      "lp",
+      "hk"
+    ]
+  ],
+  "moves": [
+    {
+      "hs": 18,
+      "bs": 11,
+      "lvl": "mid",
+      "r": 11,
+      "kb": 5,
+      "stop": 6,
+      "base": "crouch",
+      "ac": 1,
+      "rc": 14,
+      "dmg": 0,
+      "pose": "clp",
+      "id": "teleport",
+      "name": "Vanish",
+      "motion": [
+        "d",
+        "b"
+      ],
+      "btn": "lk",
+      "su": 10,
+      "inv": [
+        4,
+        15
+      ],
+      "teleport": {
+        "at": 10,
+        "to": "behind",
+        "dx": 80
+      }
+    },
+    {
+      "hs": 18,
+      "bs": 14,
+      "lvl": "low",
+      "r": 13,
+      "kb": 5,
+      "stop": 8,
+      "base": "crouch",
+      "ac": 14,
+      "rc": 18,
+      "dmg": 70,
+      "pose": "sweep",
+      "id": "slide",
+      "name": "Undercut",
+      "motion": [
+        "b",
+        "f"
+      ],
+      "btn": "lk",
+      "su": 8,
+      "limb": "legF",
+      "launch": [
+        2.5,
+        5.5
+      ],
+      "crouch": true,
+      "drive": [
+        {
+          "from": 8,
+          "to": 22,
+          "vx": 9
+        }
+      ]
+    }
+  ]
+}

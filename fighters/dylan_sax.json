@@ -1,0 +1,116 @@
+{
+  "id": "dylan_sax",
+  "name": "Dylan Sax",
+  "bio": "Dylan is a flamboyant purple sax fighter: slim, energetic, long curly brown hair under a dark baseball cap, black sunglasses, open purple suit, chunky gold chains, tan/gray sneakers, and a gold saxophone used as both instrument and weapon.\n\nSilhouette: tall slim performer, big curls, cap brim and sunglasses, saxophone always visible.\nClothing: vivid purple blazer and trousers, open chest, gold chains, tan/gray sneakers.\nHair: long curly brown hair flying behind the cap.\nAccessories: gold saxophone, dark cap, black sunglasses, gold chains.\nAttitude: cocky stage strut, explosive jazz-showmanship.\nDistinctive traits: sax horn strikes, gold musical bursts, purple/gold sonic wave projectile.",
+  "look": {
+    "skin": "#c0392b",
+    "main": "#8d411c",
+    "alt": "#3b4263",
+    "trim": "#13f1cc",
+    "height": 1.15,
+    "bulk": 0.8,
+    "arms": 1.15,
+    "legs": 1.1,
+    "head": "square",
+    "hair": "spikes",
+    "hat": "horns",
+    "cape": false
+  },
+  "stats": {
+    "hp": 975,
+    "speed": 1.05,
+    "power": 0.94,
+    "jump": 1.03
+  },
+  "strings": [
+    [
+      "hp",
+      "hp",
+      "lk"
+    ],
+    [
+      "lk",
+      "lk",
+      "hk"
+    ],
+    [
+      "lp",
+      "lk",
+      "hk"
+    ]
+  ],
+  "moves": [
+    {
+      "hs": 18,
+      "bs": 16,
+      "lvl": "mid",
+      "r": 26,
+      "kb": 5,
+      "stop": 11,
+      "base": "crouch",
+      "ac": 99,
+      "rc": 0,
+      "dmg": 100,
+      "pose": "upper",
+      "id": "rising",
+      "name": "Riser",
+      "motion": [
+        "f",
+        "d"
+      ],
+      "btn": "hp",
+      "su": 5,
+      "land": 18,
+      "limb": "armF",
+      "launch": [
+        2,
+        12.5
+      ],
+      "inv": [
+        0,
+        8
+      ],
+      "drive": [
+        {
+          "from": 5,
+          "to": 6,
+          "vx": 2,
+          "vy": 12
+        }
+      ]
+    },
+    {
+      "hs": 18,
+      "bs": 16,
+      "lvl": "mid",
+      "r": 16,
+      "kb": 5,
+      "stop": 10,
+      "base": "idle0",
+      "ac": 14,
+      "rc": 20,
+      "dmg": 90,
+      "pose": "rush",
+      "id": "rush",
+      "name": "Charge",
+      "motion": [
+        "b",
+        "f"
+      ],
+      "btn": "hk",
+      "su": 9,
+      "limb": "armF",
+      "launch": [
+        7,
+        7
+      ],
+      "drive": [
+        {
+          "from": 9,
+          "to": 23,
+          "vx": 10
+        }
+      ]
+    }
+  ]
+}

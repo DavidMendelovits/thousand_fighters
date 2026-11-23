@@ -1,0 +1,153 @@
+{
+  "id": "void_sumo",
+  "name": "Void Sumo",
+  "bio": "Void Sumo",
+  "look": {
+    "skin": "#c68642",
+    "main": "#7d34b2",
+    "alt": "#366339",
+    "trim": "#97dd64",
+    "height": 1.1,
+    "bulk": 1.35,
+    "arms": 0.95,
+    "legs": 1.07,
+    "head": "round",
+    "hair": "none",
+    "hat": "mask",
+    "cape": true
+  },
+  "stats": {
+    "hp": 1153,
+    "speed": 0.81,
+    "power": 1.1,
+    "jump": 0.95
+  },
+  "strings": [
+    [
+      "lk",
+      "hp"
+    ],
+    [
+      "lp",
+      "lp",
+      "lk",
+      "hp"
+    ],
+    [
+      "lp",
+      "lk",
+      "hk"
+    ],
+    [
+      "hp",
+      "hp",
+      "lk"
+    ]
+  ],
+  "moves": [
+    {
+      "hs": 18,
+      "bs": 16,
+      "lvl": "mid",
+      "r": 16,
+      "kb": 5,
+      "stop": 10,
+      "base": "idle0",
+      "ac": 14,
+      "rc": 20,
+      "dmg": 90,
+      "pose": "rush",
+      "id": "rush",
+      "name": "Ram",
+      "motion": [
+        "b",
+        "f"
+      ],
+      "btn": "hk",
+      "su": 9,
+      "limb": "armF",
+      "launch": [
+        7,
+        7
+      ],
+      "drive": [
+        {
+          "from": 9,
+          "to": 23,
+          "vx": 10
+        }
+      ]
+    },
+    {
+      "hs": 18,
+      "bs": 16,
+      "lvl": "mid",
+      "r": 26,
+      "kb": 5,
+      "stop": 11,
+      "base": "crouch",
+      "ac": 99,
+      "rc": 0,
+      "dmg": 100,
+      "pose": "upper",
+      "id": "rising",
+      "name": "Skybreaker",
+      "motion": [
+        "f",
+        "d"
+      ],
+      "btn": "hp",
+      "su": 5,
+      "land": 18,
+      "limb": "armF",
+      "launch": [
+        2,
+        12.5
+      ],
+      "inv": [
+        0,
+        8
+      ],
+      "drive": [
+        {
+          "from": 5,
+          "to": 6,
+          "vx": 2,
+          "vy": 12
+        }
+      ]
+    },
+    {
+      "hs": 18,
+      "bs": 11,
+      "lvl": "mid",
+      "r": 11,
+      "kb": 5,
+      "stop": 6,
+      "base": "idle0",
+      "ac": 1,
+      "rc": 28,
+      "dmg": 0,
+      "pose": "cast",
+      "id": "projectile",
+      "name": "Spark",
+      "motion": [
+        "d",
+        "f"
+      ],
+      "btn": "lp",
+      "su": 13,
+      "proj": [
+        {
+          "at": 13,
+          "vx": 7,
+          "dmg": 70,
+          "hs": 20,
+          "bs": 14,
+          "kb": 6,
+          "color": "#8af53d"
+        }
+      ]
+    }
+  ]
+}

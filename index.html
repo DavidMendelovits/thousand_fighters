@@ -1,18 +1,72 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
-    />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <title>Stamptown Fighter Engine</title>
-  </head>
-  <body>
-    <div id="game"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thousand Fighters</title>
+<style>
+  :root { --bg: #14121c; --panel: #1e1b2b; --line: #332e47; --text: #ece8f5; --dim: #9a93b3; --gold: #ffd23f; --bad: #ff6b5a; --good: #5fe08a; }
+  * { box-sizing: border-box; } [hidden] { display: none !important; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.4 system-ui, sans-serif; height: 100vh; display: grid; grid-template-rows: auto 1fr; }
+  header { display: flex; align-items: center; gap: 14px; padding: 8px 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  header b { font-size: 16px; letter-spacing: .12em; color: var(--gold); }
+  main { display: grid; grid-template-columns: 236px minmax(0, 1fr) 372px; min-height: 0; }
+  aside { background: var(--panel); overflow-y: auto; padding: 10px; }
+  #roster { border-right: 1px solid var(--line); } #panel { border-left: 1px solid var(--line); }
+  #stage { padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; overflow: auto; }
+  canvas#arena { width: 100%; max-width: 1100px; aspect-ratio: 16/9; border-radius: 8px; border: 1px solid var(--line); background: #000; }
+  #grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; }
+  .card { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 2px 2px 4px; cursor: pointer; color: var(--text); font: inherit; font-size: 10px; line-height: 1.15; overflow: hidden; }
+  .card canvas { display: block; margin: 0 auto; } .card.on { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+  button, select, input, textarea { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 5px; padding: 4px 8px; }
+  button { cursor: pointer; } button:hover { border-color: var(--gold); } button.on, button.primary { background: var(--gold); color: #14121c; border-color: var(--gold); font-weight: 700; }
+  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, .card:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+  textarea, input.wide { width: 100%; resize: vertical; }
+  .row { display: flex; gap: 6px; align-items: center; margin: 6px 0; flex-wrap: wrap; }
+  input.name { flex: 1; font-size: 17px; font-weight: 700; min-width: 0; }
+  details { border-top: 1px solid var(--line); padding: 8px 0; } summary { cursor: pointer; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; font-size: 11px; color: var(--dim); }
+  label { display: grid; grid-template-columns: 62px 1fr 38px; gap: 6px; align-items: center; margin: 4px 0; color: var(--dim); }
+  label.free { display: inline-flex; grid-template-columns: none; } input[type=range] { padding: 0; accent-color: var(--gold); } input[type=color] { padding: 0; height: 24px; width: 100%; }
+  .swatches { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; } .swatches label { display: block; text-align: center; font-size: 10px; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; } td, th { padding: 3px 4px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { color: var(--dim); font-weight: 600; font-size: 10px; } tr[data-demo] { cursor: pointer; } tr[data-demo]:hover { background: var(--bg); }
+  ul { list-style: none; padding: 0; margin: 6px 0; } li { padding: 3px 0; } li[data-demo] { cursor: pointer; } li small, summary small, p, small { color: var(--dim); }
+  .ok { color: var(--good); } .bad { color: var(--bad); } #badge { font-weight: 700; white-space: nowrap; }
+  kbd { background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; font: 11px ui-monospace, monospace; }
+  dialog { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 10px; width: min(460px, 92vw); } dialog::backdrop { background: rgba(0, 0, 0, .6); }
+  @media (max-width: 1000px) { main { grid-template-columns: 1fr; } body { height: auto; } aside { max-height: 50vh; } }
+</style>
+</head>
+<body>
+<header>
+  <b>THOUSAND FIGHTERS</b><span id="count"></span>
+  <span class="row" style="margin:0"><button id="train" class="on">Training</button><button id="fight">Fight</button></span>
+  <label class="free">vs&nbsp;<select id="opp"></select></label>
+  <label class="free" id="dummyWrap">Dummy&nbsp;<select id="dummy"><option value="stand">stands</option><option value="crouch">crouches</option><option value="block">blocks high</option><option value="lowblock">blocks low</option><option value="jump">jumps</option><option value="cpu">fights back</option></select></label>
+  <label class="free" id="skillWrap" hidden>CPU&nbsp;<select id="skill"><option value="0.3">easy</option><option value="0.6" selected>normal</option><option value="0.9">hard</option></select></label>
+  <label class="free"><input type="checkbox" id="boxes">&nbsp;Hitboxes</label>
+</header>
+<main>
+  <aside id="roster">
+    <button id="new" class="primary" style="width:100%">＋ New fighter</button>
+    <input id="search" class="wide" type="search" placeholder="Search roster" style="margin-top:8px" aria-label="Search roster">
+    <div id="grid"></div>
+  </aside>
+  <section id="stage">
+    <canvas id="arena" width="960" height="540"></canvas>
+    <div><kbd>A</kbd><kbd>D</kbd> move · <kbd>W</kbd> jump · <kbd>S</kbd> crouch · tap <kbd>D</kbd><kbd>D</kbd> dash · <kbd>U</kbd> LP · <kbd>I</kbd> HP · <kbd>J</kbd> LK · <kbd>K</kbd> HK · <kbd>Space</kbd> block · <kbd>U</kbd>+<kbd>J</kbd> throw · <kbd>Enter</kbd> reset · gamepad works</div>
+  </section>
+  <aside id="panel"></aside>
+</main>
+<dialog id="create">
+  <form method="dialog">
+    <h3 style="margin-top:0">New fighter</h3>
+    <textarea id="desc" rows="4" placeholder="Describe them. e.g. “Mop Baron: a hulking janitor who slides across wet floors and hurls soap bolts”"></textarea>
+    <p>Optional: an image to take their colours from.</p>
+    <input type="file" id="img" accept="image/*" class="wide">
+    <div class="row" style="justify-content:flex-end;margin-top:12px"><button value="cancel">Cancel</button><button value="ok" class="primary">Create</button></div>
+  </form>
+</dialog>
+<script type="module" src="./main.ts"></script>
+</body>
 </html>

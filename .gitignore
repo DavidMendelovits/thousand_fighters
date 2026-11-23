@@ -1,17 +1,9 @@
 node_modules/
 dist/
-.context/
+__pycache__/
+*.pyc
 .env*
-cms-data*/
-.cache/
-test-results/
-playwright-report/
-sonic-runner-phaser-tutorial/
-.vercel
-stamptown-qlab/
-.gstack/
-.wrangler/
-generated/
-scripts/__pycache__/
-
-**copy
+.vercel/
+.DS_Store
+# paint.py intermediates
+*.work/

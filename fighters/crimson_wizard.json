@@ -1,0 +1,114 @@
+{
+  "id": "crimson_wizard",
+  "name": "Crimson Wizard",
+  "bio": "Crimson Wizard",
+  "look": {
+    "skin": "#5c3a1e",
+    "main": "#ae3232",
+    "alt": "#255483",
+    "trim": "#20e9e9",
+    "height": 1.05,
+    "bulk": 1.02,
+    "arms": 1.1,
+    "legs": 0.96,
+    "head": "round",
+    "hair": "bun",
+    "hat": "wizard",
+    "cape": true
+  },
+  "stats": {
+    "hp": 1022,
+    "speed": 0.98,
+    "power": 1.01,
+    "jump": 1
+  },
+  "strings": [
+    [
+      "lp",
+      "lp",
+      "hp"
+    ],
+    [
+      "hk",
+      "hk"
+    ],
+    [
+      "lp",
+      "hp",
+      "lp",
+      "hk"
+    ],
+    [
+      "hk",
+      "lp",
+      "hp"
+    ]
+  ],
+  "moves": [
+    {
+      "hs": 18,
+      "bs": 11,
+      "lvl": "mid",
+      "r": 11,
+      "kb": 5,
+      "stop": 6,
+      "base": "idle0",
+      "ac": 1,
+      "rc": 28,
+      "dmg": 0,
+      "pose": "cast",
+      "id": "projectile",
+      "name": "Orb",
+      "motion": [
+        "d",
+        "f"
+      ],
+      "btn": "lp",
+      "su": 13,
+      "proj": [
+        {
+          "at": 13,
+          "vx": 7,
+          "dmg": 70,
+          "hs": 20,
+          "bs": 14,
+          "kb": 6,
+          "color": "#3df5f5"
+        }
+      ]
+    },
+    {
+      "hs": 18,
+      "bs": 16,
+      "lvl": "mid",
+      "r": 16,
+      "kb": 5,
+      "stop": 10,
+      "base": "idle0",
+      "ac": 14,
+      "rc": 20,
+      "dmg": 90,
+      "pose": "rush",
+      "id": "rush",
+      "name": "Charge",
+      "motion": [
+        "b",
+        "f"
+      ],
+      "btn": "hk",
+      "su": 9,
+      "limb": "armF",
+      "launch": [
+        7,
+        7
+      ],
+      "drive": [
+        {
+          "from": 9,
+          "to": 23,
+          "vx": 10
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "id": "lanky_bandit",
+  "name": "Lanky Bandit",
+  "bio": "Lanky Bandit",
+  "look": {
+    "skin": "#8d5524",
+    "main": "#127cb5",
+    "alt": "#242e65",
+    "trim": "#e9203e",
+    "height": 1.15,
+    "bulk": 1.23,
+    "arms": 1.15,
+    "legs": 1.1,
+    "head": "round",
+    "hair": "long",
+    "hat": "mask",
+    "cape": false
+  },
+  "stats": {
+    "hp": 1126,
+    "speed": 0.85,
+    "power": 1.07,
+    "jump": 0.97
+  },
+  "strings": [
+    [
+      "lk",
+      "lk",
+      "hk"
+    ],
+    [
+      "lp",
+      "hp",
+      "hk"
+    ],
+    [
+      "hp",
+      "hp",
+      "lk"
+    ],
+    [
+      "hp",
+      "hk"
+    ]
+  ],
+  "moves": [
+    {
+      "hs": 18,
+      "bs": 16,
+      "lvl": "mid",
+      "r": 16,
+      "kb": 5,
+      "stop": 10,
+      "base": "idle0",
+      "ac": 14,
+      "rc": 20,
+      "dmg": 90,
+      "pose": "rush",
+      "id": "rush",
+      "name": "Drive",
+      "motion": [
+        "b",
+        "f"
+      ],
+      "btn": "hk",
+      "su": 9,
+      "limb": "armF",
+      "launch": [
+        7,
+        7
+      ],
+      "drive": [
+        {
+          "from": 9,
+          "to": 23,
+          "vx": 10
+        }
+      ]
+    },
+    {
+      "hs": 18,
+      "bs": 11,
+      "lvl": "mid",
+      "r": 11,
+      "kb": 5,
+      "stop": 6,
+      "base": "crouch",
+      "ac": 1,
+      "rc": 14,
+      "dmg": 0,
+      "pose": "clp",
+      "id": "teleport",
+      "name": "Step",
+      "motion": [
+        "d",
+        "b"
+      ],
+      "btn": "lk",
+      "su": 10,
+      "inv": [
+        4,
+        15
+      ],
+      "teleport": {
+        "at": 10,
+        "to": "behind",
+        "dx": 80
+      }
+    }
+  ]
+}

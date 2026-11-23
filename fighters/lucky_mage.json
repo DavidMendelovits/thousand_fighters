@@ -1,0 +1,137 @@
+{
+  "id": "lucky_mage",
+  "name": "Lucky Mage",
+  "bio": "Lucky Mage",
+  "look": {
+    "skin": "#f7dfc8",
+    "main": "#9f2d68",
+    "alt": "#266d6c",
+    "trim": "#29d926",
+    "height": 0.94,
+    "bulk": 1.22,
+    "arms": 0.97,
+    "legs": 1.01,
+    "head": "tall",
+    "hair": "long",
+    "hat": "wizard",
+    "cape": true
+  },
+  "stats": {
+    "hp": 1059,
+    "speed": 0.92,
+    "power": 1.07,
+    "jump": 0.97
+  },
+  "strings": [
+    [
+      "lk",
+      "hp"
+    ],
+    [
+      "hp",
+      "hk"
+    ],
+    [
+      "hk",
+      "hk"
+    ]
+  ],
+  "moves": [
+    {
+      "hs": 18,
+      "bs": 11,
+      "lvl": "mid",
+      "r": 11,
+      "kb": 5,
+      "stop": 6,
+      "base": "idle0",
+      "ac": 1,
+      "rc": 28,
+      "dmg": 0,
+      "pose": "cast",
+      "id": "projectile",
+      "name": "Shot",
+      "motion": [
+        "d",
+        "f"
+      ],
+      "btn": "lp",
+      "su": 13,
+      "proj": [
+        {
+          "at": 13,
+          "vx": 7,
+          "dmg": 70,
+          "hs": 20,
+          "bs": 14,
+          "kb": 6,
+          "color": "#3df596"
+        }
+      ]
+    },
+    {
+      "hs": 18,
+      "bs": 14,
+      "lvl": "low",
+      "r": 13,
+      "kb": 5,
+      "stop": 8,
+      "base": "crouch",
+      "ac": 14,
+      "rc": 18,
+      "dmg": 70,
+      "pose": "sweep",
+      "id": "slide",
+      "name": "Skid",
+      "motion": [
+        "b",
+        "f"
+      ],
+      "btn": "lk",
+      "su": 8,
+      "limb": "legF",
+      "launch": [
+        2.5,
+        5.5
+      ],
+      "crouch": true,
+      "drive": [
+        {
+          "from": 8,
+          "to": 22,
+          "vx": 9
+        }
+      ]
+    },
+    {
+      "hs": 18,
+      "bs": 11,
+      "lvl": "mid",
+      "r": 11,
+      "kb": 5,
+      "stop": 6,
+      "base": "crouch",
+      "ac": 1,
+      "rc": 14,
+      "dmg": 0,
+      "pose": "clp",
+      "id": "teleport",
+      "name": "Vanish",
+      "motion": [
+        "d",
+        "b"
+      ],
+      "btn": "lk",
+      "su": 10,
+      "inv": [
+        4,
+        15
+      ],
+      "teleport": {
+        "at": 10,
+        "to": "behind",
+        "dx": 80
+      }
+    }
+  ]
+}

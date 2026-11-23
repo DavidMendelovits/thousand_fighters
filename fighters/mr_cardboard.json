@@ -1,0 +1,148 @@
+{
+  "id": "mr_cardboard",
+  "name": "Mr Cardboard",
+  "bio": "Mr Cardboard is a high-quality pixel-art arcade fighter with an orange-red cap, neat moustache, black-and-white checker shirt, huge dark green overalls, striped socks, and tan boots. The overalls are widened by a hidden internal support under the fabric, creating a sharp horizontal lower-belly shelf and crisp angular side corners without any visible external rod. His attacks use handmade corrugated cardboard props: sword, sweep board, giant mallet, and Cardbross Cross.",
+  "look": {
+    "skin": "#c68642",
+    "main": "#1f9e23",
+    "alt": "#1e3e2f",
+    "trim": "#9c44e9",
+    "height": 1.1,
+    "bulk": 1.35,
+    "arms": 0.95,
+    "legs": 0.97,
+    "head": "round",
+    "hair": "mohawk",
+    "hat": "wizard",
+    "cape": false
+  },
+  "stats": {
+    "hp": 1153,
+    "speed": 0.81,
+    "power": 1.1,
+    "jump": 0.95
+  },
+  "strings": [
+    [
+      "hp",
+      "hk"
+    ],
+    [
+      "lp",
+      "lk",
+      "hk"
+    ],
+    [
+      "lp",
+      "hp",
+      "lp",
+      "hk"
+    ],
+    [
+      "hp",
+      "hp",
+      "lk"
+    ]
+  ],
+  "moves": [
+    {
+      "hs": 18,
+      "bs": 16,
+      "lvl": "mid",
+      "r": 16,
+      "kb": 5,
+      "stop": 10,
+      "base": "idle0",
+      "ac": 14,
+      "rc": 20,
+      "dmg": 90,
+      "pose": "rush",
+      "id": "rush",
+      "name": "Crash",
+      "motion": [
+        "b",
+        "f"
+      ],
+      "btn": "hk",
+      "su": 9,
+      "limb": "armF",
+      "launch": [
+        7,
+        7
+      ],
+      "drive": [
+        {
+          "from": 9,
+          "to": 23,
+          "vx": 10
+        }
+      ]
+    },
+    {
+      "hs": 18,
+      "bs": 11,
+      "lvl": "mid",
+      "r": 11,
+      "kb": 5,
+      "stop": 6,
+      "base": "idle0",
+      "ac": 1,
+      "rc": 28,
+      "dmg": 0,
+      "pose": "cast",
+      "id": "projectile",
+      "name": "Wave",
+      "motion": [
+        "d",
+        "f"
+      ],
+      "btn": "lp",
+      "su": 13,
+      "proj": [
+        {
+          "at": 13,
+          "vx": 7,
+          "dmg": 70,
+          "hs": 20,
+          "bs": 14,
+          "kb": 6,
+          "color": "#f53def"
+        }
+      ]
+    },
+    {
+      "hs": 18,
+      "bs": 14,
+      "lvl": "low",
+      "r": 13,
+      "kb": 5,
+      "stop": 8,
+      "base": "crouch",
+      "ac": 14,
+      "rc": 18,
+      "dmg": 70,
+      "pose": "sweep",
+      "id": "slide",
+      "name": "Skid",
+      "motion": [
+        "b",
+        "f"
+      ],
+      "btn": "lk",
+      "su": 8,
+      "limb": "legF",
+      "launch": [
+        2.5,
+        5.5
+      ],
+      "crouch": true,
+      "drive": [
+        {
+          "from": 8,
+          "to": 22,
+          "vx": 9
+        }
+      ]
+    }
+  ]
+}

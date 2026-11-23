@@ -1,0 +1,73 @@
+{
+  "id": "faro",
+  "name": "Faro",
+  "atlas": true,
+  "bio": "Faro, the Drowned Keeper. A lighthouse keeper who went down with his light and walked back out of the sea wearing it: where his head should be there is a caged lamp, still burning. He fights at the end of an anchor chain. He drags you in from across the stage, sets mines and geysers where you want to stand, answers your attack through a pane of storm glass, and when he trims the wick the whole fight speeds up.",
+  "look": {
+    "skin": "#9fb3b8", "main": "#1f4a52", "alt": "#1a1d2b", "trim": "#ffcf5a",
+    "height": 1.14, "bulk": 1.08, "arms": 1.2, "legs": 1.04,
+    "head": "square", "hair": "none", "hat": "lantern", "cape": true
+  },
+  "stats": { "hp": 1080, "speed": 0.9, "power": 1.08, "jump": 0.95 },
+  "strings": [
+    ["lp", "lp", "hp"],
+    ["lp", "lk", "hk"],
+    ["lk", "lk", "toll"],
+    ["hp", "shove", "swing"],
+    ["hp", "hp", "anchor"],
+    ["hk", "hk"]
+  ],
+  "tweaks": { "over": { "name": "Bell Hammer" }, "upper": { "name": "Lamp Lifter" }, "throw": { "name": "Heave Overboard" } },
+  "poses": {
+    "rise.w": [20, 40, 120, -30, 40, 95, -25, 60, -75, 0, 0],
+    "rise.s": [-45, -60, -20, -80, -40, 150, 160, 60, -30, -10, 6],
+    "dive.w": [0, 60, 150, -20, 60, 90, -20, 60, -50, 0, 0],
+    "dive.s": [35, -50, -20, -70, -40, 42, 40, 85, -45, 0, 0],
+    "palm.w": [-12, 20, 110, -70, 50, 30, -10, -35, -25, 0, 0],
+    "palm.s": [28, 95, 92, 86, 90, 45, 5, -42, -35, 0, 12],
+    "axe.w": [-15, 40, 130, -40, 30, 150, 152, -5, -5, 0, 4],
+    "axe.s": [12, 30, 110, -50, 10, 72, 66, -8, -8, 0, 10],
+    "shove.w": [-10, 55, 145, 10, 110, 85, -30, -5, -5, 0, 4],
+    "shove.s": [-28, 20, 110, -60, 0, 96, 94, -5, -5, 0, 14],
+    "beam.w": [-18, -30, 40, -50, 20, 28, -10, -30, -22, -18, 0],
+    "beam.s": [24, -55, -25, -70, -40, 42, 2, -42, -32, 12, 8],
+    "line.w": [-5, 45, 140, -70, 20, 25, -10, -25, -20, 0, 0],
+    "line.s": [32, 30, 120, 92, 91, 42, 2, -42, -34, 0, 12],
+    "tend.w": [0, 120, 170, 110, 165, 20, -8, -22, -18, 0, 0],
+    "tend.s": [-6, 150, 188, 142, 184, 18, -6, -20, -16, -8, 0],
+    "glass.w": [-8, 75, 170, 60, 165, 28, -10, -28, -22, 0, 0],
+    "glass.s": [-12, 85, 150, 70, 150, 32, -12, -30, -24, 0, -4]
+  },
+  "moves": [
+    { "id": "beacon", "name": "Beacon", "motion": ["d", "f"], "btn": "lp", "su": 12, "ac": 1, "rc": 26, "pose": "cast", "proj": [{ "at": 12, "vx": 8, "dmg": 60, "hs": 19, "bs": 13, "kb": 6, "color": "#ffcf5a" }] },
+    { "id": "flare", "name": "Signal Flare", "motion": ["d", "f"], "btn": "hp", "su": 16, "ac": 1, "rc": 24, "pose": "over", "proj": [{ "at": 16, "x": 30, "y": 150, "vx": 4.2, "vy": 9, "g": 0.42, "dmg": 80, "lvl": "oh", "launch": [2, 7], "size": 16, "color": "#ff6a3d", "shape": "bomb" }] },
+    { "id": "mine", "name": "Sea Mine", "motion": ["d", "b"], "btn": "lp", "su": 14, "ac": 1, "rc": 22, "pose": "clp", "base": "crouch", "proj": [{ "at": 14, "x": 170, "y": 26, "vx": 0, "life": 360, "dmg": 70, "launch": [1, 10], "size": 16, "color": "#7fe0d0", "shape": "bomb" }] },
+    { "id": "riptide", "name": "Riptide", "motion": ["d", "b"], "btn": "hp", "su": 22, "ac": 1, "rc": 20, "pose": "tend", "proj": [{ "at": 22, "aim": "target", "y": 40, "vx": 0, "life": 14, "dmg": 75, "launch": [0, 11], "size": 30, "color": "#7fe0d0", "shape": "wave" }] },
+    { "id": "star", "name": "Falling Star", "air": true, "motion": ["d", "f"], "btn": "lp", "su": 8, "ac": 99, "rc": 0, "land": 8, "pose": "cast", "base": "air", "proj": [{ "at": 8, "x": 40, "y": 70, "vx": 7, "vy": -6, "dmg": 55, "hs": 20, "color": "#ffcf5a" }] },
+
+    { "id": "anchor", "name": "Anchor Line", "motion": ["b", "f"], "btn": "hp", "su": 14, "ac": 1, "rc": 30, "pose": "line", "proj": [{ "at": 14, "vx": 13, "life": 22, "dmg": 30, "pull": 38, "size": 14, "color": "#c9d6d8", "shape": "chain" }] },
+    { "id": "dredge", "name": "Dredge", "motion": ["b", "f"], "btn": "hk", "cost": 50, "su": 20, "ac": 1, "rc": 30, "pose": "line", "proj": [{ "at": 20, "y": 30, "vx": 11, "life": 28, "dmg": 40, "unblockable": true, "pull": 32, "size": 16, "color": "#7fe0d0", "shape": "chain" }] },
+    { "id": "undertow", "name": "Undertow", "motion": ["f", "d", "b"], "btn": "hp", "su": 5, "ac": 20, "rc": 18, "dmg": 170, "grab": { "range": 26 }, "launch": [3, 10], "stop": 12, "pose": "throw" },
+    { "id": "gaff", "name": "Gaff Hook", "motion": ["f", "d"], "btn": "lk", "su": 6, "ac": 16, "rc": 20, "dmg": 110, "grab": { "range": 60, "air": true, "juggle": true }, "launch": [1, 11], "stop": 10, "pose": "throw" },
+
+    { "id": "trim", "name": "Trim the Wick", "motion": ["d", "f"], "btn": "lk", "cost": 50, "su": 20, "ac": 1, "rc": 14, "pose": "tend", "buff": { "ticks": 600, "power": 1.25, "speed": 1.15, "color": "#fff2b0" } },
+    { "id": "beam", "name": "Lighthouse Beam", "motion": ["d", "f"], "btn": "hk", "needs": "buff", "su": 9, "ac": 1, "rc": 30, "proj": [{ "at": 9, "x": 40, "y": 150, "vx": 5, "dmg": 40, "hits": 3, "size": 26, "kb": 2, "hs": 22, "color": "#fff2b0", "shape": "wave" }] },
+    { "id": "tend", "name": "Tend the Flame", "dir": "b", "btn": "lp", "su": 28, "ac": 1, "rc": 16, "meter": 30 },
+    { "id": "glass", "name": "Storm Glass", "dir": "b", "btn": "lk", "su": 2, "ac": 18, "rc": 16, "counter": { "from": 2, "to": 20, "then": "squall" } },
+    { "id": "squall", "name": "Squall", "su": 4, "ac": 5, "rc": 22, "dmg": 120, "limb": "armF", "r": 26, "stop": 12, "launch": [2, 13], "pose": "upper", "base": "crouch" },
+
+    { "id": "fog", "name": "Fog Bank", "motion": ["d", "b"], "btn": "hk", "su": 9, "ac": 1, "rc": 12, "pose": "clp", "base": "crouch", "inv": [3, 14], "teleport": { "at": 9, "to": "behind", "dx": 80 } },
+    { "id": "swing", "name": "Lamp Swing", "motion": ["b", "f"], "btn": "lk", "su": 9, "ac": 10, "rc": 20, "dmg": 55, "hs": 22, "bs": 14, "limb": "legF", "r": 14, "kb": 3, "stop": 7, "pose": "round", "drive": [{ "from": 6, "to": 19, "vx": 8 }] },
+    { "id": "swing2", "name": "Backswing", "from": ["swing"], "btn": "lk", "su": 8, "ac": 4, "rc": 20, "dmg": 50, "hs": 22, "bs": 14, "limb": "legF", "r": 14, "kb": 3, "stop": 7, "pose": "shove", "drive": [{ "from": 2, "to": 10, "vx": 5 }] },
+    { "id": "swing3", "name": "Last Bell", "from": ["swing2"], "btn": "hk", "su": 11, "ac": 4, "rc": 22, "dmg": 80, "bs": 15, "lvl": "oh", "limb": "legF", "r": 16, "stop": 10, "launch": [5, 6], "pose": "axe", "drive": [{ "from": 2, "to": 9, "vx": 4 }] },
+    { "id": "ebb", "name": "Ebb Tide", "from": ["swing", "swing2"], "btn": "hk", "dir": "d", "su": 10, "ac": 4, "rc": 24, "dmg": 60, "bs": 12, "lvl": "low", "limb": "legF", "r": 13, "stop": 8, "launch": [2.5, 5.5], "pose": "sweep", "base": "crouch", "crouch": true, "drive": [{ "from": 2, "to": 9, "vx": 4 }] },
+    { "id": "upwell", "name": "Upwelling", "motion": ["f", "d"], "btn": "hk", "su": 5, "ac": 99, "rc": 0, "land": 20, "dmg": 95, "bs": 16, "limb": "legF", "r": 22, "stop": 11, "launch": [2, 12.5], "pose": "rise", "base": "crouch", "inv": [0, 8], "drive": [{ "from": 5, "to": 6, "vx": 2.5, "vy": 12.5 }] },
+    { "id": "plumb", "name": "Plumb Line", "air": true, "dir": "d", "btn": "lk", "or": "hk", "su": 5, "ac": 99, "rc": 0, "land": 10, "dmg": 60, "hs": 20, "bs": 12, "limb": "legF", "r": 14, "stop": 7, "pose": "dive", "base": "air", "drive": [{ "from": 5, "to": 99, "vx": 7, "vy": -9 }] },
+    { "id": "shove", "name": "Shove Off", "dir": "f", "btn": "lk", "su": 11, "ac": 4, "rc": 15, "dmg": 65, "hs": 21, "bs": 14, "limb": "legF", "r": 13, "kb": 6, "stop": 8, "drive": [{ "from": 3, "to": 11, "vx": 6 }] },
+    { "id": "breakwater", "name": "Breakwater", "dir": "b", "btn": "hp", "su": 18, "ac": 4, "rc": 22, "dmg": 120, "bs": 18, "limb": "armF", "r": 16, "stop": 12, "launch": [9, 6], "armor": 1, "pose": "palm" },
+    { "id": "toll", "name": "Toll", "btn": "hk", "stringOnly": true, "su": 8, "ac": 4, "rc": 20, "dmg": 70, "limb": "legF", "r": 14, "stop": 9, "launch": [1, 12], "pose": "lk" },
+
+    { "id": "wreck", "name": "Wreckers' Light", "motion": ["d", "f", "d", "f"], "btn": "hp", "cost": 100, "su": 14, "ac": 1, "rc": 34, "pose": "beam", "inv": [0, 16], "proj": [{ "at": 14, "x": 60, "y": 60, "vx": 5, "dmg": 55, "hits": 6, "size": 34, "launch": [1.5, 7], "stop": 8, "color": "#fff2b0", "shape": "wave" }] },
+    { "id": "drown", "name": "The Lamp Goes Out", "motion": ["d", "b", "d", "b"], "btn": "hk", "cost": 100, "su": 16, "ac": 1, "rc": 30, "pose": "line", "inv": [0, 18], "proj": [{ "at": 16, "vx": 15, "life": 40, "dmg": 150, "unblockable": true, "pull": 50, "heal": 0.5, "size": 18, "stop": 14, "color": "#3be0c8", "shape": "chain" }] }
+  ]
+}

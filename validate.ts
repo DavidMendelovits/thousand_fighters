@@ -1,0 +1,158 @@
+// Movement validation: play every move, string and special in the real sim and assert what happened.
+// Pure (no DOM, no fs) so the studio runs it live on every edit and cli.ts runs it over the whole roster.
+import { MOVES, compile, cmdOf, type FighterDef, type Move } from './kit'
+import { newWorld, step, cpu, scriptFor, BIT, R, U, D, LP, LK, HK, HP, BL, type World } from './sim'
+import { design } from './design'
+
+export type Script = number[] | ((w: World, t: number) => number)
+export type Demo = { script: Script; dist: number; foe?: Script; powered?: boolean }
+export type Check = { name: string; ok: boolean; detail: string; demo?: Demo }
+export type Row = { id: string; name: string; cmd: string; su: number; ac: number; rc: number; dmg: number; lvl: string; onHit: string; onBlock: string; demo?: Demo }
+
+// ponytail: one average-size reference opponent; add small/large references if size matchups start dropping combos
+export const REF: FighterDef = { ...design('Sparring Dummy', 7), look: { ...design('Sparring Dummy', 7).look, height: 1, bulk: 1, arms: 1, legs: 1, hat: 'none', cape: false }, stats: { hp: 1000, speed: 1, power: 1, jump: 1 }, strings: [], moves: [] }
+
+export const at = (s: Script, w: World, t: number) => typeof s === 'function' ? s(w, t) : s[t] ?? 0
+const FREE = ['idle', 'walk', 'crouch', 'block']
+
+function run(a: FighterDef, b: FighterDef, dist: number, p1: Script, p2: Script, ticks: number, powered = false) {
+  const w = newWorld(a, b, 1, dist), o = { w, maxCombo: 0, comboDmg: 0, firstHit: -1, blocks: 0, wasDown: false, freeA: -1, freeD: -1, seen: new Set<string>(), moved: 0, buffed: false }
+  w.f[0].meter = 100
+  if (powered) w.f[0].buff = { t: 9999, power: 1, speed: 1, defense: 1, color: '#fff' }
+  for (let t = 0; t < ticks; t++) {
+    const x0 = w.f[0].x
+    step(w, at(p1, w, t), at(p2, w, t))
+    for (const e of w.ev) if (e.who === 0) { if (e.type === 'hit' && o.firstHit < 0) o.firstHit = t; if (e.type === 'block') { o.blocks++; if (o.firstHit < 0) o.firstHit = t } }
+    o.maxCombo = Math.max(o.maxCombo, w.f[1].combo); o.comboDmg = Math.max(o.comboDmg, w.f[1].comboDmg); o.moved = Math.max(o.moved, Math.abs(w.f[0].x - x0))
+    if (w.f[0].mv) o.seen.add(w.f[0].mv.id)
+    if (w.f[0].buff && !powered) o.buffed = true
+    if (w.f[1].st === 'down') o.wasDown = true
+    if (o.firstHit >= 0 && t > o.firstHit) { if (o.freeA < 0 && FREE.includes(w.f[0].st)) o.freeA = t; if (o.freeD < 0 && FREE.includes(w.f[1].st)) o.freeD = t }
+  }
+  return o
+}
+
+/** Dial a string: first move on tick 0, each next button as soon as the previous one connects. */
+export const stringScript = (s: string[]): Script => (w, tk) => {
+  const f = w.f[0], btn = (id: string) => BIT[f.moves[id]?.btn ?? 'lp']
+  if (tk === 0) return f.moves[s[0]] ? scriptFor(f.moves[s[0]])[0] : 0
+  return f.st === 'atk' && f.contact && f.str.length < s.length && tk % 2 ? btn(s[f.str.length]) : 0
+}
+/** Perform a chain of moves: the first from neutral (or from a jump when it is an air move), each next one on contact. */
+function chainScript(path: Move[], jumpTick: number): Script {
+  const first = path[0].air ? [U | R, ...new Array(jumpTick).fill(0), ...scriptFor(path[0])] : scriptFor(path[0])
+  let cur = -1, pos = 0
+  return (w, tk) => {
+    if (tk === 0) cur = -1
+    if (tk < first.length) return first[tk]
+    const f = w.f[0], k = path.findIndex(m => m.id === f.mv?.id)
+    if (f.st !== 'atk' || k < 0 || k === path.length - 1 || !f.contact) return 0
+    if (cur !== k) { cur = k; pos = 0 }
+    const seq = [...scriptFor(path[k + 1]), 0]; return seq[pos++ % seq.length]
+  }
+}
+/** [first, 0 × (k-1), then] — hold `first` for one tick, wait, then press `then` on tick k. */
+function t(k: number, first: number, then: number): number[] { const s = new Array(k + 1).fill(0); s[0] = first; s[k] = then; return s }
+
+export function validate(def: FighterDef, ref: FighterDef = REF): { ok: boolean; checks: Check[]; rows: Row[] } {
+  const checks: Check[] = [], rows: Row[] = [], C = compile(def)
+  const add = (name: string, bad: string[], good = 'ok', demo?: Demo) => checks.push({ name, ok: !bad.length, detail: bad.length ? bad.join('; ') : good, demo })
+  const touch = 22 * (def.look.height + ref.look.height) + 2, full = ref.stats.hp
+  const adv = (r: ReturnType<typeof run>) => r.firstHit < 0 ? '—' : r.wasDown ? 'KD' : (r.freeD - r.freeA >= 0 ? '+' : '') + (r.freeD - r.freeA)
+  const row = (m: Move, onHit: string, onBlock: string, demo?: Demo) => rows.push({ id: m.id, name: m.name, cmd: cmdOf(m, C.moves), su: m.su, ac: m.ac > 90 ? 0 : m.ac, rc: m.rc, dmg: Math.round((m.dmg || Math.max(0, ...(m.proj ?? []).map(p => p.dmg))) * def.stats.power), lvl: m.grab ? 'grab' : m.lvl, onHit, onBlock, demo })
+
+  if (C.problems.length) add('Definition is well-formed', C.problems)
+
+  // 1+2. every universal ground normal connects point-blank, on the tick its frame data says, and guard rules hold
+  const reach: string[] = [], guard: string[] = []
+  const normals = Object.keys(MOVES).map(id => C.moves[id]).filter(m => !m.air && !m.grab)
+  for (const m of normals) {
+    const inp = scriptFor(m), hit = run(def, ref, touch, inp, [], 140)
+    if (hit.w.f[1].hp >= full) reach.push(`${m.name} whiffs at close range`)
+    else if (hit.firstHit !== m.su) reach.push(`${m.name} hit on tick ${hit.firstHit}, frame data says ${m.su}`)
+    const stand = run(def, ref, touch, inp, () => BL, 140), duck = run(def, ref, touch, inp, () => BL | D, 140)
+    if ((stand.w.f[1].hp < full) !== (m.lvl === 'low')) guard.push(`${m.name} vs standing block`)
+    if ((duck.w.f[1].hp < full) !== (m.lvl === 'oh')) guard.push(`${m.name} vs crouching block`)
+    row(m, adv(hit), adv(m.lvl === 'low' ? duck : stand), { script: inp, dist: touch })
+  }
+  add('Ground normals connect on their startup frame', reach, `${normals.length} moves`)
+  add('Lows, overheads and mids respect blocking', guard)
+
+  // 3. jump attacks: some jump-in timing must land
+  const air: string[] = []
+  for (const id of ['jp', 'jk']) {
+    const m = C.moves[id]; let demo: Demo | undefined
+    for (const dist of [120, 160, 200]) for (let k = 12; k <= 32 && !demo; k += 2) { const s = t(k, U | R, BIT[m.btn!]); if (run(def, ref, dist, s, [], 70).w.f[1].hp < full) demo = { script: s, dist } }
+    if (!demo) air.push(`${m.name} never lands from a forward jump`)
+    row(m, '', '', demo)
+  }
+  add('Jump attacks land', air)
+  row(C.moves.throw, 'KD', '', { script: [LP | LK], dist: touch })
+
+  // 4. every dial string is a true combo: the defender never recovers between hits
+  for (const s of def.strings) {
+    if (s.some(id => !C.moves[id])) continue
+    const demo = { script: stringScript(s), dist: touch }, r = run(def, ref, touch, demo.script, [], 260)
+    const label = s.map(id => id in BIT ? id.toUpperCase() : C.moves[id].name).join(' › ')
+    const bad = r.maxCombo < s.length ? [`drops after hit ${r.maxCombo} of ${s.length}`] : r.comboDmg > 450 ? [`${r.comboDmg} damage is over the 450 cap`] : []
+    add(`String ${label}`, bad, `${r.maxCombo} hits, ${r.comboDmg} dmg`, demo)
+  }
+
+  // 5. uppercut launches and can be juggled
+  const jug = run(def, ref, touch, (w, tk) => {
+    const f = w.f[0], o = w.f[1]
+    if (tk === 0) return D | HP
+    if (o.st !== 'launch' || !FREE.includes(f.st)) return 0
+    return Math.abs(o.x - f.x) > 70 * def.look.height ? R : tk % 2 ? LP : 0
+  }, [], 160)
+  add('Uppercut launches into a juggle', jug.maxCombo >= 2 ? [] : ['no follow-up connects after the launch'], `${jug.maxCombo} hits, ${jug.comboDmg} dmg`)
+
+  // 6. knockdowns and throws resolve: nobody is left stuck
+  const flow: string[] = []
+  const sweep = run(def, ref, touch, [D | HK], [], 220)
+  if (!sweep.wasDown) flow.push('sweep does not knock down')
+  if (!FREE.includes(sweep.w.f[1].st) || !FREE.includes(sweep.w.f[0].st)) flow.push('fighters stuck after a knockdown')
+  for (const [label, script] of [['throw', [LP | LK]], ['throw (LP then LK)', [LP, LP | LK]]] as const) {
+    const th = run(def, ref, touch, [...script], () => BL, 220)
+    if (th.w.f[1].hp >= full) flow.push(`${label} fails on a blocking opponent`)
+    if (!FREE.includes(th.w.f[1].st) || !FREE.includes(th.w.f[0].st)) flow.push(`fighters stuck after ${label}`)
+  }
+  if (run(def, ref, touch, t(8, 0, LP | LK), [U], 120).w.f[1].hp < full) flow.push('throw grabs an airborne opponent')
+  add('Knockdown, getup and throw resolve', flow)
+
+  // 7. every move the fighter owns can be performed, does what its data says, and ends
+  for (const m of def.moves) {
+    const cm = C.moves[m.id]
+    if (!cm.btn || cm.stringOnly) { row(cm, '', ''); continue } // string-only: covered by its string's check
+    const path = [cm]
+    while (path[0].from?.length && C.moves[path[0].from[0]] && path.length < 8) path.unshift(C.moves[path[0].from[0]])
+    if (!path[0].btn) { add(`Move: ${cm.name}`, ['its chain starts from a move with no input']); continue }
+    const hurts = !!cm.limb || !!cm.grab || !!cm.counter || !!cm.proj?.some(p => p.dmg > 0), bad = new Set<string>(), powered = path.some(p => p.needs === 'buff')
+    // grabs must beat a block; air grabs need a jumping target; everything else is tried on a standing one
+    const foe: Script = cm.counter ? (_w, tk) => tk % 14 === 3 ? LP : 0 : cm.grab?.air ? (_w, tk) => tk < 2 ? U : 0 : cm.grab || cm.unblockable || cm.proj?.some(p => p.unblockable) ? () => BL : []
+    let best: ReturnType<typeof run> | undefined, demo: Demo | undefined
+    search: for (const dist of [touch, 90, 130, 180, 240, 320, 420]) for (const jt of path[0].air ? [8, 12, 16, 20, 24, 28] : [0]) {
+      const script = chainScript(path, jt), r = run(def, ref, dist, script, foe, 300, powered)
+      const did = r.seen.has(cm.id), landed = r.w.f[1].hp < full, ends = FREE.includes(r.w.f[0].st), works = (!hurts || landed) && (!cm.buff || r.buffed)
+      if (did && ends && works) { best = r; demo = { script, dist, foe, powered }; break search }
+      if (!did) bad.add('could not be performed'); else if (!ends) bad.add('attacker never recovers'); else bad.add(cm.buff && !r.buffed ? 'power-up never activates' : 'never connects at any range')
+    }
+    add(`Move: ${cm.name} (${cmdOf(cm, C.moves)})`, best ? [] : [[...bad].pop()!], best && hurts ? `${best.comboDmg} dmg` : 'ok', demo)
+    row(cm, best && hurts ? adv(best) : '', '', demo)
+  }
+
+  // 8. a full CPU match ends, stays finite, and replays identically
+  const match = (seed: number) => {
+    const w = newWorld(def, { ...ref, moves: def.moves, poses: def.poses, strings: def.strings }, seed)
+    for (let i = 0; i < 6600 && !(w.over && w.f.every(f => ['idle', 'win', 'ko', 'crouch', 'walk', 'block'].includes(f.st))); i++) step(w, cpu(w, 0), cpu(w, 1))
+    return w
+  }
+  const m1 = match(3), m2 = match(3), sig = (w: World) => `${w.tick}:${w.f.map(f => `${f.hp},${f.x.toFixed(3)}`)}`
+  const bad8: string[] = []
+  if (!m1.over) bad8.push('match never ended')
+  if (m1.f.some(f => !Number.isFinite(f.x + f.y + f.hp))) bad8.push('non-finite state')
+  if (sig(m1) !== sig(m2)) bad8.push('same seed produced a different match')
+  add('CPU match ends and replays deterministically', bad8, m1.over ? `${(m1.tick / 60).toFixed(0)}s` : '')
+
+  return { ok: checks.every(c => c.ok), checks, rows }
+}

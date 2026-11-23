@@ -1,0 +1,110 @@
+{
+  "id": "mr_spooky",
+  "name": "Mr Spooky",
+  "bio": "Mr Spooky is a comedy-horror vampire fighter with pale face paint, dark eye makeup, fake blood at the mouth, messy short black hair, a fitted black lace-up shirt, black pants, black gloves, black boots, and an oversized shiny red satin cape with black lining. He fights with overacted fright poses, cape flourishes, awkward low sweeps, and silly haunted-showmanship energy.\nSilhouette: slim theatrical vampire performer, hunched and springy, dominated by the wide red cape.\nClothing: fitted black shirt with lace-up collar, black pants, black gloves, black boots, red satin cape with black lining.\nHair: short messy dark hair.\nAccessories: oversized red cape and a small rubber bat projectile.\nAttitude: goofy spooky showman, fake-fright panic, melodramatic vampire flourish.\nDistinctive traits: white face makeup, blood at the mouth, cape spread poses, comedy-horror bat release.",
+  "look": {
+    "skin": "#c68642",
+    "main": "#a32424",
+    "alt": "#521414",
+    "trim": "#f5b83d",
+    "height": 0.92,
+    "bulk": 0.8,
+    "arms": 0.95,
+    "legs": 1.04,
+    "head": "square",
+    "hair": "long",
+    "hat": "helmet",
+    "cape": true
+  },
+  "stats": {
+    "hp": 906,
+    "speed": 1.11,
+    "power": 0.94,
+    "jump": 1.03
+  },
+  "strings": [
+    [
+      "hk",
+      "hk"
+    ],
+    [
+      "lk",
+      "hp"
+    ],
+    [
+      "lp",
+      "hp",
+      "lp",
+      "hk"
+    ],
+    [
+      "lp",
+      "hp",
+      "hk"
+    ]
+  ],
+  "moves": [
+    {
+      "hs": 18,
+      "bs": 11,
+      "lvl": "mid",
+      "r": 11,
+      "kb": 5,
+      "stop": 6,
+      "base": "crouch",
+      "ac": 1,
+      "rc": 14,
+      "dmg": 0,
+      "pose": "clp",
+      "id": "teleport",
+      "name": "Vanish",
+      "motion": [
+        "d",
+        "b"
+      ],
+      "btn": "lk",
+      "su": 10,
+      "inv": [
+        4,
+        15
+      ],
+      "teleport": {
+        "at": 10,
+        "to": "behind",
+        "dx": 80
+      }
+    },
+    {
+      "hs": 18,
+      "bs": 11,
+      "lvl": "mid",
+      "r": 11,
+      "kb": 5,
+      "stop": 6,
+      "base": "idle0",
+      "ac": 1,
+      "rc": 28,
+      "dmg": 0,
+      "pose": "cast",
+      "id": "projectile",
+      "name": "Shot",
+      "motion": [
+        "d",
+        "f"
+      ],
+      "btn": "lp",
+      "su": 13,
+      "proj": [
+        {
+          "at": 13,
+          "vx": 7,
+          "dmg": 70,
+          "hs": 20,
+          "bs": 14,
+          "kb": 6,
+          "color": "#3df5f5"
+        }
+      ]
+    }
+  ]
+}

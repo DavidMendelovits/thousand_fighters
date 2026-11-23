@@ -1,0 +1,121 @@
+{
+  "id": "heavy_paladin",
+  "name": "Heavy Paladin",
+  "bio": "Heavy Paladin",
+  "look": {
+    "skin": "#e0a878",
+    "main": "#0f9980",
+    "alt": "#1a6658",
+    "trim": "#d95eb2",
+    "height": 1.1,
+    "bulk": 1.35,
+    "arms": 1.05,
+    "legs": 1,
+    "head": "tall",
+    "hair": "spikes",
+    "hat": "helmet",
+    "cape": false
+  },
+  "stats": {
+    "hp": 1153,
+    "speed": 0.81,
+    "power": 1.1,
+    "jump": 0.95
+  },
+  "strings": [
+    [
+      "hp",
+      "lk",
+      "hk"
+    ],
+    [
+      "lk",
+      "lk",
+      "hk"
+    ],
+    [
+      "lp",
+      "lk",
+      "hk"
+    ],
+    [
+      "lk",
+      "hk",
+      "hp"
+    ]
+  ],
+  "moves": [
+    {
+      "hs": 18,
+      "bs": 16,
+      "lvl": "mid",
+      "r": 16,
+      "kb": 5,
+      "stop": 10,
+      "base": "idle0",
+      "ac": 14,
+      "rc": 20,
+      "dmg": 90,
+      "pose": "rush",
+      "id": "rush",
+      "name": "Drive",
+      "motion": [
+        "b",
+        "f"
+      ],
+      "btn": "hk",
+      "su": 9,
+      "limb": "armF",
+      "launch": [
+        7,
+        7
+      ],
+      "drive": [
+        {
+          "from": 9,
+          "to": 23,
+          "vx": 10
+        }
+      ]
+    },
+    {
+      "hs": 18,
+      "bs": 16,
+      "lvl": "mid",
+      "r": 26,
+      "kb": 5,
+      "stop": 11,
+      "base": "crouch",
+      "ac": 99,
+      "rc": 0,
+      "dmg": 100,
+      "pose": "upper",
+      "id": "rising",
+      "name": "Skybreaker",
+      "motion": [
+        "f",
+        "d"
+      ],
+      "btn": "hp",
+      "su": 5,
+      "land": 18,
+      "limb": "armF",
+      "launch": [
+        2,
+        12.5
+      ],
+      "inv": [
+        0,
+        8
+      ],
+      "drive": [
+        {
+          "from": 5,
+          "to": 6,
+          "vx": 2,
+          "vy": 12
+        }
+      ]
+    }
+  ]
+}

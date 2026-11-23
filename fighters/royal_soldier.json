@@ -1,0 +1,111 @@
+{
+  "id": "royal_soldier",
+  "name": "Royal Soldier",
+  "bio": "Royal Soldier",
+  "look": {
+    "skin": "#c68642",
+    "main": "#a71b1d",
+    "alt": "#544230",
+    "trim": "#6edddb",
+    "height": 0.9,
+    "bulk": 1.2,
+    "arms": 0.94,
+    "legs": 1.08,
+    "head": "tall",
+    "hair": "mohawk",
+    "hat": "crown",
+    "cape": true
+  },
+  "stats": {
+    "hp": 1040,
+    "speed": 0.94,
+    "power": 1.06,
+    "jump": 0.97
+  },
+  "strings": [
+    [
+      "lp",
+      "lp",
+      "hp"
+    ],
+    [
+      "lp",
+      "hp",
+      "lp",
+      "hk"
+    ],
+    [
+      "hp",
+      "hk"
+    ]
+  ],
+  "moves": [
+    {
+      "hs": 18,
+      "bs": 14,
+      "lvl": "low",
+      "r": 13,
+      "kb": 5,
+      "stop": 8,
+      "base": "crouch",
+      "ac": 14,
+      "rc": 18,
+      "dmg": 70,
+      "pose": "sweep",
+      "id": "slide",
+      "name": "Undercut",
+      "motion": [
+        "b",
+        "f"
+      ],
+      "btn": "lk",
+      "su": 8,
+      "limb": "legF",
+      "launch": [
+        2.5,
+        5.5
+      ],
+      "crouch": true,
+      "drive": [
+        {
+          "from": 8,
+          "to": 22,
+          "vx": 9
+        }
+      ]
+    },
+    {
+      "hs": 18,
+      "bs": 16,
+      "lvl": "mid",
+      "r": 16,
+      "kb": 5,
+      "stop": 10,
+      "base": "idle0",
+      "ac": 14,
+      "rc": 20,
+      "dmg": 90,
+      "pose": "rush",
+      "id": "rush",
+      "name": "Drive",
+      "motion": [
+        "b",
+        "f"
+      ],
+      "btn": "hk",
+      "su": 9,
+      "limb": "armF",
+      "launch": [
+        7,
+        7
+      ],
+      "drive": [
+        {
+          "from": 9,
+          "to": 23,
+          "vx": 10
+        }
+      ]
+    }
+  ]
+}
