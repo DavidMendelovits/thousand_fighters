@@ -1,7 +1,7 @@
 // Movement validation: play every move, string and special in the real sim and assert what happened.
 // Pure (no DOM, no fs) so the studio runs it live on every edit and cli.ts runs it over the whole roster.
-import { MOVES, compile, cmdOf, type FighterDef, type Move } from './kit'
-import { newWorld, step, cpu, scriptFor, BIT, R, U, D, LP, LK, HK, HP, BL, type World } from './sim'
+import { MOVES, compile, cmdOf, isSpecial, type FighterDef, type Move } from './kit'
+import { newWorld, step, cpu, scriptFor, BIT, L, R, U, D, LP, LK, HK, HP, BL, type World } from './sim'
 import { design } from './design'
 
 export type Script = number[] | ((w: World, t: number) => number)
@@ -34,7 +34,7 @@ function run(a: FighterDef, b: FighterDef, dist: number, p1: Script, p2: Script,
 
 /** Dial a string: first move on tick 0, each next button as soon as the previous one connects. */
 export const stringScript = (s: string[]): Script => (w, tk) => {
-  const f = w.f[0], btn = (id: string) => BIT[f.moves[id]?.btn ?? 'lp']
+  const f = w.f[0], btn = (id: string) => f.moves[id] ? scriptFor(f.moves[id]).at(-1)! : LP // each step with its held direction
   if (tk === 0) return f.moves[s[0]] ? scriptFor(f.moves[s[0]])[0] : 0
   return f.st === 'atk' && f.contact && f.str.length < s.length && tk % 2 ? btn(s[f.str.length]) : 0
 }
@@ -96,6 +96,34 @@ export function validate(def: FighterDef, ref: FighterDef = REF): { ok: boolean;
     const label = s.map(id => id in BIT ? id.toUpperCase() : C.moves[id].name).join(' › ')
     const bad = r.maxCombo < s.length ? [`drops after hit ${r.maxCombo} of ${s.length}`] : r.comboDmg > 450 ? [`${r.comboDmg} damage is over the 450 cap`] : []
     add(`String ${label}`, bad, `${r.maxCombo} hits, ${r.comboDmg} dmg`, demo)
+  }
+
+  // 4b. a directional string step needs its direction: L > b+L > H must not dial as L > L > H
+  for (const s of def.strings) {
+    const dirStep = s.map(id => C.moves[id]).find(m => m?.dir)
+    if (!dirStep || s.some(id => !C.moves[id])) continue
+    const plain: Script = (w, tk) => { const f = w.f[0]; if (tk === 0) return BIT[C.moves[s[0]].btn ?? 'lp']; return f.st === 'atk' && f.contact && f.str.length < s.length && tk % 2 ? BIT[C.moves[s[f.str.length]].btn ?? 'lp'] : 0 }
+    const r = run(def, ref, touch, plain, [], 260)
+    add(`String ${s.join(' ')} needs its direction`, r.seen.has(dirStep.id) ? [`${dirStep.name} came out without holding ${dirStep.dir}`] : [])
+  }
+
+  // 4c. walking is not a motion: after a long walk, a command normal comes out as itself, not as a special
+  const walked: string[] = []
+  for (const m of Object.values(C.moves)) {
+    if (!m.dir || !m.btn || m.motion || m.air || m.from || m.stringOnly || m.cost || m.needs || m.chord) continue
+    for (const [walk, label] of [[R, 'forward'], [L, 'back']] as const) for (const gap of [0, 3]) {
+      const script = [...new Array(20).fill(walk), ...new Array(gap).fill(0), scriptFor(m)[0]], r = run(def, ref, 300, script, [], 20 + gap + 6)
+      const first = [...r.seen][0]
+      if (first !== m.id) { walked.push(`walking ${label} then ${cmdOf(m, C.moves)} gave ${first ? C.moves[first].name : 'nothing'}, not ${m.name}`); break }
+    }
+  }
+  add('Command normals come out after walking', [...new Set(walked)])
+
+  // 4d. a grounded normal cancels into a special on contact
+  const specials = Object.values(C.moves).filter(m => isSpecial(m) && m.btn && !m.air && !m.from && !m.stringOnly && !m.cost && !m.needs)
+  if (specials.length) {
+    const ok = specials.some(sp => run(def, ref, touch, chainScript([C.moves.lp, sp], 0), [], 160).seen.has(sp.id))
+    add('Jab cancels into a special on contact', ok ? [] : ['no special comes out of a connecting jab'])
   }
 
   // 5. uppercut launches and can be juggled

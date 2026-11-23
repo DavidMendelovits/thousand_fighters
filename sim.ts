@@ -1,6 +1,6 @@
 // Deterministic 60Hz fight simulation. No DOM, no rendering, no randomness outside w.seed.
 // Runs identically in the browser (the game) and in Node (the validator).
-import { compile, fk, lerpPose, type FighterDef, type Move, type Pose, type Btn, type Level, type ProjSpec } from './kit'
+import { compile, fk, lerpPose, isSpecial, type FighterDef, type Move, type Pose, type Btn, type Level, type ProjSpec } from './kit'
 
 export const L = 1, R = 2, U = 4, D = 8, LP = 16, HP = 32, LK = 64, HK = 128, BL = 256
 export const BIT: Record<Btn, number> = { lp: LP, hp: HP, lk: LK, hk: HK }
@@ -105,9 +105,18 @@ const dtap = (h: number[], bit: number) => { // tap, release, tap
   return false
 }
 const dirBit = (f: Fighter, d: string) => d === 'd' ? D : (d === 'f') === (f.face > 0) ? R : L
+/** A motion's first direction, when it is forward or back, must be a tap: held longer than this, it was a walk. */
+export const MOTION_TAP = 10
 function motion(f: Fighter, dirs: string[]) { // each direction held in order, the last within 12 ticks of the button
   let k = dirs.length - 1, limit = 12
-  for (let t = 0; t < 40 && t <= limit; t++) if (f.hist[t] & dirBit(f, dirs[k])) { if (--k < 0) return true; limit = t + 10 }
+  for (let t = 0; t < 40 && t <= limit; t++) if (f.hist[t] & dirBit(f, dirs[k])) {
+    if (k === 0) { // walking back then pressing f+HP is a command normal, not a back-forward special
+      if (dirs[0] === 'd') return true
+      let held = 0; while (t + held < 40 && f.hist[t + held] & dirBit(f, dirs[0])) held++
+      return held <= MOTION_TAP
+    }
+    k--; limit = t + 10
+  }
   return false
 }
 /** Is this move's full input (button, chord, direction, motion, meter) satisfied right now? */
@@ -144,12 +153,15 @@ function tryAttack(w: World, i: number): boolean {
 }
 function stringNext(w: World, i: number): Move | null {
   const f = w.f[i], n = f.str.length
+  let neutral: Move | null = null
   for (const s of f.def.strings) {
     if (s.length <= n || !f.str.every((x, k) => s[k] === x)) continue
     const m = f.moves[s[n]], btn = m?.btn ?? (s[n] as Btn)
-    if (m && f.buf & BIT[btn] && (m.cost ?? 0) <= f.meter && !(m.needs === 'buff' && !f.buff)) return m
+    if (!m || !(f.buf & BIT[btn]) || (m.cost ?? 0) > f.meter || (m.needs === 'buff' && !f.buff)) continue
+    if (!m.dir) neutral ??= m // a plain step accepts any held direction, but a matching directional step wins
+    else if (f.hist[0] & dirBit(f, m.dir)) return m
   }
-  return null
+  return neutral
 }
 
 // ---- per-fighter state machine ----------------------------------------------
@@ -241,8 +253,8 @@ function attackTick(w: World, i: number, inp: number) {
   // cancels on contact: follow-ups first, then specials and the next string step
   if (f.contact && f.buf && f.bufAge <= BUF) {
     for (const n of f.order) if (n.from?.includes(m.id) && inputOk(w, i, n)) return start(w, f, n)
-    if (!air && (m.cancel ?? (!m.motion && !m.launch && !m.grab && !m.from))) {
-      for (const n of f.order) if (n.motion && !n.from && !n.stringOnly && inputOk(w, i, n)) return start(w, f, n)
+    if (!air && (m.cancel ?? (!isSpecial(m) && !m.launch && !m.grab && !m.from))) {
+      for (const n of f.order) if (isSpecial(n) && !n.air && !n.from && !n.stringOnly && inputOk(w, i, n)) return start(w, f, n)
       const next = f.str[f.str.length - 1] === m.id ? stringNext(w, i) : null
       if (next) {
         const str = [...f.str, next.id]
@@ -372,7 +384,7 @@ export function cpu(w: World, i: number, skill = 0.6): number {
   if (plan.length) return plan.shift()!
   const f = w.f[i], o = w.f[1 - i], right = o.x >= f.x, fwd = right ? R : L, back = right ? L : R, dist = Math.abs(o.x - f.x)
   const r = () => rnd(w), go = (...p: number[]) => { plan.push(...p.slice(1)); return p[0] }
-  const usable = (test: (m: Move) => unknown) => f.order.filter(m => m.motion && !m.from && !m.stringOnly && !m.air && (m.cost ?? 0) <= f.meter && test(m))
+  const usable = (test: (m: Move) => unknown) => f.order.filter(m => isSpecial(m) && !m.from && !m.stringOnly && !m.air && (m.cost ?? 0) <= f.meter && test(m))
   const use = (ms: Move[]) => go(...scriptFor(ms[Math.floor(r() * ms.length)], right))
   if (f.st === 'atk' && f.contact && r() < skill) { // press a follow-up when one exists
     const fu = f.order.filter(m => m.from?.includes(f.mv!.id) && m.btn)
@@ -399,7 +411,7 @@ export function cpu(w: World, i: number, skill = 0.6): number {
   const c = r()
   if (c < 0.4 && f.def.strings.length) {
     const s = f.def.strings[Math.floor(r() * f.def.strings.length)]
-    return go(...s.flatMap(id => [BIT[f.moves[id]?.btn ?? 'lp'], 0, 0, 0, 0, 0]))
+    return go(...s.flatMap(id => [f.moves[id] ? scriptFor(f.moves[id], right).at(-1)! : LP, 0, 0, 0, 0, 0]))
   }
   const near = usable(m => (m.limb || m.grab || m.buff) && !m.drive)
   if (near.length && c < 0.5) return use(near)
