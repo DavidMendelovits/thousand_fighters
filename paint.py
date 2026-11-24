@@ -22,6 +22,8 @@ passes is kept; if none passes, the best try goes in and the cell is listed as f
 
 The image model is always explicit: --model or OPENAI_IMAGE_MODEL. Every run is recorded next to the sheet in
 <out_sheet>.paint.json (model, quality, mode, cells, time) and, in more detail, in the work dir's run.json.
+Single poses ask the Images API for a transparent background (--background auto, the default); if the model
+refuses it (gpt-image-2 does), the run carries on with a magenta background and keying, and logs that.
 --dry-run builds every guide, reference and prompt and prints what it would send, without calling anything.
 
 Resumable: finished requests are cached in the work dir (default <out_sheet>.work).
@@ -35,12 +37,28 @@ from scipy import ndimage
 CELL, COLS, BIG = 256, 8, 512
 POSE = 1024  # single-pose requests are square: one 256px cell scaled 4x
 MAGENTA = (255, 0, 255)
-STYLE = ("Style: clean hand-drawn 2D fighting-game sprite, bold dark outline, flat cel shading, readable silhouette. "
-         "No fire, glow, motion lines, shadows, text or borders. Background is flat pure magenta #ff00ff everywhere.")
+BASE = ("Style: clean hand-drawn 2D fighting-game sprite, bold dark outline, flat cel shading, readable silhouette. "
+        "No fire, glow, aura, halo, motion lines, shadows, text or borders. ")
+STYLE = BASE + "Background is flat pure magenta #ff00ff everywhere: one solid colour, no gradient, no vignette, no glow, never dark."
+# --background transparent: the API returns real alpha, so nothing has to be keyed out. The attached images stay on
+# magenta (the edits endpoint can read an input's transparency as a region to edit), so the prompt says to ignore it.
+CLEAR = BASE + ("Transparent background: nothing at all behind or around the character, no backdrop, colour, glow, halo or vignette. "
+                "The magenta in the attached images is only their backdrop; do not paint it.")
 # Guide colours: one per limb, none close to magenta or to each other. Back (farther) limbs are drawn first.
 LIMB = {'armF': (230, 40, 40), 'armB': (40, 90, 240), 'legF': (30, 170, 60), 'legB': (255, 150, 20), 'body': (90, 90, 90)}
 
 RUN = {}  # what this run sent, for run.json
+
+
+class BackgroundUnsupported(RuntimeError):
+    """The API refused background=transparent for this model (gpt-image-2 has returned 400 for it since Sep 30 2026)."""
+
+
+def background(args):
+    """'transparent' or 'magenta' for this run's single-pose requests. auto = transparent through the Images API,
+    magenta through codex (which can't ask for it)."""
+    if not os.environ.get('OPENAI_API_KEY'): return 'magenta'
+    return 'transparent' if args.background in ('auto', 'transparent') else 'magenta'
 
 
 def provider(args):
@@ -62,13 +80,19 @@ def paint(prompt, images, out, size, args):
         if images:  # edits takes multipart; generations only takes JSON
             cmd += ['--form-string', f'model={args.model}', '--form-string', f'prompt={prompt}', '--form-string', f'size={size}']
             if args.quality: cmd += ['--form-string', f'quality={args.quality}']
+            if getattr(args, 'bg', 'magenta') == 'transparent':
+                cmd += ['--form-string', 'background=transparent', '--form-string', 'output_format=png']
             cmd += [f'{base}/images/edits'] + [x for i in images for x in ('-F', f'image[]=@{i}')]
         else:
             body = {'model': args.model, 'prompt': prompt, 'size': size}
             if args.quality: body['quality'] = args.quality
             cmd += ['-H', 'Content-Type: application/json', '-d', json.dumps(body), f'{base}/images/generations']
         res = json.loads(subprocess.run(cmd, capture_output=True, text=True).stdout or '{}')
-        if 'data' not in res: raise RuntimeError(str(res.get('error', res))[:300])
+        if 'data' not in res:
+            err = str(res.get('error', res))[:300]
+            if getattr(args, 'bg', 'magenta') == 'transparent' and ('transparent' in err.lower() or 'background' in err.lower()):
+                raise BackgroundUnsupported(err)
+            raise RuntimeError(err)
         open(out, 'wb').write(base64.b64decode(res['data'][0]['b64_json'])); return
     start = time.time() - 3
     cx = ['codex', 'exec', '--sandbox', 'workspace-write', '--skip-git-repo-check']
@@ -83,18 +107,22 @@ def paint(prompt, images, out, size, args):
 
 def request(prompt, images, out, size, args, tag):
     """paint() with one retry, logged to RUN; --dry-run only logs."""
-    RUN.setdefault('requests', []).append({'tag': tag, 'out': os.path.basename(out), 'size': size, 'images': [os.path.basename(i) for i in images], 'prompt': prompt})
+    RUN.setdefault('requests', []).append({'tag': tag, 'out': os.path.basename(out), 'size': size, 'background': getattr(args, 'bg', 'magenta'),
+                                           'images': [os.path.basename(i) for i in images], 'prompt': prompt})
     if args.dry_run: return False
     for attempt in (1, 2):
         try:
             paint(prompt, images, out, size, args); return True
+        except BackgroundUnsupported:
+            raise
         except Exception as e:
             print('  retry:', e, flush=True)
             if attempt == 2: raise
 
 
 def key(im):
-    """Magenta -> transparent, with the magenta fringe pulled out of edge pixels."""
+    """Magenta -> transparent, with the magenta fringe pulled out of edge pixels. Alpha already in im is kept, so a
+    transparent-background result passes through with only stray magenta removed."""
     a = np.array(im.convert('RGBA')).astype(int)
     m = np.minimum(a[..., 0], a[..., 2]) - a[..., 1]  # how magenta each pixel is
     edge = (m > 30) & (m <= 90)
@@ -240,7 +268,7 @@ def nearest_painted(c, data, sheet, skip):
     return best[1]
 
 
-def pose_prompt(c, desc, near):
+def pose_prompt(c, desc, near, bg='magenta'):
     moves = '; '.join(c['usedBy']) or c['key']
     g = 3 if near else 2
     return (f"{g} images are attached. Image 1 is the character reference. "
@@ -252,7 +280,7 @@ def pose_prompt(c, desc, near):
             f"This frame is the {moves}. The pose: {c['sentence']} "
             "Match each limb's angle and where each hand and foot ends up, and match the figure's size and position in the frame, feet at the guide's height. "
             "Do not mirror the pose or swap left and right limbs. Draw the pose exactly as shown even if it looks unusual; "
-            "do not fall back to a standing guard stance. Keep the whole figure inside the frame. " + STYLE)
+            "do not fall back to a standing guard stance. Keep the whole figure inside the frame. " + (CLEAR if bg == 'transparent' else STYLE))
 
 
 def pose_mode(args):
@@ -264,7 +292,7 @@ def pose_mode(args):
     if bad: sys.exit(f'not in this fighter\'s sheet: {", ".join(bad)}')
     if not os.path.exists(args.out_sheet): sys.exit(f'{args.out_sheet} must exist: single-pose mode repaints cells of a painted sheet')
     rig, sheet = Image.open(args.rig_sheet).convert('RGB'), Image.open(args.out_sheet).convert('RGBA')
-    pv = provider(args); size = f'{POSE}x{POSE}'
+    pv = provider(args); size = f'{POSE}x{POSE}'; args.bg = background(args)
 
     ref = args.ref
     if not ref:  # the sheet's own idle cell is the character, exactly as it already looks in game
@@ -277,7 +305,7 @@ def pose_mode(args):
         have, want = cell_of(sheet, o['index']).getbbox(), key(cell_of(rig, o['index'])).getbbox()
         if have and want: ratios.append(max(have[2] - have[0], have[3] - have[1]) / max(want[2] - want[0], want[3] - want[1]))
     fit = statistics.median(ratios) if ratios else 1.0
-    print(f'{pv}, {len(keys)} cells, up to {args.tries} tries each, judge {"on: " + args.judge_model if args.judge else "off"}', flush=True)
+    print(f'{pv}, {args.bg} background, {len(keys)} cells, up to {args.tries} tries each, judge {"on: " + args.judge_model if args.judge else "off"}', flush=True)
 
     results, ctx = {}, qa.sheet_context(rig, sheet, data['cells'], skip=keys)
     for k in keys:
@@ -286,7 +314,6 @@ def pose_mode(args):
         near = None if args.no_near else nearest_painted(c, data, sheet, set(keys))
         np_ = f'{args.work}/near_{k}.png'
         if near: on_magenta(cell_of(sheet, near['index'])).save(np_)
-        prompt = pose_prompt(c, args.desc, near)
         images = [ref, np_, gp] if near else [ref, gp]
         want = key(cell_of(rig, i).resize((POSE, POSE), Image.LANCZOS)).getbbox()
         tries = []
@@ -294,9 +321,15 @@ def pose_mode(args):
             got = f'{args.work}/pose_{k}_{t}.png'
             if not os.path.exists(got):
                 print(f'{k}: try {t}…', flush=True)
-                request(prompt, images, got, size, args, f'{k} try {t}')
+                try:
+                    request(pose_prompt(c, args.desc, near, args.bg), images, got, size, args, f'{k} try {t}')
+                except BackgroundUnsupported as e:
+                    if args.background == 'transparent': sys.exit(f'{args.model} refused a transparent background: {e}')
+                    print(f'  {args.model} refused a transparent background, using magenta from here: {e}', flush=True)
+                    args.bg = 'magenta'; RUN['background_fallback'] = str(e)
+                    request(pose_prompt(c, args.desc, near, args.bg), images, got, size, args, f'{k} try {t}')
             if not os.path.exists(got): break  # dry run
-            fig = despeck(key(Image.open(got).convert('RGB').resize((POSE, POSE), Image.LANCZOS)))
+            fig = despeck(key(Image.open(got).convert('RGBA').resize((POSE, POSE), Image.LANCZOS)))
             have = fig.getbbox()
             if not have or not want: tries.append({'try': t, 'ok': False, 'problems': ['empty']}); continue
             fig = fig.crop(have)
@@ -304,7 +337,7 @@ def pose_mode(args):
             painted = place(fig, want, s, POSE).resize((CELL, CELL), Image.LANCZOS)
             painted.save(f'{args.work}/cell_{k}_{t}.png')
             problems = qa.structural(painted, cell_of(rig, i), ctx)
-            verdict = qa.judge(painted, c['checks'], args.judge_model) if args.judge and c['checks'] else None
+            verdict = qa.judge(painted, c['checks'], args.judge_model) if args.judge else None
             wrong = [a['id'] for a in (verdict or []) if not a['match']]
             tries.append({'try': t, 'ok': not problems and not wrong, 'problems': problems, 'judge': verdict, 'wrong': wrong})
             print(f'  try {t}: {"pass" if tries[-1]["ok"] else "fail"}' + (f' ({", ".join(problems + wrong)})' if problems or wrong else ''), flush=True)
@@ -322,7 +355,7 @@ def pose_mode(args):
     sheet.save(args.out_sheet)
     failing = [k for k, r in results.items() if not r.get('ok')]
     print('wrote', args.out_sheet, '| failing:', ', '.join(failing) if failing else 'none')
-    record(args, 'pose', keys, {'tries': args.tries, 'judge': args.judge_model if args.judge else None, 'failing': failing,
+    record(args, 'pose', keys, {'background': args.bg, 'tries': args.tries, 'judge': args.judge_model if args.judge else None, 'failing': failing,
                                  'requests': sum(len(r['tries']) for r in results.values())})
     RUN['results'] = results
     json.dump({**json.load(open(f'{args.work}/run.json')), 'results': results}, open(f'{args.work}/run.json', 'w'), indent=1)
@@ -342,6 +375,8 @@ def main():
     ap.add_argument('--ref', help='character reference image (default: the sheet\'s idle0 cell)')
     ap.add_argument('--judge', action='store_true', help='check each try with yes/no questions to Claude (needs ANTHROPIC_API_KEY)')
     ap.add_argument('--judge-model', default='claude-opus-5-5', help='judge model (default claude-opus-5-5; claude-haiku-5-5 is cheaper)')
+    ap.add_argument('--background', choices=['auto', 'transparent', 'magenta'], default='auto',
+                    help='single poses: ask the Images API for a transparent background (auto: yes, falling back to magenta if the model refuses it)')
     ap.add_argument('--dry-run', action='store_true', help='build guides and prompts, call nothing')
     args = ap.parse_args()
     args.work = args.work or args.workdir or args.out_sheet + '.work'

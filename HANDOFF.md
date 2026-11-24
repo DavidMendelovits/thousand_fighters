@@ -127,6 +127,16 @@ python3 qa.py art/faro-poses.png fighters/faro.png fighters/faro.json   # free c
   about each painted cell (`ANTHROPIC_API_KEY`; `--judge-model claude-haiku-5-5` is the cheap option).
   Before trusting it, run `qa.py ... --calibrate art/faro-qa-labels.json --judge` (19 judge calls).
 - The free checks also flag `launch`, `down`, `rush.s` and `rise.s` touching their cell edge in the current sheet.
+- Background: single-pose requests ask the Images API for `background=transparent` (PNG), because the first
+  sunburst run painted 4 frames on dark backgrounds (black boxes after keying) and the rest with a pink glow.
+  OpenAI's edits reference lists transparent for gpt-image-2.5-sunburst and flare; gpt-image-2 has refused it
+  with a 400 since Sep 30 2026 (third-party report). On that 400, `--background auto` (the default) carries on
+  in magenta and logs it; `--background transparent` stops instead, `--background magenta` never asks. The
+  inputs stay on magenta and the prompt says to ignore it. Each run's background is in `<sheet>.paint.json`.
+- qa.py fails a `background box` (figure fills over 80% of its crop), a `glow` (over 7% pink/purple-tinted
+  pixels, or twice the sheet's median) and a `haze` (over 15% semi-transparent pixels). Faro's 68 cells top
+  out at 61%, 4.4% and 8%. The judge also asks whether the background is clean.
+- Clear cached tries (`<sheet>.work/pose_*`, `cell_*`) before re-running cells, or the old images are reused.
 - Cost: one image request per try, at most `cells x tries`; the work dir caches every try, so re-runs are free.
   At 1024x1024 high, about $0.05 per image on gpt-image-2.5-sunburst and $0.21 on gpt-image-2 (third-party
   calculator, Nov 2026), plus three reference images per request. For the 11 Faro frames: about $0.90 to $2.60 on

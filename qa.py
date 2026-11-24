@@ -5,7 +5,9 @@
     python3 qa.py ... --calibrate art/faro-qa-labels.json [--judge]
 
 Free checks, every cell: empty, clipped at the cell edge, magenta fringe left from keying, detached pieces,
-size against the rest of the sheet, colours against the rest of the sheet, and how much of the rig's figure the
+a background box (the model painted a dark or coloured backdrop that keying couldn't remove), a glow or haze
+(pink/purple tint or semi-transparent pixels well above the rest of the sheet), size against the rest of the sheet,
+colours against the rest of the sheet, and how much of the rig's figure the
 painting covers (a hard pose painted as something else leaves big parts of the rig bare).
 
 Those catch broken cells. They do not reliably catch a pose painted as the plain stance: Faro's coat covers too
@@ -24,6 +26,10 @@ from scipy import ndimage
 from paint import CELL, COLS, cell_of, key, pose_data
 
 SIZE_TOL, LOST_MAX, FRINGE_MAX = 0.4, 0.22, 0.005
+# Background checks, set on Faro's 68 cells (box fill at most 0.61, tint at most 0.044, semi at most 0.081) and on
+# simulated failures (a dark box fills 0.97 of its crop; a pink or purple glow keys out to 0.09 to 0.17 tint).
+BOX_FILL, TINT_MIN, SEMI_MIN = 0.8, 0.07, 0.15
+BG_CHECK = {'id': 'clean_bg', 'q': 'Is the area around the character plain and empty, with no dark box, coloured backdrop, glow or halo behind or around them?', 'expect': True}
 
 
 def alpha(im):
@@ -40,6 +46,18 @@ def area_ratio(painted, rig_cell):
     return alpha(painted).sum() / r if r else 0.0
 
 
+def tint(painted):
+    """Share of the figure's opaque pixels with a pink/purple cast: what a glow leaves after keying."""
+    a = np.array(painted.convert('RGBA')).astype(int); m = a[..., 3] > 40
+    return float((m & ((np.minimum(a[..., 0], a[..., 2]) - a[..., 1]) > 15)).sum() / max(1, m.sum()))
+
+
+def semi(painted):
+    """Share of visible pixels that are only partly opaque: a clean sprite has just its anti-aliased edge."""
+    al = np.array(painted.convert('RGBA'))[..., 3]
+    return float(((al > 10) & (al < 200)).sum() / max(1, (al > 10).sum()))
+
+
 def hist(painted):
     a = np.array(painted.convert('RGBA')); px = a[a[..., 3] > 200][:, :3] // 64
     h = np.bincount(px[:, 0] * 16 + px[:, 1] * 4 + px[:, 2], minlength=64).astype(float)
@@ -51,6 +69,12 @@ def structural(painted, rig_cell, ctx=None):
     a = np.array(painted.convert('RGBA')).astype(int); m = a[..., 3] > 40; n = m.sum()
     if n < 0.02 * CELL * CELL: return ['empty']
     out = []
+    ys, xs = np.nonzero(m)
+    fill = m[ys.min():ys.max() + 1, xs.min():xs.max() + 1].mean()
+    if fill > BOX_FILL: out.append(f'background box (fills {fill:.0%} of its box)')
+    t, h = tint(painted), semi(painted)
+    if t > max(TINT_MIN, 2 * (ctx or {}).get('tint', 0)): out.append(f'glow ({t:.0%} tinted)')
+    if h > max(SEMI_MIN, 2 * (ctx or {}).get('semi', 0)): out.append(f'haze ({h:.0%} semi-transparent)')
     edge = np.concatenate([m[:2].ravel(), m[-2:].ravel(), m[:, :2].ravel(), m[:, -2:].ravel()])
     if edge.sum() > 3: out.append('touches cell edge')
     mag = m & ((np.minimum(a[..., 0], a[..., 2]) - a[..., 1]) > 40)
@@ -79,7 +103,9 @@ def sheet_context(rig, sheet, cells, skip=()):
     hs = np.array([hist(cell_of(sheet, c['index'])) for c in use])
     med = np.median(hs, axis=0); d = np.abs(hs - med).sum(axis=1)
     mad = float(np.median(np.abs(d - np.median(d)))) or 0.01
-    return {'ratio': statistics.median(ratios), 'hist': med, 'hist_max': float(np.median(d) + 6 * mad)}
+    return {'ratio': statistics.median(ratios), 'hist': med, 'hist_max': float(np.median(d) + 6 * mad),
+            'tint': statistics.median(tint(cell_of(sheet, c['index'])) for c in use),
+            'semi': statistics.median(semi(cell_of(sheet, c['index'])) for c in use)}
 
 
 SCHEMA = {'type': 'object', 'additionalProperties': False, 'required': ['answers'], 'properties': {'answers': {
@@ -102,8 +128,10 @@ def judge_request(painted, checks, model):
 
 
 def judge(painted, checks, model):
-    """Ask Claude the rig's yes/no questions about one painted cell. Returns each check with the answer and whether it matched."""
+    """Ask Claude the rig's yes/no questions about one painted cell, plus whether the background is clean.
+    Returns each check with the answer and whether it matched."""
     import anthropic
+    checks = list(checks) + [BG_CHECK]
     client, req = anthropic.Anthropic(), judge_request(painted, checks, model)
     if model.startswith('claude-opus-5-5'):  # Haiku 5.5 takes no fallbacks
         res = client.beta.messages.create(**req, betas=['server-side-fallback-2026-07-01'], fallbacks='default')
@@ -139,7 +167,7 @@ def check(rig, sheet, data, keys, args):
     for c in cells:
         painted = cell_of(sheet, c['index'])
         problems = structural(painted, cell_of(rig, c['index']), ctx)
-        verdict = judge(painted, c['checks'], args.judge_model) if args.judge and c['checks'] and problems != ['empty'] else None
+        verdict = judge(painted, c['checks'], args.judge_model) if args.judge and problems != ['empty'] else None
         wrong = [a['id'] for a in verdict or [] if not a['match']]
         rows.append({'index': c['index'], 'key': c['key'], 'ok': not problems and not wrong, 'problems': problems, 'judge': verdict, 'wrong': wrong})
         if not rows[-1]['ok']: print(f"✘ {c['key']}: {', '.join(problems + wrong)}", flush=True)
