@@ -45,7 +45,9 @@
   .under { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
   #now { flex: 1; min-width: 0; min-height: 22px; margin: 0; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #solo { flex: none; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); font-size: 13px; font-weight: 700; white-space: nowrap; }
-  #solo[aria-pressed="true"] { border-color: var(--gold); color: var(--gold); }
+  #solo[aria-pressed="true"], #try[aria-pressed="true"] { border-color: var(--gold); color: var(--gold); }
+  #try { flex: none; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); font-size: 13px; font-weight: 700; white-space: nowrap; }
+  #deck { flex: 1; min-height: 0; padding: 4px var(--pad) calc(12px + env(safe-area-inset-bottom)); max-width: 720px; width: 100%; margin: 0 auto; }
   .scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; border-top: 1px solid var(--line); }
   .wrap { max-width: 720px; margin: 0 auto; padding: 0 var(--pad) calc(32px + env(safe-area-inset-bottom)); }
   .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 14px 0 4px; }
@@ -88,9 +90,11 @@
     <canvas id="arena" width="960" height="540"></canvas>
     <div class="under">
       <p id="now" class="dim"></p>
+      <button id="try" aria-pressed="false">Try it</button>
       <button id="solo" aria-pressed="false">Hide opponent</button>
     </div>
   </div>
+  <div id="deck" hidden></div>
   <div class="scroll" id="scroll">
     <div class="wrap">
       <div class="stats" id="stats"></div>
