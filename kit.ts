@@ -114,15 +114,26 @@ export function fk(p: Pose, k: Look) {
 export type Level = 'mid' | 'low' | 'oh' // low must be crouch-blocked, oh (overhead) must be stand-blocked
 export type Dir = 'd' | 'f' | 'b' | 'u'
 export type Limb = 'armF' | 'armB' | 'legF' | 'legB'
+/** Where a projectile appears. hand: in front of the thrower. The rest are placed relative to the opponent:
+ *  target: level with them (x, y offsets from there); above: high over their head, falling (from the ceiling);
+ *  behind: on their far side, flying back at them, so it hits a fighter blocking the thrower; below: out of the floor under them. */
+export type ProjFrom = 'hand' | 'target' | 'above' | 'behind' | 'below'
 export type ProjSpec = {
   at: number // tick it spawns on
-  x?: number; y?: number // spawn offset from the feet (default 50 forward, 105 up)
-  vx: number; vy?: number; g?: number // g > 0 makes it arc and die on the floor
+  from?: ProjFrom // default hand
+  x?: number; y?: number // spawn offset: from the feet for hand (default 50 forward, 105 up), from the opponent otherwise
+  vx: number; vy?: number; g?: number // g > 0 makes it arc and die on the floor. vx is toward the opponent (behind: back toward the thrower)
   dmg: number; hs?: number; bs?: number; lvl?: Level; launch?: [number, number]; kb?: number; stop?: number
   size?: number; hits?: number; life?: number
-  aim?: 'target' // spawn at the opponent's position instead of in front of the attacker (geysers, strikes from above)
+  w?: number; h?: number // half-width and half-height of the hit box (default size and 0.85 * size)
+  grow?: [number, number]; max?: [number, number] // px per tick added to w and h, up to max: shockwaves, swelling orbs
+  anchor?: boolean // stays fixed to the thrower and reaches forward from them (beams); ends if the thrower is hit
+  warn?: number // ticks a marker shows where it will appear before it is live: drops from above can be walked out of
+  portal?: { at: number; to: 'above' | 'behind' | 'front'; speed?: number } // after `at` ticks it enters a portal and comes out
+  // next to the opponent (above them, behind them, or in front of them), then flies straight at them
+  aim?: 'target' // old spelling of from: 'target'
   unblockable?: boolean; pull?: number; heal?: number // same meaning as on Move
-  color: string; shape?: 'orb' | 'blade' | 'bomb' | 'wave' | 'chain' // chain draws a tether back to the thrower
+  color: string; shape?: 'orb' | 'blade' | 'bomb' | 'wave' | 'chain' | 'beam' // chain draws a tether back to the thrower
 }
 export type Move = {
   id: string; name: string

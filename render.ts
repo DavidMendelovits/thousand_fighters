@@ -1,7 +1,7 @@
 // Canvas rendering: the rig, painted sprite sheets, stage, HUD, effects, sound. Reads the sim, never writes it.
 import { fk, POSES, compile, lerpPose, type FighterDef, type Look, type Pose, type Pt } from './kit'
 import { spriteLook } from './sprite'
-import { poseOf, hitbox, hurtbox, STAGE, type World, type Fighter, type Proj } from './sim'
+import { poseOf, hitbox, hurtbox, projBox, STAGE, type World, type Fighter, type Proj } from './sim'
 
 export const FLOOR = 452
 const INK = '#14121c'
@@ -139,8 +139,31 @@ function stage(): HTMLCanvasElement {
 const keyCache = new WeakMap<FighterDef, string[]>()
 const compileKeys = (d: FighterDef) => keyCache.get(d) ?? (keyCache.set(d, compile(d).sheetKeys), keyCache.get(d)!)
 
-function drawProj(c: CanvasRenderingContext2D, p: Proj, owner: Fighter) {
-  const x = p.x, y = FLOOR - p.y, sz = p.s.size ?? 14, col = p.s.color, dir = Math.sign(p.vx) || 1
+function drawProj(c: CanvasRenderingContext2D, p: Proj, owner: Fighter, tick: number) {
+  const col = p.s.color
+  for (const g of p.gates) { // portal mouths stay open while it flies
+    c.save(); c.translate(g.x, FLOOR - g.y); c.strokeStyle = col; c.lineWidth = 4; c.shadowColor = col; c.shadowBlur = 12
+    c.beginPath(); c.ellipse(0, 0, 14 + Math.sin(tick / 3) * 2, 34, 0, 0, 7); c.stroke()
+    c.fillStyle = 'rgba(20,18,28,.75)'; c.fill(); c.restore()
+  }
+  if (p.wait > 0) { // a warning where it will appear: a pulsing ring, and its shadow on the floor
+    const k = 0.5 + 0.5 * Math.sin(tick / 2)
+    c.save(); c.strokeStyle = col; c.globalAlpha = 0.4 + 0.5 * k; c.lineWidth = 3; c.setLineDash([6, 5])
+    c.beginPath(); c.arc(p.x, FLOOR - p.y, p.w * (1.2 + 0.3 * k), 0, 7); c.stroke()
+    if (p.y > 60) { c.beginPath(); c.moveTo(p.x, FLOOR - p.y + p.w * 1.5); c.lineTo(p.x, FLOOR - 6); c.stroke() }
+    c.setLineDash([]); c.fillStyle = col; c.globalAlpha = 0.25 + 0.25 * k; c.beginPath(); c.ellipse(p.x, FLOOR + 2, p.w * 1.6, 6, 0, 0, 7); c.fill()
+    c.restore(); return
+  }
+  if (p.s.anchor || p.s.shape === 'beam') { // a beam: a band of light reaching forward from the thrower
+    const b = projBox(p, owner), y0 = FLOOR - b.y1, hh = b.y1 - b.y0
+    const g = c.createLinearGradient(0, y0, 0, y0 + hh); g.addColorStop(0, 'transparent'); g.addColorStop(0.5, '#fff'); g.addColorStop(1, 'transparent')
+    c.save(); c.globalAlpha = 0.55 + 0.15 * Math.sin(tick); c.fillStyle = col; c.fillRect(b.x0, y0, b.x1 - b.x0, hh)
+    c.globalAlpha = 0.9; c.fillStyle = g; c.fillRect(b.x0, y0 + hh * 0.3, b.x1 - b.x0, hh * 0.4); c.restore()
+    if (p.s.shape === 'beam' || !p.s.shape) return
+  }
+  const x = p.x, y = FLOOR - p.y, sz = p.w, horiz = Math.abs(p.vy) < 0.35 * Math.abs(p.vx)
+  // shapes are drawn flying right; level shots flip, anything climbing or falling turns to face where it is going
+  const dir = horiz ? Math.sign(p.vx) || owner.face : 1, turn = horiz ? 0 : Math.atan2(-p.vy, p.vx)
   if (p.s.shape === 'chain') { // tether from the thrower's hand to a hook
     const ox = owner.x + owner.face * 40, oy = FLOOR - owner.y - 105 * owner.def.look.height
     c.strokeStyle = INK; c.lineWidth = 7; c.setLineDash([]); c.beginPath(); c.moveTo(ox, oy); c.lineTo(x, y); c.stroke()
@@ -148,7 +171,7 @@ function drawProj(c: CanvasRenderingContext2D, p: Proj, owner: Fighter) {
     c.fillStyle = col; c.strokeStyle = INK; c.lineWidth = 2.5; c.beginPath(); c.moveTo(x + dir * sz, y); c.lineTo(x - dir * sz * 0.4, y - sz * 0.8); c.lineTo(x, y); c.lineTo(x - dir * sz * 0.4, y + sz * 0.8); c.closePath(); c.fill(); c.stroke()
     return
   }
-  c.save(); c.translate(x, y)
+  c.save(); c.translate(x, y); c.rotate(turn)
   if (p.s.shape === 'blade') { // spinning crescent
     c.rotate(p.t * 0.5 * dir); c.fillStyle = col; c.strokeStyle = '#fff'; c.lineWidth = 2
     c.beginPath(); c.arc(0, 0, sz, 0.3, Math.PI * 1.7); c.arc(sz * 0.35, 0, sz * 0.75, Math.PI * 1.6, 0.4, true); c.closePath(); c.fill(); c.stroke()
@@ -191,12 +214,13 @@ export function draw(c: CanvasRenderingContext2D, w: World, fx: Fx, o: { boxes: 
   c.drawImage(stage(), 0, 0)
   // draw the attacker on top
   for (const i of w.f[0].st === 'atk' ? [1, 0] : [0, 1]) drawFighter(c, w.f[i], fx.shown[i], w.f[i].def.atlas ? o.sheets.get(w.f[i].def.id) : undefined, w.tick)
-  for (const p of w.proj) drawProj(c, p, w.f[p.owner])
+  for (const p of w.proj) drawProj(c, p, w.f[p.owner], w.tick)
   for (const p of fx.parts) { c.globalAlpha = Math.min(1, p.life / 8); c.fillStyle = p.col; c.fillRect(p.x - 2, FLOOR - p.y - 2, 4, 4) }
   c.globalAlpha = 1
   if (o.boxes) for (const f of w.f) {
     const box = (b: { x0: number; x1: number; y0: number; y1: number }, col: string) => { c.fillStyle = col + '44'; c.strokeStyle = col; c.lineWidth = 1.5; c.fillRect(b.x0, FLOOR - b.y1, b.x1 - b.x0, b.y1 - b.y0); c.strokeRect(b.x0, FLOOR - b.y1, b.x1 - b.x0, b.y1 - b.y0) }
     box(hurtbox(f), f.inv > 0 ? '#888888' : '#3ddc84'); const h = hitbox(f); if (h) box(h, '#ff3b3b')
+    for (const p of w.proj) if (w.f[p.owner] === f && p.wait <= 0) box(projBox(p, f), '#ff9f3b')
   }
   c.restore()
 

@@ -9,6 +9,7 @@ import { newMatch, matchStep, matchWinner, FIRST_TO, MAX_ROUNDS } from './match'
 import { cpu } from './sim'
 import { design, rosterFighter } from './design'
 import type { FighterDef } from './kit'
+import { LAB } from './fixtures'
 
 const dir = new URL('./fighters/', import.meta.url).pathname
 const [cmd, arg] = process.argv.slice(2)
@@ -58,4 +59,4 @@ else if (cmd === 'legacy') {
   }
   console.log(`re-created ${n} legacy fighters`)
 }
-else report(readdirSync(dir).filter(f => f.endsWith('.json')).map(f => JSON.parse(readFileSync(dir + f, 'utf8'))))
+else report([...readdirSync(dir).filter(f => f.endsWith('.json')).map(f => JSON.parse(readFileSync(dir + f, 'utf8'))), LAB])
