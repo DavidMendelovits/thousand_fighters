@@ -1,0 +1,5 @@
+{
+ "note": "Faro repaint of Nov 23 2026 (faro-poses branch, fighters/faro.png): 19 repainted cells checked by eye against the rig. wrong = painted as the plain stance or another pose.",
+ "right": ["over.s", "jp.s", "jk.s", "axe.w", "axe.s", "swing.s", "back.w", "back.s"],
+ "wrong": ["hit", "jp.w", "jk.w", "dive.w", "dive.s", "beam.w", "tend.w", "tend.s", "glass.w", "glass.s", "swing.w"]
+}

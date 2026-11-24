@@ -16,5 +16,5 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": ["."],
-  "exclude": ["cli.ts", "vite.config.ts", "node_modules", "dist"]
+  "exclude": ["cli.ts", "posedata.ts", "vite.config.ts", "node_modules", "dist"]
 }
