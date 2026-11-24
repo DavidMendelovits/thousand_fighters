@@ -124,10 +124,10 @@ function reset(c?: Clip) {
   w = solo ? newWorld(cur!, NOBODY, 1, STAGE.max - STAGE.min - 120) : newWorld(cur!, REF, 1, c ? c.demo.dist : 260); fx = newFx(w); demoT = 0
   if (c) { w.f[0].meter = 100; if (c.demo.powered) w.f[0].buff = { t: 9999, power: 1, speed: 1, defense: 1, color: '#ffffff' } }
 }
-function advance() {
+function advance(quiet = false) { // quiet: replaying to build the strip or to land on a frame, no sound or sparks
   const c = clips[clip]
   if (solo) w.f[1].inv = 999 // nothing can hit or grab it; refreshed because returning to idle clears it
-  step(w, c ? at(c.demo.script, w, demoT) : 0, c?.demo.foe && !solo ? at(c.demo.foe, w, demoT) : 0); fxTick(fx, w)
+  step(w, c ? at(c.demo.script, w, demoT) : 0, c?.demo.foe && !solo ? at(c.demo.foe, w, demoT) : 0); if (!quiet) fxTick(fx, w)
   w.time = 99 * 60; demoT++
 }
 
@@ -136,13 +136,13 @@ function advance() {
 // many moves share that cell. It lights up as the clip plays; tap a cell, or step, to hold any single frame.
 type Seg = { key: string; phase: string; move: string; t0: number; t1: number; a: number; b: number }
 const CLIP_LEN = 230, PHASE: Record<string, string> = { startup: 'windup', active: 'hit', recovery: 'recover' }
-let segs: Seg[] = [], paused = false, shared = new Map<string, string[]>()
+let segs: Seg[] = [], paused = false, lit = -1, shared = new Map<string, string[]>()
 
 function timeline(c: Clip): Seg[] {
   reset(c)
   const out: Seg[] = []
   for (let k = 0; k < CLIP_LEN; k++) {
-    advance()
+    advance(true)
     const f = w.f[0], m = f.mv
     if (f.st !== 'atk' || !m) continue
     const phase = f.t < m.su ? 'startup' : f.t < m.su + m.ac ? 'active' : 'recovery'
@@ -192,13 +192,14 @@ function seek(n: number) {
   if (!c) return
   paused = true; reset(c)
   n = Math.max(0, Math.min(CLIP_LEN, n))
-  while (demoT < n) advance()
+  while (demoT < n) advance(true)
   showFrame()
 }
 function showFrame() {
   const f = w.f[0], m = f.mv, live = segs.findIndex(g => demoT >= g.a && demoT <= g.b)
   for (const el of document.querySelectorAll<HTMLElement>('.seg')) el.classList.toggle('on', +el.dataset.seg! === live)
-  if (live >= 0) document.querySelector(`.seg[data-seg="${live}"]`)?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+  if (live >= 0 && live !== lit) { const el = document.querySelector<HTMLElement>(`.seg[data-seg="${live}"]`), st = $('#strip'); if (el) st.scrollLeft = Math.max(0, el.offsetLeft - st.offsetLeft - 40) }
+  lit = live
   $('#fplay').textContent = paused ? '▶' : '❚❚'; $('#fplay').setAttribute('aria-label', paused ? 'Play' : 'Pause')
   $('#fnow').textContent = paused ? (f.st === 'atk' && m ? `${m.name} frame ${f.t + 1}` : `tick ${demoT}`) : ''
 }
