@@ -234,5 +234,5 @@ export function compile(d: FighterDef) {
   for (const s of d.strings) for (const id of s) if (!moves[id]) problems.push(`string "${s.join(' ')}" uses unknown move "${id}"`)
   // most specific input wins: motions, then chords, then direction+button, then a bare button
   const prio = (m: Move) => (m.motion?.length ?? 0) * 10 + (m.chord ? 5 : 0) + (m.dir ? 2 : 0)
-  return { moves, poses, problems, order: Object.values(moves).sort((a, b) => prio(b) - prio(a)), sheetKeys: [...POSE_KEYS, ...Object.keys(d.poses ?? {})] }
+  return { moves, poses, problems, order: Object.values(moves).sort((a, b) => prio(b) - prio(a)), sheetKeys: [...new Set([...POSE_KEYS, ...Object.keys(d.poses ?? {})])] }
 }
