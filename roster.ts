@@ -1,10 +1,12 @@
 // The roster page: every fighter at a glance, phone first. Tap one for its stats, moves and combos,
 // each playable in a small arena against the validator's sparring dummy, or with no one to hit. Read-only.
+// "Try it" hands the fighter to you: touch controls on a phone, WASD + U I J K (Space blocks) on a keyboard.
 import { POSES, compile, fk, type FighterDef } from './kit'
-import { newWorld, step, STAGE, type World } from './sim'
+import { newWorld, step, STAGE, L, R, U, D, LP, HP, LK, HK, BL, type World } from './sim'
 import { draw, drawRig, newFx, fxTick, CELL, AX, AY, type Fx } from './render'
 import { validate, at, REF, type Demo } from './validate'
 import { loadFighters, sheetUrl } from './data'
+import { touchPad, TOUCH_CSS, type TouchPad } from './touch'
 
 const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector<T>(s)!
 const esc = (s: string) => s.replace(/[&<>"]/g, c => `&#${c.charCodeAt(0)};`)
@@ -87,10 +89,38 @@ function setSolo(on: boolean) {
   $('#solo').setAttribute('aria-pressed', String(on)); $('#solo').textContent = on ? 'Show opponent' : 'Hide opponent'
 }
 setSolo(solo)
-$('#solo').onclick = () => { setSolo(!solo); if (cur) playClip(clip) }
+$('#solo').onclick = () => { setSolo(!solo); if (cur) trying ? fresh() : playClip(clip) }
+
+// Try it: the move list gives way to touch controls and the fighter is yours. The dummy stands still.
+document.head.append(Object.assign(document.createElement('style'), { textContent: TOUCH_CSS }))
+let trying = false, pad: TouchPad | null = null, calm = 0
+const KEYS: Record<string, number> = { KeyA: L, KeyD: R, KeyW: U, KeyS: D, ArrowLeft: L, ArrowRight: R, ArrowUp: U, ArrowDown: D, KeyU: LP, KeyI: HP, KeyJ: LK, KeyK: HK, Space: BL, KeyL: BL }
+const held = new Set<string>()
+addEventListener('keydown', e => { if (trying && e.code in KEYS) { held.add(e.code); e.preventDefault() } })
+addEventListener('keyup', e => { held.delete(e.code) })
+addEventListener('blur', () => held.clear())
+const keyBits = () => { let b = 0; for (const k of held) b |= KEYS[k] ?? 0; return b }
+function fresh() {
+  if (!cur) return
+  w = solo ? newWorld(cur, NOBODY, 1, STAGE.max - STAGE.min - 120) : newWorld(cur, REF, 1, 260); fx = newFx(w)
+  w.f[0].meter = 100; calm = 0
+}
+function setTrying(on: boolean) {
+  trying = on
+  $('#try').setAttribute('aria-pressed', String(on)); $('#try').textContent = on ? 'Move list' : 'Try it'
+  $('#scroll').hidden = on; $('#deck').hidden = !on
+  if (on) {
+    pad ??= touchPad($('#deck'))
+    fresh()
+    $('#now').innerHTML = '<b>You have control</b> <span class="dim">tap light, flick heavy</span>'
+    for (const el of document.querySelectorAll('.mv')) el.classList.remove('on')
+  } else if (cur) playClip(clip)
+}
+$('#try').onclick = () => setTrying(!trying)
 
 function playClip(i: number, user = false) {
   if (!cur) return
+  if (trying) { clip = i; fresh(); return }
   if (user) auto = false
   clip = i; demoT = 0
   const c = clips[i]
@@ -102,8 +132,16 @@ function playClip(i: number, user = false) {
 
 function tick() {
   if (fx.slow > 0 && fx.slow-- % 2) return
-  const c = clips[clip]
   if (solo) w.f[1].inv = 999 // nothing can hit or grab it; refreshed because returning to idle clears it
+  if (trying) {
+    step(w, pad!.poll() | keyBits(), 0); fxTick(fx, w); w.time = 99 * 60
+    // like training in the studio: once things settle, health and meter fill back up
+    calm = w.f.some(f => f.combo || !['idle', 'walk', 'crouch', 'squat', 'block', 'air', 'atk', 'dash'].includes(f.st)) ? 0 : calm + 1
+    if (calm > 50) for (const f of w.f) { f.hp = f.def.stats.hp; f.meter = 100 }
+    if (w.over) fresh()
+    return
+  }
+  const c = clips[clip]
   step(w, c ? at(c.demo.script, w, demoT) : 0, c?.demo.foe && !solo ? at(c.demo.foe, w, demoT) : 0); fxTick(fx, w)
   w.time = 99 * 60; demoT++
   // a clip runs about 4s, then the next one starts (or the same one again once the viewer picked it)
@@ -164,6 +202,7 @@ function fill(d: FighterDef) {
 }
 
 function close() {
+  if (trying) setTrying(false)
   cur = null; cancelAnimationFrame(raf)
   $('#detail').hidden = true; document.body.classList.remove('lock'); document.title = 'Roster · Thousand Fighters'
 }
