@@ -25,7 +25,13 @@ export type Fighter = {
   pulled: boolean // already dragged once this combo: a second pull is just a hit, so tethers cannot loop
   hist: number[]; buf: number; bufAge: number
 }
-export type Proj = { id: string; s: ProjSpec; x: number; y: number; vx: number; vy: number; owner: number; t: number; hits: number; cool: number }
+export type Proj = {
+  id: string; s: ProjSpec; x: number; y: number; vx: number; vy: number; owner: number; t: number; hits: number; cool: number
+  w: number; h: number // hit box half-size (grows when the spec says so)
+  wait: number // warning ticks left: shown, not live
+  ax: number; ay: number // anchored: offset from the thrower's feet, forward-positive
+  gates: { x: number; y: number }[] // portal mouths it went through, drawn while it flies
+}
 export type Ev = { type: 'hit' | 'block' | 'swing' | 'land' | 'thud' | 'ko' | 'throw' | 'fire' | 'jump' | 'tele' | 'charged'; x: number; y: number; power: number; who: number }
 export type World = { f: [Fighter, Fighter]; proj: Proj[]; tick: number; stop: number; time: number; over: null | { winner: number }; ev: Ev[]; seed: number; plan: [number[], number[]] }
 
@@ -258,8 +264,9 @@ function attackTick(w: World, i: number, inp: number) {
   }
   if (m.drive && !f.driving && !air) f.vx = 0
   for (const p of m.proj ?? []) if (t === p.at) {
-    const h = f.def.look.height
-    w.proj.push({ id: m.id, s: p, x: (p.aim === 'target' ? o.x : f.x) + f.face * (p.x ?? (p.aim ? 0 : 50)) * h, y: f.y + (p.y ?? 105) * h, vx: f.face * p.vx, vy: p.vy ?? 0, owner: i, t: 0, hits: p.hits ?? 1, cool: 0 })
+    const at = place(f, o, p), sz = p.size ?? 14
+    w.proj.push({ id: m.id, s: p, ...at, owner: i, t: 0, hits: p.hits ?? 1, cool: 0, w: p.w ?? sz, h: p.h ?? sz * 0.85, wait: p.warn ?? 0,
+      ax: (at.x - f.x) * f.face, ay: at.y - f.y, gates: [] })
     w.ev.push({ type: 'fire', x: f.x + f.face * 50, y: f.y + 105, power: 3, who: i })
   }
   if (m.teleport && t === m.teleport.at) {
@@ -286,6 +293,38 @@ function attackTick(w: World, i: number, inp: number) {
     }
   }
   if (t >= m.su + m.ac + m.rc && !air) toIdle(f)
+}
+
+// ---- projectiles ---------------------------------------------------------------
+const toward = (f: Fighter, o: Fighter) => (Math.sign(o.x - f.x) || f.face) as 1 | -1
+const onStage = (x: number) => Math.max(10, Math.min(STAGE.w - 10, x))
+/** Where a projectile spawns and how it starts moving, from its spec's `from`. */
+function place(f: Fighter, o: Fighter, p: ProjSpec): { x: number; y: number; vx: number; vy: number } {
+  const h = f.def.look.height, s = toward(f, o)
+  switch (p.from ?? (p.aim ? 'target' : 'hand')) {
+    case 'hand': return { x: f.x + f.face * (p.x ?? 50) * h, y: f.y + (p.y ?? 105) * h, vx: f.face * p.vx, vy: p.vy ?? 0 }
+    case 'target': return { x: o.x + f.face * (p.x ?? 0) * h, y: f.y + (p.y ?? 105) * h, vx: f.face * p.vx, vy: p.vy ?? 0 }
+    case 'above': return { x: onStage(o.x + s * (p.x ?? 0)), y: o.y + (p.y ?? 380), vx: s * p.vx, vy: p.vy ?? -12 }
+    case 'behind': return { x: onStage(o.x + s * (p.x ?? 150)), y: o.y + (p.y ?? 100), vx: -s * p.vx, vy: p.vy ?? 0 }
+    case 'below': return { x: onStage(o.x + s * (p.x ?? 0)), y: p.y ?? 0, vx: s * p.vx, vy: p.vy ?? 9 }
+  }
+}
+/** The projectile's hit box: centred on it, or reaching forward from the thrower when anchored. */
+export function projBox(p: Proj, owner: Fighter): Box {
+  if (!p.s.anchor) return { x0: p.x - p.w, x1: p.x + p.w, y0: p.y - p.h, y1: p.y + p.h }
+  const x2 = p.x + owner.face * 2 * p.w
+  return { x0: Math.min(p.x, x2), x1: Math.max(p.x, x2), y0: p.y - p.h, y1: p.y + p.h }
+}
+/** Through the portal: vanish here, come out beside the opponent, and fly straight at them. */
+function portal(w: World, p: Proj) {
+  const f = w.f[p.owner], o = w.f[1 - p.owner], g = p.s.portal!, s = toward(f, o)
+  p.gates.push({ x: p.x, y: p.y })
+  const [x, y] = g.to === 'above' ? [o.x, o.y + 330] : g.to === 'behind' ? [o.x + s * 150, o.y + 100] : [o.x - s * 150, o.y + 100]
+  p.x = onStage(x); p.y = y
+  const tx = o.x - p.x, ty = o.y + 100 - p.y, d = Math.hypot(tx, ty) || 1, v = g.speed ?? (Math.hypot(p.vx, p.vy) || 8)
+  p.vx = tx / d * v; p.vy = ty / d * v
+  p.gates.push({ x: p.x, y: p.y })
+  w.ev.push({ type: 'tele', x: p.x, y: p.y, power: 2, who: p.owner })
 }
 
 // ---- hits -------------------------------------------------------------------
@@ -376,16 +415,26 @@ export function step(w: World, in0: number, in1: number) {
 
   for (const p of w.proj) {
     if (p.t < 0) continue
-    p.vy -= p.s.g ?? 0; p.x += p.vx; p.y += p.vy; p.t++; p.cool--
-    const d = w.f[1 - p.owner], sz = p.s.size ?? 14, pb = { x0: p.x - sz, x1: p.x + sz, y0: p.y - sz * 0.85, y1: p.y + sz * 0.85 }
-    const clash = w.proj.find(q => q.owner !== p.owner && q.t >= 0 && Math.abs(q.x - p.x) < 24 && Math.abs(q.y - p.y) < 40)
+    const f = w.f[p.owner], d = w.f[1 - p.owner]
+    if (p.s.anchor) { // rides on the thrower; a hit on them (or the move ending) puts it out
+      if (f.st !== 'atk' || f.mv?.id !== p.id) { p.t = -1; continue }
+      p.x = f.x + f.face * p.ax; p.y = f.y + p.ay
+    }
+    if (p.wait > 0) { p.wait--; continue } // still a warning: not moving, not live
+    if (!p.s.anchor) { p.vy -= p.s.g ?? 0; p.x += p.vx; p.y += p.vy }
+    p.t++; p.cool--
+    if (p.s.grow) { p.w = Math.min(p.s.max?.[0] ?? 999, p.w + p.s.grow[0]); p.h = Math.min(p.s.max?.[1] ?? 999, p.h + p.s.grow[1]) }
+    if (p.s.portal && p.t === p.s.portal.at) portal(w, p)
+    const pb = projBox(p, f)
+    const clash = w.proj.find(q => q.owner !== p.owner && q.t >= 0 && q.wait <= 0 && ((Math.abs(q.x - p.x) < 24 && Math.abs(q.y - p.y) < 40) || overlap(pb, projBox(q, w.f[q.owner]))))
     if (clash) { clash.t = p.t = -1; w.ev.push({ type: 'block', x: p.x, y: p.y, power: 3, who: p.owner }) }
     else if (p.cool <= 0 && hittable(d) && overlap(pb, hurtbox(d))) {
-      applyHit(w, p.owner, { hs: 18, bs: 12, lvl: 'mid', kb: 5, stop: 6, ...p.s }, p.x - p.vx, p.x, p.y, false)
+      applyHit(w, p.owner, { hs: 18, bs: 12, lvl: 'mid', kb: 5, stop: 6, ...p.s }, p.s.anchor ? f.x : p.x - p.vx, p.s.anchor ? d.x : p.x, p.y, false)
       p.cool = 8; if (--p.hits <= 0) p.t = -1
     }
-    else if (p.x < -40 || p.x > STAGE.w + 40 || p.t > (p.s.life ?? 600)) p.t = -1
-    else if (p.y <= 0 && (p.s.g || p.vy < 0)) { p.t = -1; w.ev.push({ type: 'block', x: p.x, y: 4, power: 2, who: p.owner }) }
+    else if (!p.s.anchor && (p.x < -40 || p.x > STAGE.w + 40 || p.y > 900)) p.t = -1
+    else if (p.t > (p.s.life ?? 600)) p.t = -1
+    else if (!p.s.anchor && p.y <= 0 && (p.s.g || p.vy < 0)) { p.t = -1; w.ev.push({ type: 'block', x: p.x, y: 4, power: 2, who: p.owner }) }
   }
   w.proj = w.proj.filter(p => p.t >= 0)
 
