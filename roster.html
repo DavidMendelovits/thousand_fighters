@@ -45,7 +45,19 @@
   .under { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
   #now { flex: 1; min-width: 0; min-height: 22px; margin: 0; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #solo { flex: none; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); font-size: 13px; font-weight: 700; white-space: nowrap; }
-  #solo[aria-pressed="true"] { border-color: var(--gold); color: var(--gold); }
+  #solo[aria-pressed="true"], #try[aria-pressed="true"] { border-color: var(--gold); color: var(--gold); }
+  #try { flex: none; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); font-size: 13px; font-weight: 700; white-space: nowrap; }
+  #deck { flex: 1; min-height: 0; padding: 4px var(--pad) calc(12px + env(safe-area-inset-bottom)); max-width: 720px; width: 100%; margin: 0 auto; }
+  #frames { display: flex; gap: 6px; align-items: stretch; margin-top: 6px; }
+  .fb { flex: none; width: 36px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); font-size: 18px; text-align: center; }
+  #strip { flex: 1; min-width: 0; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .seg { flex: none; width: 76px; display: flex; flex-direction: column; align-items: center; padding: 3px 2px 4px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); font-size: 10px; line-height: 1.25; }
+  .seg canvas { width: 64px; height: 64px; border-radius: 4px; background: radial-gradient(ellipse at 50% 85%, #2c2540, transparent 70%); }
+  .seg .sm { order: -1; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--dim); }
+  .seg .sp { font-weight: 700; } .seg .sk { color: var(--dim); font-family: ui-monospace, monospace; } .seg .sk b { color: var(--bad); }
+  .seg.startup { border-top: 3px solid #5aa9ff; } .seg.active { border-top: 3px solid var(--bad); } .seg.recovery { border-top: 3px solid var(--dim); }
+  .seg.on { border-color: var(--gold); background: #2c2540; }
+  #fnow { margin: 2px 0 0; min-height: 16px; font-size: 12px; }
   .scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; border-top: 1px solid var(--line); }
   .wrap { max-width: 720px; margin: 0 auto; padding: 0 var(--pad) calc(32px + env(safe-area-inset-bottom)); }
   .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 14px 0 4px; }
@@ -66,6 +78,7 @@
   .mv .top b { flex: 1; min-width: 0; overflow-wrap: anywhere; }
   .mv .cmd { font: 13px ui-monospace, monospace; color: var(--gold); text-align: right; flex: none; max-width: 55%; overflow-wrap: anywhere; }
   .mv .sub { font-size: 12px; color: var(--dim); font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .need { color: var(--gold); font-weight: 700; }
   .checks { margin: 6px 0 0; padding: 0; list-style: none; font-size: 13px; }
   .checks li { padding: 4px 0; }
 </style>
@@ -88,9 +101,18 @@
     <canvas id="arena" width="960" height="540"></canvas>
     <div class="under">
       <p id="now" class="dim"></p>
+      <button id="try" aria-pressed="false">Try it</button>
       <button id="solo" aria-pressed="false">Hide opponent</button>
     </div>
+    <div id="frames" hidden>
+      <button id="fback" class="fb" aria-label="Back one frame">‹</button>
+      <div id="strip" aria-label="Sprite cells of this move"></div>
+      <button id="fplay" class="fb" aria-label="Pause">❚❚</button>
+      <button id="fnext" class="fb" aria-label="Forward one frame">›</button>
+    </div>
+    <p id="fnow" class="dim"></p>
   </div>
+  <div id="deck" hidden></div>
   <div class="scroll" id="scroll">
     <div class="wrap">
       <div class="stats" id="stats"></div>

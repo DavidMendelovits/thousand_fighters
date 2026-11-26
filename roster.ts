@@ -1,10 +1,13 @@
 // The roster page: every fighter at a glance, phone first. Tap one for its stats, moves and combos,
 // each playable in a small arena against the validator's sparring dummy, or with no one to hit. Read-only.
+// "Try it" hands the fighter to you: touch controls on a phone, WASD + U I J K (Space blocks) on a keyboard.
 import { POSES, compile, fk, type FighterDef } from './kit'
-import { newWorld, step, STAGE, type World } from './sim'
-import { draw, drawRig, newFx, fxTick, CELL, AX, AY, type Fx } from './render'
+import { newWorld, step, STAGE, L, R, U, D, LP, HP, LK, HK, BL, type World } from './sim'
+import { draw, drawRig, newFx, fxTick, CELL, COLS, AX, AY, type Fx } from './render'
+import { spriteLook } from './sprite'
 import { validate, at, REF, type Demo } from './validate'
 import { loadFighters, sheetUrl } from './data'
+import { touchPad, TOUCH_CSS, type TouchPad } from './touch'
 
 const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector<T>(s)!
 const esc = (s: string) => s.replace(/[&<>"]/g, c => `&#${c.charCodeAt(0)};`)
@@ -87,27 +90,155 @@ function setSolo(on: boolean) {
   $('#solo').setAttribute('aria-pressed', String(on)); $('#solo').textContent = on ? 'Show opponent' : 'Hide opponent'
 }
 setSolo(solo)
-$('#solo').onclick = () => { setSolo(!solo); if (cur) playClip(clip) }
+$('#solo').onclick = () => { setSolo(!solo); if (cur) trying ? fresh() : playClip(clip) }
+
+// Try it: the move list gives way to touch controls and the fighter is yours. The dummy stands still.
+document.head.append(Object.assign(document.createElement('style'), { textContent: TOUCH_CSS }))
+let trying = false, pad: TouchPad | null = null, calm = 0
+const KEYS: Record<string, number> = { KeyA: L, KeyD: R, KeyW: U, KeyS: D, ArrowLeft: L, ArrowRight: R, ArrowUp: U, ArrowDown: D, KeyU: LP, KeyI: HP, KeyJ: LK, KeyK: HK, Space: BL, KeyL: BL }
+const held = new Set<string>()
+addEventListener('keydown', e => { if (trying && e.code in KEYS) { held.add(e.code); e.preventDefault() } })
+addEventListener('keyup', e => { held.delete(e.code) })
+addEventListener('blur', () => held.clear())
+const keyBits = () => { let b = 0; for (const k of held) b |= KEYS[k] ?? 0; return b }
+function fresh() {
+  if (!cur) return
+  w = solo ? newWorld(cur, NOBODY, 1, STAGE.max - STAGE.min - 120) : newWorld(cur, REF, 1, 260); fx = newFx(w)
+  w.f[0].meter = 100; calm = 0
+}
+function setTrying(on: boolean) {
+  trying = on
+  $('#try').setAttribute('aria-pressed', String(on)); $('#try').textContent = on ? 'Move list' : 'Try it'
+  $('#scroll').hidden = on; $('#deck').hidden = !on
+  if (on) {
+    pad ??= touchPad($('#deck'))
+    fresh(); $('#frames').hidden = true
+    $('#now').innerHTML = '<b>You have control</b> <span class="dim">tap light, flick heavy</span>'
+    for (const el of document.querySelectorAll('.mv')) el.classList.remove('on')
+  } else if (cur) playClip(clip)
+}
+$('#try').onclick = () => setTrying(!trying)
+
+/** The clip's world from tick 0. Deterministic, so replaying it lands on the same frame every time. */
+function reset(c?: Clip) {
+  w = solo ? newWorld(cur!, NOBODY, 1, STAGE.max - STAGE.min - 120) : newWorld(cur!, REF, 1, c ? c.demo.dist : 260); fx = newFx(w); demoT = 0
+  if (c) { w.f[0].meter = 100; if (c.demo.powered) w.f[0].buff = { t: 9999, power: 1, speed: 1, defense: 1, color: '#ffffff' } }
+}
+function advance(quiet = false) { // quiet: replaying to build the strip or to land on a frame, no sound or sparks
+  const c = clips[clip]
+  if (solo) w.f[1].inv = 999 // nothing can hit or grab it; refreshed because returning to idle clears it
+  step(w, c ? at(c.demo.script, w, demoT) : 0, c?.demo.foe && !solo ? at(c.demo.foe, w, demoT) : 0); if (!quiet) fxTick(fx, w)
+  w.time = 99 * 60; demoT++
+}
+
+// ---- frames: the move as its sprite cells -------------------------------------
+// Under the arena, a strip of the cells the move shows, in order, each with the frames it is on screen and how
+// many moves share that cell. It lights up as the clip plays; tap a cell, or step, to hold any single frame.
+type Seg = { key: string; phase: string; move: string; t0: number; t1: number; a: number; b: number }
+const CLIP_LEN = 230, PHASE: Record<string, string> = { startup: 'windup', active: 'hit', recovery: 'recover' }
+let segs: Seg[] = [], paused = false, lit = -1, shared = new Map<string, string[]>()
+
+function timeline(c: Clip): Seg[] {
+  reset(c)
+  const out: Seg[] = []
+  for (let k = 0; k < CLIP_LEN; k++) {
+    advance(true)
+    const f = w.f[0], m = f.mv
+    if (f.st !== 'atk' || !m) continue
+    const phase = f.t < m.su ? 'startup' : f.t < m.su + m.ac ? 'active' : 'recovery'
+    const key = spriteLook(f).layers.reduce((x, l) => (l.alpha >= x.alpha ? l : x), { key: '', alpha: -1 }).key
+    const last = out[out.length - 1]
+    if (last && last.key === key && last.phase === phase && last.move === m.name && last.b === demoT - 1) { last.b = demoT; last.t1 = f.t }
+    else out.push({ key, phase, move: m.name, t0: f.t, t1: f.t, a: demoT, b: demoT })
+  }
+  return out
+}
+
+function cellCanvas(key: string): HTMLCanvasElement {
+  const cv = document.createElement('canvas'), px = Math.round(64 * devicePixelRatio)
+  cv.width = cv.height = px
+  const c = cv.getContext('2d')!, d = cur!, C = compile(d), img = sheets.get(d.id), i = C.sheetKeys.indexOf(key)
+  if (img && i >= 0) c.drawImage(img, (i % COLS) * CELL, Math.floor(i / COLS) * CELL, CELL, CELL, 0, 0, px, px)
+  else if (C.poses[key]) { c.save(); c.scale(px / CELL, px / CELL); drawRig(c, C.poses[key], d.look, AX, AY, 1); c.restore() }
+  return cv
+}
+
+function buildStrip(c?: Clip) {
+  segs = c ? timeline(c) : []
+  const strip = $('#strip'); strip.replaceChildren()
+  $('#frames').hidden = !segs.length || trying
+  let move = ''
+  segs.forEach((g, n) => {
+    const el = document.createElement('button'); el.className = 'seg ' + g.phase; el.dataset.seg = String(n)
+    const pose = g.key.replace(/\.[ws]$/, ''), users = shared.get(pose) ?? []
+    const head = g.move !== move ? `<span class="sm">${esc(g.move)}</span>` : '<span class="sm">&nbsp;</span>'
+    move = g.move
+    el.innerHTML = `${head}<span class="sp">${PHASE[g.phase]} ${g.t0 + 1}${g.t1 > g.t0 ? '–' + (g.t1 + 1) : ''}</span><span class="sk">${esc(g.key)}${users.length > 1 ? ` <b title="${esc(users.join(', '))}">×${users.length}</b>` : ''}</span>`
+    el.prepend(cellCanvas(g.key))
+    el.setAttribute('aria-label', `${g.move}, ${PHASE[g.phase]} frames ${g.t0 + 1} to ${g.t1 + 1}, cell ${g.key}${users.length > 1 ? `, shared by ${users.join(', ')}` : ''}`)
+    strip.append(el)
+  })
+  reset(c)
+  const d = cur!
+  if (d.atlas && !sheets.has(d.id)) sheet(d).then(() => { // painted cells replace the rig once the sheet is in
+    if (cur !== d) return
+    for (const el of strip.querySelectorAll<HTMLElement>('.seg')) el.querySelector('canvas')!.replaceWith(cellCanvas(segs[+el.dataset.seg!].key))
+  })
+}
+
+/** Hold the clip on one frame: replay it from the start up to tick n. */
+function seek(n: number) {
+  const c = clips[clip]
+  if (!c) return
+  paused = true; reset(c)
+  n = Math.max(0, Math.min(CLIP_LEN, n))
+  while (demoT < n) advance(true)
+  showFrame()
+}
+function showFrame() {
+  const f = w.f[0], m = f.mv, live = segs.findIndex(g => demoT >= g.a && demoT <= g.b)
+  for (const el of document.querySelectorAll<HTMLElement>('.seg')) el.classList.toggle('on', +el.dataset.seg! === live)
+  if (live >= 0 && live !== lit) { const el = document.querySelector<HTMLElement>(`.seg[data-seg="${live}"]`), st = $('#strip'); if (el) st.scrollLeft = Math.max(0, el.offsetLeft - st.offsetLeft - 40) }
+  lit = live
+  $('#fplay').textContent = paused ? '▶' : '❚❚'; $('#fplay').setAttribute('aria-label', paused ? 'Play' : 'Pause')
+  $('#fnow').textContent = paused ? (f.st === 'atk' && m ? `${m.name} frame ${f.t + 1}` : `tick ${demoT}`) : ''
+}
+$('#strip').addEventListener('click', e => {
+  const b = (e.target as HTMLElement).closest<HTMLElement>('.seg')
+  if (b) seek(segs[+b.dataset.seg!].a)
+})
+$('#fback').onclick = () => seek(paused ? demoT - 1 : demoT)
+$('#fnext').onclick = () => seek(paused ? demoT + 1 : demoT)
+$('#fplay').onclick = () => { if (paused && demoT >= CLIP_LEN) reset(clips[clip]); paused = !paused; showFrame() }
 
 function playClip(i: number, user = false) {
   if (!cur) return
+  if (trying) { clip = i; fresh(); return }
   if (user) auto = false
-  clip = i; demoT = 0
+  clip = i; paused = false
   const c = clips[i]
-  w = solo ? newWorld(cur, NOBODY, 1, STAGE.max - STAGE.min - 120) : newWorld(cur, REF, 1, c ? c.demo.dist : 260); fx = newFx(w)
-  if (c) { w.f[0].meter = 100; if (c.demo.powered) w.f[0].buff = { t: 9999, power: 1, speed: 1, defense: 1, color: '#ffffff' } }
+  buildStrip(c)
+  showFrame()
   $('#now').innerHTML = c ? `<b>${esc(c.label)}</b> <span class="dim">${esc(c.cmd)}</span>` : (clips.length ? 'Tap a move to watch it' : '')
   for (const el of document.querySelectorAll('.mv')) el.classList.toggle('on', +(el as HTMLElement).dataset.clip! === i)
 }
 
 function tick() {
   if (fx.slow > 0 && fx.slow-- % 2) return
-  const c = clips[clip]
-  if (solo) w.f[1].inv = 999 // nothing can hit or grab it; refreshed because returning to idle clears it
-  step(w, c ? at(c.demo.script, w, demoT) : 0, c?.demo.foe && !solo ? at(c.demo.foe, w, demoT) : 0); fxTick(fx, w)
-  w.time = 99 * 60; demoT++
+  if (trying) {
+    if (solo) w.f[1].inv = 999
+    step(w, pad!.poll() | keyBits(), 0); fxTick(fx, w); w.time = 99 * 60
+    // like training in the studio: once things settle, health and meter fill back up
+    calm = w.f.some(f => f.combo || !['idle', 'walk', 'crouch', 'squat', 'block', 'air', 'atk', 'dash'].includes(f.st)) ? 0 : calm + 1
+    if (calm > 50) for (const f of w.f) { f.hp = f.def.stats.hp; f.meter = 100 }
+    if (w.over) fresh()
+    return
+  }
+  if (paused) return
+  advance()
   // a clip runs about 4s, then the next one starts (or the same one again once the viewer picked it)
-  if (demoT > 230) playClip(auto && clips.length ? (clip + 1) % clips.length : clip)
+  if (demoT > CLIP_LEN) playClip(auto && clips.length ? (clip + 1) % clips.length : clip)
+  else if (segs.length) showFrame()
 }
 let acc = 0, last = 0
 function frame(now: number) {
@@ -140,12 +271,17 @@ function open(d: FighterDef) {
 
 function fill(d: FighterDef) {
   const r = validate(d), own = new Set((d.moves ?? []).map(m => m.id)), C = compile(d)
+  shared = new Map()
+  for (const m of Object.values(C.moves)) shared.set(m.pose, [...(shared.get(m.pose) ?? []), m.name])
   const bad = r.checks.filter(c => !c.ok)
   $('#dbadge').innerHTML = bad.length ? `<span class="bad">✘ ${bad.length} failing</span>` : `<span class="ok">✔ ${r.checks.length} checks</span>`
 
   const rowsHtml = (rows: typeof r.rows) => rows.map(m => {
     const i = m.demo ? clips.push({ label: m.name, cmd: m.cmd, demo: m.demo }) - 1 : -1
-    const bits = [`${m.su}f startup`, m.dmg ? `${m.dmg} dmg` : '', m.lvl === 'oh' ? 'overhead' : m.lvl, m.onHit && m.onHit !== '—' ? `${m.onHit} on hit` : '', m.onBlock ? `${m.onBlock} on block` : ''].filter(Boolean)
+    const mv = C.moves[m.id], buffer = Object.values(C.moves).find(x => x.buff)
+    const need = [mv?.cost ? (mv.cost >= 100 ? 'full meter' : mv.cost >= 50 ? 'half meter' : `${mv.cost}% meter`) : '', mv?.needs === 'buff' ? `only during ${buffer ? esc(buffer.name) : 'a power-up'}` : '']
+      .filter(Boolean).map(t => `<span class="need">${t}</span>`)
+    const bits = [...need, `${m.su}f startup`, m.dmg ? `${m.dmg} dmg` : '', m.lvl === 'oh' ? 'overhead' : m.lvl, m.onHit && m.onHit !== '—' ? `${m.onHit} on hit` : '', m.onBlock ? `${m.onBlock} on block` : ''].filter(Boolean)
     return moveRow(i, m.name, m.cmd, bits.join(' · '))
   }).join('')
   const sig = rowsHtml(r.rows.filter(m => own.has(m.id) && C.moves[m.id]?.btn))
@@ -164,6 +300,7 @@ function fill(d: FighterDef) {
 }
 
 function close() {
+  if (trying) setTrying(false)
   cur = null; cancelAnimationFrame(raf)
   $('#detail').hidden = true; document.body.classList.remove('lock'); document.title = 'Roster · Thousand Fighters'
 }

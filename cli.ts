@@ -9,6 +9,7 @@ import { newMatch, matchStep, matchWinner, FIRST_TO, MAX_ROUNDS } from './match'
 import { cpu } from './sim'
 import { design, rosterFighter } from './design'
 import type { FighterDef } from './kit'
+import { LAB } from './fixtures'
 
 const dir = new URL('./fighters/', import.meta.url).pathname
 // fighters/<id>.paint.json is paint.py's run log beside the sheet, not a fighter
@@ -59,4 +60,4 @@ else if (cmd === 'legacy') {
   }
   console.log(`re-created ${n} legacy fighters`)
 }
-else report(readdirSync(dir).filter(f => f.endsWith('.json') && !f.endsWith('.paint.json')).map(f => JSON.parse(readFileSync(dir + f, 'utf8'))))
+else report([...readdirSync(dir).filter(f => f.endsWith('.json') && !f.endsWith('.paint.json')).map(f => JSON.parse(readFileSync(dir + f, 'utf8'))), LAB])

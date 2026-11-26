@@ -6,6 +6,7 @@ import { newMatch, matchStep, matchBanner, FIRST_TO, type Match } from './match'
 import { validate, at, type Script, type Demo } from './validate'
 import { design } from './design'
 import { loadFighters, sheetUrl } from './data'
+import { touchPad, touchFirst, TOUCH_CSS } from './touch'
 
 const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector<T>(s)!
 const esc = (s: string) => s.replace(/[&<>"]/g, c => `&#${c.charCodeAt(0)};`)
@@ -50,7 +51,14 @@ addEventListener('keydown', e => {
 })
 addEventListener('keyup', e => { down.delete(e.code) })
 addEventListener('blur', () => { down.clear() })
-const p1Input = () => bits(p1Keys()) | pad(0)
+// On a phone, touch controls sit under the arena in place of the keyboard help, and drive player 1.
+const touch = touchFirst() ? (() => {
+  document.head.append(Object.assign(document.createElement('style'), { textContent: TOUCH_CSS + '#tdeck { width: 100%; max-width: 720px; height: 210px; }' }))
+  const deck = Object.assign(document.createElement('div'), { id: 'tdeck' })
+  $('#arena').after(deck); ($('#arena').nextElementSibling!.nextElementSibling as HTMLElement).hidden = true
+  return touchPad(deck)
+})() : null
+const p1Input = () => bits(p1Keys()) | pad(0) | (touch?.poll() ?? 0)
 function pad(n = 0): number {
   const g = navigator.getGamepads?.()[n]
   if (!g) return 0

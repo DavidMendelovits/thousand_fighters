@@ -14,9 +14,11 @@ export const REF: FighterDef = { ...design('Sparring Dummy', 7), look: { ...desi
 
 export const at = (s: Script, w: World, t: number) => typeof s === 'function' ? s(w, t) : s[t] ?? 0
 const FREE = ['idle', 'walk', 'crouch', 'block']
+type Shot = { t: number; id: string; x: number; y: number; vy: number; w: number; h: number; wait: number; gates: number; off: number }
 
 function run(a: FighterDef, b: FighterDef, dist: number, p1: Script, p2: Script, ticks: number, powered = false) {
-  const w = newWorld(a, b, 1, dist), o = { w, maxCombo: 0, comboDmg: 0, firstHit: -1, blocks: 0, wasDown: false, freeA: -1, freeD: -1, seen: new Set<string>(), moved: 0, buffed: false }
+  const w = newWorld(a, b, 1, dist), o = { w, maxCombo: 0, comboDmg: 0, firstHit: -1, blocks: 0, wasDown: false, freeA: -1, freeD: -1, seen: new Set<string>(), moved: 0, buffed: false,
+    shots: [] as Shot[], pulledGap: -1 }
   w.f[0].meter = 100
   if (powered) w.f[0].buff = { t: 9999, power: 1, speed: 1, defense: 1, color: '#fff' }
   for (let t = 0; t < ticks; t++) {
@@ -27,6 +29,8 @@ function run(a: FighterDef, b: FighterDef, dist: number, p1: Script, p2: Script,
     if (w.f[0].mv) o.seen.add(w.f[0].mv.id)
     if (w.f[0].buff && !powered) o.buffed = true
     if (w.f[1].st === 'down') o.wasDown = true
+    for (const p of w.proj) if (p.owner === 0) o.shots.push({ t, id: p.id, x: p.x, y: p.y, vy: p.vy, w: p.w, h: p.h, wait: p.wait, gates: p.gates.length, off: (p.x - w.f[0].x) * w.f[0].face })
+    if (o.pulledGap < 0 && w.f[1].st === 'hit' && w.f[1].pulled) o.pulledGap = Math.abs(w.f[1].x - w.f[0].x)
     if (o.firstHit >= 0 && t > o.firstHit) { if (o.freeA < 0 && FREE.includes(w.f[0].st)) o.freeA = t; if (o.freeD < 0 && FREE.includes(w.f[1].st)) o.freeD = t }
   }
   return o
@@ -220,6 +224,7 @@ export function validate(def: FighterDef, ref: FighterDef = REF): { ok: boolean;
   add('Knockdown, getup and throw resolve', flow)
 
   // 7. every move the fighter owns can be performed, does what its data says, and ends
+  const found = new Map<string, { r: ReturnType<typeof run>; demo: Demo; path: Move[] }>()
   for (const m of def.moves) {
     const cm = C.moves[m.id]
     if (!cm.btn || cm.stringOnly) { row(cm, '', ''); continue } // string-only: covered by its string's check
@@ -237,7 +242,39 @@ export function validate(def: FighterDef, ref: FighterDef = REF): { ok: boolean;
       if (!did) bad.add('could not be performed'); else if (!ends) bad.add('attacker never recovers'); else bad.add(cm.buff && !r.buffed ? 'power-up never activates' : 'never connects at any range')
     }
     add(`Move: ${cm.name} (${cmdOf(cm, C.moves)})`, best ? [] : [[...bad].pop()!], best && hurts ? `${best.comboDmg} dmg` : 'ok', demo)
+    if (best && demo) found.set(cm.id, { r: best, demo, path })
     row(cm, best && hurts ? adv(best) : '', '', demo)
+  }
+
+  // 7b. projectiles do what their spec says: from above falls, from behind beats a block, a portal moves it, a pull drags
+  for (const m of def.moves) {
+    const cm = C.moves[m.id], got = found.get(m.id)
+    for (const p of cm.proj ?? []) {
+      const from = p.from ?? (p.aim ? 'target' : 'hand'), kinds = [from !== 'hand' && from !== 'target' && from, p.warn && 'warning', p.portal && 'portal', p.grow && 'growth', p.anchor && 'beam', p.pull && 'pull'].filter(Boolean)
+      if (!kinds.length || !got || !p.dmg) continue
+      // judged at the range the move check found and further out: point-blank, a shot can hit the tick it appears
+      const label = `Projectile: ${cm.name} (${kinds.join(', ')})`
+      let verdict: string[] | undefined, shown: Demo | undefined
+      for (const dist of [got.demo.dist, 180, 260, 340, 420]) {
+        const demo = { ...got.demo, dist }, r = run(def, ref, dist, demo.script, demo.foe ?? [], 300, demo.powered)
+        const mine = r.shots.filter(q => q.id === cm.id), live = mine.filter(q => q.wait <= 0), first = live[0], bad: string[] = []
+        if (!first) continue
+        if (r.w.f[1].hp >= full) bad.push('never connects')
+        if (from === 'above' && !(first.y > 200 && first.vy < 0)) bad.push(`starts at height ${Math.round(first.y)}, not falling from above`)
+        if (from === 'below' && !(first.y < 40 && first.vy > 0)) bad.push(`starts at height ${Math.round(first.y)}, not rising from the floor`)
+        if (from === 'behind' && !p.unblockable && run(def, ref, dist, demo.script, () => BL, 300, demo.powered).w.f[1].hp >= full) bad.push('a blocking opponent stops it, so it is not coming from behind')
+        if (p.warn && (mine.filter(q => q.wait > 0).length < p.warn - 1 || (r.firstHit >= 0 && r.firstHit < mine[0].t + p.warn))) bad.push(`hits before its ${p.warn}-tick warning ends`)
+        const through = mine.find(q => q.gates >= 2)
+        if (p.portal && !through) bad.push('never goes through its portal')
+        if (p.portal && through && r.firstHit >= 0 && r.firstHit < through.t) bad.push('hits before it reaches the portal')
+        if (p.grow && !live.some(q => q.w > first.w + 1 || q.h > first.h + 1)) bad.push('never grows')
+        if (p.anchor && live.some(q => Math.abs(q.off - first.off) > 1)) bad.push('drifts away from the thrower')
+        if (p.pull && !(r.pulledGap >= 0 && r.pulledGap < 140 * def.look.height)) bad.push(r.pulledGap < 0 ? 'never drags the opponent in' : `leaves them ${Math.round(r.pulledGap)}px away`)
+        verdict ??= bad; shown ??= demo
+        if (!bad.length) { verdict = bad; shown = demo; break }
+      }
+      add(label, verdict ?? ['never appeared'], 'does what it says', shown)
+    }
   }
 
   // 8. a full CPU match ends, stays finite, and replays identically
