@@ -195,8 +195,11 @@ function drawFighter(c: CanvasRenderingContext2D, f: Fighter, shown: Pose, sheet
   if (f.st === 'atk' && m?.teleport) c.globalAlpha = f.t < m.teleport.at ? 1 - f.t / m.teleport.at : Math.min(1, (f.t - m.teleport.at) / 6)
   if (f.buff) { c.shadowColor = f.buff.color; c.shadowBlur = 14 + Math.sin(tick / 4) * 6 }
   if (f.st === 'atk' && f.charge && m?.charge) { const k = f.charge / m.charge.max; c.shadowColor = k >= 1 ? '#ffffff' : '#ffd23f'; c.shadowBlur = 6 + 26 * k + (k >= 1 ? Math.sin(tick) * 6 : 0) } // charging glows, full charge flickers
+  const lkS = sheet && spriteLook(f), keysS = sheet && compileKeys(f.def)
+  // a pose added after the sheet was painted has no cell yet: draw the rig for those frames
+  if (sheet && lkS!.layers.some(l => l.alpha > 0 && keysS!.indexOf(l.key) >= COLS * Math.floor(sheet!.naturalHeight / CELL))) sheet = undefined
   if (sheet) {
-    const lk = spriteLook(f), keys = compileKeys(f.def), mid = 100 * f.def.look.height, a0 = c.globalAlpha
+    const lk = lkS!, keys = keysS!, mid = 100 * f.def.look.height, a0 = c.globalAlpha
     c.translate(f.x + lk.dx, gy + lk.dy); c.scale(f.face, 1)
     c.translate(0, -mid); c.rotate(lk.rot); c.translate(0, mid); c.scale(lk.sx, lk.sy) // tilt around the middle, squash from the feet
     for (const l of lk.layers) {
