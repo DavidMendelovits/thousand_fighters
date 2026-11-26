@@ -1,0 +1,31 @@
+[
+ {
+  "when": "2026-11-23T23:29:16-08:00",
+  "mode": "pose",
+  "provider": "openai:gpt-image-2.5-sunburst",
+  "quality": "high",
+  "base_url": "https://api.openai.com/v1",
+  "cells": [
+   "hit",
+   "jp.w",
+   "jk.w",
+   "dive.w",
+   "dive.s",
+   "beam.w",
+   "tend.w",
+   "tend.s",
+   "glass.w",
+   "glass.s",
+   "swing.w"
+  ],
+  "background": "transparent",
+  "tries": 3,
+  "judge": "claude-opus-5-5",
+  "failing": [
+   "dive.w",
+   "dive.s",
+   "swing.w"
+  ],
+  "requests": 18
+ }
+]

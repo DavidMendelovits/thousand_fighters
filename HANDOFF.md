@@ -73,7 +73,8 @@ DOPPLER_CONFIG_DIR=$(mktemp -d) doppler run -- python3 v2/paint.py v2/art/faro-p
 
 - That is 12 paid image requests (1 reference + 11 batches of 6 poses). It is resumable; finished batches are cached in `v2/fighters/faro.png.work/`.
 - Doppler has `OPENAI_API_KEY`, `OPENAI_IMAGE_MODEL` and `OPENAI_BASE_URL`, plus `FAL_KEY`, `BFL_API_KEY`, `MINIMAX_API_KEY`, `PRUNA_API_KEY`, `GROK_IMAGINE_API_KEY`.
-- `paint()` reads `OPENAI_IMAGE_MODEL` but hardcodes `api.openai.com`. Check what `OPENAI_BASE_URL` points to before running; if it is a proxy, use it.
+- The model is explicit: `--model`, or `OPENAI_IMAGE_MODEL` from Doppler. With no model set it stops before any request (the old default, `gpt-image-1`, was shut down in Oct 2026). Every run is logged in `fighters/<id>.paint.json` (model, quality, cells, time); commit it with the sheet.
+- `paint()` sends to `OPENAI_BASE_URL` when it is set (else `api.openai.com/v1`). Check what Doppler's value points to before a paid run.
 - The API call in `paint()` is untested. The keying and snap-to-rig step is tested (lands within 2px on a misaligned fake).
 - After it writes the sheet, set `"atlas": true` in `faro.json`, reload the studio, and watch him move. Sprite mode shows the nearest key pose with no blending, so judge it in motion, not as a still sheet.
 - `v2/art/faro-poses.png` must be re-exported (Studio → Sprites → Download pose sheet) if Faro's poses or look change.
@@ -98,3 +99,46 @@ pose-conditioned model through `FAL_KEY`.
 - The codex CLI cannot generate images on this account: its configured model and four alternatives were rejected.
 - Use the gstack `/browse` skill for browser checks, not the Chrome MCP tools (global CLAUDE.md).
 - Nothing is committed. 20 older commits on this branch are also unpushed (see `THREAD.md`).
+
+## Repainting single poses and checking a sheet (2026-11-24)
+
+The Faro repaint (PR 19) got 8 of 19 cells right; the other 11 came back as the plain stance. Batches of six
+poses against a stance reference pull hard poses back to the stance. `paint.py --keys` repaints named cells one
+request each and `qa.py` checks a sheet. Research and sources: the Claude Doc "Thousand Fighters: sprite sheet QA".
+
+```bash
+# the 11 wrong Faro frames, up to 3 tries each, each try graded by the yes/no judge
+DOPPLER_CONFIG_DIR=$(mktemp -d) doppler run -- python3 paint.py art/faro-poses.png fighters/faro.png \
+  "Faro, the Drowned Keeper: a tall gaunt lighthouse keeper whose head is a glowing caged brass lantern, long dark teal oilskin coat, heavy boots, pale grey-blue hands, an anchor chain wrapped around one forearm" \
+  --fighter fighters/faro.json --keys hit,jp.w,jk.w,dive.w,dive.s,beam.w,tend.w,tend.s,glass.w,glass.s,swing.w \
+  --model gpt-image-2.5-sunburst --quality high --tries 3 --judge
+python3 qa.py art/faro-poses.png fighters/faro.png fighters/faro.json   # free checks, writes fighters/faro.qa/contact.png
+```
+
+- Add `--dry-run` first: it writes every guide, reference and prompt to the work dir and sends nothing.
+- `posedata.ts` turns the rig into per-cell data: joints in cell pixels, airborne or not, which moves use the
+  pose, a sentence describing the pose, and yes/no questions the rig already knows the answers to.
+- Each request sends three images: the sheet's own idle cell (the character as he already looks in game), the
+  nearest pose that is already painted (style only; `--no-near` drops it), and a stick figure with one colour per
+  limb (red left arm, blue right arm, green left leg, orange right leg, as seen facing right).
+- Each try is checked and the first that passes is kept. Without `--judge` only the free checks run, and they
+  do not catch a stance painted in place of a pose: on the labelled Faro cells (`art/faro-qa-labels.json`)
+  they flag 2 of the 11 wrong cells and none of the 8 right ones. The judge asks Claude the rig's questions
+  about each painted cell (`ANTHROPIC_API_KEY`; `--judge-model claude-haiku-5-5` is the cheap option).
+  Before trusting it, run `qa.py ... --calibrate art/faro-qa-labels.json --judge` (19 judge calls).
+- The free checks also flag `launch`, `down`, `rush.s` and `rise.s` touching their cell edge in the current sheet.
+- Background: single-pose requests ask the Images API for `background=transparent` (PNG), because the first
+  sunburst run painted 4 frames on dark backgrounds (black boxes after keying) and the rest with a pink glow.
+  OpenAI's edits reference lists transparent for gpt-image-2.5-sunburst and flare; gpt-image-2 has refused it
+  with a 400 since Sep 30 2026 (third-party report). On that 400, `--background auto` (the default) carries on
+  in magenta and logs it; `--background transparent` stops instead, `--background magenta` never asks. The
+  inputs stay on magenta and the prompt says to ignore it. Each run's background is in `<sheet>.paint.json`.
+- qa.py fails a `background box` (figure fills over 80% of its crop), a `glow` (over 7% pink/purple-tinted
+  pixels, or twice the sheet's median) and a `haze` (over 15% semi-transparent pixels). Faro's 68 cells top
+  out at 61%, 4.4% and 8%. The judge also asks whether the background is clean.
+- Clear cached tries (`<sheet>.work/pose_*`, `cell_*`) before re-running cells, or the old images are reused.
+- Cost: one image request per try, at most `cells x tries`; the work dir caches every try, so re-runs are free.
+  At 1024x1024 high, about $0.05 per image on gpt-image-2.5-sunburst and $0.21 on gpt-image-2 (third-party
+  calculator, Nov 2026), plus three reference images per request. For the 11 Faro frames: about $0.90 to $2.60 on
+  sunburst, $2.60 to $7.90 on gpt-image-2. The judge adds about $0.02 per try on claude-opus-5-5.
+  `gpt-image-2` is what painted Faro on Nov 9; sunburst is untested on him.

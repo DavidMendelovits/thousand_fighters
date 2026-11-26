@@ -54,5 +54,5 @@ tosses straight up into a free juggle.
 The rig is placeholder art and also the pose guide. Studio → Sprites → "Download pose sheet" gives a
 8×6 grid of 256px cells, one per key pose. Any image model that repaints that sheet as the character
 (same layout, flat background) produces a drop-in sheet: "Import painted sheet" keys out the
-background and the fighter renders from it. `python3 paint.py <pose sheet> fighters/<id>.png "<description>"` automates that: it paints six poses per
+background and the fighter renders from it. `python3 paint.py <pose sheet> fighters/<id>.png "<description>"` automates that (`--keys` repaints single cells, `qa.py` checks the result; see HANDOFF.md): it paints six poses per
 request against one character reference and snaps each result back onto the rig. Its provider is one function, `paint()`.

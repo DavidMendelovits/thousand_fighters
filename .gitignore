@@ -7,3 +7,5 @@ __pycache__/
 .DS_Store
 # paint.py intermediates
 *.work/
+# qa.py reports
+*.qa/
