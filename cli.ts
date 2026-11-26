@@ -11,6 +11,7 @@ import { design, rosterFighter } from './design'
 import type { FighterDef } from './kit'
 
 const dir = new URL('./fighters/', import.meta.url).pathname
+// fighters/<id>.paint.json is paint.py's run log beside the sheet, not a fighter
 const [cmd, arg] = process.argv.slice(2)
 const save = (d: FighterDef) => { mkdirSync(dir, { recursive: true }); writeFileSync(`${dir}${d.id}.json`, JSON.stringify(d, null, 2) + '\n') }
 
@@ -58,4 +59,4 @@ else if (cmd === 'legacy') {
   }
   console.log(`re-created ${n} legacy fighters`)
 }
-else report(readdirSync(dir).filter(f => f.endsWith('.json')).map(f => JSON.parse(readFileSync(dir + f, 'utf8'))))
+else report(readdirSync(dir).filter(f => f.endsWith('.json') && !f.endsWith('.paint.json')).map(f => JSON.parse(readFileSync(dir + f, 'utf8'))))

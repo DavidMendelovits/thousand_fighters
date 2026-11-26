@@ -4,6 +4,7 @@ import { defineConfig } from 'vite'
 import { readdirSync, readFileSync, writeFileSync, rmSync, mkdirSync } from 'node:fs'
 
 const dir = new URL('./fighters/', import.meta.url).pathname
+// fighters/<id>.paint.json is paint.py's run log beside the sheet, not a fighter
 mkdirSync(dir, { recursive: true })
 
 export default defineConfig({
@@ -13,7 +14,7 @@ export default defineConfig({
     name: 'fighters-api',
     generateBundle() {
       const files = readdirSync(dir)
-      const all = files.filter(f => f.endsWith('.json')).map(f => JSON.parse(readFileSync(dir + f, 'utf8')))
+      const all = files.filter(f => f.endsWith('.json') && !f.endsWith('.paint.json')).map(f => JSON.parse(readFileSync(dir + f, 'utf8')))
       this.emitFile({ type: 'asset', fileName: 'fighters.json', source: JSON.stringify(all) })
       for (const f of files) if (f.endsWith('.png')) this.emitFile({ type: 'asset', fileName: 'fighters/' + f, source: readFileSync(dir + f) })
     },
@@ -22,7 +23,7 @@ export default defineConfig({
         const [, kind, id] = (req.url ?? '').split('?')[0].split('/')
         const send = (code: number, body: unknown) => { res.statusCode = code; res.setHeader('content-type', 'application/json'); res.end(JSON.stringify(body)) }
         if (req.method === 'GET' && kind === 'fighters' && !id)
-          return send(200, readdirSync(dir).filter(f => f.endsWith('.json')).map(f => JSON.parse(readFileSync(dir + f, 'utf8'))))
+          return send(200, readdirSync(dir).filter(f => f.endsWith('.json') && !f.endsWith('.paint.json')).map(f => JSON.parse(readFileSync(dir + f, 'utf8'))))
         if (!/^[a-z0-9_]{1,40}$/.test(id ?? '') || (kind !== 'fighters' && kind !== 'atlas')) return send(400, { error: 'bad path' })
         if (req.method === 'DELETE') { rmSync(`${dir}${id}.json`, { force: true }); rmSync(`${dir}${id}.png`, { force: true }); return send(200, {}) }
         if (req.method !== 'PUT') return send(405, { error: 'method' })
