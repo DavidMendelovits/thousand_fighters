@@ -1,0 +1,605 @@
+{
+ "fighter": "faro",
+ "name": "Faro",
+ "bio": "Faro, the Drowned Keeper. A lighthouse keeper who went down with his light and walked back out of the sea wearing it: where his head should be there is a caged lamp, still burning. He fights at the end of an anchor chain. He drags you in from across the stage, sets mines and geysers where you want to stand, answers your attack through a pane of storm glass, and when he trims the wick the whole fight speeds up.",
+ "cell": 256,
+ "anchor": [
+  112,
+  238
+ ],
+ "idleIndex": 0,
+ "cells": [
+  {
+   "index": 0,
+   "key": "run0",
+   "pose": [
+    16,
+    -45,
+    25,
+    50,
+    140,
+    30,
+    10,
+    -35,
+    -80,
+    0,
+    0
+   ],
+   "air": false,
+   "joints": {
+    "hip": [
+     112,
+     152.4
+    ],
+    "neck": [
+     130.9,
+     86.7
+    ],
+    "sh": [
+     129,
+     93.2
+    ],
+    "head": [
+     136.5,
+     66.9
+    ],
+    "elF": [
+     101.9,
+     120.3
+    ],
+    "fiF": [
+     118.1,
+     155
+    ],
+    "elB": [
+     158.3,
+     117.9
+    ],
+    "fiB": [
+     182.9,
+     88.5
+    ],
+    "knF": [
+     135.1,
+     192.5
+    ],
+    "ftF": [
+     143.1,
+     238
+    ],
+    "knB": [
+     85.5,
+     190.3
+    ],
+    "ftB": [
+     39.9,
+     198.3
+    ]
+   },
+   "headR": 17.1,
+   "usedBy": [
+    "frame 1 of 8 of a running loop"
+   ],
+   "sentence": "Running, torso leaning forward. Stage: contact: front foot strikes the ground ahead, back leg just pushed off. The front leg here is the left (nearer) one; each arm swings opposite its leg, elbows bent about 90 degrees.",
+   "checks": []
+  },
+  {
+   "index": 1,
+   "key": "run1",
+   "pose": [
+    18,
+    -30,
+    45,
+    30,
+    120,
+    10,
+    -15,
+    -15,
+    -100,
+    0,
+    0
+   ],
+   "air": false,
+   "joints": {
+    "hip": [
+     112,
+     147.8
+    ],
+    "neck": [
+     133.1,
+     82.7
+    ],
+    "sh": [
+     131,
+     89.3
+    ],
+    "head": [
+     139.5,
+     63.2
+    ],
+    "elF": [
+     111.9,
+     122.4
+    ],
+    "fiF": [
+     139,
+     149.5
+    ],
+    "elB": [
+     150.2,
+     122.4
+    ],
+    "fiB": [
+     183.3,
+     103.3
+    ],
+    "knF": [
+     120,
+     193.3
+    ],
+    "ftF": [
+     108.1,
+     238
+    ],
+    "knB": [
+     100,
+     192.5
+    ],
+    "ftB": [
+     54.5,
+     184.4
+    ]
+   },
+   "headR": 17.1,
+   "usedBy": [
+    "frame 2 of 8 of a running loop"
+   ],
+   "sentence": "Running, torso leaning forward. Stage: down: weight lands on the front foot, knee bent, back heel kicks up. The front leg here is the left (nearer) one; each arm swings opposite its leg, elbows bent about 90 degrees.",
+   "checks": []
+  },
+  {
+   "index": 2,
+   "key": "run2",
+   "pose": [
+    16,
+    10,
+    100,
+    0,
+    90,
+    -10,
+    -25,
+    35,
+    -70,
+    0,
+    0
+   ],
+   "air": false,
+   "joints": {
+    "hip": [
+     112,
+     150.6
+    ],
+    "neck": [
+     130.9,
+     84.8
+    ],
+    "sh": [
+     129,
+     91.4
+    ],
+    "head": [
+     136.5,
+     65.1
+    ],
+    "elF": [
+     135.6,
+     129.1
+    ],
+    "fiF": [
+     173.3,
+     122.5
+    ],
+    "elB": [
+     129,
+     129.7
+    ],
+    "fiB": [
+     167.3,
+     129.7
+    ],
+    "knF": [
+     104,
+     196.1
+    ],
+    "ftF": [
+     84.4,
+     238
+    ],
+    "knB": [
+     138.5,
+     188.4
+    ],
+    "ftB": [
+     95.1,
+     204.2
+    ]
+   },
+   "headR": 17.1,
+   "usedBy": [
+    "frame 3 of 8 of a running loop"
+   ],
+   "sentence": "Running, torso leaning forward. Stage: passing: standing leg straight under the hips, back leg swings through bent. The front leg here is the right (farther) one; each arm swings opposite its leg, elbows bent about 90 degrees.",
+   "checks": []
+  },
+  {
+   "index": 3,
+   "key": "run3",
+   "pose": [
+    14,
+    40,
+    130,
+    -45,
+    25,
+    -30,
+    -35,
+    70,
+    -40,
+    0,
+    0
+   ],
+   "air": true,
+   "joints": {
+    "hip": [
+     112,
+     160.1
+    ],
+    "neck": [
+     128.5,
+     93.7
+    ],
+    "sh": [
+     126.9,
+     100.3
+    ],
+    "head": [
+     133.5,
+     73.8
+    ],
+    "elF": [
+     151.5,
+     129.7
+    ],
+    "fiF": [
+     180.9,
+     105.1
+    ],
+    "elB": [
+     99.8,
+     127.4
+    ],
+    "fiB": [
+     116,
+     162.1
+    ],
+    "knF": [
+     88.9,
+     200.1
+    ],
+    "ftF": [
+     62.4,
+     238
+    ],
+    "knB": [
+     155.4,
+     175.9
+    ],
+    "ftB": [
+     125.7,
+     211.3
+    ]
+   },
+   "headR": 17.1,
+   "usedBy": [
+    "frame 4 of 8 of a running loop"
+   ],
+   "sentence": "Running, torso leaning forward. Stage: up: standing leg pushes off behind, swinging knee drives up high, both feet nearly off the ground. The front leg here is the right (farther) one; each arm swings opposite its leg, elbows bent about 90 degrees.",
+   "checks": []
+  },
+  {
+   "index": 4,
+   "key": "run4",
+   "pose": [
+    16,
+    50,
+    140,
+    -45,
+    25,
+    -35,
+    -80,
+    30,
+    10,
+    0,
+    0
+   ],
+   "air": false,
+   "joints": {
+    "hip": [
+     112,
+     152.4
+    ],
+    "neck": [
+     130.9,
+     86.7
+    ],
+    "sh": [
+     129,
+     93.2
+    ],
+    "head": [
+     136.5,
+     66.9
+    ],
+    "elF": [
+     158.3,
+     117.9
+    ],
+    "fiF": [
+     182.9,
+     88.5
+    ],
+    "elB": [
+     101.9,
+     120.3
+    ],
+    "fiB": [
+     118.1,
+     155
+    ],
+    "knF": [
+     85.5,
+     190.3
+    ],
+    "ftF": [
+     39.9,
+     198.3
+    ],
+    "knB": [
+     135.1,
+     192.5
+    ],
+    "ftB": [
+     143.1,
+     238
+    ]
+   },
+   "headR": 17.1,
+   "usedBy": [
+    "frame 5 of 8 of a running loop"
+   ],
+   "sentence": "Running, torso leaning forward. Stage: contact: back foot strikes the ground ahead, front leg just pushed off. The front leg here is the right (farther) one; each arm swings opposite its leg, elbows bent about 90 degrees.",
+   "checks": []
+  },
+  {
+   "index": 5,
+   "key": "run5",
+   "pose": [
+    18,
+    30,
+    120,
+    -30,
+    45,
+    -15,
+    -100,
+    10,
+    -15,
+    0,
+    0
+   ],
+   "air": false,
+   "joints": {
+    "hip": [
+     112,
+     147.8
+    ],
+    "neck": [
+     133.1,
+     82.7
+    ],
+    "sh": [
+     131,
+     89.3
+    ],
+    "head": [
+     139.5,
+     63.2
+    ],
+    "elF": [
+     150.2,
+     122.4
+    ],
+    "fiF": [
+     183.3,
+     103.3
+    ],
+    "elB": [
+     111.9,
+     122.4
+    ],
+    "fiB": [
+     139,
+     149.5
+    ],
+    "knF": [
+     100,
+     192.5
+    ],
+    "ftF": [
+     54.5,
+     184.4
+    ],
+    "knB": [
+     120,
+     193.3
+    ],
+    "ftB": [
+     108.1,
+     238
+    ]
+   },
+   "headR": 17.1,
+   "usedBy": [
+    "frame 6 of 8 of a running loop"
+   ],
+   "sentence": "Running, torso leaning forward. Stage: down: weight lands on the back foot, knee bent, front heel kicks up. The front leg here is the right (farther) one; each arm swings opposite its leg, elbows bent about 90 degrees.",
+   "checks": []
+  },
+  {
+   "index": 6,
+   "key": "run6",
+   "pose": [
+    16,
+    0,
+    90,
+    10,
+    100,
+    35,
+    -70,
+    -10,
+    -25,
+    0,
+    0
+   ],
+   "air": false,
+   "joints": {
+    "hip": [
+     112,
+     150.6
+    ],
+    "neck": [
+     130.9,
+     84.8
+    ],
+    "sh": [
+     129,
+     91.4
+    ],
+    "head": [
+     136.5,
+     65.1
+    ],
+    "elF": [
+     129,
+     129.7
+    ],
+    "fiF": [
+     167.3,
+     129.7
+    ],
+    "elB": [
+     135.6,
+     129.1
+    ],
+    "fiB": [
+     173.3,
+     122.5
+    ],
+    "knF": [
+     138.5,
+     188.4
+    ],
+    "ftF": [
+     95.1,
+     204.2
+    ],
+    "knB": [
+     104,
+     196.1
+    ],
+    "ftB": [
+     84.4,
+     238
+    ]
+   },
+   "headR": 17.1,
+   "usedBy": [
+    "frame 7 of 8 of a running loop"
+   ],
+   "sentence": "Running, torso leaning forward. Stage: passing: standing leg straight under the hips, front leg swings through bent. The front leg here is the left (nearer) one; each arm swings opposite its leg, elbows bent about 90 degrees.",
+   "checks": []
+  },
+  {
+   "index": 7,
+   "key": "run7",
+   "pose": [
+    14,
+    -45,
+    25,
+    40,
+    130,
+    70,
+    -40,
+    -30,
+    -35,
+    0,
+    0
+   ],
+   "air": true,
+   "joints": {
+    "hip": [
+     112,
+     160.1
+    ],
+    "neck": [
+     128.5,
+     93.7
+    ],
+    "sh": [
+     126.9,
+     100.3
+    ],
+    "head": [
+     133.5,
+     73.8
+    ],
+    "elF": [
+     99.8,
+     127.4
+    ],
+    "fiF": [
+     116,
+     162.1
+    ],
+    "elB": [
+     151.5,
+     129.7
+    ],
+    "fiB": [
+     180.9,
+     105.1
+    ],
+    "knF": [
+     155.4,
+     175.9
+    ],
+    "ftF": [
+     125.7,
+     211.3
+    ],
+    "knB": [
+     88.9,
+     200.1
+    ],
+    "ftB": [
+     62.4,
+     238
+    ]
+   },
+   "headR": 17.1,
+   "usedBy": [
+    "frame 8 of 8 of a running loop"
+   ],
+   "sentence": "Running, torso leaning forward. Stage: up: standing leg pushes off behind, swinging knee drives up high, both feet nearly off the ground. The front leg here is the left (nearer) one; each arm swings opposite its leg, elbows bent about 90 degrees.",
+   "checks": []
+  }
+ ]
+}

@@ -20,7 +20,8 @@ right leg orange, so the model can't swap or mirror limbs). The prompt describes
 Each try is checked (qa.py's structural checks, plus the yes/no pose judge with --judge) and the first one that
 passes is kept; if none passes, the best try goes in and the cell is listed as failing.
 
-The image model is always explicit: --model or OPENAI_IMAGE_MODEL. Every run is recorded next to the sheet in
+The image model is always explicit: --model or OPENAI_IMAGE_MODEL. A gemini-* model (gemini-nano-banana-2.1) paints through
+Google's Gemini API with GEMINI_API_KEY instead, always on magenta. Every run is recorded next to the sheet in
 <out_sheet>.paint.json (model, quality, mode, cells, time) and, in more detail, in the work dir's run.json.
 Single poses ask the Images API for a transparent background (--background auto, the default); if the model
 refuses it (gpt-image-2 does), the run carries on with a magenta background and keying, and logs that.
@@ -54,25 +55,57 @@ class BackgroundUnsupported(RuntimeError):
     """The API refused background=transparent for this model (gpt-image-2 has returned 400 for it since Sep 30 2026)."""
 
 
+def gemini(args):
+    """True when this run paints with Google's Gemini image models (--model gemini-..., needs GEMINI_API_KEY)."""
+    return bool(args.model and args.model.startswith('gemini'))
+
+
 def background(args):
     """'transparent' or 'magenta' for this run's single-pose requests. auto = transparent through the Images API,
-    magenta through codex (which can't ask for it)."""
-    if not os.environ.get('OPENAI_API_KEY'): return 'magenta'
+    magenta through codex and Gemini (which can't ask for it)."""
+    if gemini(args) or not os.environ.get('OPENAI_API_KEY'): return 'magenta'
     return 'transparent' if args.background in ('auto', 'transparent') else 'magenta'
 
 
 def provider(args):
-    """Which model paints, as recorded: 'openai:<model>' or 'codex:<model or default>'."""
+    """Which model paints, as recorded: 'gemini:<model>', 'openai:<model>' or 'codex:<model or default>'."""
+    if gemini(args):
+        if not os.environ.get('GEMINI_API_KEY'): sys.exit(f'{args.model} needs GEMINI_API_KEY.')
+        return f'gemini:{args.model}'
     if os.environ.get('OPENAI_API_KEY'):
         if not args.model: sys.exit('Set the image model: --model <name> or OPENAI_IMAGE_MODEL (gpt-image-1 was shut down Oct 2026).')
         return f'openai:{args.model}'
     return 'codex:' + (os.environ.get('CODEX_MODEL') or 'default')
 
 
+ASPECT = {'1024x1024': '1:1', '1536x1024': '3:2', '1024x1536': '2:3'}
+
+
+def paint_gemini(prompt, images, out, size, args):
+    """Gemini image models (e.g. gemini-nano-banana-2.1, up to 14 reference images) through generateContent.
+    GEMINI_BASE_URL overrides the API root. The prompt goes first, then each image as an inline PNG part."""
+    base = os.environ.get('GEMINI_BASE_URL', 'https://generativelanguage.googleapis.com/v1').rstrip('/')
+    parts = [{'text': prompt}] + [{'inline_data': {'mime_type': 'image/png', 'data': base64.b64encode(open(i, 'rb').read()).decode()}} for i in images]
+    body = {'contents': [{'parts': parts}],
+            'generationConfig': {'responseModalities': ['IMAGE'], 'imageConfig': {'aspectRatio': ASPECT.get(size, '1:1'), 'imageSize': '1K'}}}
+    req = f'{args.work}/.gemini_request.json'; json.dump(body, open(req, 'w'))  # too big for argv
+    cmd = ['curl', '-sS', '--max-time', '600', '-X', 'POST', '-H', f'x-goog-api-key: {os.environ["GEMINI_API_KEY"]}',
+           '-H', 'Content-Type: application/json', '--data-binary', f'@{req}', f'{base}/models/{args.model}:generateContent']
+    res = json.loads(subprocess.run(cmd, capture_output=True, text=True).stdout or '{}')
+    os.remove(req)
+    for part in ((res.get('candidates') or [{}])[0].get('content') or {}).get('parts', []):
+        blob = part.get('inlineData') or part.get('inline_data')
+        if blob and not part.get('thought'):
+            Image.open(__import__('io').BytesIO(base64.b64decode(blob['data']))).convert('RGB').save(out); return
+    raise RuntimeError(str(res.get('error') or res.get('promptFeedback') or res)[:300])
+
+
 def paint(prompt, images, out, size, args):
     """Provider seam: (prompt, input image paths, output path, size).
-    With OPENAI_API_KEY set this calls the Images API at OPENAI_BASE_URL (default api.openai.com) with --model;
+    --model gemini-* calls Google's generateContent with GEMINI_API_KEY (paint_gemini).
+    Otherwise, with OPENAI_API_KEY set this calls the Images API at OPENAI_BASE_URL (default api.openai.com) with --model;
     otherwise the codex CLI (CODEX_MODEL to pick its model)."""
+    if gemini(args): return paint_gemini(prompt, images, out, size, args)
     key_ = os.environ.get('OPENAI_API_KEY')
     if key_:
         base = os.environ.get('OPENAI_BASE_URL', 'https://api.openai.com/v1').rstrip('/')
@@ -155,7 +188,7 @@ def place(fig, want, s, size):
 def record(args, mode, cells, extra=None):
     """Append this run to <out_sheet>.paint.json (committed with the sheet) and write the work dir's run.json."""
     entry = {'when': datetime.datetime.now().astimezone().isoformat(timespec='seconds'), 'mode': mode, 'provider': provider(args),
-             'quality': args.quality, 'base_url': os.environ.get('OPENAI_BASE_URL', 'https://api.openai.com/v1') if os.environ.get('OPENAI_API_KEY') else None,
+             'quality': args.quality, 'base_url': None if gemini(args) else os.environ.get('OPENAI_BASE_URL', 'https://api.openai.com/v1') if os.environ.get('OPENAI_API_KEY') else None,
              'cells': cells, **(extra or {})}
     side = os.path.splitext(args.out_sheet)[0] + '.paint.json'
     log = json.load(open(side)) if os.path.exists(side) else []
@@ -366,7 +399,7 @@ def main():
     ap.add_argument('rig_sheet'); ap.add_argument('out_sheet'); ap.add_argument('desc')
     ap.add_argument('workdir', nargs='?', help='same as --work (kept for old commands)')
     ap.add_argument('--work', help='cache dir (default <out_sheet>.work)')
-    ap.add_argument('--model', default=os.environ.get('OPENAI_IMAGE_MODEL'), help='image model (default: OPENAI_IMAGE_MODEL); required with OPENAI_API_KEY')
+    ap.add_argument('--model', default=os.environ.get('OPENAI_IMAGE_MODEL'), help='image model (default: OPENAI_IMAGE_MODEL); required with OPENAI_API_KEY; gemini-* (e.g. gemini-nano-banana-2.1) uses GEMINI_API_KEY')
     ap.add_argument('--quality', help='image quality to request (low, medium, high); omitted = the API default')
     ap.add_argument('--fighter', help='fighter JSON; with --keys, repaints single poses')
     ap.add_argument('--keys', help='comma-separated sheet keys to repaint, e.g. hit,jp.w,tend.s')

@@ -9,3 +9,7 @@ __pycache__/
 *.work/
 # qa.py reports
 *.qa/
+# run-cycle test: per-model request caches and regenerated guides (strips and GIFs are kept)
+runtest/out/*/
+runtest/out/guide_*.png
+runtest/out/ref_*.png
