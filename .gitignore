@@ -9,3 +9,5 @@ __pycache__/
 *.work/
 # qa.py reports
 *.qa/
+# bakeoff.py output (report.md and contact.png are small; commit one by hand if it is worth keeping)
+bakeoff/
