@@ -123,6 +123,20 @@ export function validate(def: FighterDef, ref: FighterDef = REF): { ok: boolean;
   }
   add('Command normals come out after walking', [...new Set(walked)])
 
+  // 4e. a motion rolled through its diagonals (↓ ↘ →, as a stick or thumb does) comes out as itself, even with full
+  // meter: a diagonal must not count twice and turn a quarter circle into a double quarter circle super
+  const rolled: string[] = []
+  for (const m of Object.values(C.moves)) {
+    if (!m.motion || !m.btn || m.air || m.from || m.stringOnly || m.needs) continue
+    const bit = (d: string) => d === 'd' ? D : d === 'u' ? U : d === 'f' ? R : L
+    const dirs = m.motion.map(bit), script: number[] = []
+    dirs.forEach((b, i) => { script.push(b, b); const nx = dirs[i + 1]; if (nx && (b | nx) !== (L | R) && (b | nx) !== (U | D)) script.push(b | nx, b | nx) })
+    script.push(dirs[dirs.length - 1] | BIT[m.btn] | (m.chord ? BIT[m.chord] : 0))
+    const first = [...run(def, ref, 300, script, [], script.length + 6).seen][0]
+    if (first !== m.id) rolled.push(`${cmdOf(m, C.moves)} rolled through diagonals gave ${first ? C.moves[first].name : 'nothing'}, not ${m.name}`)
+  }
+  add('Motions rolled through diagonals come out as themselves', rolled)
+
   // 4d. a grounded normal cancels into a special on contact
   const specials = Object.values(C.moves).filter(m => isSpecial(m) && m.btn && !m.air && !m.from && !m.stringOnly && !m.cost && !m.needs)
   if (specials.length) {

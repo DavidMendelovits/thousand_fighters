@@ -120,14 +120,18 @@ const dirBit = (f: Fighter, d: string) => d === 'd' ? D : d === 'u' ? U : (d ===
 /** A motion's first direction, when it is forward or back, must be a tap: held longer than this, it was a walk. */
 export const MOTION_TAP = 10
 function motion(f: Fighter, dirs: string[]) { // each direction held in order, the last within 12 ticks of the button
-  let k = dirs.length - 1, limit = 12
-  for (let t = 0; t < 40 && t <= limit; t++) if (f.hist[t] & dirBit(f, dirs[k])) {
+  // skip: once a direction matches, the ticks still holding it belong to it. Without this one diagonal counts
+  // twice, so ↓ ↘ → read as ↓ → ↓ → and a quarter circle with full meter came out as the super.
+  let k = dirs.length - 1, limit = 12, skip = 0
+  for (let t = 0; t < 40 && t <= limit; t++) {
+    if (skip) { if (f.hist[t] & skip) continue; skip = 0 }
+    if (!(f.hist[t] & dirBit(f, dirs[k]))) continue
     if (k === 0) { // walking back then pressing f+HP is a command normal, not a back-forward special
       if (dirs[0] === 'd') return true
       let held = 0; while (t + held < 40 && f.hist[t + held] & dirBit(f, dirs[0])) held++
       return held <= MOTION_TAP
     }
-    k--; limit = t + 10
+    skip = dirBit(f, dirs[k]); k--; limit = t + 10
   }
   return false
 }
