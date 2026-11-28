@@ -1,0 +1,1260 @@
+{
+  "id": "palimpsest",
+  "name": "Palimpsest",
+  "bio": "Palimpsest. A painting that was painted over so many times it started moving: a spiral of crimson, lavender and ochre pigment held together by currents, with no bones to speak of. It fights with borrowed hands, painted ones that come at you from in front, above, behind, underneath or through a frame. It seeps into the floor and comes up somewhere else, leaves wet paint where you want to stand, and when it scrapes itself back to the canvas it takes some of you with it.",
+  "look": {
+    "skin": "#e0a849",
+    "main": "#b8323f",
+    "alt": "#7d68ad",
+    "trim": "#f2e6c9",
+    "height": 1.1,
+    "bulk": 1.35,
+    "arms": 1.01,
+    "legs": 1.07,
+    "head": "round",
+    "hair": "long",
+    "hat": "none",
+    "cape": true
+  },
+  "stats": {
+    "hp": 1120,
+    "speed": 0.86,
+    "power": 1.06,
+    "jump": 0.95
+  },
+  "strings": [
+    [
+      "lp",
+      "lp",
+      "hp"
+    ],
+    [
+      "lp",
+      "lk",
+      "hk"
+    ],
+    [
+      "hp",
+      "hp",
+      "wring"
+    ],
+    [
+      "lk",
+      "flick",
+      "stroke"
+    ],
+    [
+      "lp",
+      "hp",
+      "hand"
+    ],
+    [
+      "hk",
+      "hk"
+    ]
+  ],
+  "moves": [
+    {
+      "id": "hand",
+      "name": "Borrowed Hand",
+      "motion": [
+        "d",
+        "f"
+      ],
+      "btn": "lp",
+      "su": 12,
+      "ac": 1,
+      "rc": 24,
+      "pose": "beckon",
+      "proj": [
+        {
+          "at": 12,
+          "x": 40,
+          "vx": 7.5,
+          "dmg": 60,
+          "hs": 19,
+          "bs": 13,
+          "kb": 6,
+          "size": 16,
+          "color": "#e8b04a",
+          "shape": "hand"
+        }
+      ]
+    },
+    {
+      "id": "handup",
+      "name": "Hand from Above",
+      "motion": [
+        "d",
+        "f"
+      ],
+      "btn": "hp",
+      "su": 14,
+      "ac": 1,
+      "rc": 24,
+      "pose": "conjure",
+      "proj": [
+        {
+          "at": 10,
+          "from": "above",
+          "warn": 16,
+          "vx": 0,
+          "vy": -13,
+          "dmg": 75,
+          "lvl": "oh",
+          "launch": [
+            1.5,
+            7
+          ],
+          "size": 18,
+          "color": "#c8324a",
+          "shape": "hand"
+        }
+      ]
+    },
+    {
+      "id": "handback",
+      "name": "Hand from Behind",
+      "motion": [
+        "d",
+        "b"
+      ],
+      "btn": "lp",
+      "su": 13,
+      "ac": 1,
+      "rc": 26,
+      "pose": "conjure",
+      "proj": [
+        {
+          "at": 12,
+          "from": "behind",
+          "warn": 10,
+          "vx": 9,
+          "dmg": 55,
+          "size": 16,
+          "color": "#9b85c4",
+          "shape": "hand"
+        }
+      ]
+    },
+    {
+      "id": "handlow",
+      "name": "Hand from Below",
+      "motion": [
+        "d",
+        "b"
+      ],
+      "btn": "hp",
+      "su": 18,
+      "ac": 1,
+      "rc": 22,
+      "pose": "sink",
+      "base": "crouch",
+      "proj": [
+        {
+          "at": 14,
+          "from": "below",
+          "warn": 10,
+          "vx": 0,
+          "vy": 8,
+          "life": 22,
+          "dmg": 70,
+          "launch": [
+            0,
+            11
+          ],
+          "size": 26,
+          "color": "#e8b04a",
+          "shape": "hand"
+        }
+      ]
+    },
+    {
+      "id": "frame",
+      "name": "Through the Frame",
+      "motion": [
+        "f",
+        "d"
+      ],
+      "btn": "lp",
+      "su": 13,
+      "ac": 1,
+      "rc": 28,
+      "pose": "beckon",
+      "proj": [
+        {
+          "at": 13,
+          "x": 40,
+          "vx": 8,
+          "dmg": 60,
+          "size": 16,
+          "portal": {
+            "at": 14,
+            "to": "behind",
+            "speed": 9
+          },
+          "color": "#9b85c4",
+          "shape": "hand"
+        }
+      ]
+    },
+    {
+      "id": "reach",
+      "name": "Long Reach",
+      "motion": [
+        "b",
+        "f"
+      ],
+      "btn": "hp",
+      "su": 14,
+      "ac": 1,
+      "rc": 30,
+      "pose": "beckon",
+      "proj": [
+        {
+          "at": 14,
+          "x": 40,
+          "vx": 13,
+          "life": 24,
+          "dmg": 30,
+          "pull": 38,
+          "size": 16,
+          "color": "#e8b04a",
+          "shape": "reach"
+        }
+      ]
+    },
+    {
+      "id": "fallhand",
+      "name": "Falling Hand",
+      "air": true,
+      "motion": [
+        "d",
+        "f"
+      ],
+      "btn": "lp",
+      "su": 8,
+      "ac": 99,
+      "rc": 0,
+      "land": 8,
+      "pose": "conjure",
+      "base": "air",
+      "proj": [
+        {
+          "at": 8,
+          "x": 40,
+          "y": 70,
+          "vx": 7,
+          "vy": -6,
+          "dmg": 55,
+          "hs": 20,
+          "size": 16,
+          "color": "#c8324a",
+          "shape": "hand"
+        }
+      ]
+    },
+    {
+      "id": "slide",
+      "name": "Spill",
+      "motion": [
+        "b",
+        "f"
+      ],
+      "btn": "lk",
+      "su": 8,
+      "ac": 14,
+      "rc": 18,
+      "dmg": 70,
+      "bs": 14,
+      "lvl": "low",
+      "limb": "legF",
+      "r": 13,
+      "stop": 8,
+      "launch": [
+        2.5,
+        5.5
+      ],
+      "pose": "sweep",
+      "base": "crouch",
+      "crouch": true,
+      "drive": [
+        {
+          "from": 8,
+          "to": 22,
+          "vx": 9
+        }
+      ]
+    },
+    {
+      "id": "seep",
+      "name": "Seep",
+      "motion": [
+        "d",
+        "b"
+      ],
+      "btn": "lk",
+      "su": 10,
+      "ac": 1,
+      "rc": 14,
+      "pose": "sink",
+      "base": "crouch",
+      "inv": [
+        3,
+        16
+      ],
+      "teleport": {
+        "at": 10,
+        "to": "behind",
+        "dx": 80
+      }
+    },
+    {
+      "id": "soak",
+      "name": "Soak Through",
+      "motion": [
+        "d",
+        "b"
+      ],
+      "btn": "hk",
+      "su": 10,
+      "ac": 1,
+      "rc": 16,
+      "pose": "sink",
+      "base": "crouch",
+      "inv": [
+        3,
+        16
+      ],
+      "teleport": {
+        "at": 10,
+        "to": "front",
+        "dx": 70
+      }
+    },
+    {
+      "id": "fountain",
+      "name": "Fountain",
+      "motion": [
+        "f",
+        "d"
+      ],
+      "btn": "hp",
+      "su": 5,
+      "ac": 99,
+      "rc": 0,
+      "land": 20,
+      "dmg": 95,
+      "bs": 16,
+      "limb": "armF",
+      "r": 24,
+      "stop": 11,
+      "launch": [
+        2,
+        12.5
+      ],
+      "pose": "pour",
+      "base": "crouch",
+      "inv": [
+        0,
+        8
+      ],
+      "rehit": 6,
+      "drive": [
+        {
+          "from": 5,
+          "to": 6,
+          "vx": 2,
+          "vy": 12.5
+        }
+      ]
+    },
+    {
+      "id": "tide",
+      "name": "Tidal Smear",
+      "motion": [
+        "b",
+        "f"
+      ],
+      "btn": "hk",
+      "su": 10,
+      "ac": 14,
+      "rc": 22,
+      "dmg": 35,
+      "hs": 16,
+      "bs": 12,
+      "limb": "armF",
+      "r": 18,
+      "kb": 2,
+      "stop": 5,
+      "rehit": 5,
+      "launch": [
+        6,
+        7
+      ],
+      "pose": "smear",
+      "drive": [
+        {
+          "from": 8,
+          "to": 24,
+          "vx": 8.5
+        }
+      ]
+    },
+    {
+      "id": "wetpaint",
+      "name": "Wet Paint",
+      "motion": [
+        "f",
+        "d",
+        "b"
+      ],
+      "btn": "lp",
+      "su": 14,
+      "ac": 1,
+      "rc": 20,
+      "pose": "mix",
+      "base": "crouch",
+      "proj": [
+        {
+          "at": 14,
+          "x": 150,
+          "y": 10,
+          "vx": 0,
+          "life": 420,
+          "dmg": 60,
+          "lvl": "low",
+          "launch": [
+            1,
+            9
+          ],
+          "w": 30,
+          "h": 10,
+          "size": 18,
+          "color": "#c8324a",
+          "shape": "splat"
+        }
+      ]
+    },
+    {
+      "id": "wrap",
+      "name": "Canvas Wrap",
+      "motion": [
+        "f",
+        "d",
+        "b"
+      ],
+      "btn": "hp",
+      "su": 6,
+      "ac": 22,
+      "rc": 18,
+      "dmg": 165,
+      "grab": {
+        "range": 24
+      },
+      "launch": [
+        3,
+        10
+      ],
+      "stop": 12,
+      "pose": "wrap"
+    },
+    {
+      "id": "knife",
+      "name": "Palette Knife",
+      "motion": [
+        "f",
+        "d"
+      ],
+      "btn": "lk",
+      "su": 6,
+      "ac": 16,
+      "rc": 20,
+      "dmg": 105,
+      "grab": {
+        "range": 60,
+        "air": true,
+        "juggle": true
+      },
+      "launch": [
+        1,
+        11
+      ],
+      "stop": 10,
+      "pose": "beckon"
+    },
+    {
+      "id": "varnish",
+      "name": "Varnish",
+      "dir": "b",
+      "btn": "lk",
+      "su": 2,
+      "ac": 18,
+      "rc": 16,
+      "pose": "varnish",
+      "counter": {
+        "from": 2,
+        "to": 20,
+        "then": "peel"
+      }
+    },
+    {
+      "id": "peel",
+      "name": "Peel Back",
+      "su": 4,
+      "ac": 5,
+      "rc": 22,
+      "dmg": 115,
+      "limb": "armF",
+      "r": 24,
+      "stop": 12,
+      "launch": [
+        2,
+        13
+      ],
+      "pose": "pour",
+      "base": "crouch"
+    },
+    {
+      "id": "impasto",
+      "name": "Thick Impasto",
+      "dir": "b",
+      "btn": "hp",
+      "su": 18,
+      "ac": 4,
+      "rc": 22,
+      "dmg": 115,
+      "bs": 18,
+      "limb": "armF",
+      "r": 16,
+      "stop": 12,
+      "launch": [
+        9,
+        6
+      ],
+      "armor": 1,
+      "pose": "wrap"
+    },
+    {
+      "id": "mix",
+      "name": "Mix the Palette",
+      "dir": "b",
+      "btn": "lp",
+      "su": 26,
+      "ac": 1,
+      "rc": 16,
+      "meter": 30,
+      "pose": "mix"
+    },
+    {
+      "id": "coat",
+      "name": "Fresh Coat",
+      "motion": [
+        "d",
+        "f"
+      ],
+      "btn": "lk",
+      "cost": 50,
+      "su": 20,
+      "ac": 1,
+      "rc": 14,
+      "pose": "conjure",
+      "buff": {
+        "ticks": 600,
+        "power": 1.1,
+        "defense": 1.3,
+        "speed": 1.1,
+        "color": "#f0a8c8"
+      }
+    },
+    {
+      "id": "master",
+      "name": "Masterstroke",
+      "motion": [
+        "d",
+        "f"
+      ],
+      "btn": "hk",
+      "needs": "buff",
+      "su": 10,
+      "ac": 1,
+      "rc": 28,
+      "pose": "stroke",
+      "proj": [
+        {
+          "at": 10,
+          "x": 40,
+          "y": 40,
+          "vx": 6,
+          "dmg": 45,
+          "hits": 2,
+          "size": 14,
+          "grow": [
+            0.9,
+            1.4
+          ],
+          "max": [
+            42,
+            60
+          ],
+          "life": 70,
+          "color": "#f0a8c8",
+          "shape": "splat"
+        }
+      ]
+    },
+    {
+      "id": "flick",
+      "name": "Flick",
+      "dir": "f",
+      "btn": "lp",
+      "su": 7,
+      "ac": 3,
+      "rc": 13,
+      "dmg": 40,
+      "hs": 17,
+      "bs": 11,
+      "limb": "armF",
+      "r": 12,
+      "kb": 5,
+      "stop": 6,
+      "pose": "flick"
+    },
+    {
+      "id": "stroke",
+      "name": "Broad Stroke",
+      "dir": "f",
+      "btn": "hk",
+      "su": 11,
+      "ac": 4,
+      "rc": 18,
+      "dmg": 60,
+      "hs": 22,
+      "bs": 14,
+      "limb": "armF",
+      "r": 16,
+      "kb": 3,
+      "stop": 7,
+      "pose": "stroke",
+      "drive": [
+        {
+          "from": 4,
+          "to": 12,
+          "vx": 5
+        }
+      ]
+    },
+    {
+      "id": "hatch",
+      "name": "Cross Hatch",
+      "from": [
+        "stroke"
+      ],
+      "btn": "hk",
+      "su": 8,
+      "ac": 4,
+      "rc": 20,
+      "dmg": 50,
+      "hs": 22,
+      "bs": 14,
+      "limb": "armF",
+      "r": 15,
+      "kb": 3,
+      "stop": 7,
+      "pose": "hatch",
+      "drive": [
+        {
+          "from": 2,
+          "to": 9,
+          "vx": 4
+        }
+      ]
+    },
+    {
+      "id": "sign",
+      "name": "Signature",
+      "from": [
+        "hatch"
+      ],
+      "btn": "hk",
+      "su": 12,
+      "ac": 4,
+      "rc": 22,
+      "dmg": 85,
+      "bs": 15,
+      "lvl": "oh",
+      "limb": "armF",
+      "r": 17,
+      "stop": 10,
+      "launch": [
+        5,
+        6
+      ],
+      "pose": "sign",
+      "drive": [
+        {
+          "from": 2,
+          "to": 9,
+          "vx": 4
+        }
+      ]
+    },
+    {
+      "id": "under",
+      "name": "Underdrawing",
+      "from": [
+        "stroke",
+        "hatch"
+      ],
+      "btn": "hk",
+      "dir": "d",
+      "su": 10,
+      "ac": 4,
+      "rc": 24,
+      "dmg": 60,
+      "bs": 12,
+      "lvl": "low",
+      "limb": "legF",
+      "r": 13,
+      "stop": 8,
+      "launch": [
+        2.5,
+        5.5
+      ],
+      "pose": "sweep",
+      "base": "crouch",
+      "crouch": true,
+      "drive": [
+        {
+          "from": 2,
+          "to": 9,
+          "vx": 4
+        }
+      ]
+    },
+    {
+      "id": "drip",
+      "name": "Drip Drop",
+      "air": true,
+      "dir": "d",
+      "btn": "lk",
+      "or": "hk",
+      "su": 5,
+      "ac": 99,
+      "rc": 0,
+      "land": 10,
+      "dmg": 60,
+      "hs": 20,
+      "bs": 12,
+      "limb": "armF",
+      "r": 15,
+      "stop": 7,
+      "pose": "drip",
+      "base": "air",
+      "drive": [
+        {
+          "from": 5,
+          "to": 99,
+          "vx": 6,
+          "vy": -10
+        }
+      ]
+    },
+    {
+      "id": "wring",
+      "name": "Wring Out",
+      "btn": "hp",
+      "stringOnly": true,
+      "su": 6,
+      "ac": 4,
+      "rc": 22,
+      "dmg": 70,
+      "limb": "armF",
+      "r": 24,
+      "stop": 9,
+      "launch": [
+        1,
+        12
+      ],
+      "pose": "upper",
+      "base": "crouch"
+    },
+    {
+      "id": "layers",
+      "name": "Every Layer at Once",
+      "motion": [
+        "d",
+        "f",
+        "d",
+        "f"
+      ],
+      "btn": "hp",
+      "cost": 100,
+      "su": 14,
+      "ac": 1,
+      "rc": 40,
+      "pose": "conjure",
+      "inv": [
+        0,
+        20
+      ],
+      "proj": [
+        {
+          "at": 14,
+          "x": 40,
+          "vx": 8,
+          "dmg": 45,
+          "size": 18,
+          "stop": 6,
+          "color": "#e8b04a",
+          "shape": "hand"
+        },
+        {
+          "at": 18,
+          "from": "above",
+          "warn": 8,
+          "vx": 0,
+          "vy": -14,
+          "dmg": 45,
+          "size": 18,
+          "stop": 6,
+          "color": "#c8324a",
+          "shape": "hand"
+        },
+        {
+          "at": 22,
+          "from": "behind",
+          "warn": 6,
+          "vx": 10,
+          "dmg": 45,
+          "size": 18,
+          "stop": 6,
+          "color": "#9b85c4",
+          "shape": "hand"
+        },
+        {
+          "at": 26,
+          "from": "below",
+          "warn": 6,
+          "vx": 0,
+          "vy": 9,
+          "life": 24,
+          "dmg": 60,
+          "launch": [
+            1,
+            12
+          ],
+          "size": 26,
+          "stop": 10,
+          "color": "#f0a8c8",
+          "shape": "hand"
+        }
+      ]
+    },
+    {
+      "id": "scrape",
+      "name": "Scrape Back to Canvas",
+      "motion": [
+        "d",
+        "b",
+        "d",
+        "b"
+      ],
+      "btn": "hk",
+      "cost": 100,
+      "su": 16,
+      "ac": 1,
+      "rc": 30,
+      "pose": "beckon",
+      "inv": [
+        0,
+        18
+      ],
+      "proj": [
+        {
+          "at": 16,
+          "x": 40,
+          "vx": 15,
+          "life": 40,
+          "dmg": 150,
+          "unblockable": true,
+          "pull": 50,
+          "heal": 0.5,
+          "size": 18,
+          "stop": 14,
+          "color": "#f2e6c9",
+          "shape": "reach"
+        }
+      ]
+    }
+  ],
+  "tweaks": {
+    "lp": {
+      "name": "Dab"
+    },
+    "hp": {
+      "name": "Smear"
+    },
+    "lk": {
+      "name": "Drip Kick"
+    },
+    "hk": {
+      "name": "Brushstroke"
+    },
+    "upper": {
+      "name": "Upstroke"
+    },
+    "sweep": {
+      "name": "Wet Floor"
+    },
+    "over": {
+      "name": "Palette Slam"
+    },
+    "round": {
+      "name": "Swirl"
+    },
+    "throw": {
+      "name": "Overpaint"
+    }
+  },
+  "poses": {
+    "conjure.w": [
+      5,
+      -30,
+      20,
+      -40,
+      10,
+      25,
+      -10,
+      -25,
+      -20,
+      0,
+      0
+    ],
+    "conjure.s": [
+      -10,
+      165,
+      175,
+      155,
+      170,
+      25,
+      -10,
+      -25,
+      -20,
+      -12,
+      0
+    ],
+    "beckon.w": [
+      18,
+      88,
+      90,
+      15,
+      120,
+      30,
+      -5,
+      -30,
+      -25,
+      0,
+      4
+    ],
+    "beckon.s": [
+      -15,
+      40,
+      160,
+      10,
+      120,
+      22,
+      -12,
+      -30,
+      -20,
+      0,
+      -6
+    ],
+    "sink.w": [
+      40,
+      60,
+      100,
+      40,
+      90,
+      110,
+      -40,
+      70,
+      -90,
+      20,
+      0
+    ],
+    "sink.s": [
+      65,
+      90,
+      95,
+      70,
+      85,
+      118,
+      -55,
+      88,
+      -100,
+      25,
+      0
+    ],
+    "pour.w": [
+      30,
+      10,
+      40,
+      0,
+      30,
+      95,
+      -25,
+      60,
+      -75,
+      0,
+      0
+    ],
+    "pour.s": [
+      -5,
+      172,
+      180,
+      165,
+      178,
+      8,
+      0,
+      -6,
+      0,
+      -15,
+      4
+    ],
+    "wrap.w": [
+      8,
+      105,
+      60,
+      -60,
+      30,
+      30,
+      -5,
+      -30,
+      -25,
+      0,
+      0
+    ],
+    "wrap.s": [
+      22,
+      80,
+      150,
+      70,
+      150,
+      30,
+      -5,
+      -30,
+      -25,
+      0,
+      8
+    ],
+    "varnish.w": [
+      -8,
+      95,
+      175,
+      80,
+      170,
+      25,
+      -10,
+      -25,
+      -20,
+      0,
+      0
+    ],
+    "varnish.s": [
+      -12,
+      100,
+      100,
+      90,
+      100,
+      25,
+      -10,
+      -25,
+      -20,
+      0,
+      -4
+    ],
+    "flick.w": [
+      5,
+      -25,
+      120,
+      20,
+      130,
+      25,
+      -10,
+      -25,
+      -20,
+      0,
+      0
+    ],
+    "flick.s": [
+      22,
+      80,
+      80,
+      10,
+      120,
+      32,
+      -5,
+      -30,
+      -25,
+      0,
+      8
+    ],
+    "stroke.w": [
+      -10,
+      135,
+      160,
+      -20,
+      60,
+      25,
+      -10,
+      -25,
+      -20,
+      0,
+      0
+    ],
+    "stroke.s": [
+      30,
+      70,
+      80,
+      0,
+      100,
+      40,
+      0,
+      -40,
+      -30,
+      0,
+      10
+    ],
+    "hatch.w": [
+      20,
+      20,
+      30,
+      10,
+      110,
+      30,
+      -5,
+      -30,
+      -25,
+      0,
+      0
+    ],
+    "hatch.s": [
+      -8,
+      105,
+      105,
+      -30,
+      60,
+      30,
+      -5,
+      -35,
+      -25,
+      0,
+      6
+    ],
+    "sign.w": [
+      -15,
+      175,
+      182,
+      150,
+      170,
+      20,
+      -10,
+      -30,
+      -20,
+      -10,
+      0
+    ],
+    "sign.s": [
+      35,
+      62,
+      45,
+      50,
+      40,
+      40,
+      0,
+      -40,
+      -30,
+      0,
+      10
+    ],
+    "smear.w": [
+      30,
+      -40,
+      20,
+      -50,
+      10,
+      60,
+      -20,
+      -20,
+      -50,
+      0,
+      0
+    ],
+    "smear.s": [
+      55,
+      90,
+      90,
+      80,
+      90,
+      50,
+      10,
+      -50,
+      -60,
+      0,
+      12
+    ],
+    "drip.w": [
+      0,
+      150,
+      170,
+      140,
+      170,
+      60,
+      -30,
+      30,
+      -60,
+      0,
+      0
+    ],
+    "drip.s": [
+      40,
+      130,
+      140,
+      120,
+      140,
+      20,
+      10,
+      -10,
+      -10,
+      0,
+      0
+    ],
+    "mix.w": [
+      10,
+      60,
+      170,
+      40,
+      160,
+      30,
+      -10,
+      -30,
+      -20,
+      10,
+      0
+    ],
+    "mix.s": [
+      0,
+      90,
+      30,
+      70,
+      40,
+      25,
+      -10,
+      -25,
+      -20,
+      15,
+      0
+    ]
+  }
+}

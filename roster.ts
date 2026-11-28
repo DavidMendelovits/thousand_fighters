@@ -79,22 +79,29 @@ type Clip = { label: string; cmd: string; demo: Demo }
 let cur: FighterDef | null = null, w: World, fx: Fx, clips: Clip[] = [], clip = -1, demoT = 0, raf = 0, auto = true
 const ctx = $<HTMLCanvasElement>('#arena').getContext('2d')!
 
-// Solo: no opponent. The dummy is moved to the far edge, made untouchable and not drawn, so a move plays out
-// in full: a projectile flies its whole path, a lunge or grab whiffs instead of stopping on contact.
-const SOLO_KEY = 'roster.solo', NOBODY: FighterDef = { ...REF, name: '' }
-let solo = false
-try { solo = localStorage.getItem(SOLO_KEY) === '1' } catch {}
-function setSolo(on: boolean) {
-  solo = on
-  try { localStorage.setItem(SOLO_KEY, on ? '1' : '0') } catch {}
-  $('#solo').setAttribute('aria-pressed', String(on)); $('#solo').textContent = on ? 'Show opponent' : 'Hide opponent'
+// Three ways to watch a move. Dummy: performed on the training dummy, the validator's reference opponent dressed as
+// a dummy (same size and stats, so it plays exactly as the checks do). Alone: no opponent; the dummy is moved to the
+// far edge, made untouchable and not drawn, so a move plays out in full: a projectile flies its whole path, a lunge or
+// grab whiffs instead of stopping on contact. Both: the two side by side, the same inputs on the same tick.
+type View = 'dummy' | 'alone' | 'both'
+const VIEW_KEY = 'roster.view', NOBODY: FighterDef = { ...REF, name: '' }
+const DUMMY: FighterDef = { ...REF, id: 'training_dummy', name: 'Training Dummy', look: { ...REF.look, skin: '#d9b77e', main: '#b08a55', alt: '#6e5434', trim: '#d8453a', head: 'round', hair: 'none' } }
+const ctx2 = $<HTMLCanvasElement>('#arena2').getContext('2d')!
+let view: View = 'both', solo = false, w2: World | null = null, fx2: Fx | null = null
+try { const v = localStorage.getItem(VIEW_KEY); if (v === 'dummy' || v === 'alone' || v === 'both') view = v; else if (localStorage.getItem('roster.solo') === '1') view = 'alone' } catch {}
+const soloWorld = () => newWorld(cur!, NOBODY, 1, STAGE.max - STAGE.min - 120)
+function setView(v: View) {
+  view = v; solo = v === 'alone'
+  try { localStorage.setItem(VIEW_KEY, v) } catch {}
+  for (const b of document.querySelectorAll<HTMLElement>('#views button')) b.setAttribute('aria-pressed', String(b.dataset.view === v))
+  document.body.classList.toggle('both', v === 'both' && !trying)
 }
-setSolo(solo)
-$('#solo').onclick = () => { setSolo(!solo); if (cur) trying ? fresh() : playClip(clip) }
+for (const b of document.querySelectorAll<HTMLElement>('#views button')) b.onclick = () => { setView(b.dataset.view as View); if (cur) trying ? fresh() : playClip(clip) }
 
 // Try it: the move list gives way to touch controls and the fighter is yours. The dummy stands still.
 document.head.append(Object.assign(document.createElement('style'), { textContent: TOUCH_CSS }))
 let trying = false, pad: TouchPad | null = null, calm = 0
+setView(view)
 const KEYS: Record<string, number> = { KeyA: L, KeyD: R, KeyW: U, KeyS: D, ArrowLeft: L, ArrowRight: R, ArrowUp: U, ArrowDown: D, KeyU: LP, KeyI: HP, KeyJ: LK, KeyK: HK, Space: BL, KeyL: BL }
 const held = new Set<string>()
 addEventListener('keydown', e => { if (trying && e.code in KEYS) { held.add(e.code); e.preventDefault() } })
@@ -103,11 +110,11 @@ addEventListener('blur', () => held.clear())
 const keyBits = () => { let b = 0; for (const k of held) b |= KEYS[k] ?? 0; return b }
 function fresh() {
   if (!cur) return
-  w = solo ? newWorld(cur, NOBODY, 1, STAGE.max - STAGE.min - 120) : newWorld(cur, REF, 1, 260); fx = newFx(w)
+  w = solo ? soloWorld() : newWorld(cur, DUMMY, 1, 260); fx = newFx(w); w2 = fx2 = null
   w.f[0].meter = 100; calm = 0
 }
 function setTrying(on: boolean) {
-  trying = on
+  trying = on; setView(view)
   $('#try').setAttribute('aria-pressed', String(on)); $('#try').textContent = on ? 'Move list' : 'Try it'
   $('#scroll').hidden = on; $('#deck').hidden = !on
   if (on) {
@@ -121,13 +128,19 @@ $('#try').onclick = () => setTrying(!trying)
 
 /** The clip's world from tick 0. Deterministic, so replaying it lands on the same frame every time. */
 function reset(c?: Clip) {
-  w = solo ? newWorld(cur!, NOBODY, 1, STAGE.max - STAGE.min - 120) : newWorld(cur!, REF, 1, c ? c.demo.dist : 260); fx = newFx(w); demoT = 0
-  if (c) { w.f[0].meter = 100; if (c.demo.powered) w.f[0].buff = { t: 9999, power: 1, speed: 1, defense: 1, color: '#ffffff' } }
+  w = solo ? soloWorld() : newWorld(cur!, DUMMY, 1, c ? c.demo.dist : 260); fx = newFx(w); demoT = 0
+  w2 = view === 'both' ? soloWorld() : null; fx2 = w2 && newFx(w2)
+  for (const x of w2 ? [w, w2] : [w]) if (c) { x.f[0].meter = 100; if (c.demo.powered) x.f[0].buff = { t: 9999, power: 1, speed: 1, defense: 1, color: '#ffffff' } }
 }
 function advance(quiet = false) { // quiet: replaying to build the strip or to land on a frame, no sound or sparks
   const c = clips[clip]
   if (solo) w.f[1].inv = 999 // nothing can hit or grab it; refreshed because returning to idle clears it
   step(w, c ? at(c.demo.script, w, demoT) : 0, c?.demo.foe && !solo ? at(c.demo.foe, w, demoT) : 0); if (!quiet) fxTick(fx, w)
+  if (w2 && fx2) { // the alone copy: same script, nobody to hit
+    w2.f[1].inv = 999
+    step(w2, c ? at(c.demo.script, w2, demoT) : 0, 0); if (!quiet) fxTick(fx2, w2)
+    w2.time = 99 * 60
+  }
   w.time = 99 * 60; demoT++
 }
 
@@ -248,6 +261,7 @@ function frame(now: number) {
   if (solo) w.f[1].x = 1e4 // off canvas for this draw only
   draw(ctx, w, fx, { boxes: false, sheets })
   w.f[1].x = x
+  if (w2 && fx2 && !trying) { const x2 = w2.f[1].x; w2.f[1].x = 1e4; draw(ctx2, w2, fx2, { boxes: false, sheets }); w2.f[1].x = x2 }
   raf = requestAnimationFrame(frame)
 }
 
