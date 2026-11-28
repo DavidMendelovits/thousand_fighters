@@ -41,11 +41,22 @@
   #dname { font-size: 18px; font-weight: 800; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #dbadge { margin-left: auto; font-size: 12px; font-weight: 700; white-space: nowrap; padding-right: 8px; }
   .stage { flex: none; width: 100%; max-width: 720px; margin: 0 auto; padding: 0 var(--pad) 8px; }
-  #arena { display: block; width: min(100%, calc(42vh * 16 / 9)); width: min(100%, calc(42dvh * 16 / 9)); aspect-ratio: 16 / 9; margin: 12px auto 0; border-radius: 10px; border: 1px solid var(--line); background: #000; }
+  .arenas { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 12px; }
+  .arenas figure { margin: 0; width: min(100%, calc(42vh * 16 / 9)); width: min(100%, calc(42dvh * 16 / 9)); }
+  .arenas figcaption { display: none; font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: .06em; margin-top: 2px; }
+  #arena, #arena2 { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 10px; border: 1px solid var(--line); background: #000; }
+  #alonefig { display: none; }
+  body.both #alonefig { display: block; } body.both .arenas figcaption { display: block; }
+  /* both: stacked and smaller on a phone, side by side when there is room */
+  body.both .arenas figure { width: min(100%, calc(24vh * 16 / 9)); width: min(100%, calc(24dvh * 16 / 9)); }
+  @media (min-width: 900px) { body.both .arenas { flex-direction: row; justify-content: center; } body.both .arenas figure { width: min(48%, calc(40dvh * 16 / 9)); } }
+  #views { display: flex; margin-top: 6px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  #views button { flex: 1; min-height: 40px; background: var(--panel); font-size: 13px; font-weight: 700; text-align: center; border-right: 1px solid var(--line); }
+  #views button:last-child { border-right: 0; }
+  #views button[aria-pressed="true"] { color: var(--gold); background: #2c2540; }
   .under { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
   #now { flex: 1; min-width: 0; min-height: 22px; margin: 0; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #solo { flex: none; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); font-size: 13px; font-weight: 700; white-space: nowrap; }
-  #solo[aria-pressed="true"], #try[aria-pressed="true"] { border-color: var(--gold); color: var(--gold); }
+  #try[aria-pressed="true"] { border-color: var(--gold); color: var(--gold); }
   #try { flex: none; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); font-size: 13px; font-weight: 700; white-space: nowrap; }
   #deck { flex: 1; min-height: 0; padding: 4px var(--pad) calc(12px + env(safe-area-inset-bottom)); max-width: 720px; width: 100%; margin: 0 auto; }
   #frames { display: flex; gap: 6px; align-items: stretch; margin-top: 6px; }
@@ -98,11 +109,16 @@
     <span id="dname"></span><span id="dbadge"></span>
   </header>
   <div class="stage">
-    <canvas id="arena" width="960" height="540"></canvas>
+    <div class="arenas">
+      <figure><canvas id="arena" width="960" height="540"></canvas><figcaption>On the training dummy</figcaption></figure>
+      <figure id="alonefig"><canvas id="arena2" width="960" height="540"></canvas><figcaption>Alone</figcaption></figure>
+    </div>
     <div class="under">
       <p id="now" class="dim"></p>
       <button id="try" aria-pressed="false">Try it</button>
-      <button id="solo" aria-pressed="false">Hide opponent</button>
+    </div>
+    <div id="views" role="group" aria-label="How to watch moves">
+      <button data-view="dummy" aria-pressed="false">On dummy</button><button data-view="alone" aria-pressed="false">Alone</button><button data-view="both" aria-pressed="false">Both</button>
     </div>
     <div id="frames" hidden>
       <button id="fback" class="fb" aria-label="Back one frame">‹</button>

@@ -133,7 +133,9 @@ export type ProjSpec = {
   // next to the opponent (above them, behind them, or in front of them), then flies straight at them
   aim?: 'target' // old spelling of from: 'target'
   unblockable?: boolean; pull?: number; heal?: number // same meaning as on Move
-  color: string; shape?: 'orb' | 'blade' | 'bomb' | 'wave' | 'chain' | 'beam' // chain draws a tether back to the thrower
+  color: string; shape?: 'orb' | 'blade' | 'bomb' | 'wave' | 'chain' | 'beam' | 'hand' | 'reach' | 'splat'
+  // chain draws a tether back to the thrower; hand is a painted hand flying fingers first; reach is a hand on a tether
+  // of paint; splat is a puddle or swell of wet paint sized by its hit box
 }
 export type Move = {
   id: string; name: string

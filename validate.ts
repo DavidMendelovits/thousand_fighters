@@ -14,7 +14,7 @@ export const REF: FighterDef = { ...design('Sparring Dummy', 7), look: { ...desi
 
 export const at = (s: Script, w: World, t: number) => typeof s === 'function' ? s(w, t) : s[t] ?? 0
 const FREE = ['idle', 'walk', 'crouch', 'block']
-type Shot = { t: number; id: string; x: number; y: number; vy: number; w: number; h: number; wait: number; gates: number; off: number }
+type Shot = { t: number; id: string; s: unknown; x: number; y: number; vy: number; w: number; h: number; wait: number; gates: number; off: number }
 
 function run(a: FighterDef, b: FighterDef, dist: number, p1: Script, p2: Script, ticks: number, powered = false) {
   const w = newWorld(a, b, 1, dist), o = { w, maxCombo: 0, comboDmg: 0, firstHit: -1, blocks: 0, wasDown: false, freeA: -1, freeD: -1, seen: new Set<string>(), moved: 0, buffed: false,
@@ -29,7 +29,7 @@ function run(a: FighterDef, b: FighterDef, dist: number, p1: Script, p2: Script,
     if (w.f[0].mv) o.seen.add(w.f[0].mv.id)
     if (w.f[0].buff && !powered) o.buffed = true
     if (w.f[1].st === 'down') o.wasDown = true
-    for (const p of w.proj) if (p.owner === 0) o.shots.push({ t, id: p.id, x: p.x, y: p.y, vy: p.vy, w: p.w, h: p.h, wait: p.wait, gates: p.gates.length, off: (p.x - w.f[0].x) * w.f[0].face })
+    for (const p of w.proj) if (p.owner === 0) o.shots.push({ t, id: p.id, s: p.s, x: p.x, y: p.y, vy: p.vy, w: p.w, h: p.h, wait: p.wait, gates: p.gates.length, off: (p.x - w.f[0].x) * w.f[0].face })
     if (o.pulledGap < 0 && w.f[1].st === 'hit' && w.f[1].pulled) o.pulledGap = Math.abs(w.f[1].x - w.f[0].x)
     if (o.firstHit >= 0 && t > o.firstHit) { if (o.freeA < 0 && FREE.includes(w.f[0].st)) o.freeA = t; if (o.freeD < 0 && FREE.includes(w.f[1].st)) o.freeD = t }
   }
@@ -52,7 +52,7 @@ function chainScript(path: Move[], jumpTick: number): Script {
     const f = w.f[0], k = path.findIndex(m => m.id === f.mv?.id)
     if (f.st !== 'atk' || k < 0 || k === path.length - 1 || !f.contact) return 0
     if (cur !== k) { cur = k; pos = 0 }
-    const seq = [...scriptFor(path[k + 1]), 0]; return seq[pos++ % seq.length]
+    const next = scriptFor(path[k + 1]); const seq = [...next, next.at(-1)! & (U | D | L | R)]; return seq[pos++ % seq.length] // keep holding the direction between presses, as a player would
   }
 }
 /** [first, 0 × (k-1), then] — hold `first` for one tick, wait, then press `then` on tick k. */
@@ -257,7 +257,8 @@ export function validate(def: FighterDef, ref: FighterDef = REF): { ok: boolean;
       let verdict: string[] | undefined, shown: Demo | undefined
       for (const dist of [got.demo.dist, 180, 260, 340, 420]) {
         const demo = { ...got.demo, dist }, r = run(def, ref, dist, demo.script, demo.foe ?? [], 300, demo.powered)
-        const mine = r.shots.filter(q => q.id === cm.id), live = mine.filter(q => q.wait <= 0), first = live[0], bad: string[] = []
+        const mine = r.shots.filter(q => q.id === cm.id && q.s === p), // a move can throw several kinds at once: judge each one by itself
+           live = mine.filter(q => q.wait <= 0), first = live[0], bad: string[] = []
         if (!first) continue
         if (r.w.f[1].hp >= full) bad.push('never connects')
         if (from === 'above' && !(first.y > 200 && first.vy < 0)) bad.push(`starts at height ${Math.round(first.y)}, not falling from above`)

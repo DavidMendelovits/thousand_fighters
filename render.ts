@@ -139,6 +139,22 @@ function stage(): HTMLCanvasElement {
 const keyCache = new WeakMap<FighterDef, string[]>()
 const compileKeys = (d: FighterDef) => keyCache.get(d) ?? (keyCache.set(d, compile(d).sheetKeys), keyCache.get(d)!)
 
+/** A borrowed painted hand, fingers first along +x, holding a needle, with paint dripping off the wrist. */
+function drawHand(c: CanvasRenderingContext2D, sz: number, col: string, t: number) {
+  c.fillStyle = col; c.globalAlpha = 0.35
+  for (let k = 1; k <= 3; k++) { c.beginPath(); c.arc(-sz * 0.75 * k, Math.sin(t * 0.7 + k) * 3, sz * 0.5 / k, 0, 7); c.fill() }
+  c.globalAlpha = 1; c.strokeStyle = INK; c.lineWidth = 2.5; c.lineJoin = 'round'
+  c.strokeStyle = '#f2e6c9'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(sz * 0.2, sz * 0.62); c.lineTo(sz * 1.9, sz * 0.62); c.stroke() // the needle
+  c.strokeStyle = INK; c.lineWidth = 2.5
+  for (let i = 0; i < 4; i++) { // fingers, wiggling
+    const len = sz * (0.8 + (i === 1 ? 0.15 : 0) - (i === 3 ? 0.2 : 0)) + Math.sin(t * 0.5 + i) * 2
+    c.beginPath(); c.roundRect(sz * 0.35, -sz * 0.55 + i * sz * 0.3, len, sz * 0.24, sz * 0.12); c.fillStyle = col; c.fill(); c.stroke()
+  }
+  c.beginPath(); c.ellipse(0, 0, sz * 0.72, sz * 0.62, 0, 0, 7); c.fillStyle = col; c.fill(); c.stroke() // palm
+  c.beginPath(); c.roundRect(-sz * 0.1, sz * 0.38, sz * 0.75, sz * 0.26, sz * 0.13); c.fill(); c.stroke() // thumb, under the needle
+  c.fillStyle = 'rgba(255,255,255,.45)'; c.beginPath(); c.ellipse(-sz * 0.2, -sz * 0.25, sz * 0.25, sz * 0.12, -0.4, 0, 7); c.fill() // wet shine
+}
+
 function drawProj(c: CanvasRenderingContext2D, p: Proj, owner: Fighter, tick: number) {
   const col = p.s.color
   for (const g of p.gates) { // portal mouths stay open while it flies
@@ -164,6 +180,12 @@ function drawProj(c: CanvasRenderingContext2D, p: Proj, owner: Fighter, tick: nu
   const x = p.x, y = FLOOR - p.y, sz = p.w, horiz = Math.abs(p.vy) < 0.35 * Math.abs(p.vx)
   // shapes are drawn flying right; level shots flip, anything climbing or falling turns to face where it is going
   const dir = horiz ? Math.sign(p.vx) || owner.face : 1, turn = horiz ? 0 : Math.atan2(-p.vy, p.vx)
+  if (p.s.shape === 'reach') { // a hand on a ribbon of paint, the ribbon sagging and rippling back to the thrower
+    const ox = owner.x + owner.face * 40, oy = FLOOR - owner.y - 105 * owner.def.look.height, mx = (ox + x) / 2, my = (oy + y) / 2 + 18 + Math.sin(p.t * 0.6) * 8
+    for (const [wd, cl] of [[11, INK], [7, col]] as const) { c.strokeStyle = cl; c.lineWidth = wd; c.lineCap = 'round'; c.beginPath(); c.moveTo(ox, oy); c.quadraticCurveTo(mx, my, x, y); c.stroke() }
+    c.save(); c.translate(x, y); c.scale(dir, 1); drawHand(c, sz * 1.4, col, p.t); c.restore()
+    return
+  }
   if (p.s.shape === 'chain') { // tether from the thrower's hand to a hook
     const ox = owner.x + owner.face * 40, oy = FLOOR - owner.y - 105 * owner.def.look.height
     c.strokeStyle = INK; c.lineWidth = 7; c.setLineDash([]); c.beginPath(); c.moveTo(ox, oy); c.lineTo(x, y); c.stroke()
@@ -178,6 +200,14 @@ function drawProj(c: CanvasRenderingContext2D, p: Proj, owner: Fighter, tick: nu
   } else if (p.s.shape === 'bomb') {
     c.fillStyle = '#14121c'; c.strokeStyle = col; c.lineWidth = 3; c.beginPath(); c.arc(0, 0, sz * 0.8, 0, 7); c.fill(); c.stroke()
     c.fillStyle = p.t % 6 < 3 ? '#fff' : col; c.beginPath(); c.arc(sz * 0.5, -sz * 0.8, 3.5, 0, 7); c.fill()
+  } else if (p.s.shape === 'hand') {
+    c.scale(dir, 1); drawHand(c, sz * 1.4, col, p.t) // drawn a little larger than its hit box so the fingers read
+  } else if (p.s.shape === 'splat') { // wet paint: a glossy, wobbling blob the size of its hit box, dripping at the bottom
+    const w2 = p.w, h2 = Math.max(6, p.h), wob = Math.sin(p.t * 0.4) * 2
+    c.fillStyle = col; c.strokeStyle = INK; c.lineWidth = 2.5
+    c.beginPath(); c.ellipse(0, 0, w2 + wob, h2 - wob * 0.5, 0, 0, 7); c.fill(); c.stroke()
+    for (let k = -1; k <= 1; k++) { c.beginPath(); c.ellipse(k * w2 * 0.5, h2 * 0.8, 3, 4 + ((p.t + k * 7) % 12) * 0.5, 0, 0, 7); c.fill() }
+    c.fillStyle = 'rgba(255,255,255,.4)'; c.beginPath(); c.ellipse(-w2 * 0.3, -h2 * 0.35, w2 * 0.35, h2 * 0.2, 0, 0, 7); c.fill()
   } else if (p.s.shape === 'wave') {
     const g = c.createLinearGradient(0, -sz * 2.4, 0, sz); g.addColorStop(0, 'transparent'); g.addColorStop(0.5, col); g.addColorStop(1, '#fff')
     c.fillStyle = g; c.beginPath(); c.moveTo(-dir * sz, sz); c.quadraticCurveTo(-dir * sz * 0.2, -sz * 1.2, dir * sz * 1.1, -sz * 2.4 + Math.sin(p.t * 0.6) * 4); c.quadraticCurveTo(dir * sz * 0.6, -sz * 0.2, dir * sz, sz); c.closePath(); c.fill()
