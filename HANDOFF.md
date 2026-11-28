@@ -142,3 +142,47 @@ python3 qa.py art/faro-poses.png fighters/faro.png fighters/faro.json   # free c
   calculator, Nov 2026), plus three reference images per request. For the 11 Faro frames: about $0.90 to $2.60 on
   sunburst, $2.60 to $7.90 on gpt-image-2. The judge adds about $0.02 per try on claude-opus-5-5.
   `gpt-image-2` is what painted Faro on Nov 9; sunburst is untested on him.
+
+## Pluggable image models and the bake-off (2026-11-28)
+
+`paint()` used to call only OpenAI's Images API or the codex CLI. Now every model sits behind one adapter in
+`providers.py`, and what differs per model lives in `image_models.json`: sizes it can make, whether it can paint a
+transparent background, how many input images it takes, cost per image and where that figure came from, and extra
+request fields. Everything after the model call (keying, the one-scale snap to the rig, `qa.py`) is unchanged.
+
+- Adapters: `openai` and `codex` (today's code, moved), plus `fal`, `bfl` and `gemini`, ported from v1's JS adapters
+  in `cms/pipeline/adapters/` on `DM/cms-admin-platform` (fal queue polling, BFL polling and its "may already be
+  billed, don't resend" rule, Gemini's interactions call, and v1's default prices). v1's MiniMax image-01 adapter is
+  not ported: it takes one reference, and paint.py sends at least two. `fixture` is an offline stand-in that paints
+  the pose guide back, so the pipeline runs with no key.
+- Normalizing: whatever size a model returns is resized to the size asked for (logged as `got_size`; a different
+  aspect is stretched back and logged as `stretched`), and a flat backdrop that isn't magenta (white, grey) is
+  flooded to magenta from the border before keying (`backdrop_keyed`). Each request's line in `run.json` records it.
+- `--model` takes a table name (`nano-banana-2`, `flux-2-pro`...), `provider:model id` (`fal:fal-ai/nano-banana-pro/edit`),
+  or a bare OpenAI model name as before. Keys: `OPENAI_API_KEY`, `FAL_KEY`, `BFL_API_KEY` (all in Doppler),
+  `GEMINI_API_KEY` (not in Doppler as of Nov 9). A missing key stops only when a request is actually needed, so
+  re-snapping from a cached work dir still needs no key. One change: `--model gpt-image-2` with no OpenAI key now
+  stops instead of falling back to codex, because it names the OpenAI entry; codex is still the default with no `--model`.
+- `<sheet>.paint.json` now also records the model name, requests actually sent, painting seconds and a cost estimate.
+- Untested against the live APIs: fal, BFL and Gemini request shapes come from v1's adapters and the providers'
+  docs (read Nov 28) and pass against a local mock of each API. Whether BFL takes data URLs in `input_image` (v1
+  sent them) and Gemini takes 3 references (v1 sent 1) is unconfirmed until a paid run.
+
+```bash
+# offline, free: checks the plumbing end to end
+python3 bakeoff.py art/faro-poses.png fighters/faro.png fighters/faro.json "Faro" --models fixture,fixture-offsize
+python3 -m unittest test_providers
+
+# paid: prints the most it can cost and stops unless --yes
+DOPPLER_CONFIG_DIR=$(mktemp -d) doppler run -- python3 bakeoff.py art/faro-poses.png fighters/faro.png fighters/faro.json \
+  "Faro, the Drowned Keeper: a tall gaunt lighthouse keeper whose head is a glowing caged brass lantern, long dark teal oilskin coat, heavy boots, pale grey-blue hands, an anchor chain wrapped around one forearm" \
+  --models gpt-image-2.5-sunburst,nano-banana-2,flux-2-pro --judge
+```
+
+- Default cells: `hit,jp.w,dive.w,tend.s,swing.w` (two that failed every try on Nov 23, three that came back right),
+  1 try each, so it compares first attempts. Each model gets the same references, guide and prompt.
+- Writes `bakeoff/<fighter>-<date>/report.md` (pass count, tries, estimated cost, painting time, background,
+  failing cells per model), `report.json` and `contact.png` (rig, current sheet, one column per model, failures
+  outlined red). Each model's tries are cached in `bakeoff/.../<model>/work`, so a re-run pays only for what's missing.
+- Without `--judge` only the free structural checks grade, and they miss a pose painted as the stance; the judge
+  adds about $0.02 a try.

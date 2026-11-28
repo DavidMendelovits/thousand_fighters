@@ -1,0 +1,170 @@
+{
+ "_about": "Image models paint.py and bakeoff.py can use, by name (--model <name>). Fields are explained at the top of providers.py. Costs are estimates per image at the size and settings given, with where each figure came from; check before a big run.",
+ "gpt-image-2": {
+  "provider": "openai",
+  "model": "gpt-image-2",
+  "sizes": [
+   "1024x1024",
+   "1536x1024",
+   "1024x1536"
+  ],
+  "transparent": null,
+  "key": "auto",
+  "max_refs": 16,
+  "cost": 0.21,
+  "cost_source": "1024x1024 high, third-party calculator, Nov 2026 (HANDOFF.md)",
+  "extra": {
+   "quality": "high"
+  }
+ },
+ "gpt-image-2.5-sunburst": {
+  "provider": "openai",
+  "model": "gpt-image-2.5-sunburst",
+  "sizes": [
+   "1024x1024",
+   "1536x1024",
+   "1024x1536"
+  ],
+  "transparent": true,
+  "key": "auto",
+  "max_refs": 16,
+  "cost": 0.05,
+  "cost_source": "1024x1024 high, third-party calculator, Nov 2026 (HANDOFF.md)",
+  "extra": {
+   "quality": "high"
+  }
+ },
+ "nano-banana-2": {
+  "provider": "fal",
+  "model": "fal-ai/nano-banana-2/edit",
+  "sizes": [
+   "1:1",
+   "3:2",
+   "2:3",
+   "4:3",
+   "3:4",
+   "16:9",
+   "9:16"
+  ],
+  "transparent": false,
+  "key": "auto",
+  "max_refs": 14,
+  "cost": 0.08,
+  "cost_source": "fal.ai model page at 1K, read Nov 28 2026",
+  "extra": {
+   "resolution": "1K"
+  }
+ },
+ "nano-banana-pro": {
+  "provider": "fal",
+  "model": "fal-ai/nano-banana-pro/edit",
+  "sizes": [
+   "1:1",
+   "3:2",
+   "2:3",
+   "4:3",
+   "3:4",
+   "16:9",
+   "9:16"
+  ],
+  "transparent": false,
+  "key": "auto",
+  "max_refs": 14,
+  "cost": 0.15,
+  "cost_source": "fal.ai model page at 1K, read Nov 28 2026",
+  "extra": {
+   "resolution": "1K"
+  }
+ },
+ "flux-2-pro": {
+  "provider": "bfl",
+  "model": "flux-2-pro",
+  "sizes": [
+   "1024x1024",
+   "1536x1024",
+   "1024x1536"
+  ],
+  "transparent": false,
+  "key": "auto",
+  "max_refs": 8,
+  "cost": null,
+  "cost_source": "BFL's docs give credits, not dollars; each run records the credits BFL reports",
+  "extra": {}
+ },
+ "flux-2-klein-4b": {
+  "provider": "bfl",
+  "model": "flux-2-klein-4b",
+  "sizes": [
+   "1024x1024",
+   "1536x1024",
+   "1024x1536"
+  ],
+  "transparent": false,
+  "key": "auto",
+  "max_refs": 4,
+  "cost": 0.014,
+  "cost_source": "v1's BFL adapter default (cms/pipeline/adapters, DM/cms-admin-platform)",
+  "extra": {}
+ },
+ "gemini-3.1-flash-image": {
+  "provider": "gemini",
+  "model": "gemini-3.1-flash-image",
+  "sizes": [
+   "1:1",
+   "3:2",
+   "2:3",
+   "4:3",
+   "3:4",
+   "16:9",
+   "9:16"
+  ],
+  "transparent": false,
+  "key": "auto",
+  "max_refs": 3,
+  "cost": 0.0336,
+  "cost_source": "v1's Gemini adapter default at 1K (v1 sent 1 reference by default; 3 here is untested)",
+  "extra": {
+   "image_size": "1K"
+  }
+ },
+ "fixture": {
+  "provider": "fixture",
+  "model": "guide-echo",
+  "sizes": [
+   "1024x1024",
+   "1536x1024"
+  ],
+  "transparent": false,
+  "key": "auto",
+  "max_refs": 3,
+  "cost": 0,
+  "cost_source": "offline stand-in, paints the pose guide back",
+  "extra": {}
+ },
+ "fixture-offsize": {
+  "provider": "fixture",
+  "model": "guide-echo-offsize",
+  "sizes": [
+   "3:2",
+   "1:1"
+  ],
+  "transparent": false,
+  "key": "auto",
+  "max_refs": 2,
+  "cost": 0,
+  "cost_source": "offline stand-in: wrong size, small and off-centre figure, white backdrop, 2 refs max",
+  "extra": {
+   "out_size": "832x832",
+   "scale": 0.6,
+   "shift": [
+    0.12,
+    -0.05
+   ],
+   "backdrop": [
+    250,
+    250,
+    250
+   ]
+  }
+ }
+}

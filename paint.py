@@ -20,16 +20,21 @@ right leg orange, so the model can't swap or mirror limbs). The prompt describes
 Each try is checked (qa.py's structural checks, plus the yes/no pose judge with --judge) and the first one that
 passes is kept; if none passes, the best try goes in and the cell is listed as failing.
 
-The image model is always explicit: --model or OPENAI_IMAGE_MODEL. Every run is recorded next to the sheet in
+The image model is always explicit: --model or OPENAI_IMAGE_MODEL (bare names go to OpenAI, or codex with no key). Every run is recorded next to the sheet in
 <out_sheet>.paint.json (model, quality, mode, cells, time) and, in more detail, in the work dir's run.json.
 Single poses ask the Images API for a transparent background (--background auto, the default); if the model
 refuses it (gpt-image-2 does), the run carries on with a magenta background and keying, and logs that.
 --dry-run builds every guide, reference and prompt and prints what it would send, without calling anything.
 
 Resumable: finished requests are cached in the work dir (default <out_sheet>.work).
-The provider is paint(): (prompt, [input images], out_path, size). Swap that one function to change models.
+The model is pluggable: --model takes a name from image_models.json (gpt-image-2, nano-banana-2, flux-2-pro...),
+provider:model id, or a bare OpenAI model name. providers.py has one adapter per provider and normalizes every
+model's output (size, backdrop) before keying, so the snap-to-rig step and qa.py don't change per model.
+bakeoff.py paints the same poses on several models and compares cost, time and QA.
 """
-import argparse, base64, datetime, glob, json, os, statistics, subprocess, sys, time
+import argparse, datetime, json, os, statistics, subprocess, sys
+import providers
+from providers import BackgroundUnsupported, NoRetry
 import numpy as np
 from PIL import Image, ImageDraw
 from scipy import ndimage
@@ -50,70 +55,37 @@ LIMB = {'armF': (230, 40, 40), 'armB': (40, 90, 240), 'legF': (30, 170, 60), 'le
 RUN = {}  # what this run sent, for run.json
 
 
-class BackgroundUnsupported(RuntimeError):
-    """The API refused background=transparent for this model (gpt-image-2 has returned 400 for it since Sep 30 2026)."""
-
-
 def background(args):
-    """'transparent' or 'magenta' for this run's single-pose requests. auto = transparent through the Images API,
-    magenta through codex (which can't ask for it)."""
-    if not os.environ.get('OPENAI_API_KEY'): return 'magenta'
-    return 'transparent' if args.background in ('auto', 'transparent') else 'magenta'
+    """'transparent' or 'magenta' for this run's single-pose requests. auto = transparent when the model can do it
+    (or might: transparent null in image_models.json), magenta otherwise."""
+    if args.background == 'magenta' or args.m.transparent is False:
+        if args.background == 'transparent': sys.exit(f'{args.m.name} can\'t paint a transparent background (image_models.json); use --background auto or magenta')
+        return 'magenta'
+    return 'transparent'
 
 
 def provider(args):
-    """Which model paints, as recorded: 'openai:<model>' or 'codex:<model or default>'."""
-    if os.environ.get('OPENAI_API_KEY'):
-        if not args.model: sys.exit('Set the image model: --model <name> or OPENAI_IMAGE_MODEL (gpt-image-1 was shut down Oct 2026).')
-        return f'openai:{args.model}'
-    return 'codex:' + (os.environ.get('CODEX_MODEL') or 'default')
+    """Which model paints, as recorded: '<provider>:<model id>', e.g. 'openai:gpt-image-2' or 'fal:fal-ai/nano-banana-2/edit'."""
+    return args.m.label
 
 
 def paint(prompt, images, out, size, args):
-    """Provider seam: (prompt, input image paths, output path, size).
-    With OPENAI_API_KEY set this calls the Images API at OPENAI_BASE_URL (default api.openai.com) with --model;
-    otherwise the codex CLI (CODEX_MODEL to pick its model)."""
-    key_ = os.environ.get('OPENAI_API_KEY')
-    if key_:
-        base = os.environ.get('OPENAI_BASE_URL', 'https://api.openai.com/v1').rstrip('/')
-        cmd = ['curl', '-sS', '--max-time', '600', '-H', f'Authorization: Bearer {key_}']
-        if images:  # edits takes multipart; generations only takes JSON
-            cmd += ['--form-string', f'model={args.model}', '--form-string', f'prompt={prompt}', '--form-string', f'size={size}']
-            if args.quality: cmd += ['--form-string', f'quality={args.quality}']
-            if getattr(args, 'bg', 'magenta') == 'transparent':
-                cmd += ['--form-string', 'background=transparent', '--form-string', 'output_format=png']
-            cmd += [f'{base}/images/edits'] + [x for i in images for x in ('-F', f'image[]=@{i}')]
-        else:
-            body = {'model': args.model, 'prompt': prompt, 'size': size}
-            if args.quality: body['quality'] = args.quality
-            cmd += ['-H', 'Content-Type: application/json', '-d', json.dumps(body), f'{base}/images/generations']
-        res = json.loads(subprocess.run(cmd, capture_output=True, text=True).stdout or '{}')
-        if 'data' not in res:
-            err = str(res.get('error', res))[:300]
-            if getattr(args, 'bg', 'magenta') == 'transparent' and ('transparent' in err.lower() or 'background' in err.lower()):
-                raise BackgroundUnsupported(err)
-            raise RuntimeError(err)
-        open(out, 'wb').write(base64.b64decode(res['data'][0]['b64_json'])); return
-    start = time.time() - 3
-    cx = ['codex', 'exec', '--sandbox', 'workspace-write', '--skip-git-repo-check']
-    if os.environ.get('CODEX_MODEL'): cx += ['--model', os.environ['CODEX_MODEL']]
-    for i in images: cx += ['-i', i]
-    run = subprocess.run(cx, input=prompt + '\nGenerate exactly one image with your image generation tool. Do not write code or other files.',
-                         text=True, capture_output=True, timeout=600)
-    new = [f for f in glob.glob(os.path.expanduser('~/.codex/generated_images/**/*.png'), recursive=True) if os.path.getmtime(f) >= start]
-    if not new: raise RuntimeError('codex produced no image: ' + (run.stdout + run.stderr)[-300:].strip())
-    Image.open(max(new, key=os.path.getmtime)).convert('RGB').save(out)
+    """Provider seam: (prompt, input image paths, output path, size). The model is args.m (providers.resolve(--model));
+    every adapter's output is normalized to `size` and a magenta or transparent backdrop before it comes back."""
+    return args.m.paint(prompt, images, out, size, background=getattr(args, 'bg', 'magenta'), quality=args.quality)
 
 
 def request(prompt, images, out, size, args, tag):
     """paint() with one retry, logged to RUN; --dry-run only logs."""
-    RUN.setdefault('requests', []).append({'tag': tag, 'out': os.path.basename(out), 'size': size, 'background': getattr(args, 'bg', 'magenta'),
-                                           'images': [os.path.basename(i) for i in images], 'prompt': prompt})
+    entry = {'tag': tag, 'out': os.path.basename(out), 'size': size, 'background': getattr(args, 'bg', 'magenta'),
+             'images': [os.path.basename(i) for i in images], 'prompt': prompt}
+    RUN.setdefault('requests', []).append(entry)
     if args.dry_run: return False
+    if args.m.missing_key(): sys.exit(f'{args.m.name} needs {args.m.missing_key()} to paint {tag} (cached requests need no key)')
     for attempt in (1, 2):
         try:
-            paint(prompt, images, out, size, args); return True
-        except BackgroundUnsupported:
+            entry.update(paint(prompt, images, out, size, args) or {}); entry['attempts'] = attempt; return True
+        except (BackgroundUnsupported, NoRetry):
             raise
         except Exception as e:
             print('  retry:', e, flush=True)
@@ -154,9 +126,13 @@ def place(fig, want, s, size):
 
 def record(args, mode, cells, extra=None):
     """Append this run to <out_sheet>.paint.json (committed with the sheet) and write the work dir's run.json."""
+    sent = [r for r in RUN.get('requests', []) if 'seconds' in r]  # requests that reached the model this run (not cached)
+    m = args.m
     entry = {'when': datetime.datetime.now().astimezone().isoformat(timespec='seconds'), 'mode': mode, 'provider': provider(args),
-             'quality': args.quality, 'base_url': os.environ.get('OPENAI_BASE_URL', 'https://api.openai.com/v1') if os.environ.get('OPENAI_API_KEY') else None,
-             'cells': cells, **(extra or {})}
+             'model': m.name, 'quality': args.quality or m.extra.get('quality'),
+             'base_url': os.environ.get('OPENAI_BASE_URL', 'https://api.openai.com/v1') if m.provider == 'openai' else None,
+             'cells': cells, 'sent': len(sent), 'paint_seconds': round(sum(r['seconds'] for r in sent), 1),
+             'cost_estimate': round(len(sent) * m.cost, 2) if m.cost is not None else None, **(extra or {})}
     side = os.path.splitext(args.out_sheet)[0] + '.paint.json'
     log = json.load(open(side)) if os.path.exists(side) else []
     log.append(entry); json.dump(log, open(side, 'w'), indent=1)
@@ -311,7 +287,7 @@ def pose_mode(args):
     for k in keys:
         c = by_key[k]; i = c['index']
         gp = f'{args.work}/guide_{k}.png'; guide_image(c).save(gp)
-        near = None if args.no_near else nearest_painted(c, data, sheet, set(keys))
+        near = None if args.no_near or args.m.max_refs < 3 else nearest_painted(c, data, sheet, set(keys))  # a 2-image model gets no style ref
         np_ = f'{args.work}/near_{k}.png'
         if near: on_magenta(cell_of(sheet, near['index'])).save(np_)
         images = [ref, np_, gp] if near else [ref, gp]
@@ -324,8 +300,8 @@ def pose_mode(args):
                 try:
                     request(pose_prompt(c, args.desc, near, args.bg), images, got, size, args, f'{k} try {t}')
                 except BackgroundUnsupported as e:
-                    if args.background == 'transparent': sys.exit(f'{args.model} refused a transparent background: {e}')
-                    print(f'  {args.model} refused a transparent background, using magenta from here: {e}', flush=True)
+                    if args.background == 'transparent': sys.exit(f'{args.m.name} refused a transparent background: {e}')
+                    print(f'  {args.m.name} refused a transparent background, using magenta from here: {e}', flush=True)
                     args.bg = 'magenta'; RUN['background_fallback'] = str(e)
                     request(pose_prompt(c, args.desc, near, args.bg), images, got, size, args, f'{k} try {t}')
             if not os.path.exists(got): break  # dry run
@@ -366,7 +342,9 @@ def main():
     ap.add_argument('rig_sheet'); ap.add_argument('out_sheet'); ap.add_argument('desc')
     ap.add_argument('workdir', nargs='?', help='same as --work (kept for old commands)')
     ap.add_argument('--work', help='cache dir (default <out_sheet>.work)')
-    ap.add_argument('--model', default=os.environ.get('OPENAI_IMAGE_MODEL'), help='image model (default: OPENAI_IMAGE_MODEL); required with OPENAI_API_KEY')
+    ap.add_argument('--model', default=os.environ.get('OPENAI_IMAGE_MODEL'),
+                    help='image model: a name in image_models.json, provider:model id, or a bare OpenAI model (default: OPENAI_IMAGE_MODEL)')
+    ap.add_argument('--models-file', help='model table (default image_models.json next to paint.py)')
     ap.add_argument('--quality', help='image quality to request (low, medium, high); omitted = the API default')
     ap.add_argument('--fighter', help='fighter JSON; with --keys, repaints single poses')
     ap.add_argument('--keys', help='comma-separated sheet keys to repaint, e.g. hit,jp.w,tend.s')
@@ -383,7 +361,10 @@ def main():
     os.makedirs(args.work, exist_ok=True)
     if bool(args.fighter) != bool(args.keys): sys.exit('--fighter and --keys go together')
     if args.judge and not os.environ.get('ANTHROPIC_API_KEY') and not args.dry_run: sys.exit('--judge needs ANTHROPIC_API_KEY')
-    if not args.dry_run: provider(args)  # fail before any request if the model isn't set
+    # fail before any request if the model isn't set or isn't known; a missing key only fails once a request is needed,
+    # so re-snapping from cached requests still works with no key
+    args.m = providers.Model('dry-run', 'codex', None) if args.dry_run and not args.model else providers.resolve(args.model, args.models_file)
+    if args.m.max_refs < 2: sys.exit(f'{args.m.name} takes {args.m.max_refs} input image; paint.py sends at least 2 (character and pose)')
     (pose_mode if args.keys else batch_mode)(args)
 
 
